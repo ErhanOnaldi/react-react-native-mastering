@@ -58,6 +58,20 @@ describe('içerik doğrulama', () => {
     )
   })
 
+  it('bozuk YAML frontmatter’ı çökmeden hata olarak raporlar', async () => {
+    const root = await makeCurriculum({
+      'concepts.ts': concepts,
+      'modules/01-m/module.ts': moduleTs,
+      'modules/01-m/01-l/lesson.md': '---\ntitle: "kapanmamış\nminutes: 3\n---\n# L\n',
+      'modules/01-m/02-l/lesson.md': lesson,
+    })
+    const curriculum = await loadCurriculum(root)
+    expect(curriculum.errors.map((e) => e.message)).toEqual([
+      expect.stringContaining('Frontmatter okunamadı'),
+    ])
+    expect(curriculum.modules[0]?.lessons).toHaveLength(1)
+  })
+
   it('hatalı klasör adlarını ve çakışan numaraları raporlar', async () => {
     const root = await makeCurriculum({
       'concepts.ts': concepts,

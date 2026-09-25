@@ -18,6 +18,7 @@ Learner-facing text is **Turkish** (plain, friendly, "sen" dili); technical term
 - `pnpm validate:content -m <N> --skip-runs` — fast: schemas + code blocks only.
 - `npx prettier --write <paths>` — format TS files you wrote (markdown under curriculum is ignored by prettier).
 - Do NOT use `tsx` (sandbox blocks its IPC pipe); the scripts above already use plain `node`.
+- Do NOT run `pnpm check` or the dev servers: they write learner state (`workspace/`, `progress.json`). Use `pnpm validate:content` only.
 
 ## Rules
 - Write only where your task allows. Do not commit (the coordinator commits).

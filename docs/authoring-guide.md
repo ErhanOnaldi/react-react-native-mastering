@@ -149,6 +149,8 @@ defineQuestion({
 - Görev metni **dosya yolunu ve export adını açıkça** söylemeli (testler oraya bakar).
 - Testler davranışı test etsin (render çıktısı, fonksiyon sonucu), uygulama detayını değil — öğrencinin geçerli farklı çözümleri de geçmeli.
 
+**Refactor görevleri** (çalışan spagetti → temiz yapı): doğrulama başlangıç kodunun **kalmasını** ister. Bu yüzden testler iki katmanlı olur: (1) davranış testleri — spagetti de geçer, refactor sonrası da geçmeli; (2) yapı testleri — görev metninde açıkça istenen yeni birimler (örn. `useMovieSearch.ts`'ten export edilen hook, `MovieList` bileşeni) import edilip davranışları test edilir; spagetti bunlara sahip olmadığı için kalır. Kalan kalite (isimlendirme, sorumluluk ayrımı) `rubric` ile AI review'a bırakılır.
+
 ---
 
 ## 3. Test ortamı (egzersiz testleri)

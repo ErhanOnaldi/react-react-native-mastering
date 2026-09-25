@@ -19,3 +19,8 @@ blob-report/
 # OS / editor
 .DS_Store
 *.log
+
+# Öğrenci durumu (yerel; istersen bu satırları silip çözümlerini de commit'leyebilirsin)
+progress.json
+progress.json.lock
+workspace/

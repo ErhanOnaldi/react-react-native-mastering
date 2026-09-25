@@ -193,7 +193,14 @@ async function loadLesson(
     errors.push({ file: markdownPath, message: 'lesson.md bulunamadı.' })
     return undefined
   }
-  const { data } = matter(await readFile(markdownPath, 'utf8'))
+  let data: unknown
+  try {
+    data = matter(await readFile(markdownPath, 'utf8')).data
+  } catch (error) {
+    // Bozuk YAML tek bir dersin hatasıdır; tüm müfredatı çökertmesin
+    errors.push({ file: markdownPath, message: `Frontmatter okunamadı: ${(error as Error).message}` })
+    return undefined
+  }
   const parsed = lessonFrontmatterSchema.safeParse(data)
   if (!parsed.success) {
     errors.push({ file: markdownPath, message: zodMessage(parsed.error) })
