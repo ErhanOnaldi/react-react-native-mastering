@@ -152,7 +152,8 @@ async function validateCodeBlocks(
       if (q.solutionNotesPath) sources.push(q.solutionNotesPath)
     }
   }
-  const dir = path.join(paths.cacheDir, 'validate', 'blocks')
+  // Çalıştırma başına ayrı klasör: paralel doğrulamalar birbirinin dosyalarını silmesin
+  const dir = path.join(paths.cacheDir, 'validate', `blocks-${process.pid}-${Date.now()}`)
   await rm(dir, { recursive: true, force: true })
   await mkdir(dir, { recursive: true })
   const map = new Map<string, { source: string; line: number }>()
@@ -194,6 +195,7 @@ async function validateCodeBlocks(
       message: `Kod bloğu derlenmiyor: ${match[4]} ${match[5]}`,
     })
   }
+  await rm(dir, { recursive: true, force: true })
   return map.size
 }
 

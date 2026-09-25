@@ -60,7 +60,8 @@ async function runVitest(paths: RepoPaths, runDir: string, name: string, input: 
     alias: { '@test-utils': path.join(paths.testEnvDir, 'index.ts'), ...input.alias },
     setupFiles: [path.join(paths.testEnvDir, 'setup.ts')],
     outputFile,
-    cacheDir: path.join(paths.cacheDir, 'vite'),
+    // Çalıştırma başına önbellek: paralel süreçler aynı dosyaya yazmasın
+    cacheDir: path.join(runDir, 'vite'),
     env: TEST_ENV,
     projectDir: input.projectDir,
   }
