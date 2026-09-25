@@ -1,0 +1,1 @@
+Kart üstünde puan ve yetişkin işaretini tek metne topla. `movieBadge(vote: number, adult: boolean): string` fonksiyonu `adult` doğruysa `"18+ · 8.4"`, yanlışsa `"Genel · 8.4"` gibi döndürsün. Puanı tek ondalığa yuvarla. Örnek: `(7.456, false)` → `"Genel · 7.5"`.

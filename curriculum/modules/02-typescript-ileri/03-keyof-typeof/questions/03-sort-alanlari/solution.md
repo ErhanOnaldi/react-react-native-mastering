@@ -1,0 +1,1 @@
+`as const` hem dizi elemanlarını literal yapar hem readonly tutar. Guard URL’den gelen serbest string'i güvenli `SortField` değerine çevirir. `enum` kullanmaya gerek yok; bu yaklaşım TS 6 `erasableSyntaxOnly` ile uyumludur.

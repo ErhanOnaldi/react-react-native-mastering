@@ -1,0 +1,1 @@
+TMDB 401 cevabında `status_code` var, `title` yok. `isMovieBrief(value: unknown): value is MovieBrief` yaz. `MovieBrief` için `id: number`, `title: string`, `poster_path: string | null` şart. Ek alanlar kabul edilebilir; null, dizi, eksik veya yanlış alanlar reddedilmeli.

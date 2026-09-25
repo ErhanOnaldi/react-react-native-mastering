@@ -1,0 +1,1 @@
+Yerel film taslağında TMDB `id`, `vote_average` ve `vote_count` alanları henüz yok. `MovieDraft = Omit<Movie, 'id' | 'vote_average' | 'vote_count'>` ve `MovieDraftPatch = Partial<MovieDraft>` export et. `applyDraftPatch(draft, patch)` yeni nesne döndürsün; verilmemiş alanları korusun. `poster_path: null` geçerli bir güncellemedir.

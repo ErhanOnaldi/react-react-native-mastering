@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
-import { readFile, rename, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 
 export type QuestionStatus = 'not-started' | 'in-progress' | 'passed'
 
@@ -41,6 +42,7 @@ let queue: Promise<unknown> = Promise.resolve()
 
 async function writeAtomic(file: string, progress: Progress) {
   const tmp = `${file}.${process.pid}.tmp`
+  await mkdir(path.dirname(file), { recursive: true })
   await writeFile(tmp, JSON.stringify(progress, null, 2) + '\n')
   await rename(tmp, file)
 }

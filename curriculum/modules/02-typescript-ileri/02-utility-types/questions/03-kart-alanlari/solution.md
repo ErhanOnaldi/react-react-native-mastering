@@ -1,0 +1,1 @@
+`Pick` kartın yalnız gereken alanlarını alır ve `poster_path` union'ını korur. Kart tipini tekrar yazmak kısa görünür ama `Movie` değişince sessizce ayrışabilir. Sonraki derste `Omit` ile tam ters yönde türeteceksin.

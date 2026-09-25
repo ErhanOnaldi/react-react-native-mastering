@@ -1,0 +1,1 @@
+Kart ve detay aynı puan metnini kullansın. `formatScore(vote: number, digits = 1): string` yaz: 0 → `"Henüz oy yok"`; diğerleri `toFixed(digits)` ile metin. Örnek `(7.456)` → `"7.5"`, `(7.456, 2)` → `"7.46"`.

@@ -1,0 +1,1 @@
+`Record` gerekli anahtarların hiçbirinin unutulmamasını sağlar. `Readonly` kodda yeniden atamayı yasaklar, çalışma zamanında `Object.freeze` uygulamaz. Sonraki `satisfies` dersinde aynı tabloyu literal değer çıkarımını koruyarak kuracaksın.

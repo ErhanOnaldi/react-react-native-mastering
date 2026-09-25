@@ -1,0 +1,1 @@
+Liste kartlarına başlık ve yıl etiketi hazırla. `cardLabels(movies: MovieLabelInput[], fallback = 'Tarih yok'): string[]` yaz. Her film için `"Başlık · 1999"`; tarih boşsa fallback kullan. `MovieLabelInput` export edilen `{ title: string; release_date: string }` tipi olsun. Örnek boş tarih ve `fallback='Yakında'` → `"Başlık · Yakında"`.

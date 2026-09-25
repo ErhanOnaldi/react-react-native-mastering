@@ -1,0 +1,1 @@
+`MovieCard` yalnızca `id`, `title`, `poster_path` ister. `Movie` tipinden `MovieCardData = Pick<Movie, 'id' | 'title' | 'poster_path'>` türet. `cardLabel(movie: MovieCardData): string`, poster yoksa `"Başlık (poster yok)"`, varsa yalnız başlığı döndürsün. `poster_path` null olasılığını koru.

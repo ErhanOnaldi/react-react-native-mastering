@@ -1,0 +1,1 @@
+Trend cevabındaki filmlerden yalnızca posterli olanların başlıklarını çıkar. `movieTitles(movies: ListMovie[]): string[]` yaz; `ListMovie` export edilen `{ title: string; poster_path: string | null }` tipi olsun. Örnek: posterli Dövüş Kulübü ve postersiz bir film → `["Dövüş Kulübü"]`. Girdi dizisini değiştirme.

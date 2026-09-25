@@ -1,0 +1,3 @@
+import { defineQuestion } from '@rm/content/define'
+
+export default defineQuestion({"type": "quiz", "title": "getJson yalanı", "difficulty": "kolay", "concepts": ["ts.generics", "ts.unknown-any", "ts.api-types"], "question": "`getJson<Movie>(url)` çağrısı hakkında hangisi doğru?", "options": [{"text": "Çağıran Movie beklediğini söyler; JSON çalışma zamanında doğrulanmaz.", "correct": true, "explanation": "Doğru; generic tip iddiası ağ sınırında kanıt değildir."}, {"text": "Sunucu hatalarını Movie’ye dönüştürür.", "explanation": "401 JSON’u ayrı bir hata cevabıdır; response.ok kontrolü gerekir."}, {"text": "Zod şemasını otomatik çalıştırır.", "explanation": "Şema açıkça kurulup parse edilmedikçe doğrulama yoktur."}]})

@@ -1,0 +1,1 @@
+Assertion, guard'ın throw eden akrabasıdır. `asserts` imzası tek başına doğrulama değildir; gövde gerçekten kontrol etmeli. Bu kadar basit sayfada bile koşul uzadı: Zod modülündeki şema yaklaşımının ihtiyacı buradan doğar.

@@ -1,0 +1,1 @@
+Bir listede `results` bulunmadığında `map` çağrısı çökmeden önce anlamlı hata ver. `assertMoviePage(value: unknown): asserts value is MoviePage` yaz. `MoviePage` `{ page: number; results: { id: number; title: string }[] }` olsun. Yanlış veride `Error('Geçersiz film sayfası')` fırlat; doğru veride fonksiyon dönsün.

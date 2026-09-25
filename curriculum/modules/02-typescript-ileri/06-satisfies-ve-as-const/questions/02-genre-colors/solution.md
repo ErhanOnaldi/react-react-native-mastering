@@ -1,0 +1,1 @@
+Önceki `Record` görevinde tablo anotasyonu değerleri `string`e genişletmişti. Bu basamakta `satisfies` eksik anahtarları denetlerken literal rengi korur. `as const` runtime dondurma değildir; config kodunu kaynakta değiştirmemek yine geliştiricinin sorumluluğudur.

@@ -1,0 +1,1 @@
+TMDB film nesnesinde poster null olabilir. `MovieSummary` adında export edilen bir `interface` yaz: `readonly id: number`, `title: string`, `poster_path: string | null`, `tagline?: string`. `summary(movie)` fonksiyonu başlığı ve varsa tagline'ı `"Başlık — tagline"` olarak döndürsün; tagline yoksa yalnızca başlık. Null poster sonucu etkilemesin.

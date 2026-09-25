@@ -1,0 +1,1 @@
+TMDB sayfalama kontrolü bir başlangıç ve bitiş sayfasını birlikte taşır. `PageRange = [first: number, last: number]` tuple tipini export et. `pageRange(page: number, totalPages: number): PageRange` önceki ve sonraki sayfa dahil aralık döndürsün; sınırları 1 ve totalPages içinde tut. Örnek `(1, 5)` → `[1, 2]`, `(5, 5)` → `[4, 5]`.

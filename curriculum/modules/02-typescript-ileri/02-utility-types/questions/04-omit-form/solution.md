@@ -1,0 +1,1 @@
+Bu `Omit` merdiveninin ikinci basamağı: üç sunucu alanı çıkarıldı, ardından `Partial` ile yama tipi üretildi. `Partial` güncelleme nesnesini tarif eder; gerçek güncellemeyi spread yapar. Sonraki React modülünde immutable güncelleme daha görünür olacak.

@@ -1,0 +1,1 @@
+Film kartı sıralayıcısı yanlış alan adını kabul etmesin. `getField<T, K extends keyof T>(value: T, key: K): T[K]` yaz. Bu kez yalnız `Movie` değil, tür nesnesi için de çalışsın; dönen tip seçilen alanın tipi olsun.

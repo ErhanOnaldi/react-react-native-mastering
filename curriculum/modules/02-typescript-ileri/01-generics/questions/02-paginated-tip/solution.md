@@ -1,0 +1,1 @@
+`Paginated<T>` yalnızca değişen öğeyi parametre yapar. Ayrı `MovieListResponse` ve `GenreListResponse` kopyaları yeni sayfalama alanı gelince ayrışır. `firstResult` boş sayfayı da temsil eder; `T` döndüğünü iddia etmek güvenli değildir. Bu tip ağ verisini doğrulamaz; API sınırını sonraki derste tekrar ele alacağız.

@@ -1,0 +1,1 @@
+Sinema filtrelerinde 18 (Dram) ve 53 (Gerilim) adları kullanılıyor. `GenreId = 18 | 53`, `GenreNames = Readonly<Record<GenreId, string>>` tiplerini export et. `GENRE_NAMES` sabitini bu sözleşmeyle oluştur. `genreLabel(id: GenreId)` doğru Türkçe adı döndürsün.

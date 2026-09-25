@@ -1,0 +1,1 @@
+Trend sayfası boş veya dolu olabilir. `findOnPage<T extends { id: number }>(page: Paginated<T>, id: number): T | undefined` fonksiyonunu yaz. `Paginated<T>` aynı dört alanı taşısın. `findById` fikrini bu kez cevabın `results` alanında kullan; sayfalama verisini değiştirme.

@@ -1,0 +1,1 @@
+Hata cevabı bir film olmayabilir. `safeTitle(value: unknown): string` yaz: değer null olmayan nesne ve string bir `title` alanı taşıyorsa başlığı döndür; diğer her durumda `"Başlık yok"` döndür. `as` ve `any` kullanma. Örnek `{ title: 'Dövüş Kulübü' }` → aynı başlık.

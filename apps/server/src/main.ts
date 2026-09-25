@@ -11,6 +11,14 @@ const PORT = Number(process.env.RM_SERVER_PORT ?? 4317)
 const paths = resolvePaths(DEFAULT_REPO_ROOT, {
   ...(process.env.RM_CURRICULUM ? { curriculumRoot: path.resolve(process.env.RM_CURRICULUM) } : {}),
   ...(process.env.RM_PROJECTS ? { projectsRoot: path.resolve(process.env.RM_PROJECTS) } : {}),
+  // RM_STATE_DIR: öğrenci durumunu (workspace, ilerleme, önbellek) başka yere yaz (uçtan uca testler için)
+  ...(process.env.RM_STATE_DIR
+    ? {
+        workspaceRoot: path.resolve(process.env.RM_STATE_DIR, 'workspace'),
+        progressFile: path.resolve(process.env.RM_STATE_DIR, 'progress.json'),
+        cacheDir: path.resolve(process.env.RM_STATE_DIR, 'cache'),
+      }
+    : {}),
 })
 const store = new CurriculumStore(paths.curriculumRoot)
 const hub = new EventHub()

@@ -1,0 +1,1 @@
+Kadrodaki kişiler de filmler de `id` taşıyor. `findById<T extends { id: number }>(items: readonly T[], id: number): T | undefined` yaz. Eşleşen öğenin **tam tipini** koru; bulunamazsa `undefined` döndür. `readonly T[]`, çağıranın `as const` listesini de kabul etsin.

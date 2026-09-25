@@ -1,0 +1,1 @@
+Sinema'da görünüm seçici yalnızca `grid` ve `list` kabul etsin. `ViewMode = 'grid' | 'list'` tipini export et. `viewLabel(mode: ViewMode): string` için `grid` → `"Kartlar"`, `list` → `"Liste"`. Yanlış yazılmış modlar typecheck'te yakalanmalı.

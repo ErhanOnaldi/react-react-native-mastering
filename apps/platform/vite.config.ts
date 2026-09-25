@@ -21,9 +21,9 @@ export default defineConfig({
   },
   server: {
     host: '127.0.0.1',
-    port: 5173,
+    port: Number(process.env.RM_PLATFORM_PORT ?? 5173),
     strictPort: true,
-    proxy: { '/api': { target: 'http://127.0.0.1:4317' } },
+    proxy: { '/api': { target: `http://127.0.0.1:${process.env.RM_SERVER_PORT ?? 4317}` } },
     // workspace/ dosyaları önizlemede /@fs/ üzerinden yüklenir
     fs: { allow: [repoRoot] },
   },

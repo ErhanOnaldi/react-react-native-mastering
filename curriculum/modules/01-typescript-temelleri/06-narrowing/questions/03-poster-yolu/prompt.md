@@ -1,0 +1,1 @@
+Null posterde `.startsWith()` çöker. `posterPath(path: string | null): string | null` yaz: null ve boş string için null döndür; `/` ile başlayan yolu koru; diğerlerinin başına `/` ekle. Örnek `"x.jpg"` → `"/x.jpg"`.

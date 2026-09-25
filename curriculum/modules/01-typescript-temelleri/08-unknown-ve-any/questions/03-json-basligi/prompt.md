@@ -1,0 +1,1 @@
+`res.json()` sonucunu doğrulanmış film sanma. `readMovieTitle(raw: unknown): string | null` yaz. Yalnızca null olmayan nesnede `title` alanı string ise onu döndür; aksi halde null. `as` veya `any` kullanma. Örnek `{ title: 'Başlangıç' }` → `"Başlangıç"`, `{ status_code: 7 }` → null.

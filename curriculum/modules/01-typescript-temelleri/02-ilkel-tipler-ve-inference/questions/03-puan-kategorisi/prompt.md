@@ -1,0 +1,1 @@
+TMDB `vote_average` sayı gönderir. `scoreBand(vote)` fonksiyonunda 0 için `"oy yok"`, 8 ve üzeri için `"yüksek"`, diğer sayılar için `"normal"` döndür. Girdi sayı, çıktı metin olsun. Örnek: `8.437` → `"yüksek"`.

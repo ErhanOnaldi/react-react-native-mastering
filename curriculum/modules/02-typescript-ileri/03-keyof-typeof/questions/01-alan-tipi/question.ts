@@ -1,0 +1,3 @@
+import { defineQuestion } from '@rm/content/define'
+
+export default defineQuestion({"type": "quiz", "title": "Anahtar mı değer mi?", "difficulty": "kolay", "concepts": ["ts.indexed-access", "ts.object-types"], "question": "`type Ids = Movie[\"genre_ids\"]` hangi tipi türetir?", "options": [{"text": "`genre_ids` alanının değer tipini.", "correct": true, "explanation": "Doğru; indeksli erişim alanın tipini alır."}, {"text": "`\"genre_ids\"` literal anahtarını.", "explanation": "Anahtar literalini `keyof` union içinden seçersin; köşeli erişim değer tipini verir."}, {"text": "Çalışma zamanındaki ID listesini.", "explanation": "Tip ifadesi veri okumaz; yalnızca derleme zamanında çalışır."}]})

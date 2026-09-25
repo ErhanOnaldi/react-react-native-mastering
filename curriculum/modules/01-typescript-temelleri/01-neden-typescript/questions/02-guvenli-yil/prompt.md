@@ -1,0 +1,1 @@
+Sinema'da `movie.relese_date` yazınca JS sessizce `undefined` üretiyor. `movieYear` fonksiyonuna açık bir nesne tipi ve string dönüş tipi ver. `release_date` boşsa `"Tarih yok"`, doluysa ilk dört karakteri döndür. Örnek: `{ release_date: '1999-10-15' }` → `"1999"`; `{ release_date: '' }` → `"Tarih yok"`.

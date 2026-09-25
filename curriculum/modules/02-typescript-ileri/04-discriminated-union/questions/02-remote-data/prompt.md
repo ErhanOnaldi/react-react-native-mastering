@@ -1,0 +1,1 @@
+Aynı anda hem loading hem error taşıyan nesne üretilemesin. `RemoteData<T>` tipini `idle`, `loading`, `success` (`data: T`) ve `error` (`error: string`) dallarıyla export et. `isSuccess<T>(state: RemoteData<T>): state is { status: 'success'; data: T }` ve `message(state: RemoteData<unknown>)` yaz. Mesajlar: `Hazır`, `Yükleniyor`, `Tamam`, hata metni.

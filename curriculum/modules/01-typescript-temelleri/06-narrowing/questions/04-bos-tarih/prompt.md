@@ -1,0 +1,1 @@
+TMDB `release_date: ""` gönderdiğinde kartta `"undefined"` veya hatalı yıl görünmesin. `yearLabel(date: string): string` boş tarih için `"Tarih yok"`, dolu ISO tarih için ilk dört karakteri döndürsün. Örnek `"2026-07-15"` → `"2026"`.

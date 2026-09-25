@@ -1,0 +1,1 @@
+İstek bittiğinde ekranda gösterilecek metni `renderState<T>(state: RemoteData<T>, show: (data: T) => string): string` ile üret. Dört dal: `Henüz istek yok`, `Yükleniyor…`, başarıda `show(data)`, hatada `Hata: <error>`. Switch'in default dalında `never` ataması yaparak gelecekte yeni durum eklenirse tip hatası oluştur.

@@ -1,0 +1,1 @@
+Guard gövdesi gerçekten kontrol yapmalı; yanlış yazılmış `value is MovieBrief` imzası tip sistemine yanlış söz verir. Bu örnek yalnız üç alanı doğrular. Tam TMDB cevabını elle kontrol etmenin yükü, ileride Zod ihtiyacını doğuracak.

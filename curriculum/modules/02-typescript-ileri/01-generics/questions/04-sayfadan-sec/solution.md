@@ -1,0 +1,1 @@
+İlk örnekte generic kabuk, ikinci örnekte ID kısıtı vardı; burada ikisi birleşiyor. `Paginated<T>` veri taşıma biçimidir, `findOnPage` bir davranıştır. Bunları ayrı tutmak kodu daha kolay yeniden kullanılır yapar.

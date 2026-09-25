@@ -1,0 +1,1 @@
+Film kartının yalnızca `id`, `title` ve `vote_average` alanlarına ihtiyacı var. `CardMovie` nesne tipini export et. `cardData(movie)` fonksiyonu `{ id, label }` döndürsün; label `"Dövüş Kulübü (8.4)"` gibi olsun. Tam TMDB nesnesi de yapısal olarak bu fonksiyona verilebilmeli.

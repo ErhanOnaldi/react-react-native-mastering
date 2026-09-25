@@ -1,0 +1,1 @@
+`GENRE_IDS = [18, 53, 35] as const` ve bundan `GenreId` türet. `GENRE_COLORS` nesnesi bu ID'lerin hepsini içersin: 18 `indigo`, 53 `rose`, 35 `amber`. `as const satisfies Record<GenreId, string>` kullan. `colorFor(id: GenreId)` doğru literal rengi döndürsün.

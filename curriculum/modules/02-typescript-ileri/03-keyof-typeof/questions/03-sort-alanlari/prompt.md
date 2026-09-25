@@ -1,0 +1,1 @@
+Sinema yalnız `popularity`, `vote_average`, `release_date` alanlarına göre sıralıyor. `SORT_FIELDS` dizisini `as const` ile tanımla, `SortField = (typeof SORT_FIELDS)[number]` türet. `isSortField(value: string): value is SortField` ve `sortLabel(field: SortField)` yaz; etiketler sırasıyla `Popülerlik`, `Puan`, `Vizyon tarihi`.

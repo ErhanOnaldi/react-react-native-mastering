@@ -12,18 +12,22 @@ Yöntem: Motor inline (TDD, kritik parçalarda); içerik aşamaları alt ajanlar
 - Kısa kod: dizin öneklerinden (`05-x/01-y/02-z` → `5.1.2`).
 
 ## Görevler
-- [ ] T1 Monorepo iskeleti: pnpm workspace + catalog, root scripts, tsconfig.base, ESLint/Prettier, kurulum
-- [ ] T2 `packages/content`: şemalar, define*, kavram kaydı tipi, yükleyici/indeks, markdown renderer, testler (fixture müfredat)
-- [ ] T3 `curriculum/test-env`: setup (jest-dom, MSW server, istek log'u, cleanup), TMDB fixture'ları; jsdom+fetch+AbortController+MSW entegrasyon testi
-- [ ] T4 `packages/runner`: workspace yönetimi, ilerleme deposu, Vitest+tsc çalıştırma, sonuç normalizasyonu, tip hatası→test eşleme, timeout, mutation modu, project modu, review prompt; entegrasyon testleri
-- [ ] T5 `apps/server`: Hono route'ları (müfredat, ders, soru, dosyalar, run, answer, hint, solution, reset, review-prompt, progress, monaco types, SSE), testler
-- [ ] T6 `packages/cli`: check (+watch), checkpoint, validate:content (+kavram raporu, ```check blokları)
-- [ ] T7 `apps/platform`: kabuk, router, pano, modül/ders sayfaları, quiz/code/project soru sayfaları, sonuç paneli, ipucu/çözüm, review prompt, tema; RTL testleri
-- [ ] T8 Monaco: yerel paket, worker'lar, tip tanımları yükleme, çoklu dosya
-- [ ] T9 Canlı önizleme: preview.html, MSW tarayıcı, istek sayacı, 200'de durdurma, hata yakalama, postMessage köprüsü
-- [ ] T10 Sinema iskeleti (checkpoint 00) + `projects/sinema` kurulumu
-- [ ] T11 Modül 0 içeriği (pilot; tüm soru tiplerini kullanır)
-- [ ] T12 Playwright duman testi; lint + typecheck + test yeşil; `docs/authoring-guide.md`; kod incelemesi
+- [x] T1 Monorepo iskeleti: pnpm workspace + catalog, root scripts, tsconfig.base, ESLint/Prettier, kurulum
+- [x] T2 `packages/content`: şemalar, define*, kavram kaydı tipi, yükleyici/indeks, markdown renderer, testler (fixture müfredat)
+- [x] T3 `curriculum/test-env`: setup (jest-dom, MSW server, istek log'u, cleanup), TMDB fixture'ları; jsdom+fetch+AbortController+MSW entegrasyon testi
+- [x] T4 `packages/runner`: workspace yönetimi, ilerleme deposu, Vitest+tsc çalıştırma, sonuç normalizasyonu, tip hatası→test eşleme, timeout, mutation modu, project modu, review prompt; entegrasyon testleri
+- [x] T5 `apps/server`: Hono route'ları (müfredat, ders, soru, dosyalar, run, answer, hint, solution, reset, review-prompt, progress, monaco types, SSE), testler
+- [x] T6 `packages/cli`: check (+watch), checkpoint, validate:content (+kavram raporu, ```check blokları)
+- [x] T7 `apps/platform`: kabuk, router, pano, modül/ders sayfaları, quiz/code/project soru sayfaları, sonuç paneli, ipucu/çözüm, review prompt, tema; RTL testleri
+- [x] T8 Monaco: yerel paket, worker'lar, tip tanımları yükleme, çoklu dosya
+- [x] T9 Canlı önizleme: preview.html, MSW tarayıcı, istek sayacı, 200'de durdurma, hata yakalama, postMessage köprüsü
+- [x] T10 Sinema iskeleti (checkpoint 00) + `projects/sinema` kurulumu
+- [x] T11 Modül 0 içeriği (pilot; tüm soru tiplerini kullanır)
+- [x] T12 Playwright duman testi; lint + typecheck + test yeşil; `docs/authoring-guide.md`; kod incelemesi
+
+## Notlar
+- Codex (gpt-6-sol) içerik yazarı olarak kullanılıyor; CLI `node` ile çalışıyor (tsx IPC'si Codex sandbox'ında engelli).
+- Playwright duman testi `pnpm test:e2e` (fixture müfredat, ayrı portlar, `.cache/e2e-state`).
 
 ## Bitti ölçütü
 `pnpm dev` ile platform açılır; Modül 0'ın her sorusu çözülebilir; `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm validate:content` yeşil; duman testi geçer.

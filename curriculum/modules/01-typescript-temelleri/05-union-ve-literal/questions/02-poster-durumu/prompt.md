@@ -1,0 +1,1 @@
+TMDB poster yolu null olabilir. `PosterState = 'missing' | 'ready'` tipini export et. `posterState(path: string | null): PosterState` yaz: null veya boş string için `missing`, dolu yol için `ready` döndür. Örnek `'/x.jpg'` → `ready`.

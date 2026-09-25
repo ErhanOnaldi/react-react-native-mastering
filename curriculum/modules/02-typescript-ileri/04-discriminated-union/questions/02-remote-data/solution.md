@@ -1,0 +1,1 @@
+Discriminant olan `status`, başarılı dalda veriyi güvenle okutur. Tek nesnede `data?` ve `error?` kullanmak imkânsız durumları temsil ederdi. Buradaki `isSuccess` sonraki Sinema checkpoint'inde ortak yardımcıya dönüşecek.
