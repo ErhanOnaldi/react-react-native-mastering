@@ -1,0 +1,1 @@
+`WithoutId<T>` tipini yaz.

@@ -1,0 +1,38 @@
+{
+  "name": "@rm/content",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./define": "./src/define.ts",
+    "./markdown": "./src/markdown.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shikijs/rehype": "^4.4.3",
+    "@shikijs/transformers": "^4.4.3",
+    "gray-matter": "^4.0.3",
+    "hastscript": "^9.0.1",
+    "jiti": "^2.7.0",
+    "mdast-util-directive": "^3.1.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-directive": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "shiki": "^4.4.3",
+    "tinyglobby": "^0.2.17",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.1.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "@types/node": "catalog:",
+    "mdast-util-to-hast": "^13.2.1",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

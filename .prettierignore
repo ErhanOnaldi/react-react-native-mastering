@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+workspace/
+projects/
+curriculum/checkpoints/
+curriculum/**/*.md
+docs/
+**/dist/
+**/public/mockServiceWorker.js
+progress.json

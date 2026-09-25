@@ -1,0 +1,1 @@
+Döngüyü düzelt.

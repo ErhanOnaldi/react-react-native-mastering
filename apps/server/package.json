@@ -1,0 +1,27 @@
+{
+  "name": "@rm/server",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --ignore '../../workspace/**' --ignore '../../progress.json' src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.1",
+    "@rm/content": "workspace:*",
+    "@rm/runner": "workspace:*",
+    "chokidar": "^5.0.0",
+    "hono": "^4.13.9",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "name": "react-mastering",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @rm/server --filter @rm/platform dev",
+    "check": "tsx packages/cli/src/bin.ts check",
+    "checkpoint": "tsx packages/cli/src/bin.ts checkpoint",
+    "validate:content": "tsx packages/cli/src/bin.ts validate",
+    "setup:projects": "tsx packages/cli/src/bin.ts setup",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@hookform/resolvers": "catalog:",
+    "@reduxjs/toolkit": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "class-variance-authority": "catalog:",
+    "clsx": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-hook-form": "catalog:",
+    "react-redux": "catalog:",
+    "react-router": "catalog:",
+    "tailwind-merge": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "catalog:",
+    "@rm/content": "workspace:*",
+    "@testing-library/dom": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.12.0",
+    "jsdom": "catalog:",
+    "msw": "catalog:",
+    "prettier": "catalog:",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.70.1",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}
