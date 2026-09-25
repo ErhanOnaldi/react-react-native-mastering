@@ -1,0 +1,3 @@
+- Önce **eleme**: MAJOR farklıysa hemen `false`. Kalan kod yalnızca "aynı MAJOR" durumunu düşünür.
+- `v.minor !== min.minor` ise sonuç zaten minor karşılaştırmasıdır; eşitse patch'e bakılır. Bu sıralama, sürümleri "sözlük sırası" gibi karşılaştırmanın kısa yoludur.
+- Gerçek hayatta bunu elle yazmazsın: `semver` paketi (`semver.satisfies('19.3.5', '^19.3.0')`) prerelease (`-beta.1`), MAJOR 0 gibi tüm kenar durumlarını bilir. Ama mantığı bir kez yazmak, `package.json`'daki o küçük `^` işaretini artık gerçekten anladığın anlamına gelir.

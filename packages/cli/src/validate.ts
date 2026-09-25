@@ -195,16 +195,32 @@ async function validateCodeBlocks(
   return map.size
 }
 
-function conceptReport(curriculum: Curriculum, strict: boolean, problems: Problem[]) {
+function conceptReport(
+  curriculum: Curriculum,
+  moduleFilter: number | undefined,
+  strict: boolean,
+  problems: Problem[],
+) {
   const usage = new Map<string, { count: number; modules: Set<string> }>()
+  const inModule = new Map<string, number>()
   for (const q of allQuestions(curriculum)) {
+    const moduleNumber = curriculum.modules.find((m) => m.id === q.moduleId)?.number
     for (const c of q.meta.concepts) {
       const entry = usage.get(c) ?? { count: 0, modules: new Set<string>() }
       entry.count += 1
       entry.modules.add(q.moduleId)
       usage.set(c, entry)
+      if (moduleNumber === moduleFilter) inModule.set(c, (inModule.get(c) ?? 0) + 1)
     }
   }
+
+  // Tek modül doğrulanırken: yalnızca o modülün kavram kullanımı (yazar için geri bildirim)
+  if (moduleFilter !== undefined) {
+    const list = [...inModule].sort((a, b) => b[1] - a[1]).map(([id, n]) => `${id}×${n}`)
+    console.log(pc.dim(`\n  Bu modüldeki kavramlar: ${list.join(', ') || '—'}`))
+    return
+  }
+
   const weak: string[] = []
   for (const [id, concept] of Object.entries(curriculum.concepts)) {
     if (!concept.core) continue
@@ -218,8 +234,8 @@ function conceptReport(curriculum: Curriculum, strict: boolean, problems: Proble
     if (strict) problems.push({ where: 'kavramlar', message })
     else console.log(pc.yellow(`\n⚠ ${message}`))
   }
-  if (unused.length) console.log(pc.dim(`\nℹ Hiç kullanılmayan kavramlar: ${unused.join(', ')}`))
-  return usage
+  if (unused.length)
+    console.log(pc.dim(`\nℹ Hiç kullanılmayan kavramlar (${unused.length}): ${unused.join(', ')}`))
 }
 
 export async function validate(paths: RepoPaths, options: ValidateOptions) {
@@ -255,7 +271,7 @@ export async function validate(paths: RepoPaths, options: ValidateOptions) {
     if (runnable.length) process.stdout.write('\n')
   }
 
-  conceptReport(curriculum, options.strictConcepts, problems)
+  conceptReport(curriculum, options.module, options.strictConcepts, problems)
 
   const seconds = ((performance.now() - started) / 1000).toFixed(1)
   if (problems.length === 0) {

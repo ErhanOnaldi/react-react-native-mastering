@@ -1,0 +1,4 @@
+- Düzenli ifadedeki `(?: ... )?` **yakalamayan, opsiyonel grup**tur: kapsam yoksa `match[2]` `undefined` olur — tam da istediğimiz.
+- `const [, type, scope, bang, rawSubject] = match` — dizi destructuring'de baştaki boşluk, tüm eşleşmeyi (0. eleman) atlar.
+- `isCommitType` bir **type guard**: `true` dönerse TypeScript `type` değişkeninin `string` değil `CommitType` olduğunu bilir. Type guard'ları TypeScript modülünde derinlemesine göreceğiz; burada tadına bakıyorsun.
+- `(typeof TYPES)[number]` diziden bir **union tipi** türetir: `'feat' | 'fix' | ...`. Liste değişince tip kendiliğinden güncellenir.

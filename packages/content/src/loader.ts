@@ -246,6 +246,23 @@ export async function loadCurriculum(rootDir: string): Promise<Curriculum> {
       errors.push({ file, message: zodMessage(parsed.error) })
       continue
     }
+    // Modüle özel kavramlar (modules/NN-x/concepts.ts): paralel yazımda merkezi dosyada çakışma olmasın
+    const localConcepts = path.join(entry.dir, 'concepts.ts')
+    if (existsSync(localConcepts)) {
+      try {
+        const parsedLocal = conceptRegistrySchema.safeParse(await importDefault(localConcepts))
+        if (!parsedLocal.success)
+          errors.push({ file: localConcepts, message: zodMessage(parsedLocal.error) })
+        else
+          for (const [id, concept] of Object.entries(parsedLocal.data)) {
+            if (concepts[id])
+              errors.push({ file: localConcepts, message: `Kavram zaten tanımlı: ${id}` })
+            else concepts[id] = concept
+          }
+      } catch (error) {
+        errors.push({ file: localConcepts, message: `Yüklenemedi: ${(error as Error).message}` })
+      }
+    }
     const module: ModuleEntry = {
       id: entry.name,
       code: String(entry.number),

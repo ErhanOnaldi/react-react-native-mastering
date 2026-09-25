@@ -1,0 +1,3 @@
+- Kenar durumu (`0`) **en başta** ele alınır: "erken dönüş" (early return) kodu düz ve okunur tutar.
+- `toFixed(1)` hem yuvarlar hem de `8` → `"8.0"` gibi sondaki sıfırı korur. `Math.round(x * 10) / 10` ise `8` için `"8"` üretirdi.
+- TMDB'de `0` "puan sıfır" değil, "henüz oy yok" anlamına gelir. Gerçek API'lerde bu tür **anlamlı boş değerler** sık görülür; ilerleyen modüllerde boş tarih, boş poster gibi örnekleri de ele alacağız.

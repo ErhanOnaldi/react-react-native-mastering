@@ -35,6 +35,8 @@ watchCurriculum(paths.curriculumRoot, async () => {
 const app = createApp({ paths, store, hub, tracker, hasTmdbToken })
 
 const curriculum = await store.get()
+// Shiki'yi önceden ısıt: ilk ders sayfası beklemesin
+void store.html('```ts\nconst hazir = true\n```')
 serve({ fetch: app.fetch, hostname: '127.0.0.1', port: PORT }, (info) => {
   console.log(`▶ React Mastering sunucusu: http://127.0.0.1:${info.port}/api`)
   console.log(

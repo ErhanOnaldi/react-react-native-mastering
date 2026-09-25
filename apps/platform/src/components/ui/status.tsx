@@ -19,10 +19,9 @@ export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
 }
 
 const typeLabel = { quiz: 'Quiz', code: 'Kod', project: 'Proje' } as const
-const typeTone = { quiz: 'violet', code: 'accent', project: 'warning' } as const
 
 export function TypeBadge({ type }: { type: QuestionType }) {
-  return <Badge tone={typeTone[type]}>{typeLabel[type]}</Badge>
+  return <Badge tone="neutral">{typeLabel[type]}</Badge>
 }
 
 export function ProgressBar({ value, className }: { value: number; className?: string }) {

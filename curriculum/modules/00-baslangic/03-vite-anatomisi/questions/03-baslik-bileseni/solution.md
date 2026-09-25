@@ -1,0 +1,3 @@
+- Doğru **anlamsal etiketler** (`header`, `h1`, `p`) yalnızca görünüm için değil: ekran okuyucular ve testler (`getByRole('heading')`) sayfayı bu etiketlerle anlar.
+- Props'u parametrede destructure etmek (`{ title, tagline }`) sektörde en yaygın yazımdır; bileşenin neye ihtiyaç duyduğu ilk satırda görünür.
+- Bir sayfada genellikle **tek bir `h1`** olur: sayfanın ana başlığı.

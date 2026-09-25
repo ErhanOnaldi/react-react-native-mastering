@@ -1,0 +1,5 @@
+- `?.trim()` önce değerin var olup olmadığına bakar, sonra boşlukları atar: `undefined?.trim()` → `undefined`.
+- **`??` ile `||` farkı**: `??` yalnızca `null`/`undefined`'da devreye girer; `||` ise boş string (`""`), `0`, `false` gibi "falsy" değerlerde de. Trim sonrası `""` gelebileceği için başlıkta `||` doğru seçim.
+- `Number("abc")` → `NaN`, `Number("")` → `0`. İkisini de `Number.isInteger(x) && x > 0` tek kontrolde eler.
+- Varsayılanları sabit olarak adlandırmak (`DEFAULT_PAGE_SIZE`) "sihirli sayı"ları ortadan kaldırır.
+- Bu fonksiyonun daha güçlü hali 15. modülde gelecek: Zod ile şema tanımlayıp hem doğrulama hem tip çıkarımı yapacağız.
