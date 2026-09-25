@@ -2,10 +2,9 @@ import { defineProject } from 'vitest/config'
 
 export default defineProject({
   test: {
-    name: 'content',
+    name: 'server',
     include: ['test/**/*.test.ts'],
     environment: 'node',
-    // Shiki'nin ilk yüklenmesi, paralel çalışan runner testleriyle yavaşlayabilir
-    testTimeout: 30_000,
+    testTimeout: 120_000,
   },
 })

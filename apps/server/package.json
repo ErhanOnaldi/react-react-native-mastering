@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/app.ts",
+    "./dto": "./src/dto.ts"
   },
   "scripts": {
     "dev": "tsx watch --clear-screen=false --ignore '../../workspace/**' --ignore '../../progress.json' src/main.ts",

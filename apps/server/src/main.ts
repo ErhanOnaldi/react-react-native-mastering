@@ -1,0 +1,37 @@
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
+import { serve } from '@hono/node-server'
+import { DEFAULT_REPO_ROOT, resolvePaths } from '@rm/runner'
+import { createApp } from './app.ts'
+import { EventHub, watchCurriculum, watchWorkspace, WriteTracker } from './events.ts'
+import { CurriculumStore } from './store.ts'
+
+const PORT = Number(process.env.RM_SERVER_PORT ?? 4317)
+const paths = resolvePaths(DEFAULT_REPO_ROOT)
+const store = new CurriculumStore(paths.curriculumRoot)
+const hub = new EventHub()
+const tracker = new WriteTracker()
+
+/** .env'de token tanımlı mı? Değeri okunmaz/iletilmez; yalnızca varlığı kontrol edilir. */
+function hasTmdbToken() {
+  const file = path.join(paths.repoRoot, '.env')
+  if (!existsSync(file)) return false
+  return /^VITE_TMDB_TOKEN=\s*\S+/m.test(readFileSync(file, 'utf8'))
+}
+
+watchWorkspace(paths.workspaceRoot, hub, tracker)
+watchCurriculum(paths.curriculumRoot, async () => {
+  const curriculum = await store.reload()
+  if (curriculum.errors.length > 0) {
+    console.warn(`⚠ İçerikte ${curriculum.errors.length} hata var (pnpm validate:content)`)
+  }
+  hub.emit({ type: 'curriculum-changed' })
+})
+
+const app = createApp({ paths, store, hub, tracker, hasTmdbToken })
+
+const curriculum = await store.get()
+serve({ fetch: app.fetch, hostname: '127.0.0.1', port: PORT }, (info) => {
+  console.log(`▶ React Mastering sunucusu: http://127.0.0.1:${info.port}/api`)
+  console.log(`  ${curriculum.modules.length} modül yüklendi${curriculum.errors.length ? `, ⚠ ${curriculum.errors.length} içerik hatası` : ''}`)
+})
