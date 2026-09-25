@@ -39,6 +39,8 @@ catalog:
   tailwind-merge: ^3.7.0
   class-variance-authority: ^0.7.1
   tsx: ^4.23.15
+  babel-plugin-react-compiler: ^1.0.0
+  '@rolldown/plugin-babel': ^0.2.4
   '@eslint/js': ^10.0.1
   eslint-config-prettier: ^10.1.8
   eslint-plugin-react-hooks: ^7.1.1
