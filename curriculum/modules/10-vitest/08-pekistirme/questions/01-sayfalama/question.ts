@@ -1,0 +1,20 @@
+import { defineQuestion } from '@rm/content/define'
+
+export default defineQuestion({
+  type: 'code',
+  title: 'Sayfalama sınırlarını koru',
+  difficulty: 'orta',
+  concepts: ['test.each', 'test.matchers', 'fetch.query-params'],
+  files: ['pageSlice.test.ts'],
+  hints: [
+    'İkinci sayfanın ilk öğesini ve son sayfanın uzunluğunu sınayan veri kur.',
+    '`pageSlice(items, page, 20)` için 41 id kullan ve sonuç uzunluğu ile ilk id’yi ölç.',
+    'Sayfa 2 ilk id 21, sayfa 3 tek id 41 olmalı.',
+  ],
+  testWriting: {
+    mutants: [
+      { id: 'zero-based', label: 'sayfa numarasını sıfırdan başlatan sürüm' },
+      { id: 'full-only', label: 'kısmi son sayfayı göstermeyen sürüm' },
+    ],
+  },
+})
