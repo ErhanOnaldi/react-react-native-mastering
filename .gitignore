@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Build & tool output
+dist/
+coverage/
+*.tsbuildinfo
+.cache/
+.vite/
+test-results/
+playwright-report/
+blob-report/
+
+# OS / editor
+.DS_Store
+*.log
