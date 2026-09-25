@@ -6,12 +6,12 @@ import { MovieTitle } from '@exercise/MovieTitle'
 describe('MovieTitle', () => {
   it('film adını gösterir', async () => {
     render(<MovieTitle id={550} />)
-    expect(await screen.findByRole('heading', { name: 'Fight Club' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Dövüş Kulübü' })).toBeInTheDocument()
   })
 
   it('yalnızca bir istek atar', async () => {
     render(<MovieTitle id={550} />)
-    await screen.findByRole('heading', { name: 'Fight Club' })
+    await screen.findByRole('heading', { name: 'Dövüş Kulübü' })
     await new Promise((r) => setTimeout(r, 50))
     expect(requests('/3/movie/550'), 'Beklenen: 1 istek').toHaveLength(1)
   })

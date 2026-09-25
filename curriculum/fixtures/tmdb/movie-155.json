@@ -1,0 +1,323 @@
+{
+  "adult": false,
+  "backdrop_path": "/9FE5eD92WfVCiivM9Pq9GVSrlWk.jpg",
+  "belongs_to_collection": {
+    "id": 263,
+    "name": "Kara Şövalye [Seri]",
+    "poster_path": "/fDWCNgS5wDXQiPQmzHG1ePKIZqe.jpg",
+    "backdrop_path": "/xyhrCEdB4XRkelfVsqXeUZ6rLHi.jpg"
+  },
+  "budget": 185000000,
+  "genres": [
+    {
+      "id": 28,
+      "name": "Aksiyon"
+    },
+    {
+      "id": 53,
+      "name": "Gerilim"
+    },
+    {
+      "id": 80,
+      "name": "Suç"
+    }
+  ],
+  "homepage": "",
+  "id": 155,
+  "imdb_id": "tt0468569",
+  "origin_country": [
+    "US"
+  ],
+  "original_language": "en",
+  "original_title": "The Dark Knight",
+  "overview": "Batman, Teğmen Jim Gordon ve Bölge Savcısı Harvey Dent’in yardımlarıyla, şehir sokaklarını sarmış olan suç örgütlerinden geriye kalanları temizlemeye girişir. Bu ortaklığın etkili olduğu açıktır, ama ekip kısa süre sonra kendilerini, Joker olarak bilinen ve Gotham şehri sakinlerini daha önce de dehşete boğmuş olan suç dehasının yarattığı karmaşanın ortasında bulurlar.",
+  "popularity": 61.2883,
+  "poster_path": "/7IPCEr7ifdH5CtU97QG7XgAAtOp.jpg",
+  "production_companies": [
+    {
+      "id": 174,
+      "logo_path": "/zhD3hhtKB5qyv7ZeL4uLpNxgMVU.png",
+      "name": "Warner Bros. Pictures",
+      "origin_country": "US"
+    },
+    {
+      "id": 923,
+      "logo_path": "/5UQsZrfbfG2dYJbx8DxfoTr2Bvu.png",
+      "name": "Legendary Pictures",
+      "origin_country": "US"
+    },
+    {
+      "id": 9996,
+      "logo_path": "/3tvBqYsBhxWeHlu62SIJ1el93O7.png",
+      "name": "Syncopy",
+      "origin_country": "GB"
+    },
+    {
+      "id": 429,
+      "logo_path": "/4Y00XuSMuP1gimd0jP6JT57QbCI.png",
+      "name": "DC",
+      "origin_country": "US"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "GB",
+      "name": "United Kingdom"
+    },
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "release_date": "2008-07-16",
+  "revenue": 1004558444,
+  "runtime": 152,
+  "softcore": false,
+  "spoken_languages": [
+    {
+      "english_name": "English",
+      "iso_639_1": "en",
+      "name": "English"
+    },
+    {
+      "english_name": "Mandarin",
+      "iso_639_1": "zh",
+      "name": "普通话"
+    }
+  ],
+  "status": "Released",
+  "tagline": "Kanunsuz bir dünyaya hoşgeldiniz.",
+  "title": "Kara Şövalye",
+  "video": false,
+  "vote_average": 8.535,
+  "vote_count": 36788,
+  "credits": {
+    "cast": [
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 3894,
+        "known_for_department": "Acting",
+        "name": "Christian Bale",
+        "original_name": "Christian Bale",
+        "popularity": 5.6276,
+        "profile_path": "/7Pxez9J8fuPd2Mn9kex13YALrCQ.jpg",
+        "cast_id": 35,
+        "character": "Bruce Wayne",
+        "credit_id": "52fe4220c3a36847f8005d17",
+        "order": 0
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 1810,
+        "known_for_department": "Acting",
+        "name": "Heath Ledger",
+        "original_name": "Heath Ledger",
+        "popularity": 4.5185,
+        "profile_path": "/AdWKVqyWpkYSfKE5Gb2qn8JzHni.jpg",
+        "cast_id": 3,
+        "character": "Joker",
+        "credit_id": "52fe421fc3a36847f8005cbf",
+        "order": 1
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 6383,
+        "known_for_department": "Acting",
+        "name": "Aaron Eckhart",
+        "original_name": "Aaron Eckhart",
+        "popularity": 4.203,
+        "profile_path": "/u5JjnRMr9zKEVvOP7k3F6gdcwT6.jpg",
+        "cast_id": 15,
+        "character": "Harvey Dent",
+        "credit_id": "52fe4220c3a36847f8005cf1",
+        "order": 2
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 3895,
+        "known_for_department": "Acting",
+        "name": "Michael Caine",
+        "original_name": "Michael Caine",
+        "popularity": 6.2108,
+        "profile_path": "/bVZRMlpjTAO2pJK6v90buFgVbSW.jpg",
+        "cast_id": 17,
+        "character": "Alfred",
+        "credit_id": "52fe4220c3a36847f8005cf9",
+        "order": 3
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 1579,
+        "known_for_department": "Acting",
+        "name": "Maggie Gyllenhaal",
+        "original_name": "Maggie Gyllenhaal",
+        "popularity": 3.9521,
+        "profile_path": "/vsfkWdYWmA9CpzMHTJzrFxlDnEZ.jpg",
+        "cast_id": 8,
+        "character": "Rachel",
+        "credit_id": "52fe421fc3a36847f8005cd5",
+        "order": 4
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 64,
+        "known_for_department": "Acting",
+        "name": "Gary Oldman",
+        "original_name": "Gary Oldman",
+        "popularity": 9.2419,
+        "profile_path": "/yhaSM5habNNI1Tf4ALRwRk3VvSZ.jpg",
+        "cast_id": 16,
+        "character": "Gordon",
+        "credit_id": "52fe4220c3a36847f8005cf5",
+        "order": 5
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 192,
+        "known_for_department": "Acting",
+        "name": "Morgan Freeman",
+        "original_name": "Morgan Freeman",
+        "popularity": 10.5736,
+        "profile_path": "/905k0RFzH0Kd6gx8oSxRdnr6FL.jpg",
+        "cast_id": 34,
+        "character": "Lucius Fox",
+        "credit_id": "52fe4220c3a36847f8005d13",
+        "order": 6
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 53651,
+        "known_for_department": "Acting",
+        "name": "Monique Gabriela Curnen",
+        "original_name": "Monique Gabriela Curnen",
+        "popularity": 2.1401,
+        "profile_path": "/lJgLQs7cfM49m8VzVviwxIByz76.jpg",
+        "cast_id": 258,
+        "character": "Ramirez",
+        "credit_id": "55dc9083c3a3686572000193",
+        "order": 7
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 57597,
+        "known_for_department": "Acting",
+        "name": "Ron Dean",
+        "original_name": "Ron Dean",
+        "popularity": 1.621,
+        "profile_path": "/mgqdr4VFrTVZatkki2suNLYxeDG.jpg",
+        "cast_id": 228,
+        "character": "Wuertz",
+        "credit_id": "52fe4220c3a36847f8005d65",
+        "order": 8
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 2037,
+        "known_for_department": "Acting",
+        "name": "Cillian Murphy",
+        "original_name": "Cillian Murphy",
+        "popularity": 6.6263,
+        "profile_path": "/2lKs67r7FI4bPu0AXxMUJZxmUXn.jpg",
+        "cast_id": 20,
+        "character": "Scarecrow",
+        "credit_id": "52fe4220c3a36847f8005cfd",
+        "order": 9
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 101015,
+        "known_for_department": "Acting",
+        "name": "Chin Han",
+        "original_name": "Chin Han",
+        "popularity": 1.9513,
+        "profile_path": "/3XJXmYm6r4Hvm3izOArU58fhQrT.jpg",
+        "cast_id": 227,
+        "character": "Lau",
+        "credit_id": "52fe4220c3a36847f8005d61",
+        "order": 10
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 21316,
+        "known_for_department": "Acting",
+        "name": "Nestor Carbonell",
+        "original_name": "Nestor Carbonell",
+        "popularity": 3.0401,
+        "profile_path": "/4Xn03t2qDEMR2ecM7BtLwpvs3J0.jpg",
+        "cast_id": 225,
+        "character": "Mayor",
+        "credit_id": "52fe4220c3a36847f8005d59",
+        "order": 11
+      }
+    ],
+    "crew": [
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 527,
+        "known_for_department": "Writing",
+        "name": "Jonathan Nolan",
+        "original_name": "Jonathan Nolan",
+        "popularity": 2.3298,
+        "profile_path": "/qgTOwfg2B4C0ZFGAP4EnRZ7domo.jpg",
+        "credit_id": "52fe421fc3a36847f8005cc5",
+        "department": "Writing",
+        "job": "Screenplay"
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 525,
+        "known_for_department": "Directing",
+        "name": "Christopher Nolan",
+        "original_name": "Christopher Nolan",
+        "popularity": 9.2389,
+        "profile_path": "/xuAIuYSmsUzKlUMBFGVZaWsY3DZ.jpg",
+        "credit_id": "52fe4220c3a36847f8005d03",
+        "department": "Writing",
+        "job": "Screenplay"
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 525,
+        "known_for_department": "Directing",
+        "name": "Christopher Nolan",
+        "original_name": "Christopher Nolan",
+        "popularity": 9.2389,
+        "profile_path": "/xuAIuYSmsUzKlUMBFGVZaWsY3DZ.jpg",
+        "credit_id": "5e83ac8b6e3b68001464b691",
+        "department": "Directing",
+        "job": "Director"
+      }
+    ]
+  },
+  "videos": {
+    "results": [
+      {
+        "iso_639_1": "tr",
+        "iso_3166_1": "TR",
+        "name": "The Dark Knight / Kara Şövalye (2008) - Türkçe Altyazılı 1. Fragman",
+        "key": "xl2NZ0Bt7yQ",
+        "site": "YouTube",
+        "size": 720,
+        "type": "Trailer",
+        "official": false,
+        "id": "6592d7c8a5890272c396291f",
+        "published_at": "2016-12-19T17:55:33.000Z"
+      }
+    ]
+  }
+}

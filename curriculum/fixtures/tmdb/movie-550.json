@@ -1,0 +1,302 @@
+{
+  "adult": false,
+  "backdrop_path": "/c6OLXfKAk5BKeR6broC8pYiCquX.jpg",
+  "belongs_to_collection": null,
+  "budget": 63000000,
+  "genres": [
+    {
+      "id": 18,
+      "name": "Dram"
+    },
+    {
+      "id": 53,
+      "name": "Gerilim"
+    }
+  ],
+  "homepage": "",
+  "id": 550,
+  "imdb_id": "tt0137523",
+  "origin_country": [
+    "US"
+  ],
+  "original_language": "en",
+  "original_title": "Fight Club",
+  "overview": "Saatli bomba gibi patlamaya hazır, uykusuzluk çeken bir adam ile tekinsiz bir sabun satıcısı; ilkel erkek saldırganlığını şok edici yeni bir terapi yöntemine dönüştürür. Kurdukları bu fikir hızla yayılır ve her şehirde yeraltı \"dövüş kulüpleri\" kurulmaya başlar; ta ki eksantrik biri yollarına çıkıp yok oluşa doğru giden, kontrolden çıkmış bir sarmalı tetikleyene kadar.",
+  "popularity": 48.3804,
+  "poster_path": "/yjMuqAyJUoQZGWsZ0vZuYj5inAR.jpg",
+  "production_companies": [
+    {
+      "id": 711,
+      "logo_path": "/tEiIH5QesdheJmDAqQwvtN60727.png",
+      "name": "Fox 2000 Pictures",
+      "origin_country": "US"
+    },
+    {
+      "id": 508,
+      "logo_path": "/4sGWXoboEkWPphI6es6rTmqkCBh.png",
+      "name": "Regency Enterprises",
+      "origin_country": "US"
+    },
+    {
+      "id": 4700,
+      "logo_path": "/A32wmjrs9Psf4zw0uaixF0GXfxq.png",
+      "name": "Linson Entertainment",
+      "origin_country": "US"
+    },
+    {
+      "id": 25,
+      "logo_path": "/nM2MfoMqzJQRiSynsDabOtFKetD.png",
+      "name": "20th Century Fox",
+      "origin_country": "US"
+    },
+    {
+      "id": 20555,
+      "logo_path": "/hD8yEGUBlHOcfHYbujp71vD8gZp.png",
+      "name": "Taurus Film",
+      "origin_country": "DE"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "DE",
+      "name": "Germany"
+    },
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "release_date": "1999-10-15",
+  "revenue": 100853753,
+  "runtime": 139,
+  "softcore": false,
+  "spoken_languages": [
+    {
+      "english_name": "English",
+      "iso_639_1": "en",
+      "name": "English"
+    }
+  ],
+  "status": "Released",
+  "tagline": "",
+  "title": "Dövüş Kulübü",
+  "video": false,
+  "vote_average": 8.437,
+  "vote_count": 32910,
+  "credits": {
+    "cast": [
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 819,
+        "known_for_department": "Acting",
+        "name": "Edward Norton",
+        "original_name": "Edward Norton",
+        "popularity": 6.3696,
+        "profile_path": "/8nytsqL59SFJTVYVrN72k6qkGgJ.jpg",
+        "cast_id": 4,
+        "character": "Narrator",
+        "credit_id": "52fe4250c3a36847f80149f3",
+        "order": 0
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 287,
+        "known_for_department": "Acting",
+        "name": "Brad Pitt",
+        "original_name": "Brad Pitt",
+        "popularity": 14.1644,
+        "profile_path": "/ajNaPmXVVMJFg9GWmu6MJzTaXdV.jpg",
+        "cast_id": 5,
+        "character": "Tyler Durden",
+        "credit_id": "52fe4250c3a36847f80149f7",
+        "order": 1
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 1283,
+        "known_for_department": "Acting",
+        "name": "Helena Bonham Carter",
+        "original_name": "Helena Bonham Carter",
+        "popularity": 4.6101,
+        "profile_path": "/hJMbNSPJ2PCahsP3rNEU39C8GWU.jpg",
+        "cast_id": 285,
+        "character": "Marla Singer",
+        "credit_id": "631f0de8bd32090082733691",
+        "order": 2
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7470,
+        "known_for_department": "Acting",
+        "name": "Meat Loaf",
+        "original_name": "Meat Loaf",
+        "popularity": 1.9872,
+        "profile_path": "/1zkohpaG3my4qQAZGVgzgPuXwZ6.jpg",
+        "cast_id": 7,
+        "character": "Robert Paulson",
+        "credit_id": "52fe4250c3a36847f80149ff",
+        "order": 3
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7499,
+        "known_for_department": "Acting",
+        "name": "Jared Leto",
+        "original_name": "Jared Leto",
+        "popularity": 4.2955,
+        "profile_path": "/ca3x0OfIKbJppZh8S1Alx3GfUZO.jpg",
+        "cast_id": 286,
+        "character": "Angel Face",
+        "credit_id": "631f0e29ce9e91007f757d86",
+        "order": 4
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7471,
+        "known_for_department": "Acting",
+        "name": "Zach Grenier",
+        "original_name": "Zach Grenier",
+        "popularity": 2.4786,
+        "profile_path": "/fSyQKZO39sUsqY283GXiScOg3Hi.jpg",
+        "cast_id": 31,
+        "character": "Richard Chesler (Regional Manager)",
+        "credit_id": "52fe4250c3a36847f8014a55",
+        "order": 5
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7497,
+        "known_for_department": "Acting",
+        "name": "Holt McCallany",
+        "original_name": "Holt McCallany",
+        "popularity": 3.3165,
+        "profile_path": "/xHnvYcJv6YEku9pIg8LoDNHWQy.jpg",
+        "cast_id": 32,
+        "character": "The Mechanic",
+        "credit_id": "52fe4250c3a36847f8014a59",
+        "order": 6
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7498,
+        "known_for_department": "Acting",
+        "name": "Eion Bailey",
+        "original_name": "Eion Bailey",
+        "popularity": 3.6103,
+        "profile_path": "/3DW13W47cKk4LQZwS4EvRaNBoVu.jpg",
+        "cast_id": 33,
+        "character": "Ricky",
+        "credit_id": "52fe4250c3a36847f8014a5d",
+        "order": 7
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7472,
+        "known_for_department": "Acting",
+        "name": "Richmond Arquette",
+        "original_name": "Richmond Arquette",
+        "popularity": 1.7954,
+        "profile_path": "/7byGiVac0GjBSVD1h6ylZlVXZK6.jpg",
+        "cast_id": 34,
+        "character": "Intern at Hospital",
+        "credit_id": "52fe4250c3a36847f8014a61",
+        "order": 8
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7219,
+        "known_for_department": "Acting",
+        "name": "David Andrews",
+        "original_name": "David Andrews",
+        "popularity": 1.9796,
+        "profile_path": "/s5jEvhtGrYptw3Mmv7bejvcAKLv.jpg",
+        "cast_id": 35,
+        "character": "Thomas at Remaining Men Together",
+        "credit_id": "52fe4250c3a36847f8014a65",
+        "order": 9
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 1129738,
+        "known_for_department": "Acting",
+        "name": "George Maguire",
+        "original_name": "George Maguire",
+        "popularity": 0.7637,
+        "profile_path": "/pyKzJNkpjCA96ItVq93x1Y2YfYx.jpg",
+        "cast_id": 59,
+        "character": "Group Leader at Remaining Men Together",
+        "credit_id": "581fce4c92514168ad00899d",
+        "order": 10
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 1317693,
+        "known_for_department": "Acting",
+        "name": "Eugenie Bondurant",
+        "original_name": "Eugenie Bondurant",
+        "popularity": 1.0004,
+        "profile_path": "/9ULAELEKNha7VCJhRWoer58NcJe.jpg",
+        "cast_id": 60,
+        "character": "Weeping Woman - Onward and Upward",
+        "credit_id": "581fce7fc3a368555600847b",
+        "order": 11
+      }
+    ],
+    "crew": [
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7467,
+        "known_for_department": "Directing",
+        "name": "David Fincher",
+        "original_name": "David Fincher",
+        "popularity": 4.2772,
+        "profile_path": "/tpEczFclQZeKAiCeKZZ0adRvtfz.jpg",
+        "credit_id": "631f0289568463007bbe28a5",
+        "department": "Directing",
+        "job": "Director"
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7469,
+        "known_for_department": "Writing",
+        "name": "Jim Uhls",
+        "original_name": "Jim Uhls",
+        "popularity": 0.791,
+        "profile_path": "/uNkXdgsIdJF1xyj4BUSgHOfqjyb.jpg",
+        "credit_id": "56380f0cc3a3681b5c0200be",
+        "department": "Writing",
+        "job": "Screenplay"
+      }
+    ]
+  },
+  "videos": {
+    "results": [
+      {
+        "iso_639_1": "tr",
+        "iso_3166_1": "TR",
+        "name": "Fight Club Trailer HD",
+        "key": "_8WFzt_tKAA",
+        "site": "YouTube",
+        "size": 720,
+        "type": "Trailer",
+        "official": false,
+        "id": "533ec654c3a36854480003f0",
+        "published_at": "2009-08-17T17:39:06.000Z"
+      }
+    ]
+  }
+}

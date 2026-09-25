@@ -1,0 +1,310 @@
+{
+  "adult": false,
+  "backdrop_path": "/tlm8UkiQsitc8rSuIAscQDCnP8d.jpg",
+  "belongs_to_collection": {
+    "id": 2344,
+    "name": "Matrix [Seri]",
+    "poster_path": "/bV9qTVHTVf0gkW0j7p7M0ILD4pG.jpg",
+    "backdrop_path": "/bRm2DEgUiYciDw3myHuYFInD7la.jpg"
+  },
+  "budget": 63000000,
+  "genres": [
+    {
+      "id": 28,
+      "name": "Aksiyon"
+    },
+    {
+      "id": 878,
+      "name": "Bilim-Kurgu"
+    }
+  ],
+  "homepage": "",
+  "id": 603,
+  "imdb_id": "tt0133093",
+  "origin_country": [
+    "US"
+  ],
+  "original_language": "en",
+  "original_title": "The Matrix",
+  "overview": "Bir bilgisayar programcısı olan Thomas Anderson aynı zamanda Neo takma isimli çok usta bir bilgisayar korsanıdır. Ancak siyah takım elbiseli ve gözlüklü adamların yakın takibindedir. Bu takibin nedenini ise karşılaşacağı Morpheus'dan öğrenecektir. Neo, birden kendini Morpheus'un anlattıklarına güvenmek zorunda kaldığı büyük bir komplonun içinde bulacaktır. İçinde yaşadığımızı sandığımız bu dünya tamamiyle aldatıcıdır. Tüm insanlık aslında uzaydan gelen yaratıkların köleleridir. Neo, Trinity ve Morpheus'un da yardımıyla kendilerini bu düzeni yıkmaya adayan bir grubun içine katılır.",
+  "popularity": 48.6536,
+  "poster_path": "/dXNAPwY7VrqMAo51EKhhCJfaGb5.jpg",
+  "production_companies": [
+    {
+      "id": 79,
+      "logo_path": "/at4uYdwAAgNRKhZuuFX8ShKSybw.png",
+      "name": "Village Roadshow Pictures",
+      "origin_country": "US"
+    },
+    {
+      "id": 372,
+      "logo_path": null,
+      "name": "Groucho II Film Partnership",
+      "origin_country": ""
+    },
+    {
+      "id": 1885,
+      "logo_path": "/xlvoOZr4s1PygosrwZyolIFe5xs.png",
+      "name": "Silver Pictures",
+      "origin_country": "US"
+    },
+    {
+      "id": 174,
+      "logo_path": "/zhD3hhtKB5qyv7ZeL4uLpNxgMVU.png",
+      "name": "Warner Bros. Pictures",
+      "origin_country": "US"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "release_date": "1999-03-31",
+  "revenue": 463517383,
+  "runtime": 136,
+  "softcore": false,
+  "spoken_languages": [
+    {
+      "english_name": "English",
+      "iso_639_1": "en",
+      "name": "English"
+    }
+  ],
+  "status": "Released",
+  "tagline": "Gerçek dünyaya hoş geldin.",
+  "title": "Matrix",
+  "video": false,
+  "vote_average": 8.259,
+  "vote_count": 28789,
+  "credits": {
+    "cast": [
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 6384,
+        "known_for_department": "Acting",
+        "name": "Keanu Reeves",
+        "original_name": "Keanu Reeves",
+        "popularity": 8.9351,
+        "profile_path": "/8RZLOyYGsoRe9p44q3xin9QkMHv.jpg",
+        "cast_id": 34,
+        "character": "Neo",
+        "credit_id": "52fe425bc3a36847f80181c1",
+        "order": 0
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 2975,
+        "known_for_department": "Acting",
+        "name": "Laurence Fishburne",
+        "original_name": "Laurence Fishburne",
+        "popularity": 4.3893,
+        "profile_path": "/2GbXERENPpl5MmlqOLlPVaVtifD.jpg",
+        "cast_id": 21,
+        "character": "Morpheus",
+        "credit_id": "52fe425bc3a36847f801818d",
+        "order": 1
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 530,
+        "known_for_department": "Acting",
+        "name": "Carrie-Anne Moss",
+        "original_name": "Carrie-Anne Moss",
+        "popularity": 4.4371,
+        "profile_path": "/9zya72vRZYBQILfetACsnmCBgdj.jpg",
+        "cast_id": 22,
+        "character": "Trinity",
+        "credit_id": "52fe425bc3a36847f8018191",
+        "order": 2
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 1331,
+        "known_for_department": "Acting",
+        "name": "Hugo Weaving",
+        "original_name": "Hugo Weaving",
+        "popularity": 6.5295,
+        "profile_path": "/lSC8Et0PYi5zeQb3IpPkFje7hgR.jpg",
+        "cast_id": 23,
+        "character": "Agent Smith",
+        "credit_id": "52fe425bc3a36847f8018195",
+        "order": 3
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 9364,
+        "known_for_department": "Acting",
+        "name": "Gloria Foster",
+        "original_name": "Gloria Foster",
+        "popularity": 1.4143,
+        "profile_path": "/AriGXtC9fjBOia9Zr8CZjn4o3rx.jpg",
+        "cast_id": 24,
+        "character": "Oracle",
+        "credit_id": "52fe425bc3a36847f8018199",
+        "order": 4
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 532,
+        "known_for_department": "Acting",
+        "name": "Joe Pantoliano",
+        "original_name": "Joe Pantoliano",
+        "popularity": 3.2197,
+        "profile_path": "/3OHUI3nX4SYGGItDk3xqeIvWtIf.jpg",
+        "cast_id": 25,
+        "character": "Cypher",
+        "credit_id": "52fe425bc3a36847f801819d",
+        "order": 5
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 9372,
+        "known_for_department": "Acting",
+        "name": "Marcus Chong",
+        "original_name": "Marcus Chong",
+        "popularity": 1.3634,
+        "profile_path": "/q9HQttibTj2MoXVtLjq2kKqmPrE.jpg",
+        "cast_id": 26,
+        "character": "Tank",
+        "credit_id": "52fe425bc3a36847f80181a1",
+        "order": 6
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 7244,
+        "known_for_department": "Acting",
+        "name": "Julian Arahanga",
+        "original_name": "Julian Arahanga",
+        "popularity": 1.0582,
+        "profile_path": "/g2YkF3PWSJU1vTKuURBH0DOMblm.jpg",
+        "cast_id": 27,
+        "character": "Apoc",
+        "credit_id": "52fe425bc3a36847f80181a5",
+        "order": 7
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 9374,
+        "known_for_department": "Acting",
+        "name": "Matt Doran",
+        "original_name": "Matt Doran",
+        "popularity": 1.1539,
+        "profile_path": "/4HtMShAbsZ2AyFtq5z3bOVrvw2s.jpg",
+        "cast_id": 28,
+        "character": "Mouse",
+        "credit_id": "52fe425bc3a36847f80181a9",
+        "order": 8
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 9376,
+        "known_for_department": "Acting",
+        "name": "Belinda McClory",
+        "original_name": "Belinda McClory",
+        "popularity": 1.258,
+        "profile_path": "/wfTCwkIDJjH5k5DtuvcjP52PrLc.jpg",
+        "cast_id": 29,
+        "character": "Switch",
+        "credit_id": "52fe425bc3a36847f80181ad",
+        "order": 9
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 9378,
+        "known_for_department": "Acting",
+        "name": "Anthony Ray Parker",
+        "original_name": "Anthony Ray Parker",
+        "popularity": 1.0436,
+        "profile_path": "/k03O1ClFvGRSedUnK0sAjTkrogX.jpg",
+        "cast_id": 30,
+        "character": "Dozer",
+        "credit_id": "52fe425bc3a36847f80181b1",
+        "order": 10
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 9380,
+        "known_for_department": "Acting",
+        "name": "Paul Goddard",
+        "original_name": "Paul Goddard",
+        "popularity": 0.9913,
+        "profile_path": "/z6XP6Xhkh5ZE88gBOz2FnVQaKuf.jpg",
+        "cast_id": 31,
+        "character": "Agent Brown",
+        "credit_id": "52fe425bc3a36847f80181b5",
+        "order": 11
+      }
+    ],
+    "crew": [
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 9340,
+        "known_for_department": "Directing",
+        "name": "Lana Wachowski",
+        "original_name": "Lana Wachowski",
+        "popularity": 2.846,
+        "profile_path": "/4nE4ttPQBuw1virOz0LYT08c1Vm.jpg",
+        "credit_id": "6969712e4643f373c87f1c5f",
+        "department": "Directing",
+        "job": "Director"
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 9340,
+        "known_for_department": "Directing",
+        "name": "Lana Wachowski",
+        "original_name": "Lana Wachowski",
+        "popularity": 2.846,
+        "profile_path": "/4nE4ttPQBuw1virOz0LYT08c1Vm.jpg",
+        "credit_id": "6969718ca1d897ce25d6657e",
+        "department": "Writing",
+        "job": "Writer"
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 9339,
+        "known_for_department": "Directing",
+        "name": "Lilly Wachowski",
+        "original_name": "Lilly Wachowski",
+        "popularity": 1.9176,
+        "profile_path": "/rCScAjSpeKA19BLNR07MqNNeeTT.jpg",
+        "credit_id": "696ab513963c17f6a3094d04",
+        "department": "Writing",
+        "job": "Writer"
+      },
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 9339,
+        "known_for_department": "Directing",
+        "name": "Lilly Wachowski",
+        "original_name": "Lilly Wachowski",
+        "popularity": 1.9176,
+        "profile_path": "/rCScAjSpeKA19BLNR07MqNNeeTT.jpg",
+        "credit_id": "696ab52c7f6c9ab39b5a1110",
+        "department": "Directing",
+        "job": "Director"
+      }
+    ]
+  },
+  "videos": {
+    "results": []
+  }
+}

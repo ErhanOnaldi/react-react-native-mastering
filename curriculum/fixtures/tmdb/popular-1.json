@@ -1,0 +1,419 @@
+{
+  "page": 1,
+  "results": [
+    {
+      "adult": false,
+      "backdrop_path": "/qeQJx07rK2xm8SD2sJxFKhE7gs0.jpg",
+      "genre_ids": [
+        878,
+        28,
+        12
+      ],
+      "id": 969681,
+      "title": "Örümcek-Adam: Yepyeni Bir Gün",
+      "original_language": "en",
+      "original_title": "Spider-Man: Brand New Day",
+      "overview": "Artık onu hatırlamayan bir dünyada tam zamanlı olarak Örümcek Adamlık yapmak ve eski arkadaşlarının hayatlarına o olmadan devam ettiklerini görmenin yarattığı baskı, Peter Parker'da kontrol edemeyeceği bir değişimi tetikler. Ancak bu değişim; şehre ve sevdiklerine yönelik olan yeni bir tehdidi, yani kimsenin göremediği güçlü bir düşmanı durdurabilecek tek şey de olabilir.",
+      "popularity": 633.5085,
+      "poster_path": "/kYySrq73W9qzldhIebOGQImd4.jpg",
+      "release_date": "2026-07-29",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.86,
+      "vote_count": 2866
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/3icyRAqgakNcQn6aDVz9libFmBA.jpg",
+      "genre_ids": [
+        27,
+        878,
+        12
+      ],
+      "id": 1423191,
+      "title": "Resident Evil",
+      "original_language": "en",
+      "original_title": "Resident Evil",
+      "overview": "Uzak bir hastaneye paket götürmekle görevlendirilen talihsiz bir kurye, vardığında kendini aniden bir salgının tam ortasında bulur. Hayatta kalabilmek için mutasyona uğramış yaratık sürülerine karşı amansız bir mücadele vermek zorundadır.",
+      "popularity": 513.2853,
+      "poster_path": "/yXs3qdcTxteZnZZH78xvm7Q6iK2.jpg",
+      "release_date": "2026-09-16",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.291,
+      "vote_count": 441
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/b9q9VmbXDvJmTziRqkwdEmFdwhr.jpg",
+      "genre_ids": [
+        878,
+        9648,
+        53
+      ],
+      "id": 1101383,
+      "title": "Oak Caddesi'nin Sonu",
+      "original_language": "en",
+      "original_title": "The End of Oak Street",
+      "overview": "Gizemli bir kozmik olay Oak Caddesi’ni sıradan banliyö yaşamından koparıp tamamen bilinmeyen bir yere taşıdıktan sonra Platt ailesi, hayatta kalabilmelerinin tek yolunun birbirlerine sıkı sıkıya bağlı kalmak olduğunu keşfeder. Artık tanınmaz hale gelen çevrelerinde yollarını bulmaya çalışırken aile bağları, onların en büyük gücü ve tek sığınağı olacaktır.",
+      "popularity": 413.3113,
+      "poster_path": "/fqrxqGU4UQqYLumLLx7W0ewGl77.jpg",
+      "release_date": "2026-08-12",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.003,
+      "vote_count": 1485
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/viZqGq9TNvQ5uXSD4ahg2RpRONT.jpg",
+      "genre_ids": [
+        35,
+        12,
+        10751
+      ],
+      "id": 1204680,
+      "title": "Coyote Acme'ye Karşı",
+      "original_language": "en",
+      "original_title": "Coyote vs. Acme",
+      "overview": "Wile E. Coyote, Road Runner'ı yakalama girişimleri sırasında kullandığı ve sürekli bozularak kendisine zarar veren ürünler nedeniyle Acme Corporation şirketine karşı hukuki bir süreç başlatır. Coyote'un yasal mücadelesinde onu temsil eden avukat ile Acme'nin savunmasını yürüten şirket avukatı mahkemede karşı karşıya gelir.",
+      "popularity": 347.0415,
+      "poster_path": "/tiS1RDaTrPftGZ0yGNaUW5DLuir.jpg",
+      "release_date": "2026-08-20",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.544,
+      "vote_count": 507
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/iuylzRSllrGn7YB322kwKoOVMcq.jpg",
+      "genre_ids": [
+        12,
+        28,
+        14
+      ],
+      "id": 1368337,
+      "title": "Odyssey",
+      "original_language": "en",
+      "original_title": "The Odyssey",
+      "overview": "İthaka'nın efsanevi kralı Odysseus, Truva Savaşı'nın ardından evine dönmek üzere uzun ve tehlikeli bir yolculuğa çıkar. Yolculuğu boyunca tanrıların keyfi istekleriyle, mitolojik canavarlarla ve insanlığını kırılma noktasına kadar zorlayan çetin sınavlarla yüzleşmek zorunda kalır.",
+      "popularity": 333.221,
+      "poster_path": "/edC4JzDHJUoQddhbHlBNSU3RHPR.jpg",
+      "release_date": "2026-07-15",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.018,
+      "vote_count": 3892
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/o7Oy9Gbx1CCyaweL8xUhtMW4Puq.jpg",
+      "genre_ids": [
+        10749,
+        35
+      ],
+      "id": 1032863,
+      "title": "Aşk Hipotezi",
+      "original_language": "en",
+      "original_title": "The Love Hypothesis",
+      "overview": "New York Times çoksatan romanı Aşk Hipotezi'nden uyarlanan film, doktora öğrencisi Olive'ın, bölümünün en korkulan profesörü Adam Carlsen'ı ani bir dürtüyle öpmesiyle başlayan hikâyesini konu alıyor. İkisinin de ihtiyaç duyduğu sahte ilişki, zamanla kimyalarını sınayan ve belki de aşkın formülünü ortaya çıkarabilecek bir deneye dönüşüyor.",
+      "popularity": 273.1621,
+      "poster_path": "/oQTT50Kl65WdOatg5Zz2aXoXAPd.jpg",
+      "release_date": "2026-09-23",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.3,
+      "vote_count": 136
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/hpBGCnzOvdtQoMyE48gvwp2y5yx.jpg",
+      "genre_ids": [
+        28,
+        27,
+        878
+      ],
+      "id": 1375646,
+      "title": "Koloni",
+      "original_language": "ko",
+      "original_title": "군체",
+      "overview": "Biyoteknoloji profesörü Se-jeong, bir biyoteknoloji konferansına katılır; ancak hızla mutasyona uğrayan bir virüsün ortaya çıkmasıyla etkinlik kısa sürede felakete dönüşür. Salgın yayılıp enfekte olanlar dönüşmeye başlarken, yetkililer tüm tesisi karantinaya alır ve hayatta kalanlar giderek büyüyen tehditle içeride mahsur kalır.",
+      "popularity": 243.0215,
+      "poster_path": "/thK6glS5pklrlijsgSN6Hw9GLQK.jpg",
+      "release_date": "2026-05-21",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.1,
+      "vote_count": 874
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/iRIhPqqoUHiFBxn8oYf3gCQnaKk.jpg",
+      "genre_ids": [
+        28,
+        53
+      ],
+      "id": 1294189,
+      "title": "The Mongoose",
+      "original_language": "en",
+      "original_title": "The Mongoose",
+      "overview": "",
+      "popularity": 249.4488,
+      "poster_path": "/eSS5mvSG84UUuvtbHel5Yu3Wik4.jpg",
+      "release_date": "2026-10-29",
+      "softcore": false,
+      "video": false,
+      "vote_average": 0,
+      "vote_count": 0
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/e2QAGrEmbpmZpMymDRkDisJkvg9.jpg",
+      "genre_ids": [
+        28,
+        53
+      ],
+      "id": 1288445,
+      "title": "İsyan",
+      "original_language": "en",
+      "original_title": "Mutiny",
+      "overview": "Ünlü iş adamı Tibu'nun ölümünden sorumlu tutulduktan sonra kaçak duruma düşen eski polis Cole Reed, Tibu'nun gerçek katillerini bulmak ve adını temize çıkarmak için tehlikeli bir yolculuğa çıkar. Bir kargo gemisinde illegal işler peşindeki bir şebekeyi ortaya çıkaran Cole, hiç beklemediği bir komployla karşı karşıya gelir. Tibu'nun intikamını almak ve adaleti sağlamak isteyen Cole, hem masumları kurtaracak hem de kendi geçmişiyle yüzleşecektir.",
+      "popularity": 209.3601,
+      "poster_path": "/2iUs37uU9kKMxme1S08JlJ7RqJw.jpg",
+      "release_date": "2026-08-19",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.689,
+      "vote_count": 485
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/sbkkAtymJaH5UzExiK974uPzCY4.jpg",
+      "genre_ids": [
+        28,
+        53
+      ],
+      "id": 1482547,
+      "title": "Zip Wire",
+      "original_language": "en",
+      "original_title": "Zip Wire",
+      "overview": "",
+      "popularity": 173.7655,
+      "poster_path": "/cO7J0XSVKPlAjUCMWC7DVBn1Py2.jpg",
+      "release_date": "2026-08-31",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.6,
+      "vote_count": 14
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/c6BPbkO5Npt1OdwttAxCFo06wtH.jpg",
+      "genre_ids": [
+        10751,
+        14,
+        35,
+        12
+      ],
+      "id": 1108427,
+      "title": "Moana",
+      "original_language": "en",
+      "original_title": "Moana",
+      "overview": "Genç Moana, Okyanus'un çağrısına kulak verir ve halkına refahı geri getirmek için çıktığı unutulmaz bir yolculukta, kötü şöhretli yarı tanrı Maui ile birlikte ilk kez adası Motunui'nin resifinin ötesine açılır.",
+      "popularity": 162.0438,
+      "poster_path": "/AddecwRjKUqiRaztmZwxgCz6eHr.jpg",
+      "release_date": "2026-07-08",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.405,
+      "vote_count": 763
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/qjTqY5coNiz6sVtPng40IzltsoN.jpg",
+      "genre_ids": [
+        16,
+        10751,
+        35,
+        12
+      ],
+      "id": 1084244,
+      "title": "Oyuncak Hikayesi 5",
+      "original_language": "en",
+      "original_title": "Toy Story 5",
+      "overview": "Bonnie'nin hediye olarak aldığı bir Lilypad tablete takıntılı hale gelmesiyle birlikte, Buzz, Woody, Jessie ve diğer oyuncaklar için işler iyice karmaşıklaşır; zira artık oyun saatini tehdit eden yepyeni bir tehlikeyle mücadele etmek zorundadırlar.",
+      "popularity": 170.4058,
+      "poster_path": "/4LHyUPK4obqICeCt4rjhpQDOhJt.jpg",
+      "release_date": "2026-06-17",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.3,
+      "vote_count": 2284
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/8giIQcHpxgsPVP6c7aQtHl3txuh.jpg",
+      "genre_ids": [
+        28,
+        53
+      ],
+      "id": 1607127,
+      "title": "One Last Shot",
+      "original_language": "en",
+      "original_title": "One Last Shot",
+      "overview": "",
+      "popularity": 143.5208,
+      "poster_path": "/niQ4NBh2jqAf1hDZP5m6ReWFAb7.jpg",
+      "release_date": "2026-09-22",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.7,
+      "vote_count": 43
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/i65y7cMae36K0giN0GRaMjAHUru.jpg",
+      "genre_ids": [
+        10749,
+        53
+      ],
+      "id": 1440098,
+      "title": "Dayanılmaz Çekim",
+      "original_language": "es",
+      "original_title": "Enfrentados: Marfil",
+      "overview": "Güçlü bir İspanyol iş insanının kızı olan Marfil, kaçırılıp açıklama yapılmadan serbest bırakılınca New York'taki hayatı altüst olur. Babası, Sebastian Moore'u kızına koruma olarak tutar. Her anı birlikte geçirmek zorunda kalan ikili arasında, hiçbir şeyin göründüğü gibi olmadığı bir dünyada kaçınılmaz bir çekim oluşur. \"Culpables\" serisinin yazarı Mercedes Ron'un romanından uyarlanmıştır.",
+      "popularity": 143.0148,
+      "poster_path": "/qQQ7MPymZeyIRAMF32e0QFgcV0f.jpg",
+      "release_date": "2026-09-09",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.655,
+      "vote_count": 116
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/dJTWIecL2vxsCRl5G0lRhPsfrhc.jpg",
+      "genre_ids": [
+        28,
+        53
+      ],
+      "id": 1228834,
+      "title": "The Fix",
+      "original_language": "en",
+      "original_title": "The Fix",
+      "overview": "",
+      "popularity": 155.2676,
+      "poster_path": "/yopXjun3ICFfJci2ukcEzceZjUs.jpg",
+      "release_date": "2026-09-10",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.179,
+      "vote_count": 28
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/rZfmzpixLKLR3Hg2u0WgC7XLFl8.jpg",
+      "genre_ids": [
+        27,
+        53
+      ],
+      "id": 1339713,
+      "title": "Saplantı",
+      "original_language": "en",
+      "original_title": "Obsession",
+      "overview": "​Hoşlandığı kızın kalbini kazanmak için gizemli \"Tek Dilek Söğüdü\"nü (One Wish Willow) kıran umutsuz bir romantik, tam da dilediği şeye kavuşur; ancak çok geçmeden bazı arzuların karanlık ve tekinsiz bir bedeli olduğunu keşfeder.",
+      "popularity": 143.1283,
+      "poster_path": "/nriiXc6VbD6qWBj7INOElJbX8mp.jpg",
+      "release_date": "2026-05-13",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.195,
+      "vote_count": 5704
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/dNKFETDDujxm2PUN873Jwiw5VML.jpg",
+      "genre_ids": [
+        27,
+        14,
+        9648
+      ],
+      "id": 1232569,
+      "title": "Pinokyo: Kanlı Masal",
+      "original_language": "en",
+      "original_title": "Pinocchio: Unstrung",
+      "overview": "Genç bir çocuk olan James, büyükbabası Geppetto'yu ziyarete gider. Geppetto, ona en iyi arkadaşı olması için görünüşte sihirli bir tahta kukla olan Pinokyo'yu tanıştırır. Ancak James, Pinokyo'nun saf ve dünyadan habersiz doğasının farkında değildir. Onu dış dünyayla tanıştırması, Pinokyo'nun \"kötü\" olarak gördüğü her şeyi ortadan kaldırmak için kanlı bir mücadeleye girişmesine yol açar.",
+      "popularity": 130.591,
+      "poster_path": "/mIiKQtiyM6pMb9COlUzmL3Pi7oT.jpg",
+      "release_date": "2026-07-22",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.6,
+      "vote_count": 108
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/d1n2ySWSanU34eEsluRjfrjRq52.jpg",
+      "genre_ids": [
+        35,
+        27,
+        10749
+      ],
+      "id": 1240889,
+      "title": "Miyazma Kampında Ergenlik Arzuları ve Ölüm",
+      "original_language": "en",
+      "original_title": "Teenage Sex and Death at Camp Miasma",
+      "overview": "",
+      "popularity": 125.7916,
+      "poster_path": "/c07S1wCUJGzpDcSeUf34rWaISiZ.jpg",
+      "release_date": "2026-08-06",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.344,
+      "vote_count": 180
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/yjK3ardrgdS8suZG8KMU82Q7U38.jpg",
+      "genre_ids": [
+        10749
+      ],
+      "id": 1285366,
+      "title": "愛のぬくもり",
+      "original_language": "ja",
+      "original_title": "愛のぬくもり",
+      "overview": "",
+      "popularity": 95.9371,
+      "poster_path": "/3r0O6BW9USoZ9mteCVyNKMQriRL.jpg",
+      "release_date": "2024-07-06",
+      "softcore": false,
+      "video": false,
+      "vote_average": 5.7,
+      "vote_count": 8
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/k22XyPbce7zvzzf5OnT4uaY8ZD1.jpg",
+      "genre_ids": [
+        878,
+        18,
+        53
+      ],
+      "id": 1751701,
+      "title": "After Impact",
+      "original_language": "en",
+      "original_title": "After Impact",
+      "overview": "",
+      "popularity": 146.4213,
+      "poster_path": "/yzDuAQCY2n6zzOlBkn6JzhLhY3k.jpg",
+      "release_date": "2026-09-15",
+      "softcore": false,
+      "video": false,
+      "vote_average": 5.214,
+      "vote_count": 7
+    }
+  ],
+  "total_pages": 1001,
+  "total_results": 20001
+}

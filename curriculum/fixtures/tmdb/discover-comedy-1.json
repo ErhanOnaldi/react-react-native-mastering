@@ -1,0 +1,430 @@
+{
+  "page": 1,
+  "results": [
+    {
+      "adult": false,
+      "backdrop_path": "/viZqGq9TNvQ5uXSD4ahg2RpRONT.jpg",
+      "genre_ids": [
+        35,
+        12,
+        10751
+      ],
+      "id": 1204680,
+      "title": "Coyote Acme'ye Karşı",
+      "original_language": "en",
+      "original_title": "Coyote vs. Acme",
+      "overview": "Wile E. Coyote, Road Runner'ı yakalama girişimleri sırasında kullandığı ve sürekli bozularak kendisine zarar veren ürünler nedeniyle Acme Corporation şirketine karşı hukuki bir süreç başlatır. Coyote'un yasal mücadelesinde onu temsil eden avukat ile Acme'nin savunmasını yürüten şirket avukatı mahkemede karşı karşıya gelir.",
+      "popularity": 347.0415,
+      "poster_path": "/tiS1RDaTrPftGZ0yGNaUW5DLuir.jpg",
+      "release_date": "2026-08-20",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.544,
+      "vote_count": 507
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/o7Oy9Gbx1CCyaweL8xUhtMW4Puq.jpg",
+      "genre_ids": [
+        10749,
+        35
+      ],
+      "id": 1032863,
+      "title": "Aşk Hipotezi",
+      "original_language": "en",
+      "original_title": "The Love Hypothesis",
+      "overview": "New York Times çoksatan romanı Aşk Hipotezi'nden uyarlanan film, doktora öğrencisi Olive'ın, bölümünün en korkulan profesörü Adam Carlsen'ı ani bir dürtüyle öpmesiyle başlayan hikâyesini konu alıyor. İkisinin de ihtiyaç duyduğu sahte ilişki, zamanla kimyalarını sınayan ve belki de aşkın formülünü ortaya çıkarabilecek bir deneye dönüşüyor.",
+      "popularity": 273.1621,
+      "poster_path": "/oQTT50Kl65WdOatg5Zz2aXoXAPd.jpg",
+      "release_date": "2026-09-23",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.31,
+      "vote_count": 134
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/c6BPbkO5Npt1OdwttAxCFo06wtH.jpg",
+      "genre_ids": [
+        10751,
+        14,
+        35,
+        12
+      ],
+      "id": 1108427,
+      "title": "Moana",
+      "original_language": "en",
+      "original_title": "Moana",
+      "overview": "Genç Moana, Okyanus'un çağrısına kulak verir ve halkına refahı geri getirmek için çıktığı unutulmaz bir yolculukta, kötü şöhretli yarı tanrı Maui ile birlikte ilk kez adası Motunui'nin resifinin ötesine açılır.",
+      "popularity": 162.0438,
+      "poster_path": "/AddecwRjKUqiRaztmZwxgCz6eHr.jpg",
+      "release_date": "2026-07-08",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.405,
+      "vote_count": 763
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/qjTqY5coNiz6sVtPng40IzltsoN.jpg",
+      "genre_ids": [
+        16,
+        10751,
+        35,
+        12
+      ],
+      "id": 1084244,
+      "title": "Oyuncak Hikayesi 5",
+      "original_language": "en",
+      "original_title": "Toy Story 5",
+      "overview": "Bonnie'nin hediye olarak aldığı bir Lilypad tablete takıntılı hale gelmesiyle birlikte, Buzz, Woody, Jessie ve diğer oyuncaklar için işler iyice karmaşıklaşır; zira artık oyun saatini tehdit eden yepyeni bir tehlikeyle mücadele etmek zorundadırlar.",
+      "popularity": 170.4058,
+      "poster_path": "/4LHyUPK4obqICeCt4rjhpQDOhJt.jpg",
+      "release_date": "2026-06-17",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.344,
+      "vote_count": 2284
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/d1n2ySWSanU34eEsluRjfrjRq52.jpg",
+      "genre_ids": [
+        35,
+        27,
+        10749
+      ],
+      "id": 1240889,
+      "title": "Miyazma Kampında Ergenlik Arzuları ve Ölüm",
+      "original_language": "en",
+      "original_title": "Teenage Sex and Death at Camp Miasma",
+      "overview": "",
+      "popularity": 125.7916,
+      "poster_path": "/c07S1wCUJGzpDcSeUf34rWaISiZ.jpg",
+      "release_date": "2026-08-06",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.346,
+      "vote_count": 179
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/hjF1rzTDR7YvnJUcH2SfP48w492.jpg",
+      "genre_ids": [
+        27,
+        35,
+        53
+      ],
+      "id": 1477712,
+      "title": "Dondurmacı",
+      "original_language": "en",
+      "original_title": "Ice Cream Man",
+      "overview": "Huzurlu bir yaz günü, sakin bir kasaba. Gizemli bir dondurmacı ortaya çıkar ve çocuklara dondurma satmaya başlar. Bu dondurmaları yiyen çocuklar çok geçmeden bu sakin ve huzurlu kasabaya dehşeti yaşatacaktır.",
+      "popularity": 104.9721,
+      "poster_path": "/eiSbwkwkHO8FIVFQYjCFGwwifPx.jpg",
+      "release_date": "2026-08-03",
+      "softcore": false,
+      "video": false,
+      "vote_average": 4.56,
+      "vote_count": 75
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/yhGCxn4pYIQhK52g6JjM4bL9fVX.jpg",
+      "genre_ids": [
+        35,
+        18
+      ],
+      "id": 82976,
+      "title": "Les Novices",
+      "original_language": "fr",
+      "original_title": "Les Novices",
+      "overview": "",
+      "popularity": 126.3859,
+      "poster_path": "/4Ppq2oJPnEqSeyliPG9QbCHUL0q.jpg",
+      "release_date": "1970-04-01",
+      "softcore": false,
+      "video": false,
+      "vote_average": 4.8,
+      "vote_count": 13
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/kkcwhgSFd81QDlXo8ytrpHPQjhy.jpg",
+      "genre_ids": [
+        12,
+        16,
+        35,
+        10751,
+        14
+      ],
+      "id": 1315772,
+      "title": "Minyonlar ve Canavarlar",
+      "original_language": "en",
+      "original_title": "Minions & Monsters",
+      "overview": "Bu film, minyonların Hollywood'u nasıl fethettiği, film yıldızı olup her şeylerini kaybettikleri, dünyaya canavar saldıktan sonra yarattıkları kaostan dünyayı kurtarmak için nasıl bir araya geldiklerinin çılgın, saçma ve tamamen gerçek hikayesidir.",
+      "popularity": 93.9114,
+      "poster_path": "/hNXw1I4GmLCbSdbnduoR7SVY8Jv.jpg",
+      "release_date": "2026-06-24",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.549,
+      "vote_count": 1163
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/6TSxLmwT7j1ugtKi8NyMmdzWAGj.jpg",
+      "genre_ids": [
+        16,
+        12,
+        10751,
+        14,
+        35
+      ],
+      "id": 1185806,
+      "title": "Paw Patrol: Dino Filmi",
+      "original_language": "en",
+      "original_title": "PAW Patrol: The Dino Movie",
+      "overview": "Gizemli bir fırtınaya yakalanan PAW Patrol ekibi, gemilerinin rotadan çıkmasıyla dinozorların yaşadığı keşfedilmemiş tropik bir adaya acil iniş yapmak zorunda kalır. Burada, yıllardır adada mahsur kalan ve dinozorlar konusunda uzmanlaşan Rex ile tanışan yavrular, kendilerini şimdiye kadarki en büyük maceralarının içinde bulur. Ancak adanın huzuru, PAW Patrol’un ezeli rakibi Belediye Başkanı Humdinger‘ın doğal kaynakları ele geçirmek amacıyla başlattığı sorumsuz kazı çalışmalarıyla bozulur. Humdinger’ın farkında olmadan uyandırdığı dev yanardağ, tüm adayı ve üzerinde yaşayan dinozorları büyük bir tehlikenin eşiğine getirir. PAW Patrol ekibi, Rex ve dinozor dostlarıyla güçlerini birleştirerek hem adayı hem de canlıları kurtarmak için zamana karşı yarışır.",
+      "popularity": 88.3671,
+      "poster_path": "/g8Z3LC3EG9pgB1SNfDUEDPfk87o.jpg",
+      "release_date": "2026-07-23",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.989,
+      "vote_count": 134
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/g7Ccid5kuD7A8hXWlsQiNfwOxaD.jpg",
+      "genre_ids": [
+        28,
+        35
+      ],
+      "id": 1137844,
+      "title": "Mayday",
+      "original_language": "en",
+      "original_title": "Mayday",
+      "overview": "Bir ABD Deniz Kuvvetleri pilotu Soğuk Savaş sırasında çok gizli bir göreve çıkar ve düşman hattının ardında mahsur kalır. Kurtulmak için tek şansı eksantrik bir eski KGB ajanı ile iş birliği yapmaktır.",
+      "popularity": 76.4895,
+      "poster_path": "/hVXjX1jLZ1ljFSNGXpjJfbTUOa7.jpg",
+      "release_date": "2026-09-03",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.051,
+      "vote_count": 787
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/3jgATRIFenOrgNKEC9bFv5QqKGf.jpg",
+      "genre_ids": [
+        35,
+        53
+      ],
+      "id": 1599993,
+      "title": "Animales",
+      "original_language": "es",
+      "original_title": "Animales",
+      "overview": "",
+      "popularity": 83.2026,
+      "poster_path": "/9fbZdiOI9fRinl44mNm3CYgEtYR.jpg",
+      "release_date": "2026-02-05",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.28,
+      "vote_count": 50
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/vcZ3UUVmFNk90DBSrTBlTKCdbbE.jpg",
+      "genre_ids": [
+        35,
+        18,
+        53
+      ],
+      "id": 1130948,
+      "title": "Gül Budama",
+      "original_language": "en",
+      "original_title": "Rosebush Pruning",
+      "overview": "İspanya'daki bir villada, Amerikalı kardeşler Jack, Ed, Anna ve Robert, miras yoluyla elde ettikleri servetin ve yalnızlığın içinde yaşamaktadırlar. Jack kız arkadaşıyla birlikte yaşamak isteyince ve Ed annelerinin ölümünün ardındaki gerçeği ortaya çıkarınca, ailenin dokusu çözülmeye başlar.",
+      "popularity": 79.8226,
+      "poster_path": "/rsHEVjzxU8cxz1sm3vboj99daNv.jpg",
+      "release_date": "2026-04-23",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.1,
+      "vote_count": 55
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/nfNaAiiILjYRc2CKkId1ZfPTtlh.jpg",
+      "genre_ids": [
+        18,
+        10749,
+        35
+      ],
+      "id": 1408162,
+      "title": "விஸ்வநாத் & சன்ஸ்",
+      "original_language": "ta",
+      "original_title": "விஸ்வநாத் & சன்ஸ்",
+      "overview": "",
+      "popularity": 71.0974,
+      "poster_path": "/f5yXF2vBOxZcPxvw1P7kXXqOVFV.jpg",
+      "release_date": "2026-08-14",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.3,
+      "vote_count": 28
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/eTuPNfCR3hSUnDKm2zBATP4lJym.jpg",
+      "genre_ids": [
+        35,
+        27
+      ],
+      "id": 1405742,
+      "title": "Portal to Hell",
+      "original_language": "en",
+      "original_title": "Portal to Hell",
+      "overview": "",
+      "popularity": 71.7124,
+      "poster_path": "/xuXCPJZjmP2FuGG3U16sI1TYEdR.jpg",
+      "release_date": "2025-02-22",
+      "softcore": false,
+      "video": false,
+      "vote_average": 5.5,
+      "vote_count": 13
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/tK3QdOOrX4qEkmSlvrmc8cK7iOU.jpg",
+      "genre_ids": [
+        27,
+        35,
+        53
+      ],
+      "id": 1393326,
+      "title": "Hücredeki Hayalet",
+      "original_language": "id",
+      "original_title": "Ghost in the Cell",
+      "overview": "Kötü şöhretli bir hapishanede beliren görünmez bir güç, mahkûmları acımasızca öldürmeye başlar. Giderek artan bu vahşetin ortasında hayatta kalmak isteyen düşman çeteler ve yozlaşmış gardiyanlar, mecburen birlikte hareket etmek zorunda kalır.",
+      "popularity": 70.9935,
+      "poster_path": "/gF6Ijrq5bixh4qemCuroRwXtbBc.jpg",
+      "release_date": "2026-04-16",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.155,
+      "vote_count": 74
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/lgotja3xMoJZbynwHfcQcJAEMWH.jpg",
+      "genre_ids": [
+        16,
+        12,
+        35,
+        9648,
+        10751
+      ],
+      "id": 1084242,
+      "title": "Zootropolis 2",
+      "original_language": "en",
+      "original_title": "Zootopia 2",
+      "overview": "Dedektif Judy Hopps ve Nick Wilde, Zootropolis'e gelen ve memeli metropolünü alt üst eden gizemli bir sürüngenin karmaşık izini sürüyor.",
+      "popularity": 74.11,
+      "poster_path": "/xdvMX5L7bdonl2geaXL3laTCSr2.jpg",
+      "release_date": "2025-11-26",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.675,
+      "vote_count": 3455
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/nPLS4lsCl34nIIMb1MBYtHsd5hY.jpg",
+      "genre_ids": [
+        35,
+        10749
+      ],
+      "id": 26827,
+      "title": "Kim Bu Kız?",
+      "original_language": "en",
+      "original_title": "Who's That Girl",
+      "overview": "Haksız yere hapis yatan genç bir kadına yardım etmeye kalkınca hayatı altüst olan bir vergi avukatının hikayesi.",
+      "popularity": 48.9458,
+      "poster_path": "/2Yu6ciKKgSWIZAzUg4IrrifO23z.jpg",
+      "release_date": "1987-08-07",
+      "softcore": false,
+      "video": false,
+      "vote_average": 5.531,
+      "vote_count": 262
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/8Lq3f68f4WZpQrihDooNink8xJ7.jpg",
+      "genre_ids": [
+        10749,
+        35
+      ],
+      "id": 1685882,
+      "title": "மொத ராத்திரி",
+      "original_language": "ta",
+      "original_title": "மொத ராத்திரி",
+      "overview": "",
+      "popularity": 67.2515,
+      "poster_path": "/lZiTSLDLIkW9YS6CWo8uaXZMcO6.jpg",
+      "release_date": "2026-08-21",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.6,
+      "vote_count": 7
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/jJKZaTBNenlFclQyjrnvzkRmvWE.jpg",
+      "genre_ids": [
+        16,
+        10751,
+        12,
+        18,
+        35
+      ],
+      "id": 150540,
+      "title": "Ters Yüz",
+      "original_language": "en",
+      "original_title": "Inside Out",
+      "overview": "Küçük Riley için hayat, babasının San Francisco’da yeni bir işe başlamasıyla baştan aşağıya değişir. Orta-Batı’daki yaşamını geride bırakan Riley'ı şimdi yeni bir ev, okul ve arkadaşlar beklemektedir. Peki içindeki duyguları ona ne söyler? Neşe, Korku, Öfke, Tiksinti ve Üzüntü… Riley'nin zihninin içinde yaşayan, ona günlük hayatında tavsiyeler veren duyguları bu yeni hayata alışırken ufak bir kaosa neden olacaktır. Neşe, Riley’nin en önemli duygusudur ve onu hep pozitif tutmaya çalışır ama diğer duygular bu yeni hayatına uyum sağlama konusunda biraz şaşkındır.",
+      "popularity": 53.3345,
+      "poster_path": "/1EPfG2nVMhF5CDcAK0IeSsnBsVw.jpg",
+      "release_date": "2015-06-17",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.906,
+      "vote_count": 23919
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/by8z9Fe8y7p4jo2YlW2SZDnptyT.jpg",
+      "genre_ids": [
+        28,
+        35,
+        878
+      ],
+      "id": 533535,
+      "title": "Deadpool & Wolverine",
+      "original_language": "en",
+      "original_title": "Deadpool & Wolverine",
+      "overview": "Wade Wilson’ın bir paralı asker olarak geçirdiği günler ve Deadpool kimliği artık geride kalmıştır. O şimdi sivil hayatta varlık göstermek için çabalar. Wade, yeni hayatına alışmaya çalışırken, büyük bir tehlike ile karşı karşıya kalınca harekete geçmek zorunda kalır. Ancak bu tehlike ile tek başına baş etmesi zordur. Bu yüzden Wade en az kendisi kadar isteksiz olan Wolverine'i yardım etmesi için ikna etmeye çalışır.",
+      "popularity": 57.281,
+      "poster_path": "/fVr2X3jnoeLuZ2v0L1O8MOdOiSz.jpg",
+      "release_date": "2024-07-24",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.589,
+      "vote_count": 9496
+    }
+  ],
+  "total_pages": 1001,
+  "total_results": 20001
+}

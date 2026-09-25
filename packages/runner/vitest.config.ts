@@ -1,0 +1,10 @@
+import { defineProject } from 'vitest/config'
+
+export default defineProject({
+  test: {
+    name: 'runner',
+    include: ['test/**/*.test.ts'],
+    environment: 'node',
+    testTimeout: 120_000,
+  },
+})

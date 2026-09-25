@@ -1,0 +1,422 @@
+{
+  "page": 2,
+  "results": [
+    {
+      "adult": false,
+      "backdrop_path": "/jzBWExXacS33rMQ2zLBrqIVweyG.jpg",
+      "genre_ids": [
+        53,
+        28
+      ],
+      "id": 1386315,
+      "title": "Koşucu",
+      "original_language": "en",
+      "original_title": "The Runner",
+      "overview": "Londra’da başarılı bir avukat olan Maia Marten’ın hayatı, sabah koşusu sırasında gelen tek bir telefonla paramparça olur: Oğlu kaçırılmıştır. Onu geri alabilmek için koşmaya devam etmeli, verilen her acımasız emre itaat etmeli ve hiç kimseye güvenmemelidir; geçen her saniye, bir annenin çocuğunu kurtarmak için ne kadar ileri gidebileceğinin bir sınavıdır.",
+      "popularity": 104.3285,
+      "poster_path": "/bUVds6K00WjSvqKujwl8pv6NZ5s.jpg",
+      "release_date": "2026-09-03",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.768,
+      "vote_count": 563
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/z7lZgL5tzefTfhyRtouThFhsuUS.jpg",
+      "genre_ids": [
+        28,
+        878,
+        53
+      ],
+      "id": 1323244,
+      "title": "Rage of Stars",
+      "original_language": "en",
+      "original_title": "Rage of Stars",
+      "overview": "",
+      "popularity": 98.7237,
+      "poster_path": "/oLld47ZT1I3iecM3OWhIphohQUJ.jpg",
+      "release_date": "2026-08-06",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.66,
+      "vote_count": 191
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/bQdYYutvomoxfLQK8gTV8Z3qsmv.jpg",
+      "genre_ids": [
+        27,
+        9648,
+        53,
+        18
+      ],
+      "id": 1224993,
+      "title": "검은 수녀들",
+      "original_language": "ko",
+      "original_title": "검은 수녀들",
+      "overview": "",
+      "popularity": 109.963,
+      "poster_path": "/fT6SIrOyGwWZ4ZujHjRcabcxgfq.jpg",
+      "release_date": "2025-01-24",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.165,
+      "vote_count": 97
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/hjF1rzTDR7YvnJUcH2SfP48w492.jpg",
+      "genre_ids": [
+        27,
+        35,
+        53
+      ],
+      "id": 1477712,
+      "title": "Dondurmacı",
+      "original_language": "en",
+      "original_title": "Ice Cream Man",
+      "overview": "Huzurlu bir yaz günü, sakin bir kasaba. Gizemli bir dondurmacı ortaya çıkar ve çocuklara dondurma satmaya başlar. Bu dondurmaları yiyen çocuklar çok geçmeden bu sakin ve huzurlu kasabaya dehşeti yaşatacaktır.",
+      "popularity": 104.9721,
+      "poster_path": "/eiSbwkwkHO8FIVFQYjCFGwwifPx.jpg",
+      "release_date": "2026-08-03",
+      "softcore": false,
+      "video": false,
+      "vote_average": 4.61,
+      "vote_count": 77
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/bicMU6xVD5deVyKP2azpyx7xkmH.jpg",
+      "genre_ids": [
+        12,
+        53
+      ],
+      "id": 1263337,
+      "title": "Vahşinin Kalbi",
+      "original_language": "en",
+      "original_title": "Heart of the Beast",
+      "overview": "Özel Kuvvetler subayı James Belmont, içinde bulunduğu uçağın Alaska'nın zorlu coğrafyasına düşmesi sonucu hayatta kalmayı başarır. Yanında sadece eğitimli savaş köpeği Odin bulunan Belmont, dondurucu soğuklar, vahşi doğa şartları ve sınırlı kaynaklarla karşı karşıya kalır. Medeniyetten tamamen uzakta mahsur kalan ikili, bir yandan bölgenin çetin iklim koşullarına ve yırtıcılara karşı direnirken, diğer yandan da aralarındaki bağı ve askeri hayatta kalma becerilerini kullanarak kurtulmanın bir yolunu arar.",
+      "popularity": 104.7042,
+      "poster_path": "/1ApfSA8JTqeha3GTFEY8syV4auq.jpg",
+      "release_date": "2026-09-19",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8,
+      "vote_count": 37
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/8Tfys3mDZVp4tNoH2ktm06a0Tau.jpg",
+      "genre_ids": [
+        878,
+        12
+      ],
+      "id": 687163,
+      "title": "Kurtuluş Projesi",
+      "original_language": "en",
+      "original_title": "Project Hail Mary",
+      "overview": "Fen bilgisi öğretmeni Ryland Grace, evinden ışık yılları uzakta bir uzay gemisinde uyanır, kim olduğuna ya da oraya nasıl geldiğine dair hiçbir şey hatırlamaz. Hafızası yavaş yavaş yerine gelirken görevini de çözmeye başlar: Güneşin sönmesine neden olan gizemli maddenin sırrını çözmek. Dünyadaki her şeyi yok olmaktan kurtarmak için tüm bilimsel bilgisine ve sıra dışı fikirlerine başvurmak zorundadır. Ancak beklenmedik bir dostluk, bu görevi tek başına yapmak zorunda kalmayacağı anlamına gelecektir.",
+      "popularity": 99.541,
+      "poster_path": "/suFNqtGOi0BsBI3uJPKkDXCwgVI.jpg",
+      "release_date": "2026-03-15",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.64,
+      "vote_count": 7952
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/nkEhDomjmPHJSA4Tx8pxv0NlKEy.jpg",
+      "genre_ids": [
+        10749,
+        18
+      ],
+      "id": 1641629,
+      "title": "Sen+Ben - Dünyaya Karşı",
+      "original_language": "fr",
+      "original_title": "Toi+Moi - Seuls contre tous",
+      "overview": "İyi bir aileden gelen genç bir kadın olan Alma Lancaster, hukuk okuduğunu sanan ebeveynlerinden habersiz, film çekme hayalini gerçekleştirmek için kendine bir yıl vermiştir. Pek kimseyle bağı olmayan genç bir adam olan Vadim Arcadi ile çalışmak zorunda kaldığında, aralarında bir çekim kıvılcımlanır. Ama onları ayırmaya ve her şeyi ortaya çıkarmaya kararlı görünmez bir tehdit pusuda beklemektedir.",
+      "popularity": 100.5424,
+      "poster_path": "/oE2e64SPmGCpQzWruqeeOIV5Ijb.jpg",
+      "release_date": "2026-09-18",
+      "softcore": false,
+      "video": false,
+      "vote_average": 5.726,
+      "vote_count": 42
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/k3Nc57fdRkzleHjodta45mGJV2C.jpg",
+      "genre_ids": [
+        27,
+        53
+      ],
+      "id": 1469930,
+      "title": "Tumbal Proyek",
+      "original_language": "id",
+      "original_title": "Tumbal Proyek",
+      "overview": "",
+      "popularity": 92.5789,
+      "poster_path": "/wdOa8jWX8u1YNSlWyRvoNCc9y7S.jpg",
+      "release_date": "2026-05-13",
+      "softcore": false,
+      "video": false,
+      "vote_average": 3.9,
+      "vote_count": 6
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/7RyHsO4yDXtBv1zUU3mTpHeQ0d5.jpg",
+      "genre_ids": [
+        12,
+        878,
+        28
+      ],
+      "id": 299534,
+      "title": "Avengers: Endgame",
+      "original_language": "en",
+      "original_title": "Avengers: Endgame",
+      "overview": "Marvel Sinematik Evreni'nin dördüncü aşamasının zirve noktası olarak kabul edilen bu epik filmde, \"Avengers: Sonsuzluk Savaşı\" (2018) olaylarının hemen ardından başlar ve Thanos'un sonsuz taşları kullanarak evrenin yarısını yok etmesinin sonuçlarına odaklanır. Yenilmezler ekibinin hayatta kalan üyelerinin, kaybettikleri arkadaşlarını geri getirmek ve evreni kurtarmak için bir plan hazırlarlar. Tony Stark (Iron Man), Steve Rogers (Captain America), Natasha Romanoff (Black Widow), Bruce Banner (Hulk), Thor ve diğer karakterler, geçmişe dönerek Sonsuz Taşları toplamak için zaman yolculuğu yaparlar. Bu süreçte, eski anılarla yüzleşirler ve birbirleriyle olan bağlarını güçlendirirler. Zaman yolculuğu teması, filmde önemli bir rol oynar ve izleyicilere önceki Marvel filmlerine göndermeler yapılır. Filmin doruk noktası, Yenilmezler'in Thanos ile büyük bir savaşta karşılaşmasıdır. Tüm kahramanlar, kayıplarını telafi etmek ve dünyayı kurtarmak için bir araya gelirler.",
+      "popularity": 98.7212,
+      "poster_path": "/zx1uMVXSJrzYCA8KTpmeEBqBx66.jpg",
+      "release_date": "2019-04-24",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.2,
+      "vote_count": 28765
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/yhGCxn4pYIQhK52g6JjM4bL9fVX.jpg",
+      "genre_ids": [
+        35,
+        18
+      ],
+      "id": 82976,
+      "title": "Les Novices",
+      "original_language": "fr",
+      "original_title": "Les Novices",
+      "overview": "",
+      "popularity": 126.3859,
+      "poster_path": "/4Ppq2oJPnEqSeyliPG9QbCHUL0q.jpg",
+      "release_date": "1970-04-01",
+      "softcore": false,
+      "video": false,
+      "vote_average": 4.8,
+      "vote_count": 13
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/dqmMWNWfLnExDRpMtIMqI97GQFR.jpg",
+      "genre_ids": [
+        27,
+        9648,
+        878
+      ],
+      "id": 1083381,
+      "title": "Backrooms",
+      "original_language": "en",
+      "original_title": "Backrooms",
+      "overview": "Bir terapist, hastası gerçekliğin ötesindeki bir boyutta kaybolduktan sonra, onu kurtarmak için bilinmeyene doğru bir yolculuğa çıkmak zorunda kalır.",
+      "popularity": 89.9788,
+      "poster_path": "/pR7HAA2STN78NN7egkrp9DsKI7c.jpg",
+      "release_date": "2026-05-27",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.03,
+      "vote_count": 3398
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/wYtEvBmpBRXPdwGgr1gcWiwJSI7.jpg",
+      "genre_ids": [
+        28,
+        27,
+        878
+      ],
+      "id": 460458,
+      "title": "Resident Evil: Raccoon Şehri",
+      "original_language": "en",
+      "original_title": "Resident Evil: Welcome to Raccoon City",
+      "overview": "Bir zamanlar ilaç devi Umbrella Şirketi'nin hızla gelişen yuvası olan Raccoon Şehri, artık ölmekte olan bir orta batı kentidir. Şirket buradan ayrılırken ardında çorak topraklar bırakmıştır ve de yüzeyin altında yavaş yavaş büyüyen büyük bir kötülük vardır. Bu kötülük nihayet gün yüzüne çıktığında hayatta kalan bir grup insanın, Umbrella'nın ardındaki gerçeği keşfetmek ve geceyi sağ salim atlatmak için işbirliği yapması gerekecektir.",
+      "popularity": 99.0094,
+      "poster_path": "/qSzvsqocllBxjcgFY725zfr5dSU.jpg",
+      "release_date": "2021-11-24",
+      "softcore": false,
+      "video": false,
+      "vote_average": 5.932,
+      "vote_count": 2804
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/kkcwhgSFd81QDlXo8ytrpHPQjhy.jpg",
+      "genre_ids": [
+        12,
+        16,
+        35,
+        10751,
+        14
+      ],
+      "id": 1315772,
+      "title": "Minyonlar ve Canavarlar",
+      "original_language": "en",
+      "original_title": "Minions & Monsters",
+      "overview": "Bu film, minyonların Hollywood'u nasıl fethettiği, film yıldızı olup her şeylerini kaybettikleri, dünyaya canavar saldıktan sonra yarattıkları kaostan dünyayı kurtarmak için nasıl bir araya geldiklerinin çılgın, saçma ve tamamen gerçek hikayesidir.",
+      "popularity": 93.9114,
+      "poster_path": "/hNXw1I4GmLCbSdbnduoR7SVY8Jv.jpg",
+      "release_date": "2026-06-24",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.549,
+      "vote_count": 1164
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/mDfJG3LC3Dqb67AZ52x3Z0jU0uB.jpg",
+      "genre_ids": [
+        12,
+        28,
+        878
+      ],
+      "id": 299536,
+      "title": "Avengers: Sonsuzluk Savaşı",
+      "original_language": "en",
+      "original_title": "Avengers: Infinity War",
+      "overview": "Kaptan Amerika ve Iron Man'in arasında yaşanan olayların ardından bölünen kahramanlarımız, birbirlerinden uzaklara savrulurlar. Hepsi kendi yandaşlarıyla dünyayı korumaya çalışmaktadır. Ancak dünyanın kaderi bir kez daha tehlikeye girer. Sınırsız bir güç kaynağı olan sonsuzluk taşlarının peşine düşen Thanos, dünyanın gördüğü en büyük tehdittir. İnsanlığın kaderi bir kez daha, insanlık için savaşmaya ant içmiş kahramanlarımız elindedir. Hiçbir süper kahramanın tek başına yenemeyeceği büyüklükteki bu tehdit için ekipler birleşmeli ve tehdide tüm güçleriyle karşı koymalıdır...",
+      "popularity": 86.8185,
+      "poster_path": "/7FQTJyrvhUp9oYDhHgujWRlxUES.jpg",
+      "release_date": "2018-04-25",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.243,
+      "vote_count": 32973
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/iZLqwEwUViJdSkGVjePGhxYzbDb.jpg",
+      "genre_ids": [
+        878,
+        53
+      ],
+      "id": 755898,
+      "title": "Dünyalar Savaşı",
+      "original_language": "en",
+      "original_title": "War of the Worlds",
+      "overview": "Bilim kurgu türünde dönüm noktası sayılan aynı isimli kitabın bu yepyeni yorumunda devasa bir istila gerçekleşmek üzere. Günümüz teknoloji, gözetim ve mahremiyet temalarının işlendiğ heyecan verici bu dünya dışı macera için ünlü aktris Eva Longoria, ikonik rapçi ve aktor Ice Cube, Michael O’Neill ve Iman Benson bir araya geliyor.",
+      "popularity": 88.2424,
+      "poster_path": "/iFWDt2eS91aK1TLxZT1rEZq3QB3.jpg",
+      "release_date": "2025-07-29",
+      "softcore": false,
+      "video": false,
+      "vote_average": 4.032,
+      "vote_count": 1145
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/zFCWfU2ViMIm38G1W8UsnSpqmWn.jpg",
+      "genre_ids": [
+        10749,
+        18
+      ],
+      "id": 1516698,
+      "title": "Son Gün Doğumu",
+      "original_language": "en",
+      "original_title": "The Last Sunrise",
+      "overview": "Sevilen romandan uyarlanan Son Gün Doğumu, kronik hastalığı olan üniversite öğrencisi Ry'ın, annesiyle Mallorca'ya yaptığı yaz tatilini konu alıyor. Ry, beklenmedik bir şekilde Julián'a âşık olup anı yaşamaya başlasa da kötüleşen durumu ve uzun süredir saklanan aile sırları, yaz bitmeden her şeyi altüst edebilecek bir tehdit oluşturur.",
+      "popularity": 83.5683,
+      "poster_path": "/xqqbvvvdwg2t5g1dK23bCTNk4yX.jpg",
+      "release_date": "2026-08-26",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.817,
+      "vote_count": 191
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/6TSxLmwT7j1ugtKi8NyMmdzWAGj.jpg",
+      "genre_ids": [
+        16,
+        12,
+        10751,
+        14,
+        35
+      ],
+      "id": 1185806,
+      "title": "Paw Patrol: Dino Filmi",
+      "original_language": "en",
+      "original_title": "PAW Patrol: The Dino Movie",
+      "overview": "Gizemli bir fırtınaya yakalanan PAW Patrol ekibi, gemilerinin rotadan çıkmasıyla dinozorların yaşadığı keşfedilmemiş tropik bir adaya acil iniş yapmak zorunda kalır. Burada, yıllardır adada mahsur kalan ve dinozorlar konusunda uzmanlaşan Rex ile tanışan yavrular, kendilerini şimdiye kadarki en büyük maceralarının içinde bulur. Ancak adanın huzuru, PAW Patrol’un ezeli rakibi Belediye Başkanı Humdinger‘ın doğal kaynakları ele geçirmek amacıyla başlattığı sorumsuz kazı çalışmalarıyla bozulur. Humdinger’ın farkında olmadan uyandırdığı dev yanardağ, tüm adayı ve üzerinde yaşayan dinozorları büyük bir tehlikenin eşiğine getirir. PAW Patrol ekibi, Rex ve dinozor dostlarıyla güçlerini birleştirerek hem adayı hem de canlıları kurtarmak için zamana karşı yarışır.",
+      "popularity": 88.3671,
+      "poster_path": "/g8Z3LC3EG9pgB1SNfDUEDPfk87o.jpg",
+      "release_date": "2026-07-23",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.989,
+      "vote_count": 134
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/g7Ccid5kuD7A8hXWlsQiNfwOxaD.jpg",
+      "genre_ids": [
+        28,
+        35
+      ],
+      "id": 1137844,
+      "title": "Mayday",
+      "original_language": "en",
+      "original_title": "Mayday",
+      "overview": "Bir ABD Deniz Kuvvetleri pilotu Soğuk Savaş sırasında çok gizli bir göreve çıkar ve düşman hattının ardında mahsur kalır. Kurtulmak için tek şansı eksantrik bir eski KGB ajanı ile iş birliği yapmaktır.",
+      "popularity": 76.4895,
+      "poster_path": "/hVXjX1jLZ1ljFSNGXpjJfbTUOa7.jpg",
+      "release_date": "2026-09-03",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.051,
+      "vote_count": 787
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/c4U96GrPRfnNrS01mBtqnocvlLJ.jpg",
+      "genre_ids": [
+        80,
+        28,
+        53
+      ],
+      "id": 1621552,
+      "title": "El Chapo ile Yüz Yüze",
+      "original_language": "es",
+      "original_title": "La captura",
+      "overview": "Vardiyasının son saatlerindeki iki Meksikalı polis memurunun, rutin bir trafik kontrolünde durdurdukları kişinin dünyaca ünlü kartel lideri Joaquín “El Chapo” Guzmán olduğunu fark etmesiyle kontrolden çıkan gerilim dolu hayatta kalma mücadelesini anlatır",
+      "popularity": 82.2798,
+      "poster_path": "/iwCeOpuBtuTP1kLosqgniey5OvX.jpg",
+      "release_date": "2026-08-21",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.799,
+      "vote_count": 798
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/flxau5Iu7bChQHsESqvGZ3FQRaI.jpg",
+      "genre_ids": [
+        878,
+        53
+      ],
+      "id": 1275779,
+      "title": "İfşa Günü",
+      "original_language": "en",
+      "original_title": "Disclosure Day",
+      "overview": "Uzaylı varlığına dair gizli verileri ifşa eden bir siber güvenlik uzmanı, dev bir şirketin hedefi haline gelerek kaçmak zorunda kalır. Garip fenomenlerle karşılaşan bir meteorologla güçlerini birleştiren ikili, insanlığın kavrayışının ötesindeki bu gerçeği kanıtlamak için tehlikeli bir mücadeleye girişir.",
+      "popularity": 82.3737,
+      "poster_path": "/1nzGfDErOkwsWfArtnVRaEVrkKa.jpg",
+      "release_date": "2026-06-10",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.475,
+      "vote_count": 3422
+    }
+  ],
+  "total_pages": 1001,
+  "total_results": 20001
+}
