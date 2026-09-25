@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -7,7 +9,8 @@ import { Button, buttonVariants } from '@project/src/components/ui/button'
 import { Card } from '@project/src/components/ui/card'
 import { Input } from '@project/src/components/ui/input'
 import { Skeleton } from '@project/src/components/ui/skeleton'
-import css from '@project/src/index.css?raw'
+
+const css = readFileSync(join(process.env.RM_PROJECT_DIR!, 'src/index.css'), 'utf8')
 
 describe('Sinema UI kit', () => {
   it('cn koşullu class’ları ve padding çakışmasını çözer', () => {
