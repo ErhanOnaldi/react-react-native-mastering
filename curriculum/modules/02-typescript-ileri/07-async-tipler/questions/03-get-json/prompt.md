@@ -1,0 +1,1 @@
+TMDB test sunucusu Bearer başlığı bekler. `getJson<T>(url: string, token: string): Promise<T>` yaz: `fetch` isteğine `Authorization: Bearer <token>` ekle, `response.ok` değilse `Error('TMDB isteği başarısız: <status>')` fırlat, başarılı JSON'u `T` olarak döndür. Bu generic bir **tip iddiasıdır**; JSON'u gerçekten doğruladığını söyleme. Testte 550 = `Dövüş Kulübü`.

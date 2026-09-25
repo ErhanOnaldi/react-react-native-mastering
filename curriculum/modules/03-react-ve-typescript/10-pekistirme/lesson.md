@@ -1,5 +1,5 @@
 ---
-title: Pekiştirme: film tarayıcısı
+title: 'Pekiştirme: film tarayıcısı'
 minutes: 9
 kind: practice
 ---

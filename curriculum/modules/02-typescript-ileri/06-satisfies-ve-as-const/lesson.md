@@ -1,5 +1,5 @@
 ---
-title: Config sözleşmesini koru
+title: "Config sözleşmesini koru"
 minutes: 8
 kind: concept
 ---

@@ -1,5 +1,5 @@
 ---
-title: Anahtarları ve değerleri türet
+title: "Anahtarları ve değerleri türet"
 minutes: 8
 kind: concept
 ---

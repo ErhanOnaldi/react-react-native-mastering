@@ -34,6 +34,21 @@ export function BrandTitle() {
 
 Dark modda `.dark` kapsamında değişken değeri verebilir veya açıkça `dark:bg-*` yazabilirsin. Bir görünümde hangi yaklaşımın geçerli olduğunu belirgin tut.
 
+## Token ne zaman gerekli?
+
+Tek bir kartın kenar boşluğu için `p-4` yeterli. Aynı marka rengini Button, Badge ve başlık paylaşınca `brand` token'ı anlam kazanır. `--color-brand-700` değerini tek yerde değiştirip bütün kullanım yerlerini güncelleyebilirsin. `--font-display` da `font-display` class'ına dönüşür; font ailesinin ayrıntısı bileşene sızmaz.
+
+Gerçekten yeni bir yardımcı class gerekirse v4 CSS'te tanımlarsın:
+
+```css title="src/index.css"
+@utility poster-frame {
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+```
+
+Bu örnek ancak poster alanının aynı iki kararı birçok yerde tekrarlandığında yararlıdır. Tema token'ı değeri adlandırır, utility ise bir veya birkaç CSS bildirimini adlandırır. İkisini her küçük CSS satırı için oluşturmak yerine ihtiyaca göre seç.
+
 :::mistake[Sık hata]
 `bg-brand-700` bir hex kod değildir; `@theme` içindeki `--color-brand-700` adından üretilir.
 :::

@@ -1,5 +1,5 @@
 ---
-title: Promise’in tipi ve ağdaki gerçek
+title: "Promise’in tipi ve ağdaki gerçek"
 minutes: 9
 kind: concept
 ---

@@ -1,5 +1,5 @@
 ---
-title: İstek durumunu tek modelde tut
+title: "İstek durumunu tek modelde tut"
 minutes: 8
 kind: concept
 ---

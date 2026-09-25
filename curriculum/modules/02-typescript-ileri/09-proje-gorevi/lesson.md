@@ -1,5 +1,5 @@
 ---
-title: Sinema tip sözleşmesini büyüt
+title: "Sinema tip sözleşmesini büyüt"
 minutes: 10
 kind: project
 ---

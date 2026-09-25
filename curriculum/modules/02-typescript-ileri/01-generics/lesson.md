@@ -1,5 +1,5 @@
 ---
-title: Generics: aynı kabuk, farklı veri
+title: "Generics: aynı kabuk, farklı veri"
 minutes: 8
 kind: concept
 ---

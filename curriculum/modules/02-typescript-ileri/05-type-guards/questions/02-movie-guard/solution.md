@@ -1,1 +1,6 @@
-Guard gövdesi gerçekten kontrol yapmalı; yanlış yazılmış `value is MovieBrief` imzası tip sistemine yanlış söz verir. Bu örnek yalnız üç alanı doğrular. Tam TMDB cevabını elle kontrol etmenin yükü, ileride Zod ihtiyacını doğuracak.
+## Neden böyle?
+
+- **Alternatif:** `as MovieBrief` ile zorlamak hiç runtime kontrolü yapmaz.
+- **Tuzak:** Guard imzası tek başına kanıt değildir; gövde yanlışsa 401 verisi içeri sızar.
+- **Sektörde:** Küçük guard’lar sınırda kritik birkaç alanı korumak için uygundur.
+- **Sonraki adım:** Tam JSON doğrulamasını 15. modülde Zod şemasıyla yapacaksın.

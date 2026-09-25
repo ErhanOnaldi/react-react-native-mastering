@@ -1,0 +1,1 @@
+Sinema'daki posterler telefonda iki, daha geniş alanda üç ve dört sütuna ayrılmalı. `PosterGrid({ movies })` bir `<section aria-label="Filmler">` içinde her filmi `<article key={movie.id}>` olarak render etsin. Section'da `grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4`; kartlarda `min-w-0` olsun. Önizleme penceresini daraltıp genişlet.

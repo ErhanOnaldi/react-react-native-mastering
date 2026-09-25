@@ -1,5 +1,5 @@
 ---
-title: Sinema: tipler ve formatlar
+title: "Sinema: tipler ve formatlar"
 minutes: 8
 kind: project
 ---
@@ -19,5 +19,14 @@ Sinema başlığı çalışıyor ama gerçek TMDB listesini bağlayınca kartlar
 Projede her görevin `prompt.md` dosyasındaki export adını ve yolu aynen kullan. `pnpm typecheck` tipleri kontrol eder; görev testleri davranışı da kontrol eder.
 :::
 
-## Sektörde
-Dış veri modeli ile gösterim kuralını ayrı tutmak yeni ekranlarda aynı kararı tekrar vermemeni sağlar.
+## Uygulama sırası
+Önce iki farklı fixture'daki liste öğelerini karşılaştır. `movie-550.json` detay cevabını liste tipi için temel alma; orada `genres` gibi daha zengin alanlar var. `src/types/tmdb.ts` içinde `Movie` ve `MovieListResponse` adlarını export et. `poster_path` ile `backdrop_path` nullable, `release_date` ise boş olabilen string olsun.
+
+Sonra `src/lib/format.ts` içinde üç fonksiyonu yaz. `formatVote` sıfırda “Henüz oy yok” desin; diğer puanları bir ondalıkla göstersin. `releaseYear` boş tarihi boş bıraksın; UI gerekirse kendi mesajını seçebilir. `formatDate` aynı boş tarihe “Tarih yok” desin ve dolu tarihi Türkçe uzun biçimde göstersin. Bu iki boş tarih kararı farklı kullanım bağlamları içindir.
+
+## Deneyerek bitir
+Önce `pnpm typecheck`, ardından platformdaki proje testlerini çalıştır. Tipler doğru olsa bile `8` için `"8"` dönmek testten kalır; kullanıcıya `"8.0"` göstermek istiyoruz. Tarih gününü farklı saat dilimlerinde korumak için biçimlendirmede UTC belirt.
+
+:::sector
+Ortak tip ve biçimlendirme dosyaları sonraki modüllerin temelidir. Kartları henüz yazmıyoruz; önce onları güvenle besleyecek sözleşmeyi kuruyoruz.
+:::

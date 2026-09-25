@@ -1,5 +1,5 @@
 ---
-title: Var olan tipten yeni tip
+title: "Var olan tipten yeni tip"
 minutes: 9
 kind: concept
 ---

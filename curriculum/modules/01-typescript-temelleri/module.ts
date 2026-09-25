@@ -3,7 +3,8 @@ import { defineModule } from '@rm/content/define'
 export default defineModule({
   title: 'TypeScript temelleri',
   phase: 1,
-  summary: 'TMDB verisindeki boş tarih, null poster ve yazım hatalarını tiplerle görünür kılıp güvenli biçimlendirme yardımcıları yazıyoruz.',
+  summary:
+    'TMDB verisindeki boş tarih, null poster ve yazım hatalarını tiplerle görünür kılıp güvenli biçimlendirme yardımcıları yazıyoruz.',
   pain: `:::pain[Sinema'da sessiz hata]
 Trend listesindeki bir filmin \`release_date\` alanı boş. \`relese_date\` yazım hatası JavaScript'te sessizce \`undefined\` döner; \`poster_path\` null geldiğinde \`.startsWith()\` sayfayı çökertir. Bunu testte görecek, sonra TypeScript ile olası durumları kodun içinde görünür kılacaksın.
 :::`,

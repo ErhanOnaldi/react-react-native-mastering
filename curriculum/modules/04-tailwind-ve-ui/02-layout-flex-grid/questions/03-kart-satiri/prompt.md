@@ -1,0 +1,1 @@
+Izgara artık responsive; uzun film başlığı puanı aşağı itiyor. `MovieRow` içinde başlık ve puanı bir `<div>` içine al. Bu div `flex items-center justify-between gap-2`, başlık `min-w-0 truncate`, puan `shrink-0` taşısın. `title` ve `score` props'larını göster. Önizlemede uzun başlığı dene.

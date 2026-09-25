@@ -1,0 +1,1 @@
+Discriminated union, ayrı `loading`, `data`, `error` değişkenlerinin izin verdiği tutarsız kombinasyonları kaldırır. Guard'lar `status` kontrolünü tekrar etmek yerine daraltmayı paylaşır. Sonraki React modülünde başarı dalı film kartına, hata dalı hata mesajına dönüşecek.

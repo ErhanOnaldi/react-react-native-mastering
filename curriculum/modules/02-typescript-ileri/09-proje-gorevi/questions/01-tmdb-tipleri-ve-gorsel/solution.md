@@ -1,0 +1,1 @@
+`MovieDetails` ile `Movie` arasındaki farkı kopyalayarak değil, `Omit` ile kur. `credits` ve `videos` opsiyonel çünkü her detay isteğinde eklenmez. `posterUrl` boş posterin görüntü URL'si olmadığını açıkça söyler; `undefined` UI'de placeholder seçmeyi kolaylaştırır. Bu tipler gerçek JSON'u doğrulamaz; 15. modülde şema eklenecek.

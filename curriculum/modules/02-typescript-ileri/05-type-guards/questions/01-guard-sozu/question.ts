@@ -1,3 +1,24 @@
 import { defineQuestion } from '@rm/content/define'
 
-export default defineQuestion({"type": "quiz", "title": "Type guard ne yapar?", "difficulty": "kolay", "concepts": ["ts.type-guards", "ts.unknown-any"], "question": "`isMovie(value): value is Movie` imzası tek başına neyi garanti eder?", "options": [{"text": "Çağıran koda daraltma sözü verir; gövdenin doğru kontrol yapması gerekir.", "correct": true, "explanation": "Doğru; yanlış guard da derlenebilir ama çalışma zamanında tehlikelidir."}, {"text": "Sunucunun doğru veri döndürmesini sağlar.", "explanation": "TypeScript sunucuyu değiştirmez."}, {"text": "Her JSON alanını otomatik kontrol eder.", "explanation": "Kontrolleri fonksiyon gövdesinde sen yazarsın."}]})
+export default defineQuestion({
+  type: 'quiz',
+  title: 'Type guard ne yapar?',
+  difficulty: 'kolay',
+  concepts: ['ts.type-guards', 'ts.unknown-any'],
+  question: '`isMovie(value): value is Movie` imzası tek başına neyi garanti eder?',
+  options: [
+    {
+      text: 'Çağıran koda daraltma sözü verir; gövdenin doğru kontrol yapması gerekir.',
+      correct: true,
+      explanation: 'Doğru; yanlış guard da derlenebilir ama çalışma zamanında tehlikelidir.',
+    },
+    {
+      text: 'Sunucunun doğru veri döndürmesini sağlar.',
+      explanation: 'TypeScript sunucuyu değiştirmez.',
+    },
+    {
+      text: 'Her JSON alanını otomatik kontrol eder.',
+      explanation: 'Kontrolleri fonksiyon gövdesinde sen yazarsın.',
+    },
+  ],
+})

@@ -1,1 +1,6 @@
-Bu `Omit` merdiveninin ikinci basamağı: üç sunucu alanı çıkarıldı, ardından `Partial` ile yama tipi üretildi. `Partial` güncelleme nesnesini tarif eder; gerçek güncellemeyi spread yapar. Sonraki React modülünde immutable güncelleme daha görünür olacak.
+## Neden böyle?
+
+- **Alternatif:** Taslak için tüm alanları yeniden yazmak yerine sunucunun ürettiği alanları `Omit` ile çıkarırsın.
+- **Tuzak:** `Partial` yalnız tipi değiştirir; güncelleme için `{ ...draft, ...patch }` ile yeni nesne gerekir.
+- **Sektörde:** Yama nesneleri formlarda ve API güncellemelerinde yaygındır.
+- **Sonraki adım:** React modülünde aynı immutable güncellemeyi state üzerinde yapacaksın.

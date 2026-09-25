@@ -33,6 +33,18 @@ Tailwind v4'te `.dark` class'ına bağlı varyantı CSS'te tanımlarsın:
 
 `bg-white text-slate-900 dark:bg-slate-900 dark:text-white` yazınca `.dark` üst öğeye eklendiğinde kart değişir. `dark:` kendi başına tema state'i yönetmez. Tema seçimini kalıcılaştırmak sonraki Hook derslerinin konusudur.
 
+## Kart ve düğme birlikte tepki versin
+
+Kartın üstüne gelindiğinde içindeki puanın vurgulanması için üst öğeye `group`, puana `group-hover:text-sky-700` ekleyebilirsin. Ama puan yalnız bu durumda görünür olmamalı: mobilde hover yok. Aynı nedenle favori düğmesinin seçili hali yalnız renkle anlatılmaz; `aria-pressed` gerçek durumu bildirir.
+
+```tsx check
+export function FavoriteToggle({ active }: { active: boolean }) {
+  return <button type="button" aria-pressed={active} className="focus-visible:outline-2">{active ? 'Favorilerden çıkar' : 'Favoriye ekle'}</button>
+}
+```
+
+Önizlemede önce fareyle, ardından Tab ile gezin. Focus class'ı varsa klavye odağı görülebilir; testte de bu class'ı ve `aria-pressed` durumunu ayrı ayrı kontrol edersin.
+
 :::sector
 Fare yanında Tab ve Enter ile dene. Testte piksel rengini değil, `disabled`, erişilebilir ad ve durum class'larını kontrol et.
 :::

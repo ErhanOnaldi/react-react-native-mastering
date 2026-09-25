@@ -1,1 +1,6 @@
-Discriminant olan `status`, başarılı dalda veriyi güvenle okutur. Tek nesnede `data?` ve `error?` kullanmak imkânsız durumları temsil ederdi. Buradaki `isSuccess` sonraki Sinema checkpoint'inde ortak yardımcıya dönüşecek.
+## Neden böyle?
+
+- **Alternatif:** Ayrı loading/data/error değişkenleri tutarsız kombinasyonlara izin verirdi.
+- **Tuzak:** `data?` ve `error?` içeren tek nesne, başarıda bile veri garantisi vermez.
+- **Sektörde:** Ayırt edici union istek durumları ve reducer action’ları için sık kullanılır.
+- **Sonraki adım:** Bir sonraki görevde `never` ile yeni durumların unutulmasını engelleyeceksin.

@@ -5,8 +5,11 @@ export function isSortField(value: string): value is SortField {
 }
 export function sortLabel(field: SortField): string {
   switch (field) {
-    case 'popularity': return 'Popülerlik'
-    case 'vote_average': return 'Puan'
-    case 'release_date': return 'Vizyon tarihi'
+    case 'popularity':
+      return 'Popülerlik'
+    case 'vote_average':
+      return 'Puan'
+    case 'release_date':
+      return 'Vizyon tarihi'
   }
 }

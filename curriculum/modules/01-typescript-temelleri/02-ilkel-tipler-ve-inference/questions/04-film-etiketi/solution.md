@@ -2,4 +2,10 @@
 
 Yerel `audience` değişkeninin tipi sağ taraftan çıkarılır. Gereksiz `: string` eklemek okunurluğa katkı sağlamaz. Bu metin daha sonra kart bileşenine taşınacak.
 
-`any` veya tip iddiası ile hatayı saklamak yerine verinin olası durumlarını modelle.
+## Alternatif ve dikkat
+
+Metni iki ayrı string birleştirmesiyle de kurabilirsin; şablon metin düz okunur. `toFixed` string döndürür, yeniden sayıya çevirmek sondaki sıfırı kaybettirir.
+
+## Sektörde ve devamında
+
+Aynı etiket daha sonra React kart bileşeninin props’undan üretilecek.

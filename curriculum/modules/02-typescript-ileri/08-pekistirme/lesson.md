@@ -1,5 +1,5 @@
 ---
-title: Tipleri birlikte kullan
+title: "Tipleri birlikte kullan"
 minutes: 9
 kind: practice
 ---
@@ -19,7 +19,7 @@ Arama, trend ve detay endpoint'leri aynı `fetch` fonksiyonuna veriliyor. Serbes
 Ardından `RemoteData<T>` için saf bir reducer yaz. Yükleme eylemi eski `data`yı taşımasın; başarı yalnızca veri, hata yalnızca mesaj içersin. Böylece önceki sayfadan kalan film yeni istekte yanlışlıkla görünmez.
 
 :::mistake
-`Omit` ve `Partial` ile türetilen tipler çalışma zamanındaki nesneyi değiştirmez. Reducer'da yeni nesneyi açıkça üret.
+`RemoteData` tipinin doğru olması eski veriyi kendiliğinden silmez. Reducer’da her geçiş için yeni durum nesnesini açıkça üret.
 :::
 
 :::sector

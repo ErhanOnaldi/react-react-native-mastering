@@ -1,0 +1,1 @@
+Önizlemede ilk filmin input’una not yazıp “Sırayı ters çevir” düğmesine bas. Starter index key kullandığı için not yanlış filmin yanında kalır. `SortableNotes` içinde film id’sini key yap. Sıralamayı yeni diziyle ters çevir; orijinal `movies` dizisini değiştirme. Input’lar uncontrolled kalabilir: amaç key kimliğinin DOM durumunu nasıl koruduğunu görmek.

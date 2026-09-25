@@ -29,6 +29,12 @@ export function MovieGrid({ movies }: { movies: Movie[] }) {
 
 `min-w-0`, uzun film adına rağmen kart içeriğinin küçülmesine izin verir; `truncate` taşan metni kısaltır. `key={movie.id}` filtreleme sırasında React'in doğru kartı korumasını sağlar.
 
+## İkinci bağlam: kartın içi
+
+Izgara dış kabı çözer; iç satır için aynı çözümü kopyalamak iyi sonuç vermez. Uzun `Yıldızlararası` başlığı ve sabit genişlikte puan yan yana durmalı. `flex items-center justify-between gap-2` ile iki öğeyi ayır, başlığa `min-w-0 truncate`, puana `shrink-0` ver. Bu, ikinci kod görevinde kuracağın düzen.
+
+Poster görseli geldiğinde kartlar farklı yükseklikte görünüyorsa görsel alanına sabit bir oran (`aspect-[2/3]`) verebilirsin. `poster_path` null olabildiği için boş poster yerini de aynı oranda tutmak ızgaranın sıçramasını önler.
+
 :::mistake[Sık hata]
 `sm:grid-cols-3` "küçük ekranda üç" demek değildir. Önce dar ekranın temel düzenini yaz, sonra geniş ekrana geç.
 :::

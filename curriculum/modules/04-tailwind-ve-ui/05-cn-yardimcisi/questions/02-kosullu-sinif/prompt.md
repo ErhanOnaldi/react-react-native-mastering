@@ -1,0 +1,1 @@
+Filtre sekmesinin class string'i `'tab ' + (active ? 'on' : '')` biçiminde büyüyor. `filterClass(active, compact)` fonksiyonunu `clsx` ile yaz. Her zaman `rounded-lg`; aktifken `bg-sky-700 text-white`, pasifken `bg-slate-100 text-slate-900`; compact iken `px-2 py-1`, değilken `px-4 py-2` döndürsün. Çıktı tek class string'i olmalı.

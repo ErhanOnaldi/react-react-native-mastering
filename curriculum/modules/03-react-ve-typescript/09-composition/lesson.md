@@ -16,7 +16,7 @@ Layout bileşeni yalnızca çerçeveyi yönetebilir; içerik `children` ile, öz
 ```tsx check
 import type { ReactNode } from 'react'
 function Card({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
-  return <article><div>{children}</div>{actions && <footer>{actions}</footer>}</article>
+  return <article><div>{children}</div>{actions == null ? null : <footer>{actions}</footer>}</article>
 }
 export default Card
 ```

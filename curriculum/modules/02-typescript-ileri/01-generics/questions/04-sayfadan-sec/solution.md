@@ -1,1 +1,6 @@
-İlk örnekte generic kabuk, ikinci örnekte ID kısıtı vardı; burada ikisi birleşiyor. `Paginated<T>` veri taşıma biçimidir, `findOnPage` bir davranıştır. Bunları ayrı tutmak kodu daha kolay yeniden kullanılır yapar.
+## Neden böyle?
+
+- **Alternatif:** Her endpoint için ayrı arama fonksiyonu yazmak aynı davranışı tekrar ederdi.
+- **Tuzak:** `T` kısıtsız olursa ID erişimi, `T` yerine yalnız `{id:number}` döndürülürse ek alanlar kaybolur.
+- **Sektörde:** API cevap kabuğu ile öğe davranışını ayrı modellemek client kodunu sadeleştirir.
+- **Sonraki adım:** İleride tipli endpoint haritasında bu kabuğu tekrar kullanacaksın.

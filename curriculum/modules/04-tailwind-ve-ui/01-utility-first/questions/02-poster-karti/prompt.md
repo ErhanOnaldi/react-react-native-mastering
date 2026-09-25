@@ -1,0 +1,1 @@
+Sinema'nın poster kartı şimdilik çıplak metin. `PosterTile` bileşeninde başlığı `<h2>`, puanı ayrı bir `<span>` içinde göster. Kök `<article>` `rounded-xl`, `border`, `p-4` class'larını; başlık `font-semibold`, puan `text-sm` class'ını alsın. Önizlemeyi açıp utility'leri tek tek değiştirerek farkı izle.

@@ -1,0 +1,1 @@
+Kart temel olarak `p-2` kullanıyor; tüketici `p-4` verince tek padding kararı kalmalı. `cn(...inputs)` fonksiyonunu `clsx` ve `tailwind-merge` ile yaz. `clsx`'in `ClassValue` tipini kullan. `cn('p-2', 'p-4')` → `p-4`; koşullu nesneler ve boş değerler çalışmalı. Bu saf fonksiyonu testler doğrudan sınar.

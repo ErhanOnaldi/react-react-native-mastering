@@ -30,6 +30,17 @@ Vite'ta `@tailwindcss/vite` eklentisi ve ana CSS'te `@import "tailwindcss";` kul
 
 Utility'ler küçük bir kartı hızlı kurar; on iki class yirmi düğmede tekrarlanınca yine kopyalama acısı doğar. Son derslerde bu kararları ortak Button'a taşıyacağız.
 
+## Önizlemede küçük bir deney
+
+Önce kartın `px-4` class'ını kaldır: metin kenara yapışır, dikey boşluk kalır. Sonra `py-2` class'ını kaldır: bu kez tersini görürsün. Böylece `p`, `px` ve `py` kısaltmalarının hangi eksene dokunduğunu ezberlemeden anlarsın. Bir class'ın nerede kullanıldığını JSX üzerinde görmek, ayrı CSS dosyasındaki seçici zincirini takip etme ihtiyacını azaltır.
+
+```ts check
+const sizes = { compact: 'px-2 py-1', regular: 'px-4 py-2' } as const
+const chosen = sizes.regular
+```
+
+Bu seçimde kaynakta iki **tam** class string'i var; Tailwind onları bulabilir. `px-${n}` gibi parça birleştirme ise kaynak taramasında tamamlanmış class olarak görünmez.
+
 :::sector
 Takımda tekrar eden tasarım kararını görünce ortak bileşene çıkar; tek kullanımlık görünümü gereksiz soyutlama ile saklama.
 :::

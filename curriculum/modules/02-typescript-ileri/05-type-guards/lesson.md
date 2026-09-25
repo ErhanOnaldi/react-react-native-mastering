@@ -1,5 +1,5 @@
 ---
-title: unknown veriye dar bir kapı
+title: "unknown veriye dar bir kapı"
 minutes: 8
 kind: concept
 ---

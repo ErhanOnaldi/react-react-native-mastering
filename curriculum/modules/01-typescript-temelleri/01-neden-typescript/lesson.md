@@ -27,5 +27,17 @@ void yil
 API'nin gerçekten `release_date` gönderdiğini TypeScript çalışma zamanında kontrol etmez. `poster_path: string | null` yazmak olasılığı anlatır; null durumunu kodda ele almak yine senin görevin. Gerçek API cevabını doğrulamaya ileride döneceğiz.
 :::
 
+## Hatanın yolunu izle
+Önce JS gözlüğüyle bak: `movie.relese_date` bilinmeyen alan olduğu için `undefined` üretir. Ardından `String(movie.relese_date)` yazarsan kartta doğrudan `"undefined"` görürsün. Bazen ilk satır çökmez; hata kullanıcıya ulaşan son satırda belirir. TypeScript nesne şeklini bildiğinde yanlış alanı tam yazdığın yerde işaretler.
+
+Null poster farklı bir sorundur. Alan adı doğrudur, ama değer iki biçimde gelebilir. `poster_path: string | null` yazınca derleyici, `.startsWith()` çağrısından önce null'ı ele almanı ister. Bu iki hata için tek bir sihirli çözüm yok: biri yazım hatası, diğeri gerçek verinin olası durumu.
+
+:::tip[Deneme]
+Bir alan adını bilerek yanlış yazdığında `pnpm typecheck` çıktısındaki dosya ve satıra bak. Hatanın kaynağını son kullanıcıdaki boş etiketle ilişkilendir.
+:::
+
+## Nerede durur?
+TypeScript tipleri JavaScript çıktısında bulunmaz. Sunucu yarın `release_date: null` gönderirse yazdığın `string` tipi sunucuyu durdurmaz. Bu yüzden tip sözleşmesi ile çalışma zamanı kontrolünü iki ayrı güvenlik katmanı olarak düşün. Bu modülde doğru sözleşmeyi ve güvenli kullanımı kuracağız; API doğrulamasını ihtiyaç büyüdüğünde ekleyeceğiz.
+
 ## Sektörde
 Tip kontrolü, yazım hatasını kullanıcı görmeden yakalar. API verisinin doğruluğu içinse ayrıca çalışma zamanı kontrolü gerekir.

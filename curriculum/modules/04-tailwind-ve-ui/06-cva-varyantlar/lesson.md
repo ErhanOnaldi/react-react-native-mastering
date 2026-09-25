@@ -33,6 +33,19 @@ buttonVariants(props)
 
 `variant="ghost"` yalnız görünüm değiştirir. Gerçek `disabled`, klavye odağı ve erişilebilir ad yine Button'ın sözleşmesidir. `buttonVariants` fonksiyonunu da export et: başka yerde aynı görünüm için class üretilebilir.
 
+## İki eksen neden ayrı?
+
+`variant` butonun görünümünü ve rengini, `size` kapladığı alanı seçer. Dokuz birleşimi dokuz farklı class string'i olarak yazmak yerine 3 + 3 karar yazarsın. Yalnız küçük ghost butonda özel vurgu gerekirse `compoundVariants` devreye girer; diğer sekiz birleşim aynı ortak kuralları kullanır.
+
+```tsx title="src/components/ui/button.tsx"
+import type { ComponentProps } from 'react'
+import type { VariantProps } from 'class-variance-authority'
+
+type ButtonProps = Omit<ComponentProps<'button'>, 'size'> & VariantProps<typeof buttonVariants>
+```
+
+Bu parça ders içindeki `buttonVariants` tanımının devamıdır; tek başına derlenmez. `Omit`, HTML button tipindeki olası `size` adıyla kendi varyantını ayırır. Doğal `type="button"`, `onClick` ve `aria-label` desteği korunur.
+
 :::mistake[Sık hata]
 `opacity-50` disabled görünümü verir ama tek başına tıklamayı kapatmaz. `disabled` niteliğini düğmeye ilet.
 :::

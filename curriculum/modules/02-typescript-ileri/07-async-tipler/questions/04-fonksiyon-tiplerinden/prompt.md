@@ -1,0 +1,1 @@
+Detay yükleyicisinin tipini iki yerde yeniden yazmak istemiyoruz. `loadMovie(id: number, token: string): Promise<{ id: number; title: string }>` örnek fonksiyonu verildi. `LoadArgs = Parameters<typeof loadMovie>`, `LoadPromise = ReturnType<typeof loadMovie>`, `LoadedMovie = Awaited<LoadPromise>` export et. `describeLoad(args: LoadArgs)` çıktısı `"550 için istek"` biçiminde olsun.

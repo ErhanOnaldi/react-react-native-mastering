@@ -9,5 +9,7 @@ it('geçerli sayfayı kabul eder ve unknown tipini daraltır', () => {
 })
 it('eksik ve bozuk film verisini açıklayıcı hatayla reddeder', () => {
   expect(() => assertMoviePage({ page: 1 })).toThrow('Geçersiz film sayfası')
-  expect(() => assertMoviePage({ page: 1, results: [{ id: 550 }] })).toThrow('Geçersiz film sayfası')
+  expect(() => assertMoviePage({ page: 1, results: [{ id: 550 }] })).toThrow(
+    'Geçersiz film sayfası',
+  )
 })
