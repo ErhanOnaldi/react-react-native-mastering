@@ -85,6 +85,8 @@ Somut acı.
 
 ## Kavram … ## Örnek … ## Sık hatalar … ## Sektörde
 ```
+Frontmatter YAML'dır: `title` değerini **her zaman çift tırnakla** yaz (`title: "Sinema v2: düzenli yapı"`) — iki nokta, `@`, `#` gibi karakterler tırnaksız YAML'ı bozar.
+
 Önerilen iskelet: **Problem → Kavram → Örnek → Sık hatalar → Sektörde**. Tekrar (`review`) derslerinde kısa bir hatırlatma + yeni bağlam yeterli.
 
 **Bilgi kutuları:** `:::pain`, `:::tip`, `:::warning`, `:::mistake` (sık hata), `:::sector` (sektörde), `:::info`. Başlık opsiyonel: `:::tip[Kısa yol]`.

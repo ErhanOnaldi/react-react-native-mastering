@@ -245,7 +245,17 @@ function conceptReport(
 export async function validate(paths: RepoPaths, options: ValidateOptions) {
   const started = performance.now()
   const curriculum = await loadCurriculum(paths.curriculumRoot)
-  const problems: Problem[] = curriculum.errors.map((e) => ({
+    // Modül filtresi varsa yalnızca o modülün (ve modüller dışı ortak dosyaların) hataları sayılır
+  const modulesDir = path.join(paths.curriculumRoot, 'modules') + path.sep
+  const filteredModuleDir = curriculum.modules.find((m) => m.number === options.module)?.dir
+  const relevantErrors = curriculum.errors.filter((e) => {
+    if (options.module === undefined) return true
+    if (!e.file.startsWith(modulesDir)) return true
+    const prefix = String(options.module).padStart(2, '0') + '-'
+    const moduleFolder = e.file.slice(modulesDir.length).split(path.sep)[0] ?? ''
+    return filteredModuleDir ? e.file.startsWith(filteredModuleDir + path.sep) : moduleFolder.startsWith(prefix)
+  })
+  const problems: Problem[] = relevantErrors.map((e) => ({
     where: rel(paths, e.file),
     message: e.message,
   }))

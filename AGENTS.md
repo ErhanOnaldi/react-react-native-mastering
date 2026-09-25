@@ -10,6 +10,8 @@ Local, LeetCode-style platform that teaches React to a Turkish-speaking learner.
 ## Content authoring
 Binding rules: `docs/authoring-guide.md`. Lesson plans + Sinema checkpoint contract: `docs/curriculum-plan.md`. Pedagogy: `docs/superpowers/specs/2026-09-25-react-mastering-platform-design.md` §2. Reference module: `curriculum/modules/00-baslangic/`. Current library APIs: `docs/research/*.md` (React 19.3, React Router 8, TanStack Query 5, Zod 4, RHF 7, RTK 2, Vitest 5, MSW 2, Tailwind 4, TypeScript 6) — do not teach outdated APIs.
 
+In `lesson.md` frontmatter always double-quote `title` (YAML breaks on `:`/`@`/`#`).
+
 Learner-facing text is **Turkish** (plain, friendly, "sen" dili); technical terms stay English. Folder names are ASCII kebab-case with two-digit prefixes.
 
 ## Commands (run from repo root)
