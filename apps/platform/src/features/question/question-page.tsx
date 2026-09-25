@@ -63,8 +63,14 @@ function QuestionHeader({ question }: { question: QuestionDto }) {
 
 export function QuestionPage() {
   const { code = '' } = useParams()
-  const { data: question, isPending, error } = useQuery(questionQueries.detail(code))
-  if (isPending) return <PageLoader />
+  const {
+    data: question,
+    isPending,
+    error,
+    isFetchedAfterMount,
+  } = useQuery(questionQueries.detail(code))
+  // Önbellekteki (eski olabilecek) içerikle editörü başlatma: taze veriyi bekle
+  if (isPending || !isFetchedAfterMount) return <PageLoader />
   if (error) return <p className="p-8 text-danger">{error.message}</p>
 
   return (

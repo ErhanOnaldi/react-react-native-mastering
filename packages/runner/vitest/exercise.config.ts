@@ -40,6 +40,8 @@ export default defineConfig(async () => {
       env: input.env,
       globals: false,
       watch: false,
+      // Egzersizler küçük: tek worker hem yeterli hem de paralel doğrulamalarda CPU'yu boğmaz
+      maxWorkers: 1,
       testTimeout: input.testTimeout ?? 5000,
       hookTimeout: 10000,
       reporters: ['json'],

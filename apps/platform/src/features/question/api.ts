@@ -11,15 +11,22 @@ import type {
 } from '@rm/server/dto'
 import { curriculumQueries } from '@/features/curriculum/api'
 import { api } from '@/lib/api'
+import { waitForPendingSaves } from './use-autosave'
 
 export const questionQueries = {
   all: () => ['question'] as const,
   detail: (code: string) =>
     queryOptions({
       queryKey: [...questionQueries.all(), code],
-      queryFn: () => api.get<QuestionDto>(`/questions/${code}`),
-      // Editör içeriği sunucudan yalnızca soru açılınca gelir; arka planda tazeleme editörü ezmesin
-      staleTime: Infinity,
+      queryFn: async () => {
+        // Bu soruda hâlâ yazılmakta olan kayıt varsa bitmesini bekle: diskten eski içerik okumayalım
+        await waitForPendingSaves(code)
+        return api.get<QuestionDto>(`/questions/${code}`)
+      },
+      // Soru her açılışta diskten taze okunur (VS Code'daki değişiklikler, son kayıtlar);
+      // açıkken arka planda tazelenmez ki editördeki çalışma ezilmesin.
+      staleTime: 0,
+      refetchOnMount: 'always',
       refetchOnWindowFocus: false,
     }),
   hints: (code: string, count: number) =>

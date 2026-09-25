@@ -20,6 +20,7 @@ interface VitestFile {
 }
 
 export interface VitestReport {
+  success?: boolean
   testResults: VitestFile[]
 }
 
@@ -51,8 +52,13 @@ export function parseVitestReport(report: VitestReport) {
   const tests: TestOutcome[] = []
   const suiteErrors: string[] = []
   for (const file of report.testResults) {
-    if (file.status === 'failed' && file.message && file.assertionResults.length === 0) {
-      suiteErrors.push(`${path.basename(file.name)}: ${file.message.replace(ANSI, '')}`)
+    const assertionFailed = file.assertionResults.some((a) => a.status === 'failed')
+    // Dosya kaldı ama hiçbir test kalmadı: import hatası, beforeAll/afterAll hatası vb.
+    if (file.status === 'failed' && !assertionFailed) {
+      const message =
+        file.message?.replace(ANSI, '').trim() ||
+        'Test dosyası hatayla bitti (ör. beforeAll/afterAll).'
+      suiteErrors.push(`${path.basename(file.name)}: ${message}`)
     }
     for (const a of file.assertionResults) {
       const status = mapStatus(a.status)
@@ -65,6 +71,13 @@ export function parseVitestReport(report: VitestReport) {
       }
       tests.push(outcome)
     }
+  }
+  if (
+    report.success === false &&
+    suiteErrors.length === 0 &&
+    !tests.some((t) => t.status === 'failed')
+  ) {
+    suiteErrors.push('Vitest hatayla bitti (testler dışında yakalanmamış bir hata).')
   }
   return { tests, suiteError: suiteErrors.length ? suiteErrors.join('\n\n') : undefined }
 }

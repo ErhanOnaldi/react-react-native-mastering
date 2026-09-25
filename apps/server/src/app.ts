@@ -16,6 +16,7 @@ import {
   buildReviewPrompt,
   collectReviewFiles,
   emptyQuestionProgress,
+  ensureWorkspace,
   listEditorFiles,
   loadLastResult,
   markDone,
@@ -131,6 +132,28 @@ export function createApp(ctx: AppContext) {
     await next()
   })
 
+  // CSRF koruması: başka bir sitenin (form, img, fetch) API'yi tetiklemesini engelle.
+  // 1) Tarayıcı Origin gönderiyorsa yerel olmalı. 2) /events, /health ve /editor-types dışındaki
+  //    her istek özel `x-rm-client` başlığı taşımalı; çapraz siteden bu başlık CORS izni olmadan
+  //    gönderilemez (sunucu CORS izni vermez).
+  app.use(async (c, next) => {
+    const origin = c.req.header('origin')
+    if (origin) {
+      let originHost = ''
+      try {
+        originHost = new URL(origin).host
+      } catch {
+        // geçersiz origin
+      }
+      if (!LOCAL_HOSTS.test(originHost)) return c.json({ error: 'İzin verilmeyen kaynak' }, 403)
+    }
+    const open = ['/api/events', '/api/health', '/api/editor-types'].includes(c.req.path)
+    if (!open && c.req.header('x-rm-client') !== '1') {
+      return c.json({ error: 'Eksik istemci başlığı' }, 403)
+    }
+    await next()
+  })
+
   app.onError((error, c) => {
     if (error instanceof HTTPException) return c.json({ error: error.message }, error.status)
     console.error(error)
@@ -237,12 +260,7 @@ export function createApp(ctx: AppContext) {
         promptHtml,
         files,
         workspacePath: question.id,
-        preview: meta.preview
-          ? {
-              entry: meta.preview.entry,
-              modulePath: `/@fs${path.join(workspaceDir(paths, question), meta.preview.entry)}`,
-            }
-          : undefined,
+        preview: meta.preview ? { entry: meta.preview.entry } : undefined,
         hasRubric: Boolean(meta.rubric),
         mutants: meta.testWriting?.mutants,
         hasSolutionNotes: Boolean(question.solutionNotesPath),
@@ -267,6 +285,18 @@ export function createApp(ctx: AppContext) {
       }
     }
     return c.json(body)
+  })
+
+  // Önizleme iframe'i yalnızca bir soru kodu bilir; yüklenecek modülün yolunu sunucu belirler.
+  app.get('/questions/:code/preview', async (c) => {
+    const question = requireQuestion(await store.get(), c.req.param('code'))
+    if (question.meta.type !== 'code' || !question.meta.preview) {
+      throw new HTTPException(404, { message: 'Bu soruda önizleme yok' })
+    }
+    await ensureWorkspace(paths, question)
+    return c.json({
+      modulePath: `/@fs${path.join(workspaceDir(paths, question), question.meta.preview.entry)}`,
+    })
   })
 
   app.post('/questions/:code/answer', async (c) => {

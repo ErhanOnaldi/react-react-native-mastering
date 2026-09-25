@@ -97,8 +97,8 @@ export interface CodeQuestionDto extends QuestionBaseDto {
   files: EditorFile[]
   /** Monaco'daki model yolları için: workspace klasörünün soru id'si */
   workspacePath: string
-  /** modulePath: platformun Vite sunucusunda /@fs/ ile yüklenecek mutlak yol */
-  preview?: { entry: string; modulePath: string }
+  /** Önizleme girişi (yol, iframe tarafından /questions/:code/preview ile sunucudan alınır) */
+  preview?: { entry: string }
   hasRubric: boolean
   mutants?: { id: string; label: string }[]
   hasSolutionNotes: boolean

@@ -77,8 +77,8 @@ async function validateCode(paths: RepoPaths, question: QuestionEntry, problems:
     await cp(path.join(question.dir, 'solution'), solutionTarget, { recursive: true, force: true })
   }
   const [solution, starter] = await Promise.all([
-    runQuestion(paths, question, { target: solutionTarget }),
-    runQuestion(paths, question, { target: path.join(question.dir, 'starter') }),
+    runQuestion(paths, question, { target: solutionTarget, timeoutScale: 3 }),
+    runQuestion(paths, question, { target: path.join(question.dir, 'starter'), timeoutScale: 3 }),
   ])
   if (solution.status !== 'passed') {
     problems.push({ where, message: `Çözüm geçmiyor:\n    ${describeFailure(solution)}` })
@@ -112,7 +112,7 @@ async function validateProject(
     `${meta.project}-${after.label}-${question.id.replaceAll('/', '__')}`,
   )
   await copyProject(after.dir, afterDir)
-  const result = await runQuestion(paths, question, { target: afterDir })
+  const result = await runQuestion(paths, question, { target: afterDir, timeoutScale: 3 })
   if (result.status !== 'passed') {
     problems.push({
       where,
@@ -125,7 +125,7 @@ async function validateProject(
       `${meta.project}-${before.label}-${question.id.replaceAll('/', '__')}-before`,
     )
     await copyProject(before.dir, beforeDir)
-    const early = await runQuestion(paths, question, { target: beforeDir })
+    const early = await runQuestion(paths, question, { target: beforeDir, timeoutScale: 3 })
     if (early.status === 'passed') {
       problems.push({
         where,

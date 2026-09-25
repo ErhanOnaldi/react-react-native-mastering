@@ -44,7 +44,7 @@ function shortUrl(url: string) {
 }
 
 /** Tek bir iframe oturumu. key değişince (kaydetme/yeniden başlatma) sayaçlar sıfırdan başlar. */
-function PreviewSession({ modulePath, onRestart }: { modulePath: string; onRestart: () => void }) {
+function PreviewSession({ code, onRestart }: { code: string; onRestart: () => void }) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [state, dispatch] = useReducer(reducer, initial)
   const [showLog, setShowLog] = useState(false)
@@ -59,7 +59,7 @@ function PreviewSession({ modulePath, onRestart }: { modulePath: string; onResta
     return () => window.removeEventListener('message', onMessage)
   }, [])
 
-  const src = `/preview.html?module=${encodeURIComponent(modulePath)}`
+  const src = `/preview.html?q=${encodeURIComponent(code)}`
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-9 shrink-0 items-center gap-3 border-b border-border px-3 text-xs">
@@ -135,12 +135,12 @@ function PreviewSession({ modulePath, onRestart }: { modulePath: string; onResta
   )
 }
 
-export function PreviewPane({ modulePath, version }: { modulePath: string; version: number }) {
+export function PreviewPane({ code, version }: { code: string; version: number }) {
   const [restarts, setRestarts] = useState(0)
   return (
     <PreviewSession
       key={`${version}-${restarts}`}
-      modulePath={modulePath}
+      code={code}
       onRestart={() => setRestarts((r) => r + 1)}
     />
   )

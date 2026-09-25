@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CodeEditor, type EditorModel } from '@/features/editor/code-editor'
 import { modelUri } from '@/features/editor/model-uri'
 import { PreviewPane } from '@/features/preview/preview-pane'
+import { api } from '@/lib/api'
 import { useServerEvents } from '@/lib/events'
 import { updateQuestion, useResetQuestion, useRunQuestion, withProgress } from './api'
 import { HintsPanel } from './hints-panel'
@@ -117,20 +118,28 @@ export function CodeView({ question }: { question: CodeQuestionDto }) {
         if (event.type !== 'file-changed' || event.questionId !== question.id) return
         const file = question.files.find((f) => f.name === event.file && f.editable)
         if (!file) return
-        void fetch(`/api/questions/${question.code}`)
-          .then((r) => r.json() as Promise<CodeQuestionDto>)
+        void api
+          .get<CodeQuestionDto>(`/questions/${question.code}`)
           .then((fresh) => {
             const updated = fresh.files.find((f) => f.name === event.file)
             if (updated) setContents((prev) => ({ ...prev, [updated.name]: updated.content }))
             setPreviewVersion((v) => v + 1)
           })
+          .catch(() => undefined)
       },
       [question.id, question.code, question.files],
     ),
   )
 
+  const [saveError, setSaveError] = useState<string>()
   const handleRun = useCallback(async () => {
-    await autosave.flush()
+    try {
+      await autosave.flush()
+      setSaveError(undefined)
+    } catch (error) {
+      setSaveError((error as Error).message)
+      return
+    }
     setBottomTab('result')
     const response = await run.mutateAsync().catch(() => undefined)
     if (response) {
@@ -295,10 +304,11 @@ export function CodeView({ question }: { question: CodeQuestionDto }) {
                   emptyHint="Kodunu yaz, sonra Çalıştır'a bas. Testler burada tek tek görünecek."
                 />
                 {run.error && <p className="px-4 text-sm text-danger">{run.error.message}</p>}
+                {saveError && <p className="px-4 text-sm text-danger">{saveError}</p>}
               </TabsContent>
               {question.preview && (
                 <TabsContent value="preview" forceMount className="data-[state=inactive]:hidden">
-                  <PreviewPane modulePath={question.preview.modulePath} version={previewVersion} />
+                  <PreviewPane code={question.code} version={previewVersion} />
                 </TabsContent>
               )}
             </Tabs>

@@ -12,7 +12,11 @@ export class ApiError extends Error {
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api${url}`, {
     method,
-    headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+    // x-rm-client: sunucunun CSRF koruması (başka siteler bu başlığı gönderemez)
+    headers: {
+      'x-rm-client': '1',
+      ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
   if (!response.ok) {

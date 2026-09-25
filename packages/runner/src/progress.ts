@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { mkdir, open, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 export type QuestionStatus = 'not-started' | 'in-progress' | 'passed'
@@ -47,16 +47,49 @@ async function writeAtomic(file: string, progress: Progress) {
   await rename(tmp, file)
 }
 
+/**
+ * Süreçler arası kilit (sunucu ve `pnpm check` aynı dosyayı günceller): `progress.json.lock`
+ * dosyası `wx` ile oluşturulur; 10 sn'den eski kilit sahipsiz sayılıp kaldırılır.
+ */
+async function withFileLock<T>(file: string, work: () => Promise<T>): Promise<T> {
+  const lock = `${file}.lock`
+  await mkdir(path.dirname(file), { recursive: true })
+  const deadline = Date.now() + 10_000
+  for (;;) {
+    try {
+      const handle = await open(lock, 'wx')
+      await handle.close()
+      break
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
+      const age = await stat(lock)
+        .then((s) => Date.now() - s.mtimeMs)
+        .catch(() => 0)
+      if (age > 10_000) await rm(lock, { force: true })
+      else if (Date.now() > deadline)
+        throw new Error('İlerleme dosyası kilitli kaldı (progress.json.lock).', { cause: error })
+      else await new Promise((r) => setTimeout(r, 25 + Math.random() * 50))
+    }
+  }
+  try {
+    return await work()
+  } finally {
+    await rm(lock, { force: true })
+  }
+}
+
 export function updateProgress(
   file: string,
   mutate: (progress: Progress) => void,
 ): Promise<Progress> {
-  const next = queue.then(async () => {
-    const progress = await readProgress(file)
-    mutate(progress)
-    await writeAtomic(file, progress)
-    return progress
-  })
+  const next = queue.then(() =>
+    withFileLock(file, async () => {
+      const progress = await readProgress(file)
+      mutate(progress)
+      await writeAtomic(file, progress)
+      return progress
+    }),
+  )
   queue = next.catch(() => undefined)
   return next
 }

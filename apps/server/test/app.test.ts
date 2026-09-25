@@ -49,7 +49,7 @@ async function call<T>(
 ): Promise<{ status: number; data: T }> {
   const response = await app.request(url, {
     method,
-    headers: { host: 'localhost:5173', 'content-type': 'application/json' },
+    headers: { host: 'localhost:5173', 'content-type': 'application/json', 'x-rm-client': '1' },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
   return { status: response.status, data: (await response.json()) as T }
@@ -73,6 +73,22 @@ describe('müfredat', () => {
     expect(data.title).toBe('İlk ders')
     expect(data.html).toContain('data-kind="tip"')
     expect(data.module.code).toBe('0')
+  })
+
+  it('istemci başlığı olmayan (çapraz site) istekleri reddeder', async () => {
+    const response = await app.request('/api/questions/0.1.3/reset', {
+      method: 'POST',
+      headers: { host: 'localhost:5173' },
+    })
+    expect(response.status).toBe(403)
+  })
+
+  it('yerel olmayan Origin’i reddeder', async () => {
+    const response = await app.request('/api/questions/0.1.3/reset', {
+      method: 'POST',
+      headers: { host: 'localhost:5173', origin: 'https://evil.example.com', 'x-rm-client': '1' },
+    })
+    expect(response.status).toBe(403)
   })
 
   it('yerel olmayan Host başlığını reddeder', async () => {
@@ -186,6 +202,17 @@ describe('kod görevi akışı', () => {
     expect(data.prompt).toContain('### sum.ts')
     expect(data.prompt).toContain('Fonksiyon saf mı?')
     expect(data.warn).toBe(false)
+  })
+})
+
+describe('önizleme', () => {
+  it('yalnızca sorunun kendi önizleme girişini verir', async () => {
+    const { data } = await call<{ modulePath: string }>('GET', '/api/questions/0.1.6/preview')
+    expect(data.modulePath).toBe(
+      `/@fs${path.join(paths.workspaceRoot, '00-deneme/01-ilk-ders/06-bilesen/Preview.tsx')}`,
+    )
+    const none = await call('GET', '/api/questions/0.1.3/preview')
+    expect(none.status).toBe(404)
   })
 })
 

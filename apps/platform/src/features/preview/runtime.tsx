@@ -70,8 +70,15 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error?: Error }
 }
 
 async function start() {
-  const modulePath = new URLSearchParams(window.location.search).get('module')
-  if (!modulePath) throw new Error('Önizlenecek modül belirtilmedi')
+  // Yalnızca soru kodu kabul edilir; yüklenecek modülü sunucu belirler (rastgele URL import edilmez)
+  const code = new URLSearchParams(window.location.search).get('q')
+  if (!code || !/^\d+(\.\d+){2}$/.test(code)) throw new Error('Geçersiz soru kodu')
+  const response = await originalFetch(`/api/questions/${code}/preview`, {
+    headers: { 'x-rm-client': '1' },
+  })
+  if (!response.ok) throw new Error('Önizleme bilgisi alınamadı')
+  const { modulePath } = (await response.json()) as { modulePath: string }
+  if (!modulePath.startsWith('/@fs/')) throw new Error('Geçersiz önizleme yolu')
   await setupWorker(...handlers).start({
     serviceWorker: { url: '/mockServiceWorker.js' },
     onUnhandledRequest: 'bypass',

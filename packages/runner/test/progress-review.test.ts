@@ -94,3 +94,18 @@ describe('review prompt', () => {
     expect(prompt).toContain('Tam çözümü yazma')
   })
 })
+
+describe('ilerleme — süreçler arası', () => {
+  it('iki ayrı süreç aynı anda yazsa da güncelleme kaybolmaz', async () => {
+    const { execFile } = await import('node:child_process')
+    const { promisify } = await import('node:util')
+    const file = path.join(await tmp(), 'progress.json')
+    const script = (prefix: string) =>
+      `import { recordAttempt } from ${JSON.stringify(path.join(DEFAULT_REPO_ROOT, 'packages/runner/src/progress.ts'))}
+       await Promise.all(Array.from({ length: 15 }, (_, i) => recordAttempt(${JSON.stringify(file)}, '${prefix}' + i, true)))`
+    const run = (prefix: string) =>
+      promisify(execFile)(process.execPath, ['--input-type=module', '-e', script(prefix)])
+    await Promise.all([run('a'), run('b'), run('c')])
+    expect(Object.keys((await readProgress(file)).questions)).toHaveLength(45)
+  })
+})

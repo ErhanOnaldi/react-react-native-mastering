@@ -64,13 +64,26 @@ export async function check(
   )
   let timer: NodeJS.Timeout | undefined
   let running = false
+  let dirty = false
+  // Çalışma sürerken gelen kayıtlar kaybolmasın: bitince son hali bir kez daha çalıştır
+  const trigger = async () => {
+    if (running) {
+      dirty = true
+      return
+    }
+    running = true
+    try {
+      do {
+        dirty = false
+        await once()
+      } while (dirty)
+    } finally {
+      running = false
+    }
+  }
   watch(watched, { ignoreInitial: true, ignored: /node_modules/ }).on('all', () => {
     clearTimeout(timer)
-    timer = setTimeout(async () => {
-      if (running) return
-      running = true
-      await once().finally(() => (running = false))
-    }, 300)
+    timer = setTimeout(() => void trigger(), 300)
   })
   return new Promise<number>(() => {})
 }

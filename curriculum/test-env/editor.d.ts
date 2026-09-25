@@ -7,6 +7,7 @@ export { delay, http, HttpResponse } from 'msw'
 export declare const server: SetupServer
 export declare const TMDB_BASE: string
 export declare const DUMMYJSON_BASE: string
+export declare const OPENLIBRARY_BASE: string
 export declare const TEST_USER: { readonly username: 'emilys'; readonly password: 'emilyspass' }
 
 export interface TmdbListMovie {
