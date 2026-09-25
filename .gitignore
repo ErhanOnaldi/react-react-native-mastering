@@ -24,3 +24,6 @@ blob-report/
 progress.json
 progress.json.lock
 workspace/
+
+# Claude Code yerel durum
+.claude/scheduled_tasks.lock
