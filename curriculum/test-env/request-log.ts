@@ -11,7 +11,12 @@ const log: LoggedRequest[] = []
 
 export function recordRequest(request: Request) {
   const url = new URL(request.url)
-  log.push({ method: request.method, url: request.url, path: url.pathname, search: url.searchParams })
+  log.push({
+    method: request.method,
+    url: request.url,
+    path: url.pathname,
+    search: url.searchParams,
+  })
 }
 
 /**

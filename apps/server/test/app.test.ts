@@ -60,7 +60,7 @@ describe('müfredat', () => {
     const { data } = await call<CurriculumDto>('GET', '/api/curriculum')
     expect(data.errors).toEqual([])
     expect(data.env.tmdbToken).toBe(true)
-    expect(data.modules[0]?.lessons[0]?.questions).toHaveLength(10)
+    expect(data.modules[0]?.lessons[0]?.questions).toHaveLength(11)
     expect(data.modules[0]?.lessons[0]?.questions[0]).toMatchObject({
       code: '0.1.1',
       type: 'quiz',

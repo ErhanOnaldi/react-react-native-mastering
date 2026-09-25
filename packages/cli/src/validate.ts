@@ -28,6 +28,8 @@ export interface ValidateOptions {
   module?: number
   /** Test çalıştırmalarını atla (yalnızca şema + kod blokları + kavram raporu) */
   skipRuns: boolean
+  /** Proje görevlerini atla (checkpoint'ler henüz yokken) */
+  skipProjects: boolean
   /** Kavram tekrar kuralını hata say */
   strictConcepts: boolean
   concurrency: number
@@ -259,7 +261,9 @@ export async function validate(paths: RepoPaths, options: ValidateOptions) {
 
   if (!options.skipRuns) {
     const runnable = questions.filter(
-      ({ q }) => q.type === 'code' || (q.type === 'project' && q.testFiles.length > 0),
+      ({ q }) =>
+        q.type === 'code' ||
+        (!options.skipProjects && q.type === 'project' && q.testFiles.length > 0),
     )
     let done = 0
     await pool(runnable, options.concurrency, async ({ q, module }) => {

@@ -9,7 +9,7 @@ describe('loadCurriculum', () => {
     const curriculum = await loadCurriculum(root)
     expect(curriculum.errors).toEqual([])
     expect(curriculum.modules).toHaveLength(1)
-    expect(curriculum.modules[0]?.lessons[0]?.questions).toHaveLength(10)
+    expect(curriculum.modules[0]?.lessons[0]?.questions).toHaveLength(11)
   })
 
   it('kısa kodları dizin öneklerinden türetir', async () => {

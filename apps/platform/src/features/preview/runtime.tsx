@@ -3,7 +3,7 @@
 import { Component, type ComponentType, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { setupWorker } from 'msw/browser'
-import { tmdbHandlers } from '@test-env/msw/tmdb'
+import { handlers } from '@test-env/msw/handlers'
 import type { PreviewMessage } from './messages'
 import './preview.css'
 
@@ -72,7 +72,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error?: Error }
 async function start() {
   const modulePath = new URLSearchParams(window.location.search).get('module')
   if (!modulePath) throw new Error('Önizlenecek modül belirtilmedi')
-  await setupWorker(...tmdbHandlers).start({
+  await setupWorker(...handlers).start({
     serviceWorker: { url: '/mockServiceWorker.js' },
     onUnhandledRequest: 'bypass',
     quiet: true,

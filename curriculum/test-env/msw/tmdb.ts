@@ -76,8 +76,7 @@ function error(status: number, statusCode: number, message: string) {
   )
 }
 
-const unauthorized = () =>
-  error(401, 7, 'Invalid API key: You must be granted a valid key.')
+const unauthorized = () => error(401, 7, 'Invalid API key: You must be granted a valid key.')
 const notFound = () => error(404, 34, 'The resource you requested could not be found.')
 
 function isAuthorized(request: Request) {
@@ -87,13 +86,20 @@ function isAuthorized(request: Request) {
 }
 
 function normalize(text: string) {
-  return text.toLocaleLowerCase('tr').normalize('NFD').replace(/\p{Diacritic}/gu, '')
+  return text
+    .toLocaleLowerCase('tr')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
 }
 
 function paginate(items: TmdbListMovie[], url: URL) {
   const page = Number(url.searchParams.get('page') ?? '1')
   if (!Number.isInteger(page) || page < 1 || page > 500) {
-    return error(400, 22, 'Invalid page: Pages start at 1 and max at 500. They are expected to be an integer.')
+    return error(
+      400,
+      22,
+      'Invalid page: Pages start at 1 and max at 500. They are expected to be an integer.',
+    )
   }
   const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE))
   return HttpResponse.json({
@@ -253,13 +259,19 @@ export const tmdbHandlers = [
     return HttpResponse.json({
       success: true,
       guest_session_id: id,
-      expires_at: new Date(Date.now() + 24 * 3600_000).toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
+      expires_at:
+        new Date(Date.now() + 24 * 3600_000).toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
     })
   }),
 
   http.post(`${TMDB_BASE}/movie/:id/rating`, async ({ request, params }) => {
     const session = guestSession(new URL(request.url))
-    if (!session) return error(401, 3, 'Authentication failed: You do not have permissions to access the service.')
+    if (!session)
+      return error(
+        401,
+        3,
+        'Authentication failed: You do not have permissions to access the service.',
+      )
     const id = Number(params.id)
     if (!catalog.some((m) => m.id === id)) return notFound()
     const body = (await request.json().catch(() => null)) as { value?: unknown } | null
@@ -272,20 +284,44 @@ export const tmdbHandlers = [
     ratings.set(id, value)
     state.ratings.set(session, ratings)
     return existed
-      ? HttpResponse.json({ success: true, status_code: 12, status_message: 'The item/record was updated successfully.' }, { status: 201 })
-      : HttpResponse.json({ success: true, status_code: 1, status_message: 'Success.' }, { status: 201 })
+      ? HttpResponse.json(
+          {
+            success: true,
+            status_code: 12,
+            status_message: 'The item/record was updated successfully.',
+          },
+          { status: 201 },
+        )
+      : HttpResponse.json(
+          { success: true, status_code: 1, status_message: 'Success.' },
+          { status: 201 },
+        )
   }),
 
   http.delete(`${TMDB_BASE}/movie/:id/rating`, ({ request, params }) => {
     const session = guestSession(new URL(request.url))
-    if (!session) return error(401, 3, 'Authentication failed: You do not have permissions to access the service.')
+    if (!session)
+      return error(
+        401,
+        3,
+        'Authentication failed: You do not have permissions to access the service.',
+      )
     state.ratings.get(session)?.delete(Number(params.id))
-    return HttpResponse.json({ success: true, status_code: 13, status_message: 'The item/record was deleted successfully.' })
+    return HttpResponse.json({
+      success: true,
+      status_code: 13,
+      status_message: 'The item/record was deleted successfully.',
+    })
   }),
 
   http.get(`${TMDB_BASE}/guest_session/:sessionId/rated/movies`, ({ request, params }) => {
     const sessionId = String(params.sessionId)
-    if (!state.sessions.has(sessionId)) return error(401, 3, 'Authentication failed: You do not have permissions to access the service.')
+    if (!state.sessions.has(sessionId))
+      return error(
+        401,
+        3,
+        'Authentication failed: You do not have permissions to access the service.',
+      )
     const ratings = state.ratings.get(sessionId) ?? new Map<number, number>()
     const items = catalog
       .filter((m) => ratings.has(m.id))

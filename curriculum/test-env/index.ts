@@ -1,5 +1,6 @@
 // `@test-utils` — egzersiz testlerinin kullandığı yardımcılar.
 export { delay, http, HttpResponse } from 'msw'
+export { DUMMYJSON_BASE, TEST_USER } from './msw/dummyjson.ts'
 export { server } from './msw/node.ts'
 export { catalog, TMDB_BASE } from './msw/tmdb.ts'
 export type { TmdbListMovie } from './msw/tmdb.ts'

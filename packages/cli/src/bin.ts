@@ -12,6 +12,7 @@ const { positionals, values } = parseArgs({
     watch: { type: 'boolean', short: 'w', default: false },
     module: { type: 'string', short: 'm' },
     'skip-runs': { type: 'boolean', default: false },
+    'skip-projects': { type: 'boolean', default: false },
     'strict-concepts': { type: 'boolean', default: false },
     concurrency: { type: 'string', default: '4' },
     curriculum: { type: 'string' },
@@ -39,6 +40,7 @@ switch (command) {
     exitCode = await validate(paths, {
       module: values.module === undefined ? undefined : Number(values.module),
       skipRuns: values['skip-runs'],
+      skipProjects: values['skip-projects'],
       strictConcepts: values['strict-concepts'],
       concurrency: Number(values.concurrency),
     })
@@ -48,7 +50,9 @@ switch (command) {
   pnpm check [kısa-kod] [--watch]    Soruyu terminalde çalıştır (varsayılan: son açılan soru)
   pnpm checkpoint <modül>             Sinema'nın o modül başındaki halini aç
   pnpm setup:projects                 projects/sinema'yı başlangıç iskeletinden oluştur
-  pnpm validate:content [-m N]        İçerik doğrulama hattı`)
+  pnpm validate:content [-m N]        İçerik doğrulama hattı
+      --skip-runs                     Test çalıştırmadan (şema + kod blokları)
+      --skip-projects                 Proje görevlerini atla (checkpoint henüz yoksa)`)
     exitCode = command ? 1 : 0
 }
 process.exit(exitCode)
