@@ -27,7 +27,12 @@ describe('ilerleme', () => {
     await recordSolutionView(file, 'a')
     await recordAttempt(file, 'a', false)
     let p = await readProgress(file)
-    expect(p.questions.a).toMatchObject({ status: 'in-progress', attempts: 1, hintsUsed: 1, solutionViewed: true })
+    expect(p.questions.a).toMatchObject({
+      status: 'in-progress',
+      attempts: 1,
+      hintsUsed: 1,
+      solutionViewed: true,
+    })
 
     await recordAttempt(file, 'a', true)
     await recordAttempt(file, 'a', false) // geçtikten sonraki başarısız deneme durumu bozmaz

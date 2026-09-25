@@ -2,7 +2,15 @@
 import type { Difficulty, LessonKind, QuestionType } from '@rm/content'
 import type { EditorFile, QuestionProgress, QuestionStatus, RunResult } from '@rm/runner'
 
-export type { Difficulty, EditorFile, LessonKind, QuestionProgress, QuestionStatus, QuestionType, RunResult }
+export type {
+  Difficulty,
+  EditorFile,
+  LessonKind,
+  QuestionProgress,
+  QuestionStatus,
+  QuestionType,
+  RunResult,
+}
 
 export interface ContentErrorDto {
   file: string
@@ -89,7 +97,8 @@ export interface CodeQuestionDto extends QuestionBaseDto {
   files: EditorFile[]
   /** Monaco'daki model yolları için: workspace klasörünün soru id'si */
   workspacePath: string
-  preview?: { entry: string }
+  /** modulePath: platformun Vite sunucusunda /@fs/ ile yüklenecek mutlak yol */
+  preview?: { entry: string; modulePath: string }
   hasRubric: boolean
   mutants?: { id: string; label: string }[]
   hasSolutionNotes: boolean
@@ -140,5 +149,4 @@ export interface ReviewPromptDto {
 }
 
 export type ServerEvent =
-  | { type: 'file-changed'; questionId: string; file: string }
-  | { type: 'curriculum-changed' }
+  { type: 'file-changed'; questionId: string; file: string } | { type: 'curriculum-changed' }

@@ -12,6 +12,8 @@ export default defineConfig([
     'workspace/**',
     'projects/**',
     'curriculum/**',
+    'fixtures/**',
+    '.cache/**',
     'docs/**',
     '**/public/mockServiceWorker.js',
   ]),

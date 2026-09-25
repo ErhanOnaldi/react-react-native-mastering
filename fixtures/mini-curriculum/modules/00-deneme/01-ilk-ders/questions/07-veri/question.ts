@@ -6,4 +6,5 @@ export default defineQuestion({
   difficulty: 'orta',
   concepts: ['mini.fetch', 'mini.react'],
   files: ['MovieTitle.tsx'],
+  preview: { entry: 'Preview.tsx' },
 })

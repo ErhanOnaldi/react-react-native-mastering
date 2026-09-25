@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+
+/* Öğrencinin workspace dosyalarındaki class'lar da üretilsin */
+@source '../../../../../workspace';
+
+body {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  margin: 0;
+  padding: 16px;
+}

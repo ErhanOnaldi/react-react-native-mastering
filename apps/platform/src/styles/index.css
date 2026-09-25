@@ -1,0 +1,324 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ---------- Tema token'ları ---------- */
+:root,
+[data-theme='dark'] {
+  --bg: #0a0d14;
+  --surface: #10151f;
+  --surface-2: #161d2a;
+  --surface-3: #1e2736;
+  --border: #253043;
+  --border-strong: #33415a;
+  --fg: #e6e9ef;
+  --muted: #8b97ab;
+  --subtle: #5d6a80;
+  --accent: #38bdf8;
+  --accent-strong: #0ea5e9;
+  --accent-soft: rgb(56 189 248 / 0.12);
+  --success: #34d399;
+  --success-soft: rgb(52 211 153 / 0.12);
+  --danger: #fb7185;
+  --danger-soft: rgb(251 113 133 / 0.12);
+  --warning: #fbbf24;
+  --warning-soft: rgb(251 191 36 / 0.12);
+  --violet: #a78bfa;
+  --violet-soft: rgb(167 139 250 / 0.12);
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --surface-2: #f0f3f7;
+  --surface-3: #e6ebf2;
+  --border: #dde3ec;
+  --border-strong: #c8d1de;
+  --fg: #0f172a;
+  --muted: #5b6b82;
+  --subtle: #8a98ad;
+  --accent: #0284c7;
+  --accent-strong: #0369a1;
+  --accent-soft: rgb(2 132 199 / 0.1);
+  --success: #059669;
+  --success-soft: rgb(5 150 105 / 0.1);
+  --danger: #e11d48;
+  --danger-soft: rgb(225 29 72 / 0.08);
+  --warning: #d97706;
+  --warning-soft: rgb(217 119 6 / 0.1);
+  --violet: #7c3aed;
+  --violet-soft: rgb(124 58 237 / 0.08);
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+}
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+}
+
+/* ---------- Ders metni tipografisi ---------- */
+@layer components {
+  .prose {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--fg);
+    overflow-wrap: break-word;
+  }
+  .prose > * + * {
+    margin-top: 1em;
+  }
+  .prose h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+  .prose h2 {
+    font-size: 1.25rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin-top: 2em;
+    padding-bottom: 0.35em;
+    border-bottom: 1px solid var(--border);
+  }
+  .prose h3 {
+    font-size: 1.05rem;
+    font-weight: 650;
+    margin-top: 1.6em;
+  }
+  .prose a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .prose strong {
+    font-weight: 650;
+  }
+  .prose ul,
+  .prose ol {
+    padding-left: 1.4em;
+  }
+  .prose ul {
+    list-style: disc;
+  }
+  .prose ol {
+    list-style: decimal;
+  }
+  .prose li + li {
+    margin-top: 0.3em;
+  }
+  .prose li::marker {
+    color: var(--subtle);
+  }
+  .prose blockquote {
+    border-left: 3px solid var(--border-strong);
+    padding-left: 1em;
+    color: var(--muted);
+  }
+  .prose hr {
+    border-color: var(--border);
+    margin: 2em 0;
+  }
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+  }
+  .prose th,
+  .prose td {
+    border: 1px solid var(--border);
+    padding: 0.45em 0.75em;
+    text-align: left;
+    vertical-align: top;
+  }
+  .prose th {
+    background: var(--surface-2);
+    font-weight: 600;
+  }
+  .prose :not(pre) > code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.1em 0.35em;
+  }
+  .prose pre {
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+    line-height: 1.65;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9em 1.1em;
+    overflow-x: auto;
+    position: relative;
+  }
+  .prose pre[data-title] {
+    padding-top: 2.6em;
+  }
+  .prose pre[data-title]::before {
+    content: attr(data-title);
+    position: absolute;
+    inset: 0 0 auto 0;
+    padding: 0.45em 1.1em;
+    font-size: 0.75rem;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 10px 10px 0 0;
+  }
+
+  /* Shiki çift tema */
+  .prose .shiki,
+  .prose .shiki span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
+  }
+  [data-theme='light'] .prose .shiki,
+  [data-theme='light'] .prose .shiki span {
+    color: var(--shiki-light);
+    background-color: var(--shiki-light-bg);
+  }
+  .prose .shiki {
+    background-color: var(--surface) !important;
+  }
+  .prose .shiki span {
+    background-color: transparent !important;
+  }
+  .prose .shiki .line.diff.add {
+    background: var(--success-soft) !important;
+  }
+  .prose .shiki .line.diff.add::before {
+    content: '+';
+    color: var(--success);
+    margin-left: -0.8em;
+    position: absolute;
+  }
+  .prose .shiki .line.diff.remove {
+    background: var(--danger-soft) !important;
+    opacity: 0.75;
+  }
+  .prose .shiki .line.diff.remove::before {
+    content: '−';
+    color: var(--danger);
+    margin-left: -0.8em;
+    position: absolute;
+  }
+  .prose .shiki .line.highlighted {
+    background: var(--accent-soft) !important;
+  }
+  .prose .shiki.has-focused .line:not(.focused) {
+    opacity: 0.45;
+    filter: blur(0.4px);
+  }
+  .prose .shiki .line {
+    display: inline-block;
+    min-width: 100%;
+  }
+
+  /* Bilgi kutuları (:::tip vb.) */
+  .prose .callout {
+    --callout: var(--accent);
+    --callout-soft: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--callout) 35%, transparent);
+    background: var(--callout-soft);
+    border-radius: 10px;
+    padding: 0.85em 1.1em;
+  }
+  .prose .callout::before {
+    content: attr(data-title);
+    display: block;
+    font-weight: 650;
+    font-size: 0.85rem;
+    color: var(--callout);
+    margin-bottom: 0.35em;
+  }
+  .prose .callout > * + * {
+    margin-top: 0.6em;
+  }
+  .prose .callout[data-kind='tip'] {
+    --callout: var(--success);
+    --callout-soft: var(--success-soft);
+  }
+  .prose .callout[data-kind='warning'],
+  .prose .callout[data-kind='mistake'] {
+    --callout: var(--warning);
+    --callout-soft: var(--warning-soft);
+  }
+  .prose .callout[data-kind='pain'] {
+    --callout: var(--danger);
+    --callout-soft: var(--danger-soft);
+  }
+  .prose .callout[data-kind='sector'] {
+    --callout: var(--violet);
+    --callout-soft: var(--violet-soft);
+  }
+  .prose .callout[data-kind='tip']::before {
+    content: '💡 ' attr(data-title);
+  }
+  .prose .callout[data-kind='warning']::before {
+    content: '⚠️ ' attr(data-title);
+  }
+  .prose .callout[data-kind='mistake']::before {
+    content: '🚫 ' attr(data-title);
+  }
+  .prose .callout[data-kind='pain']::before {
+    content: '🔥 ' attr(data-title);
+  }
+  .prose .callout[data-kind='sector']::before {
+    content: '🏢 ' attr(data-title);
+  }
+  .prose .callout[data-kind='info']::before {
+    content: 'ℹ️ ' attr(data-title);
+  }
+
+  .prose-sm {
+    font-size: 0.875rem;
+    line-height: 1.65;
+  }
+}

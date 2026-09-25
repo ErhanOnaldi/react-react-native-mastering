@@ -36,9 +36,10 @@ export async function collectReviewFiles(
   const meta = question.meta
   if (meta.type === 'quiz') return []
   const root =
-    meta.type === 'project' ? path.join(paths.projectsRoot, meta.project) : workspaceDir(paths, question)
-  const patterns =
-    meta.type === 'project' ? meta.reviewFiles : (meta.reviewFiles ?? meta.files)
+    meta.type === 'project'
+      ? path.join(paths.projectsRoot, meta.project)
+      : workspaceDir(paths, question)
+  const patterns = meta.type === 'project' ? meta.reviewFiles : (meta.reviewFiles ?? meta.files)
   if (patterns.length === 0) return []
   const files = await glob(patterns, {
     cwd: root,
@@ -59,7 +60,9 @@ export async function collectReviewFiles(
 function formatResult(result: RunResult) {
   const lines = [`Durum: ${result.summary}`]
   for (const t of result.tests) {
-    lines.push(`- ${t.status === 'passed' ? '✅' : t.status === 'failed' ? '❌' : '⏭️'} ${t.fullName}`)
+    lines.push(
+      `- ${t.status === 'passed' ? '✅' : t.status === 'failed' ? '❌' : '⏭️'} ${t.fullName}`,
+    )
   }
   for (const e of result.typeErrors) {
     lines.push(`- ⚠️ Tip hatası ${e.file}:${e.line} ${e.code}: ${e.message.split('\n')[0]}`)
@@ -84,7 +87,9 @@ export function buildReviewPrompt(input: {
     `## Görev (${question.code} · ${meta.title})\n\n${task.trim()}`,
   ]
   if (rubric.length > 0) {
-    sections.push(`## Değerlendirme listesi\n\n${rubric.map((r, i) => `${i + 1}. ${r}`).join('\n')}`)
+    sections.push(
+      `## Değerlendirme listesi\n\n${rubric.map((r, i) => `${i + 1}. ${r}`).join('\n')}`,
+    )
   }
   sections.push(
     `## Kodum\n\n${

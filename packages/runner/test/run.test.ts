@@ -82,7 +82,9 @@ describe.concurrent('code görevleri', () => {
 
   it('React bileşenini RTL ile test eder', async () => {
     const question = q('0.1.6')
-    expect((await runQuestion(paths, question, { target: starter(question) })).status).toBe('failed')
+    expect((await runQuestion(paths, question, { target: starter(question) })).status).toBe(
+      'failed',
+    )
     const passing = await runQuestion(paths, question, { target: await solutionDir(question) })
     expect(passing.status, JSON.stringify(passing, null, 2)).toBe('passed')
   })
@@ -108,7 +110,10 @@ describe.concurrent('code görevleri', () => {
   it('tip hatalarını öğrenci dosyası yoluyla raporlar', async () => {
     const question = q('0.1.3')
     const dir = await solutionDir(question)
-    await writeFile(path.join(dir, 'sum.ts'), 'export function sum(a: number, b: number): number {\n  return `${a}${b}`\n}\n')
+    await writeFile(
+      path.join(dir, 'sum.ts'),
+      'export function sum(a: number, b: number): number {\n  return `${a}${b}`\n}\n',
+    )
     const result = await runQuestion(paths, question, { target: dir })
     expect(result.status).toBe('failed')
     expect(result.typeErrors[0]).toMatchObject({ file: 'sum.ts', line: 2, code: 'TS2322' })
@@ -124,9 +129,11 @@ describe.concurrent('test yazma görevleri (mutation testing)', () => {
     expect(result.mutants?.every((m) => !m.caught)).toBe(true)
   })
 
-  it('referans testler impl üzerinde geçer ve tüm mutant\'ları yakalar', async () => {
+  it("referans testler impl üzerinde geçer ve tüm mutant'ları yakalar", async () => {
     const question = q('0.1.5')
-    const result = await runQuestion(paths, question, { target: path.join(question.dir, 'solution') })
+    const result = await runQuestion(paths, question, {
+      target: path.join(question.dir, 'solution'),
+    })
     expect(result.status, JSON.stringify(result, null, 2)).toBe('passed')
     expect(result.mutants).toEqual([
       { id: 'ignores-b', label: 'ikinci sayıyı yok sayan versiyon', caught: true },
@@ -136,7 +143,7 @@ describe.concurrent('test yazma görevleri (mutation testing)', () => {
 })
 
 describe.concurrent('project görevleri', () => {
-  it('öğrencinin projesine karşı kalır, checkpoint\'e karşı geçer', async () => {
+  it("öğrencinin projesine karşı kalır, checkpoint'e karşı geçer", async () => {
     const question = q('0.1.8')
     const failing = await runQuestion(paths, question)
     expect(failing.status).toBe('failed')
@@ -154,14 +161,21 @@ describe('workspace akışı', () => {
     const dir = workspaceDir(paths, question)
     expect(await readFile(path.join(dir, 'sum.ts'), 'utf8')).toContain('return 0')
 
-    await writeWorkspaceFile(paths, question, 'sum.ts', 'export function sum(a: number, b: number): number {\n  return a + b\n}\n')
+    await writeWorkspaceFile(
+      paths,
+      question,
+      'sum.ts',
+      'export function sum(a: number, b: number): number {\n  return a + b\n}\n',
+    )
     const result = await runQuestion(paths, question)
     expect(result.status).toBe('passed')
   })
 
   it('düzenlenemeyen dosyaya yazmayı reddeder', async () => {
     const question = q('0.1.6')
-    await expect(writeWorkspaceFile(paths, question, 'Preview.tsx', 'x')).rejects.toThrow('düzenlenemez')
+    await expect(writeWorkspaceFile(paths, question, 'Preview.tsx', 'x')).rejects.toThrow(
+      'düzenlenemez',
+    )
     await expect(writeWorkspaceFile(paths, question, '../../x.ts', 'x')).rejects.toThrow()
   })
 })

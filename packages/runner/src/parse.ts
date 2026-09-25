@@ -82,14 +82,23 @@ export interface RawTypeDiagnostic {
 
 const TSC_LINE = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/
 
-export function parseTscOutput(output: string): { diagnostics: RawTypeDiagnostic[]; global: string[] } {
+export function parseTscOutput(output: string): {
+  diagnostics: RawTypeDiagnostic[]
+  global: string[]
+} {
   const diagnostics: RawTypeDiagnostic[] = []
   const global: string[] = []
   for (const line of output.replace(ANSI, '').split('\n')) {
     const match = TSC_LINE.exec(line)
     if (match) {
       const [, file, l, c, code, message] = match
-      diagnostics.push({ file: file!, line: Number(l), column: Number(c), code: code!, message: message! })
+      diagnostics.push({
+        file: file!,
+        line: Number(l),
+        column: Number(c),
+        code: code!,
+        message: message!,
+      })
     } else if (/^\s{2,}\S/.test(line) && diagnostics.length > 0) {
       diagnostics[diagnostics.length - 1]!.message += `\n${line.trimEnd()}`
     } else if (/error TS\d+/.test(line)) {
@@ -183,7 +192,14 @@ export function applyTypeErrorsToTests(
         test.location = location
       }
     } else {
-      tests.push({ name: range.name, fullName: range.fullName, status: 'failed', failedBy: 'type', message, location })
+      tests.push({
+        name: range.name,
+        fullName: range.fullName,
+        status: 'failed',
+        failedBy: 'type',
+        message,
+        location,
+      })
     }
   }
   return remaining

@@ -55,6 +55,7 @@ import type {
 import type { EventHub, WriteTracker } from './events.ts'
 import type { CurriculumStore } from './store.ts'
 import { readFile } from 'node:fs/promises'
+import { collectEditorTypes, type EditorLib } from './editor-types.ts'
 
 export interface AppContext {
   paths: RepoPaths
@@ -98,8 +99,12 @@ function moduleSummary(module: ModuleEntry, progress: Progress): ModuleSummaryDt
   }
 }
 
-const navRef = (entry: { code: string; meta?: { title: string }; frontmatter?: { title: string } } | undefined): NavRef | undefined =>
-  entry ? { code: entry.code, title: entry.meta?.title ?? entry.frontmatter?.title ?? '' } : undefined
+const navRef = (
+  entry: { code: string; meta?: { title: string }; frontmatter?: { title: string } } | undefined,
+): NavRef | undefined =>
+  entry
+    ? { code: entry.code, title: entry.meta?.title ?? entry.frontmatter?.title ?? '' }
+    : undefined
 
 function requireQuestion(curriculum: Curriculum, code: string): QuestionEntry {
   const question = findQuestion(curriculum, code)
@@ -135,12 +140,18 @@ export function createApp(ctx: AppContext) {
   app.get('/health', (c) => c.json({ ok: true }))
 
   app.get('/curriculum', async (c) => {
-    const [curriculum, progress] = await Promise.all([store.get(), readProgress(paths.progressFile)])
+    const [curriculum, progress] = await Promise.all([
+      store.get(),
+      readProgress(paths.progressFile),
+    ])
     const last = progress.lastVisited ? findQuestion(curriculum, progress.lastVisited) : undefined
     const body: CurriculumDto = {
       modules: curriculum.modules.map((m) => moduleSummary(m, progress)),
       lastVisited: last ? { code: last.code, title: last.meta.title } : undefined,
-      errors: curriculum.errors.map((e) => ({ file: path.relative(paths.repoRoot, e.file), message: e.message })),
+      errors: curriculum.errors.map((e) => ({
+        file: path.relative(paths.repoRoot, e.file),
+        message: e.message,
+      })),
       env: { tmdbToken: ctx.hasTmdbToken() },
     }
     return c.json(body)
@@ -149,7 +160,10 @@ export function createApp(ctx: AppContext) {
   app.get('/progress', async (c) => c.json(await readProgress(paths.progressFile)))
 
   app.get('/modules/:code', async (c) => {
-    const [curriculum, progress] = await Promise.all([store.get(), readProgress(paths.progressFile)])
+    const [curriculum, progress] = await Promise.all([
+      store.get(),
+      readProgress(paths.progressFile),
+    ])
     const module = findModule(curriculum, c.req.param('code'))
     if (!module) throw new HTTPException(404, { message: 'Modül bulunamadı' })
     const body: ModuleDto = {
@@ -161,7 +175,10 @@ export function createApp(ctx: AppContext) {
   })
 
   app.get('/lessons/:code', async (c) => {
-    const [curriculum, progress] = await Promise.all([store.get(), readProgress(paths.progressFile)])
+    const [curriculum, progress] = await Promise.all([
+      store.get(),
+      readProgress(paths.progressFile),
+    ])
     const lesson = findLesson(curriculum, c.req.param('code'))
     if (!lesson) throw new HTTPException(404, { message: 'Ders bulunamadı' })
     const lessons = allLessons(curriculum)
@@ -205,18 +222,27 @@ export function createApp(ctx: AppContext) {
         type: 'quiz',
         questionHtml: await store.html(meta.question),
         mode: meta.mode,
-        options: await Promise.all(meta.options.map(async (o, index) => ({ index, html: await store.html(o.text) }))),
+        options: await Promise.all(
+          meta.options.map(async (o, index) => ({ index, html: await store.html(o.text) })),
+        ),
       }
     } else if (meta.type === 'code') {
       const files = await listEditorFiles(paths, question)
-      for (const f of files) if (f.editable) tracker.remember(path.join(workspaceDir(paths, question), f.name), f.content)
+      for (const f of files)
+        if (f.editable)
+          tracker.remember(path.join(workspaceDir(paths, question), f.name), f.content)
       body = {
         ...base,
         type: 'code',
         promptHtml,
         files,
         workspacePath: question.id,
-        preview: meta.preview,
+        preview: meta.preview
+          ? {
+              entry: meta.preview.entry,
+              modulePath: `/@fs${path.join(workspaceDir(paths, question), meta.preview.entry)}`,
+            }
+          : undefined,
         hasRubric: Boolean(meta.rubric),
         mutants: meta.testWriting?.mutants,
         hasSolutionNotes: Boolean(question.solutionNotesPath),
@@ -230,7 +256,10 @@ export function createApp(ctx: AppContext) {
         promptHtml,
         project: meta.project,
         projectDir,
-        focusFiles: meta.focusFiles.map((f) => ({ path: f, absolutePath: path.join(projectDir, f) })),
+        focusFiles: meta.focusFiles.map((f) => ({
+          path: f,
+          absolutePath: path.join(projectDir, f),
+        })),
         hasTests: question.testFiles.length > 0,
         hasRubric: Boolean(meta.rubric),
         command: `pnpm check ${question.code}`,
@@ -242,8 +271,12 @@ export function createApp(ctx: AppContext) {
 
   app.post('/questions/:code/answer', async (c) => {
     const question = requireQuestion(await store.get(), c.req.param('code'))
-    if (question.meta.type !== 'quiz') throw new HTTPException(400, { message: 'Quiz sorusu değil' })
-    const { selected } = await json(c.req.raw, z.object({ selected: z.array(z.number().int().min(0)).min(1) }))
+    if (question.meta.type !== 'quiz')
+      throw new HTTPException(400, { message: 'Quiz sorusu değil' })
+    const { selected } = await json(
+      c.req.raw,
+      z.object({ selected: z.array(z.number().int().min(0)).min(1) }),
+    )
     const meta = question.meta
     const chosen = new Set(selected)
     const correct = meta.options.every((o, i) => o.correct === chosen.has(i))
@@ -266,7 +299,10 @@ export function createApp(ctx: AppContext) {
 
   app.put('/questions/:code/files', async (c) => {
     const question = requireQuestion(await store.get(), c.req.param('code'))
-    const { name, content } = await json(c.req.raw, z.object({ name: z.string().min(1), content: z.string() }))
+    const { name, content } = await json(
+      c.req.raw,
+      z.object({ name: z.string().min(1), content: z.string() }),
+    )
     tracker.remember(path.join(workspaceDir(paths, question), name), content)
     try {
       await writeWorkspaceFile(paths, question, name, content)
@@ -281,11 +317,17 @@ export function createApp(ctx: AppContext) {
     const question = requireQuestion(curriculum, c.req.param('code'))
     if (question.type === 'quiz') throw new HTTPException(400, { message: 'Quiz çalıştırılamaz' })
     if (question.type === 'project' && question.testFiles.length === 0) {
-      throw new HTTPException(400, { message: 'Bu görevin testi yok; değerlendirme listesiyle tamamlanır.' })
+      throw new HTTPException(400, {
+        message: 'Bu görevin testi yok; değerlendirme listesiyle tamamlanır.',
+      })
     }
     const result = await runQuestion(paths, question)
     await saveLastResult(paths, question.id, result)
-    const progress = await recordAttempt(paths.progressFile, question.id, result.status === 'passed')
+    const progress = await recordAttempt(
+      paths.progressFile,
+      question.id,
+      result.status === 'passed',
+    )
     const body: RunResponseDto = {
       result,
       progress: progress.questions[question.id]!,
@@ -296,10 +338,12 @@ export function createApp(ctx: AppContext) {
 
   app.post('/questions/:code/reset', async (c) => {
     const question = requireQuestion(await store.get(), c.req.param('code'))
-    if (question.type !== 'code') throw new HTTPException(400, { message: 'Yalnızca kod görevleri sıfırlanabilir' })
+    if (question.type !== 'code')
+      throw new HTTPException(400, { message: 'Yalnızca kod görevleri sıfırlanabilir' })
     await resetWorkspace(paths, question)
     const files = await listEditorFiles(paths, question)
-    for (const f of files) if (f.editable) tracker.remember(path.join(workspaceDir(paths, question), f.name), f.content)
+    for (const f of files)
+      if (f.editable) tracker.remember(path.join(workspaceDir(paths, question), f.name), f.content)
     return c.json({ files })
   })
 
@@ -317,11 +361,14 @@ export function createApp(ctx: AppContext) {
 
   app.get('/questions/:code/solution', async (c) => {
     const question = requireQuestion(await store.get(), c.req.param('code'))
-    if (question.type !== 'code') throw new HTTPException(400, { message: 'Çözüm yalnızca kod görevlerinde var' })
+    if (question.type !== 'code')
+      throw new HTTPException(400, { message: 'Çözüm yalnızca kod görevlerinde var' })
     await recordSolutionView(paths.progressFile, question.id)
     const body: SolutionDto = {
       files: await readSolutionFiles(question),
-      notesHtml: question.solutionNotesPath ? await store.fileHtml(question.solutionNotesPath) : undefined,
+      notesHtml: question.solutionNotesPath
+        ? await store.fileHtml(question.solutionNotesPath)
+        : undefined,
     }
     return c.json(body)
   })
@@ -336,7 +383,11 @@ export function createApp(ctx: AppContext) {
       files: await collectReviewFiles(paths, question),
       lastResult: (await loadLastResult(paths, question.id))?.result,
     })
-    const body: ReviewPromptDto = { prompt, chars: prompt.length, warn: prompt.length > REVIEW_PROMPT_WARN_CHARS }
+    const body: ReviewPromptDto = {
+      prompt,
+      chars: prompt.length,
+      warn: prompt.length > REVIEW_PROMPT_WARN_CHARS,
+    }
     return c.json(body)
   })
 
@@ -366,10 +417,42 @@ export function createApp(ctx: AppContext) {
     }),
   )
 
+  // Monaco editörünün tip tanımları (bir kez hesaplanır, tarayıcı da önbelleğe alır)
+  let editorTypes: Promise<EditorLib[]> | undefined
+  app.get('/editor-types', async (c) => {
+    editorTypes ??= (async () => {
+      const testUtils = await readFile(path.join(paths.testEnvDir, 'editor.d.ts'), 'utf8')
+      return collectEditorTypes(paths.repoRoot, [
+        { path: 'file:///test-env/index.d.ts', content: testUtils },
+        // import.meta.env (vite/client'ın öğrenci kodu için gereken kısmı)
+        {
+          path: 'file:///globals.d.ts',
+          content:
+            'interface ImportMetaEnv { readonly [key: string]: string | undefined; readonly VITE_TMDB_TOKEN: string }\n' +
+            'interface ImportMeta { readonly env: ImportMetaEnv }\n',
+        },
+        // Testlerdeki jest-dom eşleştiricileri (toBeInTheDocument vb.)
+        {
+          path: 'file:///setup.d.ts',
+          content: "import '@testing-library/jest-dom/vitest'\nexport {}\n",
+        },
+      ])
+    })()
+    c.header('Cache-Control', 'max-age=3600')
+    return c.json(await editorTypes)
+  })
+
   // Tüm soruların listesi (CLI ve hızlı arama için)
   app.get('/questions', async (c) => {
     const curriculum = await store.get()
-    return c.json(allQuestions(curriculum).map((q) => ({ id: q.id, code: q.code, title: q.meta.title, type: q.type })))
+    return c.json(
+      allQuestions(curriculum).map((q) => ({
+        id: q.id,
+        code: q.code,
+        title: q.meta.title,
+        type: q.type,
+      })),
+    )
   })
 
   return app

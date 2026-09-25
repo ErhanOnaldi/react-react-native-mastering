@@ -7,7 +7,11 @@ import { EventHub, watchCurriculum, watchWorkspace, WriteTracker } from './event
 import { CurriculumStore } from './store.ts'
 
 const PORT = Number(process.env.RM_SERVER_PORT ?? 4317)
-const paths = resolvePaths(DEFAULT_REPO_ROOT)
+// RM_CURRICULUM / RM_PROJECTS: geliştirme sırasında başka bir müfredatla (örn. fixture) çalıştırmak için
+const paths = resolvePaths(DEFAULT_REPO_ROOT, {
+  ...(process.env.RM_CURRICULUM ? { curriculumRoot: path.resolve(process.env.RM_CURRICULUM) } : {}),
+  ...(process.env.RM_PROJECTS ? { projectsRoot: path.resolve(process.env.RM_PROJECTS) } : {}),
+})
 const store = new CurriculumStore(paths.curriculumRoot)
 const hub = new EventHub()
 const tracker = new WriteTracker()
@@ -33,5 +37,7 @@ const app = createApp({ paths, store, hub, tracker, hasTmdbToken })
 const curriculum = await store.get()
 serve({ fetch: app.fetch, hostname: '127.0.0.1', port: PORT }, (info) => {
   console.log(`▶ React Mastering sunucusu: http://127.0.0.1:${info.port}/api`)
-  console.log(`  ${curriculum.modules.length} modül yüklendi${curriculum.errors.length ? `, ⚠ ${curriculum.errors.length} içerik hatası` : ''}`)
+  console.log(
+    `  ${curriculum.modules.length} modül yüklendi${curriculum.errors.length ? `, ⚠ ${curriculum.errors.length} içerik hatası` : ''}`,
+  )
 })

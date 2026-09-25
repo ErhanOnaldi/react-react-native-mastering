@@ -19,7 +19,10 @@ const { positionals, values } = parseArgs({
 })
 
 const [command, arg] = positionals
-const paths = resolvePaths(DEFAULT_REPO_ROOT, values.curriculum ? { curriculumRoot: path.resolve(values.curriculum) } : {})
+const paths = resolvePaths(
+  DEFAULT_REPO_ROOT,
+  values.curriculum ? { curriculumRoot: path.resolve(values.curriculum) } : {},
+)
 
 let exitCode: number
 switch (command) {

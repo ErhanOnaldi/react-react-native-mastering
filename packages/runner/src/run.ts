@@ -3,9 +3,22 @@ import { existsSync } from 'node:fs'
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type { QuestionEntry } from '@rm/content'
-import { applyTypeErrorsToTests, parseTscOutput, parseVitestReport, toDiagnostic, type RawTypeDiagnostic, type VitestReport } from './parse.ts'
+import {
+  applyTypeErrorsToTests,
+  parseTscOutput,
+  parseVitestReport,
+  toDiagnostic,
+  type RawTypeDiagnostic,
+  type VitestReport,
+} from './parse.ts'
 import { RUNNER_ROOT, type RepoPaths } from './paths.ts'
-import { finalize, type MutantOutcome, type RunResult, type TestOutcome, type TypeDiagnostic } from './result.ts'
+import {
+  finalize,
+  type MutantOutcome,
+  type RunResult,
+  type TestOutcome,
+  type TypeDiagnostic,
+} from './result.ts'
 import { run, type SpawnResult } from './spawn.ts'
 import { ensureWorkspace, restoreReadonlyFiles, workspaceDir } from './workspace.ts'
 
@@ -17,7 +30,8 @@ const TSC_TIMEOUT = 90_000
 /** Testlerde kullanılan sahte ortam değişkenleri (gerçek token asla testlere girmez). */
 const TEST_ENV = { VITE_TMDB_TOKEN: 'test-token', VITE_APP_TITLE: 'Sinema' }
 
-const bin = (paths: RepoPaths, name: string) => path.join(paths.repoRoot, 'node_modules', '.bin', name)
+const bin = (paths: RepoPaths, name: string) =>
+  path.join(paths.repoRoot, 'node_modules', '.bin', name)
 
 function runKey(...parts: string[]) {
   return createHash('sha1').update(parts.join('\0')).digest('hex').slice(0, 12)
@@ -66,11 +80,18 @@ function vitestOutcome(spawned: SpawnResult, report: VitestReport | undefined) {
   if (report) return parseVitestReport(report)
   return {
     tests: [] as TestOutcome[],
-    suiteError: spawned.timedOut ? undefined : spawned.output.trim().slice(-4000) || 'Vitest çalışamadı.',
+    suiteError: spawned.timedOut
+      ? undefined
+      : spawned.output.trim().slice(-4000) || 'Vitest çalışamadı.',
   }
 }
 
-async function runTsc(paths: RepoPaths, runDir: string, files: string[], tsPaths: Record<string, string[]>) {
+async function runTsc(
+  paths: RepoPaths,
+  runDir: string,
+  files: string[],
+  tsPaths: Record<string, string[]>,
+) {
   const tsconfig = path.join(runDir, 'tsconfig.json')
   await writeFile(
     tsconfig,
@@ -81,7 +102,11 @@ async function runTsc(paths: RepoPaths, runDir: string, files: string[], tsPaths
           paths: { '@test-utils': [path.join(paths.testEnvDir, 'index.ts')], ...tsPaths },
           tsBuildInfoFile: path.join(runDir, 'tsbuildinfo'),
         },
-        files: [...files, path.join(paths.testEnvDir, 'setup.ts'), path.join(paths.testEnvDir, 'env.d.ts')],
+        files: [
+          ...files,
+          path.join(paths.testEnvDir, 'setup.ts'),
+          path.join(paths.testEnvDir, 'env.d.ts'),
+        ],
       },
       null,
       2,
@@ -120,7 +145,11 @@ async function mergeTypeErrors(
 
 // ---------- code ----------
 
-async function runCode(paths: RepoPaths, question: QuestionEntry, exerciseDir: string): Promise<RunResult> {
+async function runCode(
+  paths: RepoPaths,
+  question: QuestionEntry,
+  exerciseDir: string,
+): Promise<RunResult> {
   if (question.meta.type !== 'code') throw new Error('code sorusu değil')
   const started = performance.now()
   const runDir = await prepareRunDir(paths, runKey(question.id, exerciseDir))
@@ -134,7 +163,9 @@ async function runCode(paths: RepoPaths, question: QuestionEntry, exerciseDir: s
       alias: { '@exercise': exerciseDir },
       timeoutMs: question.meta.timeoutMs ?? DEFAULT_CODE_TIMEOUT,
     }),
-    runTsc(paths, runDir, [...exerciseFiles, ...testFiles], { '@exercise/*': [`${exerciseDir}/*`] }),
+    runTsc(paths, runDir, [...exerciseFiles, ...testFiles], {
+      '@exercise/*': [`${exerciseDir}/*`],
+    }),
   ])
 
   const outcome = vitestOutcome(vitest.spawned, vitest.report)
@@ -155,8 +186,13 @@ async function runCode(paths: RepoPaths, question: QuestionEntry, exerciseDir: s
 
 // ---------- test yazma (mutation testing) ----------
 
-async function runTestWriting(paths: RepoPaths, question: QuestionEntry, testsDir: string): Promise<RunResult> {
-  if (question.meta.type !== 'code' || !question.meta.testWriting) throw new Error('test yazma sorusu değil')
+async function runTestWriting(
+  paths: RepoPaths,
+  question: QuestionEntry,
+  testsDir: string,
+): Promise<RunResult> {
+  if (question.meta.type !== 'code' || !question.meta.testWriting)
+    throw new Error('test yazma sorusu değil')
   const started = performance.now()
   const runDir = await prepareRunDir(paths, runKey(question.id, testsDir, 'mutation'))
   const implDir = path.join(question.dir, 'impl')
@@ -213,14 +249,21 @@ async function runTestWriting(paths: RepoPaths, question: QuestionEntry, testsDi
     mutants,
     timedOut: impl.spawned.timedOut,
     suiteError,
-    notice: realTests.length === 0 && !suiteError ? 'En az bir test yazmalısın (it.todo sayılmaz).' : undefined,
+    notice:
+      realTests.length === 0 && !suiteError
+        ? 'En az bir test yazmalısın (it.todo sayılmaz).'
+        : undefined,
     durationMs: Math.round(performance.now() - started),
   })
 }
 
 // ---------- project ----------
 
-async function runProject(paths: RepoPaths, question: QuestionEntry, projectDir: string): Promise<RunResult> {
+async function runProject(
+  paths: RepoPaths,
+  question: QuestionEntry,
+  projectDir: string,
+): Promise<RunResult> {
   if (question.meta.type !== 'project') throw new Error('project sorusu değil')
   const started = performance.now()
   const runDir = await prepareRunDir(paths, runKey(question.id, projectDir))
@@ -238,7 +281,10 @@ async function runProject(paths: RepoPaths, question: QuestionEntry, projectDir:
     }),
     // Projenin kendi tip kontrolü (öğrencinin `pnpm build` ile çalıştırdığı `tsc -b` ile aynı)
     hasTsconfig
-      ? run(bin(paths, 'tsc'), ['-b', '--pretty', 'false'], { cwd: projectDir, timeoutMs: TSC_TIMEOUT })
+      ? run(bin(paths, 'tsc'), ['-b', '--pretty', 'false'], {
+          cwd: projectDir,
+          timeoutMs: TSC_TIMEOUT,
+        })
       : Promise.resolve(undefined),
   ])
 
@@ -279,7 +325,11 @@ export async function runQuestion(
     if (question.testFiles.length === 0) {
       throw new Error('Bu görevin testi yok; değerlendirme listesiyle tamamlanır.')
     }
-    return runProject(paths, question, options.target ?? path.join(paths.projectsRoot, meta.project))
+    return runProject(
+      paths,
+      question,
+      options.target ?? path.join(paths.projectsRoot, meta.project),
+    )
   }
 
   if (!options.target) {

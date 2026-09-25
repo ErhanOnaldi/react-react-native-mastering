@@ -12,7 +12,11 @@ import { watch } from 'chokidar'
 import pc from 'picocolors'
 import { printHeader, printResult } from './print.ts'
 
-export async function check(paths: RepoPaths, code: string | undefined, options: { watch: boolean }) {
+export async function check(
+  paths: RepoPaths,
+  code: string | undefined,
+  options: { watch: boolean },
+) {
   const curriculum = await loadCurriculum(paths.curriculumRoot)
   const target = code ?? (await readProgress(paths.progressFile)).lastVisited
   if (!target) {
@@ -30,7 +34,9 @@ export async function check(paths: RepoPaths, code: string | undefined, options:
   }
   if (question.type === 'project' && question.testFiles.length === 0) {
     console.log(
-      pc.yellow(`${question.code} testsiz bir görev: platformdaki review prompt'unu kullan, sonra "Tamamladım" de.`),
+      pc.yellow(
+        `${question.code} testsiz bir görev: platformdaki review prompt'unu kullan, sonra "Tamamladım" de.`,
+      ),
     )
     return 0
   }
@@ -53,7 +59,9 @@ export async function check(paths: RepoPaths, code: string | undefined, options:
     meta.type === 'project'
       ? path.join(paths.projectsRoot, meta.project, 'src')
       : workspaceDir(paths, question)
-  console.log(pc.dim(`  👀 ${path.relative(paths.repoRoot, watched)} izleniyor (çıkmak için Ctrl+C)`))
+  console.log(
+    pc.dim(`  👀 ${path.relative(paths.repoRoot, watched)} izleniyor (çıkmak için Ctrl+C)`),
+  )
   let timer: NodeJS.Timeout | undefined
   let running = false
   watch(watched, { ignoreInitial: true, ignored: /node_modules/ }).on('all', () => {

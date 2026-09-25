@@ -39,7 +39,10 @@ async function listNumberedDirs(parent: string, errors: ContentError[]) {
     const number = Number(match[1])
     const clash = seen.get(number)
     if (clash) {
-      errors.push({ file: dir, message: `Aynı numara iki kez kullanılmış: ${clash} ve ${entry.name}` })
+      errors.push({
+        file: dir,
+        message: `Aynı numara iki kez kullanılmış: ${clash} ve ${entry.name}`,
+      })
       continue
     }
     seen.set(number, entry.name)
@@ -104,7 +107,10 @@ async function loadQuestion(
 
   for (const concept of meta.concepts) {
     if (!concepts[concept]) {
-      errors.push({ file, message: `Tanımsız kavram: "${concept}" (curriculum/concepts.ts'e ekleyin).` })
+      errors.push({
+        file,
+        message: `Tanımsız kavram: "${concept}" (curriculum/concepts.ts'e ekleyin).`,
+      })
     }
   }
 

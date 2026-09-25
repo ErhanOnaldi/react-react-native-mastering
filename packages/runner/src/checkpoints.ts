@@ -40,10 +40,21 @@ export async function checkpointBefore(paths: RepoPaths, project: string, module
   return before.at(-1)
 }
 
-const SKIP = new Set(['node_modules', 'dist', '.vite', 'coverage', 'test-results', 'playwright-report'])
+const SKIP = new Set([
+  'node_modules',
+  'dist',
+  '.vite',
+  'coverage',
+  'test-results',
+  'playwright-report',
+])
 
 /** Proje klasörünü (node_modules vb. hariç) kopyalar; istenirse package.json adını değiştirir. */
-export async function copyProject(src: string, dest: string, options: { packageName?: string } = {}) {
+export async function copyProject(
+  src: string,
+  dest: string,
+  options: { packageName?: string } = {},
+) {
   await rm(dest, { recursive: true, force: true })
   await cp(src, dest, {
     recursive: true,

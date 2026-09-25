@@ -54,7 +54,11 @@ function remarkCallouts() {
         }
         return
       }
-      if ((node.type === 'textDirective' || node.type === 'leafDirective') && parent && index !== undefined) {
+      if (
+        (node.type === 'textDirective' || node.type === 'leafDirective') &&
+        parent &&
+        index !== undefined
+      ) {
         const label = node.children.map((c) => ('value' in c ? c.value : '')).join('')
         const text = `${node.type === 'leafDirective' ? '::' : ':'}${node.name}${label ? `[${label}]` : ''}`
         parent.children.splice(index, 1, { type: 'text', value: text })

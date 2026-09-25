@@ -153,7 +153,7 @@ type RunResult = {
 - Platformun Vite sunucusu `workspace/` dosyalarını `/@fs/` üzerinden iframe'de çalıştırır; kaydedince anında güncellenir (HMR).
 - Önizlemede MSW (tarayıcı) TMDB şeklinde sahte veri döner; gerçek TMDB'ye istek atılmaz.
 - Köşede canlı **istek sayacı** ve açılabilir ağ log'u; tarayıcı destekliyorsa JS heap göstergesi.
-- **200 istekte otomatik durdurma**: "Sonsuz istek döngüsü tespit edildi" — dersin "aha!" anı.
+- **100 istekte otomatik durdurma**: "Sonsuz istek döngüsü tespit edildi" — dersin "aha!" anı.
 - Render hataları (örn. "Too many re-renders") önizleme içinde yakalanıp gösterilir.
 
 ## 7. Arayüz

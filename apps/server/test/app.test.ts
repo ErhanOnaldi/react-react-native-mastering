@@ -42,7 +42,11 @@ beforeAll(async () => {
   })
 })
 
-async function call<T>(method: string, url: string, body?: unknown): Promise<{ status: number; data: T }> {
+async function call<T>(
+  method: string,
+  url: string,
+  body?: unknown,
+): Promise<{ status: number; data: T }> {
   const response = await app.request(url, {
     method,
     headers: { host: 'localhost:5173', 'content-type': 'application/json' },
@@ -57,7 +61,11 @@ describe('müfredat', () => {
     expect(data.errors).toEqual([])
     expect(data.env.tmdbToken).toBe(true)
     expect(data.modules[0]?.lessons[0]?.questions).toHaveLength(10)
-    expect(data.modules[0]?.lessons[0]?.questions[0]).toMatchObject({ code: '0.1.1', type: 'quiz', status: 'not-started' })
+    expect(data.modules[0]?.lessons[0]?.questions[0]).toMatchObject({
+      code: '0.1.1',
+      type: 'quiz',
+      status: 'not-started',
+    })
   })
 
   it('ders metnini HTML olarak döner', async () => {
@@ -80,20 +88,28 @@ describe('quiz', () => {
     expect(JSON.stringify(q)).not.toContain('correct')
     expect(q.next?.code).toBe('0.1.2')
 
-    const wrong = await call<AnswerResultDto>('POST', '/api/questions/0.1.1/answer', { selected: [1] })
+    const wrong = await call<AnswerResultDto>('POST', '/api/questions/0.1.1/answer', {
+      selected: [1],
+    })
     expect(wrong.data.correct).toBe(false)
     expect(wrong.data.progress.status).toBe('in-progress')
 
-    const right = await call<AnswerResultDto>('POST', '/api/questions/0.1.1/answer', { selected: [0] })
+    const right = await call<AnswerResultDto>('POST', '/api/questions/0.1.1/answer', {
+      selected: [0],
+    })
     expect(right.data.correct).toBe(true)
     expect(right.data.options[1]?.explanationHtml).toContain('string birleştirme')
     expect(right.data.progress).toMatchObject({ status: 'passed', attempts: 2 })
   })
 
   it('çok cevaplı soruda tüm doğru şıkları ister', async () => {
-    const partial = await call<AnswerResultDto>('POST', '/api/questions/0.1.2/answer', { selected: [0] })
+    const partial = await call<AnswerResultDto>('POST', '/api/questions/0.1.2/answer', {
+      selected: [0],
+    })
     expect(partial.data.correct).toBe(false)
-    const full = await call<AnswerResultDto>('POST', '/api/questions/0.1.2/answer', { selected: [0, 2] })
+    const full = await call<AnswerResultDto>('POST', '/api/questions/0.1.2/answer', {
+      selected: [0, 2],
+    })
     expect(full.data.correct).toBe(true)
   })
 
@@ -131,7 +147,10 @@ describe('kod görevi akışı', () => {
   })
 
   it('salt okunur dosyaya yazmayı reddeder', async () => {
-    const { status } = await call('PUT', '/api/questions/0.1.6/files', { name: 'Preview.tsx', content: 'x' })
+    const { status } = await call('PUT', '/api/questions/0.1.6/files', {
+      name: 'Preview.tsx',
+      content: 'x',
+    })
     expect(status).toBe(400)
   })
 
@@ -140,7 +159,10 @@ describe('kod görevi akışı', () => {
     expect(none.data).toEqual({ hints: [], total: 1 })
     const one = await call<HintsDto>('GET', '/api/questions/0.1.3/hints?count=5')
     expect(one.data.hints).toHaveLength(1)
-    expect((await readProgress(paths.progressFile)).questions['00-deneme/01-ilk-ders/03-toplama']?.hintsUsed).toBe(1)
+    expect(
+      (await readProgress(paths.progressFile)).questions['00-deneme/01-ilk-ders/03-toplama']
+        ?.hintsUsed,
+    ).toBe(1)
   })
 
   it('çözümü ve notlarını verir, erken bakışı işaretler', async () => {
@@ -152,7 +174,10 @@ describe('kod görevi akışı', () => {
 
   it('sıfırlayınca başlangıç koduna döner', async () => {
     await call('PUT', '/api/questions/0.1.3/files', { name: 'sum.ts', content: '// değişti' })
-    const { data } = await call<{ files: CodeQuestionDto['files'] }>('POST', '/api/questions/0.1.3/reset')
+    const { data } = await call<{ files: CodeQuestionDto['files'] }>(
+      'POST',
+      '/api/questions/0.1.3/reset',
+    )
     expect(data.files[0]?.content).toContain('return 0')
   })
 
@@ -168,14 +193,18 @@ describe('proje görevleri', () => {
   it('VS Code bilgilerini ve komutu verir', async () => {
     const { data } = await call<ProjectQuestionDto>('GET', '/api/questions/0.1.8')
     expect(data.command).toBe('pnpm check 0.1.8')
-    expect(data.focusFiles[0]?.absolutePath).toBe(path.join(paths.projectsRoot, 'mini', 'src/greet.ts'))
+    expect(data.focusFiles[0]?.absolutePath).toBe(
+      path.join(paths.projectsRoot, 'mini', 'src/greet.ts'),
+    )
     expect(data.hasTests).toBe(true)
   })
 
   it('testsiz görev elle tamamlanır', async () => {
     const run = await call('POST', '/api/questions/0.1.9/run')
     expect(run.status).toBe(400)
-    const done = await call<{ progress: { status: string } }>('POST', '/api/questions/0.1.9/done', { done: true })
+    const done = await call<{ progress: { status: string } }>('POST', '/api/questions/0.1.9/done', {
+      done: true,
+    })
     expect(done.data.progress.status).toBe('passed')
   })
 })

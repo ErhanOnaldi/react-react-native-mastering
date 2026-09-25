@@ -94,7 +94,12 @@ export async function listEditorFiles(
   const files: EditorFile[] = []
 
   for (const name of question.meta.files) {
-    files.push({ name, content: await readFile(path.join(dir, name), 'utf8'), editable: true, kind: 'code' })
+    files.push({
+      name,
+      content: await readFile(path.join(dir, name), 'utf8'),
+      editable: true,
+      kind: 'code',
+    })
   }
   for (const name of question.starterFiles) {
     if (editable.has(name)) continue
