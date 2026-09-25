@@ -88,6 +88,31 @@ async function validateCode(paths: RepoPaths, question: QuestionEntry, problems:
   }
 }
 
+/** Checkpoint'in kendi test paketi (varsa) — referans çözüm kendi testlerini de geçmeli. */
+async function runCheckpointOwnTests(paths: RepoPaths, dir: string): Promise<string | undefined> {
+  const pkgFile = path.join(dir, 'package.json')
+  const pkg = JSON.parse(await readFile(pkgFile, 'utf8').catch(() => '{}')) as {
+    scripts?: Record<string, string>
+  }
+  if (!pkg.scripts?.test?.includes('vitest')) return undefined
+  return new Promise((resolve) => {
+    const child = spawn(path.join(paths.repoRoot, 'node_modules', '.bin', 'vitest'), ['run'], {
+      cwd: dir,
+      env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1', CI: '1' },
+    })
+    let out = ''
+    child.stdout.on('data', (c: Buffer) => (out += c.toString()))
+    child.stderr.on('data', (c: Buffer) => (out += c.toString()))
+    const timer = setTimeout(() => child.kill('SIGKILL'), 300_000)
+    child.on('close', (code) => {
+      clearTimeout(timer)
+      resolve(code === 0 ? undefined : out.trim().split('\n').slice(-25).join('\n    '))
+    })
+  })
+}
+
+const checkedOwnTests = new Set<string>()
+
 async function validateProject(
   paths: RepoPaths,
   question: QuestionEntry,
@@ -118,6 +143,16 @@ async function validateProject(
       where,
       message: `Checkpoint ${after.label} testleri geçmiyor:\n    ${describeFailure(result)}`,
     })
+  }
+  if (!checkedOwnTests.has(after.dir)) {
+    checkedOwnTests.add(after.dir)
+    const ownFailure = await runCheckpointOwnTests(paths, afterDir)
+    if (ownFailure) {
+      problems.push({
+        where: `checkpoints/${meta.project}/${after.label}`,
+        message: `Checkpoint'in kendi testleri geçmiyor:\n    ${ownFailure}`,
+      })
+    }
   }
   if (before) {
     const beforeDir = path.join(
@@ -245,7 +280,7 @@ function conceptReport(
 export async function validate(paths: RepoPaths, options: ValidateOptions) {
   const started = performance.now()
   const curriculum = await loadCurriculum(paths.curriculumRoot)
-    // Modül filtresi varsa yalnızca o modülün (ve modüller dışı ortak dosyaların) hataları sayılır
+  // Modül filtresi varsa yalnızca o modülün (ve modüller dışı ortak dosyaların) hataları sayılır
   const modulesDir = path.join(paths.curriculumRoot, 'modules') + path.sep
   const filteredModuleDir = curriculum.modules.find((m) => m.number === options.module)?.dir
   const relevantErrors = curriculum.errors.filter((e) => {
@@ -253,7 +288,9 @@ export async function validate(paths: RepoPaths, options: ValidateOptions) {
     if (!e.file.startsWith(modulesDir)) return true
     const prefix = String(options.module).padStart(2, '0') + '-'
     const moduleFolder = e.file.slice(modulesDir.length).split(path.sep)[0] ?? ''
-    return filteredModuleDir ? e.file.startsWith(filteredModuleDir + path.sep) : moduleFolder.startsWith(prefix)
+    return filteredModuleDir
+      ? e.file.startsWith(filteredModuleDir + path.sep)
+      : moduleFolder.startsWith(prefix)
   })
   const problems: Problem[] = relevantErrors.map((e) => ({
     where: rel(paths, e.file),

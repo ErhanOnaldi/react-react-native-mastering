@@ -242,6 +242,7 @@ defineQuestion({
 
 - `curriculum/checkpoints/sinema/start` = öğrencinin başlangıçtaki projesi. `curriculum/checkpoints/sinema/NN` = NN. modülün **sonundaki** tam, doğrulanmış proje (bir önceki checkpoint + o modülün tüm proje görevleri).
 - Her checkpoint **tam bir proje kopyasıdır** (node_modules hariç): `tsc -b` hatasız geçmeli.
+- 10. modülden itibaren checkpoint'in **kendi test paketi** de doğrulamada çalıştırılır ve geçmelidir. Testler gerçek `.env`'e bağlı olamaz: Vitest ayarında `test.env` ile sahte token verilir, tüm ağ MSW ile taklit edilir.
 - Modül NN'deki project testleri `checkpoints/sinema/NN`'e karşı **geçmeli**, bir önceki checkpoint'e karşı **kalmalı**.
 - Checkpoint `package.json`'ına yeni bağımlılık eklenirse, sürümü kök `pnpm-workspace.yaml` catalog'undaki sürümle AYNI olmalı ve paket kök `package.json`'da da bulunmalı (doğrulama, checkpoint'i kökteki node_modules ile çalıştırır).
 - Sinema'nın modül modül içeriği: `docs/curriculum-plan.md` → "Sinema hikâyesi". Dosya yolları ve export adları oradaki sözleşmeye uymalı; sonraki modüller onlara dayanır.
