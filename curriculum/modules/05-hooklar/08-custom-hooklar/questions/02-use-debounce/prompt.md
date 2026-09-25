@@ -1,0 +1,1 @@
+Sinema aramasında her tuş için istek atmak istemiyoruz. `useDebounce<T>(value, delay)` ilk değeri hemen versin; değişiklikten sonra yalnızca son değeri `delay` ms sessizlikten sonra döndürsün. Her yeni değer/eski timer için cleanup yap. Testler fake timers kullanır.

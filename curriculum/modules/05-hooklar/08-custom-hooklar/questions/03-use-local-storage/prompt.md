@@ -1,0 +1,1 @@
+Favori id’leri yenilemede kaybolmasın. `useLocalStorage<T>(key, initial)` state benzeri `[value, setValue]` tuple’ı dönsün. İlk render’da saklı JSON varsa oku; yoksa veya bozuksa `initial` kullan. Setter hem doğrudan değeri hem `old => newValue` biçiminde updater fonksiyonunu kabul etsin; değişiklik state ve `localStorage` içine yazılsın.

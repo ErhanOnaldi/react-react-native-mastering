@@ -1,0 +1,1 @@
+Önce 550 gösteriliyor. Aynı bileşene 27205 `id` prop’u verildiğinde başlık “Başlangıç” olmalı. Başlangıç kodunun effect’i `[]` ile yalnızca ilk `id`’yi yakalıyor. Gerekli dependency’yi ekle; Bearer başlığını koru.

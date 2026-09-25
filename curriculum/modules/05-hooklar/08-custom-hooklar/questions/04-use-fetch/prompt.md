@@ -1,0 +1,1 @@
+Üç bileşendeki fetch kodu kopyalanıyor. `useFetch<T>(url: string | null)` yaz: null → idle ve istek yok; URL → loading, başarılı JSON → success/data, HTTP hatası → error. TMDB Bearer başlığı zorunlu. URL değişimi ve unmount cleanup’ında önceki isteği `AbortController` ile iptal et.

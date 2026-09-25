@@ -1,0 +1,1 @@
+Üç mekanizmayı birleştir: `useMovieSearch(query, wait = 200)`. `query` değişimini debounce et; gecikmiş query boşsa `idle` ve istek yok. Doluysa Bearer başlıklı `/search/movie?query=...` isteğini yap. Reducer `idle/loading/success/error` geçişlerini yönetsin. Yeni query’de önceki isteği abort et. Başarıda film başlıkları dönsün.

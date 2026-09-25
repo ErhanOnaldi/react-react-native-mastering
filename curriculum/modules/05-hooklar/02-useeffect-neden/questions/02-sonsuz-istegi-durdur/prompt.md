@@ -1,0 +1,3 @@
+Önizlemeyi aç: başlangıç kodu render içinde `fetch` çağırıyor. Cevap state’i güncelliyor, yeni render yeniden istek atıyor. Sayaç 100’de **“Sonsuz istek döngüsü”** diye durur. Testte `Beklenen: 1 istek` mesajını gör.
+
+`MovieTitle.tsx` içindeki ağ isteğini `useEffect` içine taşı. TMDB için `Authorization: Bearer ${import.meta.env.VITE_TMDB_TOKEN}` başlığını koru. 550 filmi “Dövüş Kulübü” görünmeli ve bir mount için tek istek atılmalı.

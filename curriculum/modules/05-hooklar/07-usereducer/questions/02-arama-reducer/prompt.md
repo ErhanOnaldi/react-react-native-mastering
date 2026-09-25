@@ -1,0 +1,1 @@
+Sinema aramasındaki beş bağlantılı state alanını `State` ve discriminated union `Action` olarak verdik. `searchReducer` içinde `query`, `start`, `success`, `error`, `next` eylemlerini uygula. Query değişince sayfa 1 ve sonuçlar boş olsun. Hata/başarı loading’i kapatsın. Reducer saf kalsın.

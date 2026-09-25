@@ -1,0 +1,1 @@
+Saf reducer’ı bu kez bileşende kullan. “Yükle” düğmesi loading, “Tamamla” düğmesi 3 film sonucunu göstersin. Başlangıç “Hazır”. `useReducer` ve `type` alanlı action union kullan; render durumunu reducer state’inden seç.

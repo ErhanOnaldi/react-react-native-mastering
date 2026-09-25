@@ -1,0 +1,1 @@
+Pekiştirmede kullanıcı davranışını ekrana bağla. Controlled “Film ara” input’u yazmayı izlesin. 30 ms debounce’dan sonra TMDB araması başlasın; cevap başlıkları listelensin. Input silinince liste temizlensin. Timer ve fetch cleanup’larını koru. Bu görev önceki hook mantığını bileşen bağlamında yeniden kurdurur.

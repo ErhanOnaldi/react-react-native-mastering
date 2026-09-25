@@ -1,0 +1,1 @@
+Sinema aramasında “henüz başlamadı”, “yükleniyor” ve “sonuç bulunamadı” farklı durumlar. `Status` bileşeninde union’ın `status` alanına göre bu metinleri göster. Başarıda boş dizi için “Sonuç yok”, dolu dizi için “N film”; hatada “Hata: açıklama” yaz.

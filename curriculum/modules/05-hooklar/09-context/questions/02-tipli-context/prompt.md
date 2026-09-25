@@ -1,0 +1,1 @@
+Favori prop’u dört kat geçiyor. `FavoritesProvider` altındaki tüketiciye örnek `[550]` id listesini Context ile ver. `useFavorites()` provider dışında çağrılırsa `FavoritesProvider` adını içeren açıklayıcı hata fırlatsın. Bu küçük görevde kalıcılık henüz yok; sonraki görevde gelecek.

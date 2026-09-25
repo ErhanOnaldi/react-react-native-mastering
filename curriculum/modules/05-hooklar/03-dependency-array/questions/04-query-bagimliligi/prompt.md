@@ -1,0 +1,1 @@
+Detayda `id` değişti; şimdi arama metni değişiyor. `SearchCount({ query })` boş metinde hiç istek atmasın, dolu metinde `/search/movie?query=...` cevabının `total_results` sayısını göstersin. `query` değişince yeni istek başlasın. `URL` / `searchParams` kullan; Bearer başlığını ekle.

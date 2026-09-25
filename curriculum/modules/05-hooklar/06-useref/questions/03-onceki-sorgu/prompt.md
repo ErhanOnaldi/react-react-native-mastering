@@ -1,0 +1,1 @@
+Kullanıcı sorguyu değiştirince eski metni küçük bir karşılaştırma satırında göster. İlk render’da “Önceki: yok”, `Matrix` → `Dövüş` geçişinde “Önceki: Matrix” olsun. `previous.current` değerini render sırasında yazma; effect’te güncelle.

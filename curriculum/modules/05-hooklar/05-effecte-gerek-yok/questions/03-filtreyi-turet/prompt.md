@@ -1,0 +1,1 @@
+`titles` ve `query` zaten props. Filtreyi bir effect ile ikinci state’e yazınca bir render boyunca eski liste görünüyor. `MovieFilter` listesini render sırasında türet. Türkçe büyük/küçük harf için `toLocaleLowerCase('tr')` kullan. Liste öğelerine sabit `key` ver.

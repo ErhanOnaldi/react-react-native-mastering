@@ -1,0 +1,1 @@
+İki ayrı kart aynı favori durumunu göstermeli. `Provider` id listesini ve `toggle(id)` fonksiyonunu Context’te paylaşsın. Düğme ilk başta “Favoriye ekle”, eklendikten sonra “Favoriden çıkar” yazsın. Dizi güncellemeleri immutable olsun.

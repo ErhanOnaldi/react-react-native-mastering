@@ -1,0 +1,1 @@
+İki sorgu art arda gelir. MSW ilk cevabı bilerek 90 ms, ikincisini 5 ms geciktiriyor. Eski cevap en son dönse de ekranda **Yeni Film** kalmalı. Effect cleanup’ında `ignore` bayrağı kullan; Bearer başlığını ve `[query]` dependency’sini koru.

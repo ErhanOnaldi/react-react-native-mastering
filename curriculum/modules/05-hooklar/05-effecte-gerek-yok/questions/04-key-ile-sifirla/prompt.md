@@ -1,0 +1,1 @@
+Sinema’da her filmin not giriş alanı ayrı kimliğe sahip. Aynı `id` ile yazılan not kalsın; başka `id` geldiğinde boş başlasın. `useEffect` ile notu sıfırlama; alt bileşen `Notes` için React `key`’ini film kimliğine bağla.

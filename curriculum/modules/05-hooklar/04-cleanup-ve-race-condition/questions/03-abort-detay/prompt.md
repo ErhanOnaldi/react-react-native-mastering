@@ -1,0 +1,1 @@
+Film 550’nin cevabı gecikirken `id` 27205 oluyor. Yeni film “Başlangıç” gösterilmeli ve eski fetch’in `AbortSignal`’ı iptal edilmeli. Her effect çalışmasında yeni `AbortController` kur; `signal`’ı fetch’e ver, cleanup’ta abort et. `AbortError` kullanıcıya hata gibi görünmesin.

@@ -1,0 +1,1 @@
+“Aramaya geç” düğmesine basınca “Film ara” input’una odaklan. `useRef<HTMLInputElement>(null)` kullan; ref’i input’a bağla ve click handler’da `.focus()` çağır.

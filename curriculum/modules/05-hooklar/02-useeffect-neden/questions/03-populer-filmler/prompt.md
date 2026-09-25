@@ -1,0 +1,1 @@
+Detay isteği düzeldi. Bu kez `/movie/popular` listesinin ilk filmini göster. İstek sürerken “Yükleniyor” yaz; cevap gelince `results[0].title` göster. Yetkilendirme başlığı zorunlu. Bileşen mount olduğunda istek atılır.
