@@ -1,0 +1,216 @@
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import path from 'node:path'
+import { allLessons, allQuestions, loadCurriculum, type Curriculum, type QuestionEntry } from '@rm/content'
+import { extractCheckedCodeBlocks } from '@rm/content/markdown'
+import {
+  checkpointAfter,
+  checkpointBefore,
+  copyProject,
+  runQuestion,
+  type RepoPaths,
+  type RunResult,
+} from '@rm/runner'
+import { spawn } from 'node:child_process'
+import pc from 'picocolors'
+
+interface Problem {
+  where: string
+  message: string
+}
+
+export interface ValidateOptions {
+  module?: number
+  /** Test çalıştırmalarını atla (yalnızca şema + kod blokları + kavram raporu) */
+  skipRuns: boolean
+  /** Kavram tekrar kuralını hata say */
+  strictConcepts: boolean
+  concurrency: number
+}
+
+async function pool<T>(items: T[], limit: number, work: (item: T) => Promise<void>) {
+  const queue = [...items]
+  await Promise.all(
+    Array.from({ length: Math.min(limit, queue.length) }, async () => {
+      while (queue.length) await work(queue.shift()!)
+    }),
+  )
+}
+
+const rel = (paths: RepoPaths, file: string) => path.relative(paths.repoRoot, file)
+
+function describeFailure(result: RunResult) {
+  const failed = result.tests.filter((t) => t.status === 'failed').map((t) => `✗ ${t.fullName}: ${t.message?.split('\n')[0] ?? ''}`)
+  const types = result.typeErrors.map((e) => `⚠ ${e.file}:${e.line} ${e.code} ${e.message.split('\n')[0]}`)
+  const mutants = (result.mutants ?? []).filter((m) => !m.caught).map((m) => `✗ mutant kaçtı: ${m.label}`)
+  return [result.summary, ...failed, ...types, ...mutants, result.output ?? ''].filter(Boolean).join('\n    ')
+}
+
+async function validateCode(paths: RepoPaths, question: QuestionEntry, problems: Problem[]) {
+  const meta = question.meta
+  if (meta.type !== 'code') return
+  const where = `${question.code} ${rel(paths, question.dir)}`
+  const scratch = path.join(paths.cacheDir, 'validate', question.id.replaceAll('/', '__'))
+  await rm(scratch, { recursive: true, force: true })
+
+  // Çözüm: test yazmada doğrudan solution/ (testler), normal görevde starter + solution birleşimi
+  let solutionTarget = path.join(question.dir, 'solution')
+  if (!meta.testWriting) {
+    solutionTarget = path.join(scratch, 'solution')
+    await mkdir(solutionTarget, { recursive: true })
+    await cp(path.join(question.dir, 'starter'), solutionTarget, { recursive: true })
+    await cp(path.join(question.dir, 'solution'), solutionTarget, { recursive: true, force: true })
+  }
+  const [solution, starter] = await Promise.all([
+    runQuestion(paths, question, { target: solutionTarget }),
+    runQuestion(paths, question, { target: path.join(question.dir, 'starter') }),
+  ])
+  if (solution.status !== 'passed') {
+    problems.push({ where, message: `Çözüm geçmiyor:\n    ${describeFailure(solution)}` })
+  }
+  if (starter.status === 'passed') {
+    problems.push({ where, message: 'Başlangıç kodu testleri zaten geçiyor (görev boş).' })
+  }
+}
+
+async function validateProject(paths: RepoPaths, question: QuestionEntry, moduleNumber: number, problems: Problem[]) {
+  const meta = question.meta
+  if (meta.type !== 'project' || question.testFiles.length === 0) return
+  const where = `${question.code} ${rel(paths, question.dir)}`
+  const after = await checkpointAfter(paths, meta.project, moduleNumber)
+  if (!after) {
+    problems.push({ where, message: `checkpoints/${meta.project}/${String(moduleNumber).padStart(2, '0')} bulunamadı.` })
+    return
+  }
+  const before = await checkpointBefore(paths, meta.project, moduleNumber)
+  const scratch = path.join(paths.cacheDir, 'validate', 'projects')
+  const afterDir = path.join(scratch, `${meta.project}-${after.label}-${question.id.replaceAll('/', '__')}`)
+  await copyProject(after.dir, afterDir)
+  const result = await runQuestion(paths, question, { target: afterDir })
+  if (result.status !== 'passed') {
+    problems.push({ where, message: `Checkpoint ${after.label} testleri geçmiyor:\n    ${describeFailure(result)}` })
+  }
+  if (before) {
+    const beforeDir = path.join(scratch, `${meta.project}-${before.label}-${question.id.replaceAll('/', '__')}-before`)
+    await copyProject(before.dir, beforeDir)
+    const early = await runQuestion(paths, question, { target: beforeDir })
+    if (early.status === 'passed') {
+      problems.push({ where, message: `Görev, modül başındaki checkpoint (${before.label}) ile zaten geçiyor.` })
+    }
+  }
+}
+
+/** ```ts check blokları: her blok ayrı bir modül olarak derlenir. */
+async function validateCodeBlocks(paths: RepoPaths, curriculum: Curriculum, moduleFilter: number | undefined, problems: Problem[]) {
+  const sources: string[] = []
+  for (const lesson of allLessons(curriculum)) {
+    const module = curriculum.modules.find((m) => m.id === lesson.moduleId)!
+    if (moduleFilter !== undefined && module.number !== moduleFilter) continue
+    sources.push(lesson.markdownPath)
+    for (const q of lesson.questions) {
+      if (q.promptPath) sources.push(q.promptPath)
+      if (q.solutionNotesPath) sources.push(q.solutionNotesPath)
+    }
+  }
+  const dir = path.join(paths.cacheDir, 'validate', 'blocks')
+  await rm(dir, { recursive: true, force: true })
+  await mkdir(dir, { recursive: true })
+  const map = new Map<string, { source: string; line: number }>()
+  let n = 0
+  for (const source of sources) {
+    for (const block of extractCheckedCodeBlocks(await readFile(source, 'utf8'))) {
+      const file = path.join(dir, `block-${++n}.${block.lang}`)
+      await writeFile(file, block.code + '\n')
+      map.set(file, { source, line: block.line })
+    }
+  }
+  if (map.size === 0) return 0
+  await writeFile(
+    path.join(dir, 'tsconfig.json'),
+    JSON.stringify({
+      extends: path.join(paths.testEnvDir, 'tsconfig.exercise.json'),
+      compilerOptions: { noUnusedLocals: false },
+      files: [...map.keys(), path.join(paths.testEnvDir, 'env.d.ts')],
+    }),
+  )
+  const output = await new Promise<string>((resolve) => {
+    const child = spawn(path.join(paths.repoRoot, 'node_modules', '.bin', 'tsc'), ['-p', path.join(dir, 'tsconfig.json'), '--noEmit', '--pretty', 'false'], { cwd: paths.repoRoot })
+    let out = ''
+    child.stdout.on('data', (c: Buffer) => (out += c.toString()))
+    child.stderr.on('data', (c: Buffer) => (out += c.toString()))
+    child.on('close', () => resolve(out))
+  })
+  for (const line of output.split('\n')) {
+    const match = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/.exec(line)
+    if (!match) continue
+    const origin = map.get(path.resolve(paths.repoRoot, match[1]!))
+    if (!origin) continue
+    problems.push({
+      where: `${rel(paths, origin.source)}:${origin.line + Number(match[2])}`,
+      message: `Kod bloğu derlenmiyor: ${match[4]} ${match[5]}`,
+    })
+  }
+  return map.size
+}
+
+function conceptReport(curriculum: Curriculum, strict: boolean, problems: Problem[]) {
+  const usage = new Map<string, { count: number; modules: Set<string> }>()
+  for (const q of allQuestions(curriculum)) {
+    for (const c of q.meta.concepts) {
+      const entry = usage.get(c) ?? { count: 0, modules: new Set<string>() }
+      entry.count += 1
+      entry.modules.add(q.moduleId)
+      usage.set(c, entry)
+    }
+  }
+  const weak: string[] = []
+  for (const [id, concept] of Object.entries(curriculum.concepts)) {
+    if (!concept.core) continue
+    const u = usage.get(id) ?? { count: 0, modules: new Set() }
+    if (u.count < 5 || u.modules.size < 2) weak.push(`${id} (${u.count} tekrar, ${u.modules.size} modül)`)
+  }
+  const unused = Object.keys(curriculum.concepts).filter((id) => !usage.has(id))
+  if (weak.length) {
+    const message = `Tekrar kuralını (≥5 tekrar, ≥2 modül) karşılamayan core kavramlar:\n    ${weak.join('\n    ')}`
+    if (strict) problems.push({ where: 'kavramlar', message })
+    else console.log(pc.yellow(`\n⚠ ${message}`))
+  }
+  if (unused.length) console.log(pc.dim(`\nℹ Hiç kullanılmayan kavramlar: ${unused.join(', ')}`))
+  return usage
+}
+
+export async function validate(paths: RepoPaths, options: ValidateOptions) {
+  const started = performance.now()
+  const curriculum = await loadCurriculum(paths.curriculumRoot)
+  const problems: Problem[] = curriculum.errors.map((e) => ({ where: rel(paths, e.file), message: e.message }))
+
+  const modules = curriculum.modules.filter((m) => options.module === undefined || m.number === options.module)
+  const questions = modules.flatMap((m) => m.lessons.flatMap((l) => l.questions.map((q) => ({ q, module: m.number }))))
+  console.log(pc.bold(`\nİçerik doğrulama: ${modules.length} modül, ${questions.length} soru`))
+
+  const blocks = await validateCodeBlocks(paths, curriculum, options.module, problems)
+  console.log(pc.dim(`  ${blocks} işaretli kod bloğu derlendi`))
+
+  if (!options.skipRuns) {
+    const runnable = questions.filter(({ q }) => q.type === 'code' || (q.type === 'project' && q.testFiles.length > 0))
+    let done = 0
+    await pool(runnable, options.concurrency, async ({ q, module }) => {
+      if (q.type === 'code') await validateCode(paths, q, problems)
+      else await validateProject(paths, q, module, problems)
+      done += 1
+      process.stdout.write(pc.dim(`\r  ${done}/${runnable.length} görev çalıştırıldı`))
+    })
+    if (runnable.length) process.stdout.write('\n')
+  }
+
+  conceptReport(curriculum, options.strictConcepts, problems)
+
+  const seconds = ((performance.now() - started) / 1000).toFixed(1)
+  if (problems.length === 0) {
+    console.log(pc.green(pc.bold(`\n✓ İçerik geçerli (${seconds} sn)\n`)))
+    return 0
+  }
+  console.log(pc.red(pc.bold(`\n✗ ${problems.length} sorun bulundu (${seconds} sn):\n`)))
+  for (const p of problems) console.log(`${pc.red('•')} ${pc.bold(p.where)}\n    ${p.message}\n`)
+  return 1
+}
+

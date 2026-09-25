@@ -216,7 +216,8 @@ async function loadLesson(
   return lesson
 }
 
-export async function loadCurriculum(root: string): Promise<Curriculum> {
+export async function loadCurriculum(rootDir: string): Promise<Curriculum> {
+  const root = path.resolve(rootDir)
   const errors: ContentError[] = []
   const concepts = await loadConcepts(root, errors)
   const modules: ModuleEntry[] = []
