@@ -5,5 +5,6 @@ Bir kitap biçimi seçici kur: "E-kitap", "Basılı" ve "Sesli" seçeneklerinden
 - Hiçbir seçenek seçilmeden "Kaydet"e basılırsa okunabilir bir hata görünsün.
 - Bir seçenek seçilince hata kaybolsun; "Kaydet" artık seçilen biçimi onaylasın.
 - Seçim ok tuşlarıyla da yapılabilsin.
+- Kayıt başarılı olunca `Kaydedildi: {seçilen biçim}` metni görünsün (ör. `Kaydedildi: Basılı`).
 
 Seçenekleri **tek bir yapılandırma listesinden** üretebilir ya da **birlikte kullanılan küçük parçalar** olarak kurabilirsin — hangisini seçtiğini kod yorumunda kısaca gerekçelendir. Testler `ChoiceControl.tsx` içindeki `ChoiceControl` bileşenini açar.

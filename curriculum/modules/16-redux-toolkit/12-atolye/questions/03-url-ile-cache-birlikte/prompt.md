@@ -5,3 +5,7 @@ Film arama sayfasında yazılan metin ve sayfa paylaşılabilir olmalı; tarayı
 - Arama metni ve sayfa numarası URL'de tutulmalı; metin değişince sayfa 1'e dönmeli.
 - Sonuçlar TMDB'den gelir; yükleme ve hata durumları okunabilir olmalı.
 - Geri/ileri ile daha önce görülmüş bir aramaya dönüldüğünde sonuç hemen görünmeli; aynı arama kısa süre içinde tekrar ağdan istenmemeli.
+
+## Arayüz sözleşmesi
+
+- Sayfa arasında gezinmek için `Sonraki sayfa` ve `Önceki sayfa` düğmeleri bulunsun.

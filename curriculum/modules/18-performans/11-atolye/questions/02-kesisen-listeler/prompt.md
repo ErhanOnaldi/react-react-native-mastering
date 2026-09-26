@@ -7,3 +7,7 @@ Bir tür panosu kur.
 - Açık olan türdeki bir filmi puanlayabilsin (herhangi bir puan yeter). Puanlama başarılı olduktan sonra ayrı bir "Puanladıklarım" listesi güncel hâlini göstermeli.
 
 `GenreBoard.tsx` içindeki `GenreBoard` bileşenini testlerin geçmesi için tamamla.
+
+## Arayüz sözleşmesi
+
+- Her filmin puanlama düğmesi `{film adı} puanla` biçiminde adlandırılsın (ör. `Örümcek-Adam: Yepyeni Bir Gün puanla`).

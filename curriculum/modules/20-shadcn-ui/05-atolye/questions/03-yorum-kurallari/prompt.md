@@ -10,3 +10,9 @@ Testler `ReviewPanel.tsx` içindeki `ReviewPanel` bileşenini açar.
 - Sunucu başarıyla kabul ederse: açık bir başarı mesajı görünür.
 
 Örnek: kısa başlık + kısa metin → hata, istek atılmaz. Yeterince uzun metinle gönder → sunucu hata verirse yazılanlar dursun; tekrar gönderilince başarı mesajı görünsün.
+
+## Arayüz sözleşmesi
+
+- "Toplamda çok kısa" kuralı: başlık ve metin uzunluklarının toplamı en az 15 karakter olmalı.
+- Sunucu hatasında görünen mesaj `gönderilemedi` kelimesini içersin.
+- Başarı mesajı `gönderildi` kelimesini içersin.

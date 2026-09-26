@@ -10,3 +10,8 @@ Testler `EditDialog.tsx` içindeki `EditDialog` bileşenini açar; bileşen `ope
 - Geçerli girişte `onSave` güncel değerlerle çağrılır.
 
 Örnek: Ada'nın kaydı açık → Grace'in kaydı seçilir → pencere Grace'in adını ve e-postasını gösterir.
+
+## Arayüz sözleşmesi
+
+- Alanların adları `Ad` ve `E-posta` olsun.
+- Kaydetme düğmesinin adı `Kaydet` olsun.

@@ -9,4 +9,8 @@ Testler `BookSearch.tsx` içindeki `BookSearch` bileşenini adres çubuğu ve ve
 - Geri gidince önceki sayfanın sonucu yeniden görünür; gereksiz bir bekleme olmaz.
 - Sonuç yoksa bunu anlaşılır biçimde söyle.
 
+## Arayüz sözleşmesi
+
+- Sonuç yoksa ekranda `Kitap bulunamadı` metni görünsün.
+
 Örnek: "Dune" ara → sonraki sayfa → geri → ilk sayfanın sonucu tekrar görünür.
