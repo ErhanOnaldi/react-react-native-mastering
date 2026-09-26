@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  // shadcn CLI alias'ları kök tsconfig'ten okur; derleme ayarları tsconfig.app.json'da.
+  "compilerOptions": {
+    "paths": { "@/*": ["./src/*"] }
+  }
+}

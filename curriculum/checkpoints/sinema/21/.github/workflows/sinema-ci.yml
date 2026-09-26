@@ -1,0 +1,50 @@
+name: Sinema CI
+
+on: [push, pull_request]
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v5
+
+      - name: pnpm kur
+        uses: pnpm/action-setup@v4
+
+      - name: Node kur
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Bağımlılıkları kur (kilitli)
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: projects/sinema
+        run: pnpm lint
+
+      - name: Tip kontrolü
+        working-directory: projects/sinema
+        run: pnpm typecheck
+
+      - name: Birim ve entegrasyon testleri (Vitest)
+        working-directory: projects/sinema
+        run: pnpm test
+
+      - name: Chromium kur
+        working-directory: projects/sinema
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E testleri (Playwright)
+        working-directory: projects/sinema
+        run: npx playwright test
+
+      - name: Başarısız E2E izlerini sakla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-trace
+          path: projects/sinema/test-results/
+          retention-days: 7
