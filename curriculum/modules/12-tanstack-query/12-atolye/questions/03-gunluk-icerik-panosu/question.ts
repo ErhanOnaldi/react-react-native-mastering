@@ -6,7 +6,7 @@ export default defineQuestion({
   title: 'Günlük içerik panosu',
   difficulty: 'zor',
   concepts: ['arch.feature-folders', 'arch.api-client', 'query.useQuery'],
-  reviewFiles: ['src/gunluk-icerik-panosi/**'],
+  reviewFiles: ['src/gunluk-icerik-panosu/**'],
   hints: [
     'Gönderi ve yazar farklı kaynaklar; ekranın hangi veriye ne zaman ihtiyaç duyduğunu belirle.',
     'Kimlikleriyle eşleştir; dönüşte aynı veriyi gereksiz yere yeniden istememeyi düşün.',
