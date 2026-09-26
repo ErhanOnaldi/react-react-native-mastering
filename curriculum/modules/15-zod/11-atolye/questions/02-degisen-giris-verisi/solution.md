@@ -1,0 +1,5 @@
+## Neden böyle?
+
+RHF `defaultValues`'ı yalnızca ilk render'da uygular; `draft` prop'u değiştiğinde formu bilgilendirmezsen eski değerler görünmeye devam eder — `draft.id`'ye bağlı bir `useEffect` içinde `reset(...)` bunu çözer. İkinci sorun farklı bir kategori: boş string `''` ile "tarih girilmedi" durumu aynı şey değildir, ama form alanları her zaman string tutar (asla `undefined` değil). `.transform` ile boşu `undefined`'a çevirip `.refine` ile yalnızca dolu ama biçimsiz girdiyi reddetmek bu iki durumu birbirinden ayırır.
+
+Alternatif olarak boş string'i doğrudan submit callback'inde elle `values.dueDate || undefined` ile dönüştürebilirsin; ama o zaman format kontrolü ile dönüşüm iki farklı yerde yaşar ve biri güncellenip diğeri unutulabilir. Sık tuzak: `.optional()` eklemek — bu yalnızca değer `undefined` olduğunda işe yarar, RHF'nin verdiği `''` için hiçbir şey değiştirmez. Sonraki modüllerde (Redux, sonra Auth) taslak/kayıt listeleri arasında geçiş yapan başka formlarda da aynı "prop değişince resetle" deseniyle karşılaşacaksın.
