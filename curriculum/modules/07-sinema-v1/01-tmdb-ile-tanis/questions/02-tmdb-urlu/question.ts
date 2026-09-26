@@ -4,7 +4,7 @@ export default defineQuestion({
   type: 'code',
   title: 'TMDB URL’sini güvenle kur',
   difficulty: 'orta',
-  concepts: ['fetch.query-params', 'ts.object-types', 'router.search-params'],
+  concepts: ['fetch.query-params', 'ts.object-types', 'router.search-params', 'js.destructuring'],
   files: ['buildTmdbUrl.ts'],
   hints: [
     'Önce taban URL ve path ile bir `URL` oluştur; path başındaki `/` iki kez yazılmasın.',

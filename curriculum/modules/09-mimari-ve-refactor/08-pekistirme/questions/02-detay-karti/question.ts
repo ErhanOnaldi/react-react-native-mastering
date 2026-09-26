@@ -4,7 +4,13 @@ export default defineQuestion({
   type: 'code',
   title: 'Detay görünümünü sadeleştir',
   difficulty: 'zor',
-  concepts: ['arch.refactoring', 'arch.component-api', 'react.composition', 'ts.optional-nullable'],
+  concepts: [
+    'arch.refactoring',
+    'arch.component-api',
+    'react.composition',
+    'ts.optional-nullable',
+    'react.components',
+  ],
   files: ['MovieSummary.tsx', 'MoviePoster.tsx'],
   hints: [
     'Starter’ın başlık ve posteri doğru gösterdiğini önce doğrula.',

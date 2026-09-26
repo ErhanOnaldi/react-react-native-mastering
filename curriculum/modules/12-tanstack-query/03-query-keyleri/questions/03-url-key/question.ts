@@ -4,7 +4,7 @@ export default defineQuestion({
   type: 'code',
   title: 'URL’den sorgu kimliği',
   difficulty: 'orta',
-  concepts: ['query.keys', 'router.search-params', 'fetch.query-params'],
+  concepts: ['query.keys', 'router.search-params', 'fetch.query-params', 'js.optional-chaining'],
   files: ['searchKey.ts'],
   hints: [
     'Önce `params.get` ile iki değeri oku.',

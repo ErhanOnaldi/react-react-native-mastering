@@ -4,7 +4,7 @@ export default defineQuestion({
   type: 'code',
   title: 'Asenkron film detayı bileşeni',
   difficulty: 'orta',
-  concepts: ['test.async', 'test.msw', 'fetch.loading-states'],
+  concepts: ['test.async', 'test.msw', 'fetch.loading-states', 'ts.union'],
   files: ['MovieTitle.tsx'],
   hints: [
     'loading/error/success state’lerini ayır.',

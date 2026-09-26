@@ -4,7 +4,7 @@ export default defineQuestion({
   type: 'code',
   title: 'CI adımlarını sırala',
   difficulty: 'orta',
-  concepts: ['tooling.ci', 'test.e2e', 'test.vitest-basics'],
+  concepts: ['tooling.ci', 'test.e2e', 'test.vitest-basics', 'tooling.eslint', 'tooling.lockfile'],
   files: ['ciSteps.ts'],
   hints: [
     'Temiz makinede önce bağımlılıklar kurulmalı; lint ve typecheck hızlı kontrollerdir.',

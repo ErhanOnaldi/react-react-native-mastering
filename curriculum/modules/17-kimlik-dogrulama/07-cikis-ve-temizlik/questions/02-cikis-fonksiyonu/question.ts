@@ -3,7 +3,13 @@ export default defineQuestion({
   type: 'code',
   title: 'Oturum izlerini temizle',
   difficulty: 'orta',
-  concepts: ['auth.token-storage', 'query.useQuery', 'redux.store', 'arch.state-categories'],
+  concepts: [
+    'auth.token-storage',
+    'query.useQuery',
+    'redux.store',
+    'arch.state-categories',
+    'js.destructuring',
+  ],
   files: ['logout.ts'],
   hints: [
     'Çıkışı tek fonksiyonda koordine et: storage, store, Query cache.',

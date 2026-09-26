@@ -4,7 +4,7 @@ export default defineQuestion({
   type: 'quiz',
   title: 'Alias kimin için?',
   difficulty: 'orta',
-  concepts: ['shadcn.setup', 'tooling.path-alias', 'tooling.vite-config'],
+  concepts: ['shadcn.setup', 'tooling.path-alias', 'tooling.vite-config', 'tooling.vite'],
   question: `\`shadcn add button\` sonrası \`src/components/ui/button.tsx\` oluştu ve içinde \`import { cn } from "@/shared/lib/cn"\` var. \`tsc -b\` hatasız geçiyor, editör de import'u buluyor. Ama \`pnpm dev\` açılınca Vite şu hatayı veriyor:
 
 \`\`\`

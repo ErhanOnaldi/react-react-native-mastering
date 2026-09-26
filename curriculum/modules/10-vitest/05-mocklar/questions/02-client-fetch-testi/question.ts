@@ -4,7 +4,13 @@ export default defineQuestion({
   type: 'code',
   title: 'TMDB client isteğini test et',
   difficulty: 'orta',
-  concepts: ['test.mocks', 'arch.api-client', 'fetch.headers-auth', 'fetch.query-params'],
+  concepts: [
+    'test.mocks',
+    'arch.api-client',
+    'fetch.headers-auth',
+    'fetch.query-params',
+    'js.destructuring',
+  ],
   files: ['tmdbClient.test.ts'],
   hints: [
     'Gerçek ağ yerine `vi.fn` ile `Response.json(...)` döndüren fetch kur.',

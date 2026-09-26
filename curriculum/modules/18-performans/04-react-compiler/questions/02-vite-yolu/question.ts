@@ -4,7 +4,7 @@ export default defineQuestion({
   type: 'quiz',
   title: 'Hangi kurulum kararlı?',
   difficulty: 'kolay',
-  concepts: ['perf.compiler'],
+  concepts: ['perf.compiler', 'tooling.vite'],
   question:
     'Bu depoda @vitejs/plugin-react 6 ile React Compiler için hangi yol kararlı varsayılandır?',
   options: [

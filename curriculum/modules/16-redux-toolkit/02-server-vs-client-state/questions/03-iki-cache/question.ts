@@ -3,7 +3,7 @@ export default defineQuestion({
   type: 'quiz',
   title: 'İki cache sorunu',
   difficulty: 'kolay',
-  concepts: ['query.invalidation'],
+  concepts: ['query.invalidation', 'redux.server-vs-client'],
   question:
     'TMDB filmi hem Redux’a kopyalayıp hem TanStack Query’de tutarsan ilk somut risk nedir?',
   options: [

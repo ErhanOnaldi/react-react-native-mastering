@@ -3,7 +3,7 @@ export default defineQuestion({
   type: 'quiz',
   title: 'Dört state’i yerleştir',
   difficulty: 'kolay',
-  concepts: ['arch.state-categories'],
+  concepts: ['arch.state-categories', 'redux.server-vs-client'],
   question:
     '`?q=matrix`, WatchlistForm taslağı, `theme=dark`, TMDB arama sonuçları için doğru sıra hangisi?',
   options: [
