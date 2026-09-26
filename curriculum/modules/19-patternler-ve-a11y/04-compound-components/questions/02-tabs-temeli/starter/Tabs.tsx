@@ -1,0 +1,19 @@
+import { createContext, useContext, useState } from 'react'
+import type { ReactNode } from 'react'
+const Context = createContext<{ value: string; setValue: (v: string) => void } | null>(null)
+function Root({ defaultValue, children }: { defaultValue: string; children: ReactNode }) {
+  const [value, setValue] = useState(defaultValue)
+  return <Context value={{ value, setValue }}>{children}</Context>
+}
+function List({ children, 'aria-label': label }: { children: ReactNode; 'aria-label': string }) {
+  return <div aria-label={label}>{children}</div>
+}
+function Trigger({ value, children }: { value: string; children: ReactNode }) {
+  const tabs = useContext(Context)!
+  return <button onClick={() => tabs.setValue(value)}>{children}</button>
+}
+function Panel({ value, children }: { value: string; children: ReactNode }) {
+  const tabs = useContext(Context)!
+  return tabs.value === value ? <div>{children}</div> : null
+}
+export const Tabs = Object.assign(Root, { List, Trigger, Panel })
