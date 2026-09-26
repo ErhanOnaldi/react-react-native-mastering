@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-paper: #fdfbf7;
+  --color-ink: #1c1917;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+}
