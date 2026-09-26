@@ -18,6 +18,9 @@ export function VirtualMovieList({
   const filtered = movies.filter((movie) =>
     movie.title.toLocaleLowerCase('tr-TR').includes(normalized),
   )
+  // TanStack Virtual'ın döndürdüğü fonksiyonlar güvenle memoize edilemez; React Compiler
+  // bu bileşeni bilinçli olarak atlar (18. modül). Uyarıyı gerekçesiyle kapatıyoruz.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: filtered.length,
     getScrollElement: () => scrollRef.current,

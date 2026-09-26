@@ -1,8 +1,7 @@
 import { createBrowserRouter, type RouteObject } from 'react-router'
+import { AuthenticatedPages } from '@/features/auth/AuthenticatedPages'
 import { RootLayout } from '@/layouts/RootLayout'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
-import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
-import { useAppSelector } from '@/app/store'
 
 export const routes: RouteObject[] = [
   {
@@ -74,10 +73,3 @@ export const routes: RouteObject[] = [
 ]
 
 export const router = createBrowserRouter(routes)
-
-function AuthenticatedPages() {
-  const isAuthenticated = useAppSelector((state) =>
-    Boolean(state.auth.accessToken),
-  )
-  return <ProtectedRoute isAuthenticated={isAuthenticated} />
-}

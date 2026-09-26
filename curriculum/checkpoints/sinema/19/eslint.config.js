@@ -20,6 +20,10 @@ export default defineConfig([
   {
     files: ['**/*.tsx'],
     extends: [reactRefresh.configs.vite],
+    rules: {
+      // React Router lazy route modülleri Component ile birlikte loader export eder
+      'react-refresh/only-export-components': ['error', { allowExportNames: ['loader'] }],
+    },
   },
   prettier,
 ])
