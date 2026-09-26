@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['perf.memo', 'perf.transitions', 'test.mocks', 'react.derived-state'],
   files: ['SearchMetrics.tsx'],
   hints: [
-    'Sayaç hangi hesaplamayı etkilememeli?',
-    'Deferred sorguyu üret, filtre sonucunu girdilerine göre memoize et.',
+    'Sayaç hangi hesaplamayı etkilememeli? Input ile liste aynı hızda güncellenmek zorunda mı?',
+    '`useDeferredValue` ile liste sorgusunu üret, sonucu `useMemo` ile gerçek girdilerine göre sakla.',
     '`useMemo(() => filter(titles, deferred), [titles, deferred, filter])` kullan.',
   ],
 })

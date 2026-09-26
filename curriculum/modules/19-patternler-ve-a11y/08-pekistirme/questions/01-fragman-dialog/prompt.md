@@ -3,7 +3,7 @@ Fragman dialogunu kartın dışına (portal) taşıdın, focus akışını kurdu
 ## Gereksinimler
 - `TrailerDialog({ movieTitle })` kendi aç/kapat state'ini tutsun; tetikleyici **Fragmanı aç** adlı bir `<button>` olsun.
 - Açıkken `role="dialog"`, `aria-modal="true"` ve adı **{movieTitle} fragmanı** olan bir dialog göster.
-- Dialog, tam ekran bir **arka plan** öğesinin doğrudan çocuğu olsun; arka plan `createPortal` ile `document.body` altına render edilsin.
+- Dialog, tam ekran bir **arka plan** öğesinin doğrudan çocuğu olsun; arka plan `document.body` altında görünsün.
 - İçinde **Oynat** ve **Kapat** düğmeleri olsun; açılışta Oynat focus alsın.
 - Tab ve Shift+Tab dialog içinde dönsün.
 - Escape, Kapat ve **arka plana tıklama** dialogu kapatsın; her üç yolda da focus Fragmanı aç'a dönsün.

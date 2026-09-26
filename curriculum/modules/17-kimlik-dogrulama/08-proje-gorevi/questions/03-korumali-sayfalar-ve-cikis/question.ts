@@ -19,8 +19,8 @@ export default defineQuestion({
     'src/pages/ProfilePage.tsx',
   ],
   hints: [
-    'ProtectedRoute başarılı durumda Outlet, girişsiz durumda Navigate döndürsün.',
-    'router.tsx içinde /watchlists ve /profile aynı pathless parent’ın çocukları olsun.',
-    'Çıkışta storage, auth/watchlist store state’i ve queryClient cache’ini temizle.',
+    'Hangi sayfalar girişsiz açık kalmalı, çıkışta hangi eski kullanıcı verileri silinmeli?',
+    'ProtectedRoute için Outlet ve Navigate kullan; /watchlists ile /profile aynı pathless parent’ın çocukları olsun.',
+    'Çıkışta storage kaydını kaldır, resetStore callback’ini çağır ve queryClient.clear() ile cache’i temizle.',
   ],
 })

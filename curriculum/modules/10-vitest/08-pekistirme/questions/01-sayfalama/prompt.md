@@ -1,9 +1,7 @@
 Refactor sırasında ikinci sayfa ilk sayfayı tekrar gösterdi. `@impl/pageSlice` doğru sayfalama yardımcısı; `pageSlice(items, page, pageSize)` için test yaz.
 
-- 1–41 arası film id’lerinden liste kur.
-- 20’lik sayfalarda ikinci sayfanın **ilk id’sini** ölç.
+- 1–41 arası film id’leri ve 20’lik sayfalarda ikinci sayfanın **ilk id’sini** ölç.
 - Kısmi son sayfanın **içeriğini ve uzunluğunu** ölç.
-- İstersen `it.each` ile iki sayfayı ayrı satırlar olarak göster.
 
 | Sayfa | Beklenen id’ler |
 | --- | --- |

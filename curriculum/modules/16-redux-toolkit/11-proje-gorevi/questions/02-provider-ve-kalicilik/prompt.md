@@ -1,11 +1,11 @@
 # Sinema’da Provider ve kalıcılık
 
-Slice’lar hazır ama sayfa yenilenince tercihlerin kayboluyor. Beşli Context zincirini kaldırıp `src/main.tsx` içinde `<Provider store={store}>` kur. Mevcut TanStack Query provider’ı çalışmaya devam etsin.
+Slice’lar hazır ama sayfa yenilenince tercihlerin kayboluyor. Beşli Context zinciri kalksın; `src/main.tsx` uygulamaya Redux store’unu sağlasın. Mevcut TanStack Query provider’ı çalışmaya devam etsin.
 
 ## Gereksinimler
 
-- `src/app/store.ts` içinde `createListenerMiddleware` ile `toggleFavorite`, `createWatchlist`, `addMovie`, `setTheme`, `viewMovie` action’larını dinle. Reducer sonrası güncel client state’i `localStorage` üzerinde `sinema:client-state` anahtarına JSON olarak yaz. Başlangıçta geçerli kayıt varsa yükle; bozuk JSON’da varsayılan state ile devam et. Storage erişimi yoksa uygulama açılabilmeli.
-- Favori UI’si `useAppSelector(state => state.favorites.ids.includes(movieId))` gibi dar seçim yapsın; action’ı `useAppDispatch` ile gönder. Tema ve watchlist tüketicileri de kendi alanlarını seçsin.
+- Favori, watchlist, tema veya son bakılanlar değişince güncel client state `localStorage` üzerinde `sinema:client-state` anahtarına JSON olarak yazılsın. Başlangıçta geçerli kayıt varsa yüklensin; bozuk JSON’da varsayılan state ile devam edilsin. Storage erişimi yoksa uygulama açılabilmeli.
+- Favori UI’si yalnız kendi filmi için gereken değeri izlesin. Tema ve watchlist tüketicileri de yalnız kendi alanları değişince güncellensin.
 - Render sayacını bir tema tüketicisinde veya favori dışındaki bileşende göster/ölç. Başlangıç değerini kaydet, yalnız favori action’ı gönder, artışı karşılaştır. React StrictMode yüzünden mutlak sayıyı sabitleme. Favori action’ı alakasız tema tüketicisinin render’ını artırmamalı.
 - TMDB veri sorguları Query’de kalsın. Film detayını Redux’a kopyalama.
 

@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['form.rhf-register', 'form.rhf-errors', 'zod.resolver', 'zod.schemas', 'auth.jwt'],
   files: ['LoginForm.tsx'],
   hints: [
-    'İki alanlı bir Zod şeması kur; boş değerleri submit öncesi engelle.',
-    'useForm resolver: zodResolver(schema), onSubmit: handleSubmit(...) kullan.',
+    'Boş alanların callback’e ulaşmaması ve alan hatalarının nerede gösterileceği üzerine düşün.',
+    'İki alanlı Zod şemasını RHF `useForm` içinde `zodResolver` ile kullan; `register` ve `handleSubmit` ile formu bağla.',
     'API 400 hatasını catch içinde setError("root", { message }) ile göster.',
   ],
 })

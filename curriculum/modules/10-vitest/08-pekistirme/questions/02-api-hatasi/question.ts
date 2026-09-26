@@ -7,7 +7,7 @@ export default defineQuestion({
   concepts: ['test.mocks', 'test.matchers', 'arch.api-error', 'fetch.error-handling'],
   files: ['errorClient.test.ts'],
   hints: [
-    'Sahte fetch ile 404 ve TMDB’nin `status_code: 34` cevabını döndür.',
+    '`vi.fn` ile sahte fetch kur; `Response.json` kullanarak 404 ve TMDB’nin `status_code: 34` cevabını döndür.',
     '`await expect(...).rejects.toMatchObject(...)` kullan.',
     'HTTP status 404, TMDB statusCode 34 ve mesajı birlikte sınayacak.',
   ],

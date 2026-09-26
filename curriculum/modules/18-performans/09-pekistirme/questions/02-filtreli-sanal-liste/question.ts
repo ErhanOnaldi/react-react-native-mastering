@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['perf.virtualization', 'perf.transitions', 'react.lists-keys'],
   files: ['FilteredVirtualMovies.tsx'],
   hints: [
-    'Önce filtreli diziyi üret; sanallaştırmayı ona uygula.',
-    'Count ve getItemKey aynı diziyi okumalı.',
+    'Sorgu değişince sanal listenin satır sayısı ve kimlikleri hangi veriye dayanmalı?',
+    'Önce filtreli diziyi üret; virtualizer count ve getItemKey değerlerini bu diziye bağla.',
     "`filtered[row.index]` ile render et, `getItemKey` film id'si döndürsün.",
   ],
 })

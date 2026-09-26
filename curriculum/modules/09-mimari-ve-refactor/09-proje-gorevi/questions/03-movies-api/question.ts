@@ -28,7 +28,7 @@ export default defineQuestion({
   ],
   hints: [
     'Önce endpoint yollarını ve parametrelerini eski sayfalardan listele.',
-    'Her fonksiyon için uygun Movie, MovieDetails, Genre ve Paginated tiplerini kullan.',
+    'MovieListResponse, MovieDetails ve Genre tiplerini `src/shared` veya ilgili `src/features/movies` dosyalarında ortaklaştır.',
     'getMovieDetails için append_to_response=credits,videos; discover için with_genres; search için query gönder.',
   ],
 })

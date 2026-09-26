@@ -30,8 +30,8 @@ export default defineQuestion({
     'Bileşenler küçük ve tek sorumluluklu mu (form, liste, kart, sayfalama ayrı)?',
   ],
   hints: [
-    'Önce veri katmanı: openLibraryGet(path, schema) → searchBooks({ q, page }) → bookQueries.search(). Bileşene geçmeden bir Vitest testinde fetchQuery ile deneyebilirsin.',
-    'Sayfa bileşeninde sıra: readSearchParams(searchParams) → useQuery({ ...bookQueries.search({ q, page }), enabled: q.length > 0, placeholderData: keepPreviousData }) → q yoksa yönlendirme metni → isPending → isError → total === 0 → liste + sayfalama.',
-    'Arama formu: onSubmit’te event.preventDefault(); const q = String(new FormData(event.currentTarget).get("q") ?? "").trim(); if (!q) return; navigate(`/search?${new URLSearchParams({ q })}`). Input: <input key={q} name="q" type="search" defaultValue={q} aria-label="Kitap ara" />.',
+    'Sorgu URL’deyken aynı sayfa yenilendiğinde arama nasıl yeniden kurulmalı? Boş sorguda istek olmamalı.',
+    'Veri katmanı için openLibraryGet → searchBooks → bookQueries.search() kurabilirsin. Sayfada useQuery ve keepPreviousData ile sayfa geçişini yönet.',
+    'readSearchParams(searchParams) ile q/page oku; useQuery içinde enabled: q.length > 0 kullan. Retry varsayılanını createQueryClient içinde ayarla. Form gönderiminde trim edilmiş q değerini URL’ye taşı.',
   ],
 })

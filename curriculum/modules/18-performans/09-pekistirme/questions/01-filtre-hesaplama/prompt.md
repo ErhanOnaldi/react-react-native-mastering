@@ -3,6 +3,6 @@ Arama filtresi pahalı; yanındaki sayaç değişince de tekrar çalışıyor. S
 
 ## Yap
 - Input güncel `query` state'ine bağlı kalsın.
-- Liste araması deferred sorguyla yapılsın.
-- `filter` yalnız `titles`, deferred sorgu veya filtre fonksiyonu değişince çalışsın.
+- Yazı yazılırken input güncel kalsın; liste daha düşük öncelikle güncellenebilsin. Son sorgu tamamlandığında eski sonuç kalmasın.
+- `filter` yalnız başlıklar, listenin kullandığı sorgu veya filtre fonksiyonu değişince yeniden çalışsın.
 - Sayaç artışında `vi.fn` çağrı sayısı sabit kalsın.

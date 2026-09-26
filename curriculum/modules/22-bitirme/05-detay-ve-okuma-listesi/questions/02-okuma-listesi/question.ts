@@ -34,8 +34,8 @@ export default defineQuestion({
     'Kalıcılık tarayıcıya özgü olduğu ve hesaplar arası senkron sağlamadığı kullanıcıya açık mı?',
   ],
   hints: [
-    'Önce Zod ile kayıt biçimini ve localStorage okuma/yazma sınırını kur. Bozuk veri için boş liste döndür.',
-    '`AppProviders` içinde seçtiğin paylaşılan state’i kur; menüde sayıyı listeden hesapla. Detay formu kayıtlı esere göre `defaultValues` almalı.',
+    'Form ve kalıcı kayıt aynı veriyi paylaşırken hangi sınırda hatalı veriyi elemelisin?',
+    'Zod ile kayıt biçimini doğrula; `AppProviders` içinde paylaşılan state’i kur. Formda RHF + `zodResolver` kullan ve kayıtlı eseri `defaultValues` olarak ver.',
     'Şemada `status === "read"` iken `rating` için 1–5 şartını `superRefine` ile `path: ["rating"]` üzerine yaz; `useWatch` ile Puan alanını koşullu göster.',
   ],
 })

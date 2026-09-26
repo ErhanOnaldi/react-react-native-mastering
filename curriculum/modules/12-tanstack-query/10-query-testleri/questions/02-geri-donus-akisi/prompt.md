@@ -2,4 +2,4 @@ Modül 7’deki acı günlüğünün aynı akışını tekrar çalıştır: aram
 
 ## İstenen
 
-`SearchAgain({ query })` `Detay` butonuyla arama alt bileşenini unmount etsin; `Geri` ile tekrar mount etsin. Arama sonucu TMDB’den Bearer ile gelsin; query key arama metnini taşısın; `staleTime: 60_000` olsun. `Dövüş` sonucu `Dövüş Kulübü` gösterilmeli. Farklı query gelince yeni GET olmalı.
+`SearchAgain({ query })` içinde `Detay` butonu `Detay sayfası` görünümüne, `Geri` butonu yeniden aramaya götürsün. Arama sonucu TMDB’den Bearer ile gelsin. Aynı aramaya 60 saniye içinde dönünce yeni GET gitmesin; farklı query gelince yeni GET olsun. `Dövüş` sonucu `Dövüş Kulübü` gösterilmeli.

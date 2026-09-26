@@ -9,7 +9,7 @@ Sinema’nın izleme listesi kime ait olduğunu bilmiyor. Giriş yapıp kullanı
 | `src/pages/LoginPage.tsx` | `LoginPage` |
 | `src/pages/ProfilePage.tsx` | `ProfilePage` |
 
-`POST /auth/login` için `emilys` / `emilyspass` kullan. RHF + Zod ile boş alanları engelle; 400 `Invalid credentials` mesajını göster. Başarılı girişte hem store’u hem `sinema-auth` localStorage kaydını güncelle. Sayfa yenilemede kayıt okunup auth state kurulmalı. `/profile` gerçek `/auth/me` yanıtındaki kullanıcıyı göstersin; token’ı bileşende elle string birleştirmek yerine sonraki görevdeki client’a bağla.
+`POST /auth/login` için `emilys` / `emilyspass` kullan. Boş alanlarda istek atma; 400 `Invalid credentials` mesajını göster. Başarılı girişte hem store’u hem `sinema-auth` localStorage kaydını güncelle. Sayfa yenilemede kayıt okunup auth state kurulmalı. `/profile` gerçek `/auth/me` yanıtındaki kullanıcıyı göstersin; token yönetimi sonraki görevde ortak client’a taşınacak.
 
 :::warning
 Bu örneğin localStorage seçimi XSS riskini taşır. Gerçek backend ile `httpOnly` cookie oturumu tasarlayabiliyorsan CSRF önlemleriyle birlikte değerlendir.

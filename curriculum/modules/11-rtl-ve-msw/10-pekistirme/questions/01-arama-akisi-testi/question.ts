@@ -8,8 +8,8 @@ export default defineQuestion({
   files: ['SearchPanel.test.tsx'],
   hints: [
     'userEvent.setup ile yazıp butona bas.',
-    'Başlangıç loading’i getByRole, sonucu findByRole ile sorgula.',
-    'Her farklı API senaryosunda server.use(http.get(...)) kur.',
+    'Başlangıç loading’i getByRole, sonucu findByRole ile sorgula; başarı handler’ında `await delay(150)` kullan.',
+    'Her farklı API senaryosunda server.use(http.get(...)) kur; `requests` ile query değerini denetle.',
   ],
   testWriting: {
     mutants: [

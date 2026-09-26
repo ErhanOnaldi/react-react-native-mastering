@@ -2,7 +2,7 @@
 Favori kaydı ağdan onay beklerken düğme sessiz kalıyor. Detay route'u da ilk paketle geliyor.
 
 ## Dosya sözleşmesi
-`src/features/favorites/components/OptimisticFavoriteButton.tsx` içinden adlı `OptimisticFavoriteButton` export et. Props: `initialFavorite: boolean`, `onSave: (next: boolean) => Promise<void>`. Kullanıcı tıklayınca `useOptimistic` ile `aria-pressed` hemen değişsin; başarıda temel state güncellensin, hata olursa geri dönsün. Aynı istek sürerken ikinci tıklamayı engelle.
+`src/features/favorites/components/OptimisticFavoriteButton.tsx` içinden adlı `OptimisticFavoriteButton` export et. Props: `initialFavorite: boolean`, `onSave: (next: boolean) => Promise<void>`. Kullanıcı tıklayınca `aria-pressed` hemen değişsin; başarıda yeni durum kalsın, hata olursa geri dönsün. Aynı istek sürerken ikinci tıklamayı engelle.
 
 `src/router.tsx` içindeki film detay route'unu React Router 8 data route `lazy` ile böl. Route eşlemesi (`path`) statik kalsın. `vite.config.ts` içinde React Compiler'ın kararlı Babel yolunu `reactCompilerPreset()` ve `@rolldown/plugin-babel` ile etkinleştir. Gerekli paketler koordinatör tarafından checkpoint'e eklenecek; bu görev sırasında kök bağımlılıkları değiştirme.
 

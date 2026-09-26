@@ -31,7 +31,7 @@ render(
 )
 ```
 
-Testlerdeki `QueryClient`’ta tekrar deneme kapalı. Sorgu seviyesinde `retry` verirsen hata testleri yavaşlar; varsayılanı istemcide (`createQueryClient`) ayarlaman daha doğru.
+Testlerdeki `QueryClient`’ta tekrar deneme kapalı. Hata durumunda uyarı ve **Tekrar dene** akışı gecikmeden çalışmalı.
 
 ## Testlerin kullandığı sahte veri
 

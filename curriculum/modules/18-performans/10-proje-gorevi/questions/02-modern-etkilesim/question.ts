@@ -23,8 +23,8 @@ export default defineQuestion({
     'vite.config.ts',
   ],
   hints: [
-    "Gerçek state ile optimistic görünen state'i ayır.",
-    "Action sırasında `addOptimistic(next)` çağır; başarıda gerçek state'i güncelle.",
+    'Kaydedilmiş favori durumu ile istek sürerken görünen durumun ilişkisini düşün.',
+    '`useOptimistic` ile görünen durumu yönet; Action sırasında `addOptimistic(next)` çağır.',
     'Hata durumunda temel state eski değerde kalmalı; pending sırasında düğmeyi devre dışı bırak.',
   ],
   rubric: [

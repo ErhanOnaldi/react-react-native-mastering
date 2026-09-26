@@ -8,7 +8,7 @@ export default defineQuestion({
   files: ['pageSlice.test.ts'],
   hints: [
     'İkinci sayfanın ilk öğesini ve son sayfanın uzunluğunu sınayan veri kur.',
-    '`pageSlice(items, page, 20)` için 41 id kullan ve sonuç uzunluğu ile ilk id’yi ölç.',
+    '`pageSlice(items, page, 20)` için 41 id kullan; istersen `it.each` ile sayfaları ayır.',
     'Sayfa 2 ilk id 21, sayfa 3 tek id 41 olmalı.',
   ],
   testWriting: {

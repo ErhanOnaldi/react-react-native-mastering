@@ -12,7 +12,7 @@ export default defineQuestion({
   ],
   hints: [
     'Route parametresini Number + Number.isInteger ile doğrula.',
-    'Loader ve useSuspenseQuery aynı movieQueries.detail(id) tarifini kullanmalı.',
-    'Suspense yüklemeyi, ErrorBoundary hatayı yakalar.',
+    'Loader içinde `queryClient.ensureQueryData(movieQueries.detail(id))`, sayfada `useSuspenseQuery` kullan.',
+    'İkisi aynı key’i paylaşır; Suspense yüklemeyi, ErrorBoundary hatayı yakalar.',
   ],
 })

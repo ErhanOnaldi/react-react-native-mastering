@@ -12,8 +12,8 @@ export default defineQuestion({
     'src/pages/ProfilePage.tsx',
   ],
   hints: [
-    'Önce DummyJSON login yanıtını iki token olarak oku; 400 mesajını formda göster.',
-    'authSlice için user, accessToken, refreshToken ve clearAuth action’ı kur.',
-    'Login formunda RHF + zodResolver kullan; başarılı girişte setCredentials dispatch et ve /profile yoluna git.',
+    'Başarılı ve başarısız girişte kullanıcıya ne görünmeli? Yenilemeden sonra hangi bilgi geri gelmeli?',
+    'DummyJSON yanıtındaki iki token’ı oku; authSlice içinde user ve token’ları yönet. Formda RHF + Zod ile boş alanları engelle.',
+    'RHF formunda zodResolver kullan; başarılı girişte setCredentials dispatch et, kaydı yaz ve /profile yoluna git.',
   ],
 })

@@ -8,9 +8,9 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['src/shared/api/tmdb-client.ts', 'src/features/movies/api/movies-api.ts'],
   hints: [
-    'Önce 14. checkpoint’teki mevcut tipleri ve form alanlarını oku.',
-    'Zod şemasını dış verinin girdiği sınırda kullan; `z.infer` ile tipleri tek kaynağa bağla.',
-    'Testteki bozuk veri örneğini çalıştır; hata veri ekrana ulaşmadan oluşmalı.',
+    'HTTP başarısı ile gelen JSON’un geçerliliğini ayrı sınırlar olarak düşün.',
+    '`response.json()` sonucunu `unknown` alıp şemayla parse et; dönüş tipi için `z.output` kullan.',
+    'Bozuk alanda `z.prettifyError` anlaşılır mesaj üretebilir; genre yanıtı için küçük bir şema ekle.',
   ],
   rubric: [
     'Tek kaynaklı ve okunur şema tanımları',

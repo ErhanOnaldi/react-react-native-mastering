@@ -32,8 +32,8 @@ export default defineQuestion({
     'Tipli hook’lar ve store export’ları sözleşmeye uyar.',
   ],
   hints: [
-    'Önce var olan FavoritesContext ve useWatchlists davranışını çıkar; ID’leri sakla, TMDB nesnelerini değil.',
-    'Her özellik için `createSlice` kur, `combineSlices` ile birleştir.',
-    '`RootState` ve `AppDispatch` tiplerini store’dan türet; hook’ları `.withTypes` ile dışa ver.',
+    'Hangi bilgiler sunucudan, hangileri kullanıcı etkileşiminden geliyor? Eski favori ve watchlist davranışını da koru.',
+    'Client state için her özellikte `createSlice` kurup `combineSlices` ile birleştir; bileşenler yalnız gereken değeri seçsin.',
+    '`RootState` ve `AppDispatch` tiplerini store’dan türet; hook’ları `.withTypes` ile dışa ver. ID’leri sakla, TMDB nesnelerini değil.',
   ],
 })

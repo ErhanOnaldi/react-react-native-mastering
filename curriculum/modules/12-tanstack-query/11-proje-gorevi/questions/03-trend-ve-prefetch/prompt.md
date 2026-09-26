@@ -2,9 +2,9 @@ Trend listesindeki "Sonraki" eski sayfayı siliyor; film kartına tıklayınca d
 
 ## İstenen
 
-- HomePage’in **trend** görünümünü `useInfiniteQuery` ile kur: `initialPageParam: 1`, `getNextPageParam` son sayfada `undefined`, uygun `maxPages`. `data.pages` içindeki filmleri sırayla birleştir ve "Daha fazla" eylemiyle yeni sayfayı getir.
+- HomePage’in **trend** görünümünde `useInfiniteQuery` kullan. İlk sayfa 1 olsun; `data.pages` içindeki filmleri sırayla göster ve "Daha fazla" eyleminde `fetchNextPage` çağır. Son sayfada yeni istek başlatma; biriken sayfa sayısını makul tut.
 - Tür filtresinin sayfalı `discover` davranışı ve URL state’i bozulmasın.
-- Film kartı hover’ında `queryClient.prefetchQuery(movieQueries.detail(movie.id))` çalıştır. Detay sayfası aynı tarifi kullanmalı. Taze prefetch’ten sonra detay açılışı ikinci GET üretmemeli.
+- Film kartı hover’ında detay için `prefetchQuery` çalışsın. Detay sayfası aynı cache girdisini kullansın; taze prefetch’ten sonra açılış ikinci GET üretmemeli.
 - İstek sayacında "Daha fazla" öncesi/sonrası `page=1`, `page=2` değerlerini; hover sonrası detay isteği sayısını kontrol et.
 
-Yeni bir detay fetch fonksiyonu yazma; mevcut `movieQueries.detail` tarifini iki yerde paylaş.
+Mevcut `movieQueries.detail` tarifini hover ve detay açılışında paylaş.

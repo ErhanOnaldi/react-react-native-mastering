@@ -15,5 +15,5 @@ Arama sonucunda bir başlığa tıklayınca Kitaplık artık yalnız bir kart de
 `/search?q=dune` → **Chapterhouse Dune** başlığına tıkla → `/works/OL893508W` açılsın. Sonra doğrudan `/works/OL24252290W` aç: açıklama olmadığını ve yazar isteği 404 olsa bile ekranın kaldığını gör. Platform testlerinde 500 ve `-1` kapak durumları da var.
 
 :::tip
-API cevabını bileşende rastgele `as` ile tip yerine geçirme. 4. dersteki gibi kapıda Zod ile doğrula, sonra UI'a temiz bir model ver.
+API cevabının eksik veya bozuk olabileceğini hesaba kat; ekranda geçerli bir eser modeli kullan.
 :::

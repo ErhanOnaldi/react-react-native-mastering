@@ -13,9 +13,9 @@ export default defineQuestion({
     'src/shared/config/env.ts',
   ],
   hints: [
-    'Önce 14. checkpoint’teki mevcut tipleri ve form alanlarını oku.',
-    'Zod şemasını dış verinin girdiği sınırda kullan; `z.infer` ile tipleri tek kaynağa bağla.',
-    'Testteki bozuk veri örneğini çalıştır; hata veri ekrana ulaşmadan oluşmalı.',
+    '14. checkpoint’teki form alanlarını ve kayıt sonrası eklenen alanları ayır.',
+    '`zodResolver` ile RHF formlarını şemalara bağla; dönüşüm varsa `z.input` ve `z.output` tiplerini ayır.',
+    'Kayıt tipinden sistem alanlarını `.omit()` ile çıkar; env değerlerini Zod ile doğrula ve trimle.',
   ],
   rubric: [
     'Tek kaynaklı ve okunur şema tanımları',

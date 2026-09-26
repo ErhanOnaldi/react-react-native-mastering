@@ -14,8 +14,8 @@ export default defineQuestion({
   ],
   hints: [
     'Önce SearchPage’deki useEffect/state üçlüsünü tek useQuery ile değiştir.',
-    '`q`, `page` ve `genre` değerlerini key factory’ye parametre olarak ver.',
-    '`keepPreviousData`yı pagination sorgusuna ekle; detayda id değişimi key’den gelsin.',
+    '`q`, `page` ve `genre` değerlerini `movieQueries` key factory’ye parametre olarak ver; boş aramada `enabled` veya `skipToken` kullan.',
+    'Pagination sorgusunda `placeholderData: keepPreviousData` ve geçici durumu belirtmek için `isPlaceholderData` kullan; detayda id değişimi key’den gelsin.',
   ],
   rubric: [
     'Dört sayfa Query cache’inden sunucu verisi okur; favori seçimi client state’te kalır.',

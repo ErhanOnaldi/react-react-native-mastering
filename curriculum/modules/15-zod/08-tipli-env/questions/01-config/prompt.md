@@ -3,4 +3,4 @@
 - Token trim sonrası boş olamaz; hata `VITE_TMDB_TOKEN` adını içersin.
 - Başlık eksik/boşsa `Sinema`; doluysa trimle.
 - Sayfa boyutu pozitif tam sayıysa onu kullan; eksik/geçersizse `20`.
-- Girdi şemasını Zod ile doğrula, çıkan nesneyi `.transform` ile uygulama adlarına çevir.
+- Girdi Zod ile doğrulansın; dönüş nesnesi uygulamanın kullandığı alan adlarını taşısın.

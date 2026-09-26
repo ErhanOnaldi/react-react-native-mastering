@@ -13,7 +13,7 @@ export default defineQuestion({
   ],
   hints: [
     'Önce `movies-api.ts` imzalarını oku; yeni fetch yazma.',
-    '`queryOptions({ queryKey: [...], queryFn: () => getMovieDetails(id) })` biçimiyle başla.',
+    '`queryOptions({ queryKey: [...], queryFn: () => getMovieDetails(id), staleTime: 60_000 })` biçimiyle başla.',
     '`all` kök key’i ile alt aileleri kur; `main.tsx` içinde tek QueryClientProvider kullan.',
   ],
   rubric: [

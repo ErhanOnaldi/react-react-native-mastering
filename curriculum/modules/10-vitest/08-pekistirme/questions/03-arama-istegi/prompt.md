@@ -2,7 +2,7 @@ Sinema araması birden fazla kavramı birleştiriyor: sorguyu kırp, sayfayı ta
 
 - `"  dövüş  "`, sayfa `2` girdisinde URL’de `query=dövüş`, `page=2`, `language=tr-TR` olmalı.
 - `Authorization: Bearer test-token` gönderilmeli.
-- Sahte fetch’in döndürdüğü `{ page: 2, results: [{ id: 550, title: 'Dövüş Kulübü' }] }` cevap olarak korunmalı.
+- `{ page: 2, results: [{ id: 550, title: 'Dövüş Kulübü' }] }` yanıtı cevap olarak korunmalı.
 - Sadece boşluk içeren sorguda hiç istek atılmamalı; boş sonuç dönmeli.
 
 URL parametre sırasına bağlanma. Bu görev refactor’da kaybolan sayfa parametresine doğrudan regresyon testi olacak.

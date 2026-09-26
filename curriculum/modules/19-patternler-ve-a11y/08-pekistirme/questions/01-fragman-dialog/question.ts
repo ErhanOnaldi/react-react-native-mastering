@@ -14,8 +14,8 @@ export default defineQuestion({
   ],
   files: ['TrailerDialog.tsx'],
   hints: [
-    'Önce arka planı `createPortal(..., document.body)` ile taşı ve dialoga rol/ad ver. Sonra dialogun içine tıkla: neden kapanıyor? Olay nereden nereye gidiyor?',
-    'Arka planın `onClick`’i yalnızca tıklama arka planın **kendisine** olduysa kapatmalı. Focus için açan düğmeye bir ref, Oynat/Kapat’a iki ref tut; keydown’u açıkken dinle.',
+    'Dialogun içindeki tıklama neden arka planı kapatıyor? Olayın nereden nereye gittiğini ve focus dönüşünü düşün.',
+    'Arka planı `createPortal(..., document.body)` ile taşı. `onClick` yalnız arka planın kendisine tıklanınca kapatsın; focus için düğme ref’lerini kullan.',
     '`if (event.target === event.currentTarget) setOpen(false)`. Effect cleanup’ında dinleyiciyi kaldır ve `triggerRef.current?.focus()` çağır.',
   ],
   preview: { entry: 'Preview.tsx' },

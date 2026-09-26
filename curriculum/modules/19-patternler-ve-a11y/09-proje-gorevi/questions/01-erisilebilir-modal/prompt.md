@@ -14,13 +14,13 @@ Kod alıştırmasındaki fragman penceresini yeniden kullanılabilir bir `Modal`
 </Modal>
 ```
 
-- `Modal` kökü `useDisclosure`'ı kullanıp durumu Context ile parçalara versin.
+- Modal parçaları aynı açık/kapalı durumunu paylaşsın.
 - `Modal.Trigger` varsayılan olarak `<button type="button">` render etsin. `asChild` verilirse **tek** child elementini kullansın: iç içe düğme yok; child'ın `onClick`'i ve `ref`'i korunsun.
 - `Modal.Close` `<button type="button">` render edip modalı kapatsın.
 
 ## Modal davranışı
 1. Kapalıyken içerik DOM'da yok. Trigger (tık, Enter, Space) açar.
-2. İçerik `createPortal` ile `document.body` altında; `role="dialog"`, `aria-modal="true"`, adı `title` prop'undan gelen **görünür** başlık (`aria-labelledby` + `useId`).
+2. İçerik `document.body` altında; `role="dialog"`, `aria-modal="true"`, adı `title` prop'undan gelen **görünür** başlıkla ilişkili olsun. Sayfada birden fazla modal varsa kimlikleri çakışmasın.
 3. Açılışta içerideki ilk focus alabilen kontrol focus alır.
 4. Tab / Shift+Tab içeride döner. Focus alabilen kontrolleri her tuşta yeniden bul; `disabled` olanları atla.
 5. Escape ve `Modal.Close` kapatır; kapanınca focus açan öğeye döner (öğe sayfadan kalktıysa hata vermez).

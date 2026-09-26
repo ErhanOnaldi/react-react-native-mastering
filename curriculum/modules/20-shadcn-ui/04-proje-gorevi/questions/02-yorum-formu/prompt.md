@@ -15,4 +15,4 @@ Sinema'nın yorum formu (14–15. modül) çalışıyor ama iki sorunu var: id'l
 - Boş gönderimde istek atılmasın; **Puan seç** ve **Yorum gerekli** mesajları görünsün ve `FormControl` sayesinde ilgili alana (`aria-invalid` + `aria-describedby`) bağlansın.
 - Geçerli gönderimde istek gitsin, **Yorum kaydedildi** görünsün; gönder düğmesinin adı **Gönder**.
 
-Mesajları şema belirler: `src/features/watchlists/schemas.ts` içindeki `reviewSchema`'yı 3. dersteki gibi Zod 4 `error` parametresiyle yaz.
+Mesajları `src/features/watchlists/schemas.ts` içindeki `reviewSchema` belirlesin.

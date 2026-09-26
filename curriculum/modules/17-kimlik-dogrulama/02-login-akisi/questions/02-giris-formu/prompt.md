@@ -4,7 +4,7 @@ API artık doğru/yanlış parolayı ayırıyor; sırada formun boş alanları i
 
 `LoginForm` iki etiketli alan (`Kullanıcı adı`, `Parola`) ve `Giriş yap` butonu göstersin.
 
-- RHF `register` ve `handleSubmit` kullan; Zod şeması iki alan için de boş string’i reddetsin.
+- İki alan da boş bırakılamasın; gönderimden önce alan bazında doğrulansın.
 - Geçerli gönderimde `onLogin({ username, password })` çağır. Bu callback Promise dönebilir.
 - Callback hata fırlatırsa mesajı `role="alert"` ile göster; parola metnini asla hata mesajına ekleme.
 - Alan hatalarını da erişilebilir biçimde göster; boş formda `onLogin` çağrılmasın.

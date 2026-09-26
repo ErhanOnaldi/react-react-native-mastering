@@ -13,8 +13,8 @@ export default defineQuestion({
   ],
   hints: [
     'Trend için tek sayfa `useQuery` yerine `useInfiniteQuery` kullan.',
-    '`getNextPageParam` içinde `last.page < last.total_pages` kontrol et; `data.pages.flatMap` ile listele.',
-    'Kartın hover olayında `prefetchQuery(movieQueries.detail(id))`; detay sayfasında aynı key.',
+    '`initialPageParam: 1` ve `getNextPageParam` içinde `last.page < last.total_pages` kontrolü kullan; `data.pages.flatMap` ile listele, gerekirse `maxPages` seç.',
+    'Kartın hover olayında `queryClient.prefetchQuery(movieQueries.detail(id))`; detay sayfasında aynı key.',
   ],
   rubric: [
     'Trendde sayfalar birikir ve son sayfada istek durur.',

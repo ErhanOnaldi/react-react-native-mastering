@@ -23,8 +23,8 @@ export default defineQuestion({
     '404 ile geçici sunucu/ağ hatası ayrılıyor; yeniden deneme sorguyu tekrar çalıştırıyor mu?',
   ],
   hints: [
-    'Önce eseri `workId` içeren query key ile getir; arama şeması gibi eser cevabını da modele dönüştür.',
+    'URL’deki eser kimliği değişince eski eserin görünmemesi için veriyi neye göre ayırmalısın?',
     'Yazar anahtarını eser cevabından çıkar. Ayrı query için `enabled: Boolean(authorId)` kullanabilir veya eser sorgusundan sonra hatayı yerel olarak yakalayabilirsin.',
-    'Eser hatasında 404’ü ayrı göster; geçici hatada `query.refetch()` çağıran “Tekrar dene” butonu koy. Kapak için `id > 0` kontrolü yap.',
+    'Eser cevabını kapıda Zod ile doğrula; 404’ü ayrı göster, geçici hatada `query.refetch()` kullan. Kapak için `id > 0` kontrolü yap.',
   ],
 })

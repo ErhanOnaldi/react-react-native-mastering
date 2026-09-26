@@ -22,8 +22,8 @@ export default defineQuestion({
   ],
   reviewFiles: ['src/shared/ui/modal/*.ts', 'src/shared/ui/modal/*.tsx', 'src/pages/MovieDetailsPage.tsx'],
   hints: [
-    'Önce `useDisclosure`’ı (8. ders alıştırması) projeye taşı. `Modal` kökü onu çağırsın ve `{ isOpen, open, close, triggerRef, titleId }` gibi değerleri Context’e koysun; parçalar `useModal()` ile okusun, provider yoksa hata fırlatsın.',
-    '`Modal.Content`: açık değilse `null`; açıksa `createPortal(<div role="dialog" …>, document.body)`. Focus trap için tuş anında `dialog.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex=\\"-1\\"])")` listesini `:disabled` olmayanlarla filtrele; ilk ve son öğeye göre Tab’ı çevir.',
+    'Modal parçalarının aç/kapat durumunu nasıl paylaşacağını ve kapatınca focus’un nereye döneceğini düşün.',
+    '`useDisclosure` durumunu Context ile paylaş. `Modal.Content`: açık değilse `null`; açıksa `createPortal(<div role="dialog" …>, document.body)`. Focus trap için tuş anında `dialog.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex=\\"-1\\"])")` listesini `:disabled` olmayanlarla filtrele; ilk ve son öğeye göre Tab’ı çevir.',
     'Trigger `asChild` için `cloneElement(child, { onClick: (e) => { child.props.onClick?.(e); if (!e.defaultPrevented) open() }, ref: birleşikRef })` (6. ders). Effect’i `[isOpen]`’a bağla, `close`’u `useEffectEvent` ile ya da kararlı referansla çağır; cleanup’ta açan öğeye `focus()` ver.',
   ],
   rubric: [

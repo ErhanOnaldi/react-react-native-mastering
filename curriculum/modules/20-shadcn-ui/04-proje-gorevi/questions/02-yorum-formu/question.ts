@@ -27,9 +27,9 @@ export default defineQuestion({
     'src/features/watchlists/schemas.ts',
   ],
   hints: [
-    '`useForm` + `zodResolver` aynen kalsın; JSX’i `<Form {...form}>` ile sar. Her alan `<FormField control={form.control} name="…" render={({ field }) => <FormItem>…</FormItem>} />` olsun.',
+    'Boş puan ve yorumun isteğe dönüşmemesi için doğrulama ile alan hataları nerede birleşmeli?',
     'Puan için `<FormControl><RadioGroup aria-label="Puan" value={field.value ? String(field.value) : ""} onValueChange={(value) => field.onChange(Number(value))}>…</RadioGroup></FormControl>`. Her öğe `<RadioGroupItem value="3" aria-label="3 yıldız" />`.',
-    'Yorum için `<FormControl><Textarea {...field} /></FormControl>` ve altına `<FormMessage />`. `FormControl` tek çocuğuna `id`, `aria-invalid` ve `aria-describedby` verir; araya `div` koyma.',
+    '`useForm` + `zodResolver` ile şemayı bağla; Zod 4 `error` parametresi Türkçe mesajları üretir. `<FormControl><Textarea {...field} /></FormControl>` ve `<FormMessage />` kullan; FormControl tek çocuğuna id ve hata ilişkisini aktarır.',
   ],
   rubric: [
     'ReviewForm kopyalanmış Form/FormField/FormItem/FormLabel/FormControl/FormMessage parçalarını kullanıyor; elle yazılmış id veya aria-describedby kalmamış.',

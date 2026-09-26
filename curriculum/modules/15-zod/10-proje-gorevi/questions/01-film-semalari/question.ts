@@ -8,9 +8,9 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['src/features/movies/api/schemas.ts', 'src/features/movies/types.ts'],
   hints: [
-    'Önce 14. checkpoint’teki mevcut tipleri ve form alanlarını oku.',
-    'Zod şemasını dış verinin girdiği sınırda kullan; `z.infer` ile tipleri tek kaynağa bağla.',
-    'Testteki bozuk veri örneğini çalıştır; hata veri ekrana ulaşmadan oluşmalı.',
+    'Mevcut TMDB tipleriyle liste ve detay fixture’larının alanlarını karşılaştır.',
+    'Ortak film alanlarını temel şemada tanımla; detayda `genre_ids` bulunmadığı için uygun alanları seçerek türet.',
+    '`src/features/movies/types.ts` tiplerini `z.infer` ile şemalardan çıkar; null poster geçerli, null başlık geçersiz olmalı.',
   ],
   rubric: [
     'Tek kaynaklı ve okunur şema tanımları',

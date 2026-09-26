@@ -27,8 +27,8 @@ export default defineQuestion({
     'Alakasız selector tüketicilerinin render artışı ölçülür.',
   ],
   hints: [
-    'Önce `main.tsx` içinde uygulamayı Redux Provider ile sar.',
-    'Listener middleware’i `getDefaultMiddleware().prepend(...)` ile ekle ve güncel state’i `getState()`ten oku.',
-    'Favori düğmesinde yalnız `ids.includes(movieId)` boolean değerini seç; tema action’ıyla render artışını ölç.',
+    'Store’u uygulama ağacına nerede sağlayacağını ve hangi değişimlerin kalıcı yazılması gerektiğini düşün.',
+    '`main.tsx` içinde Provider kur. `createListenerMiddleware` ile ilgili action’ları dinleyip reducer sonrası state’i `getState()`ten oku.',
+    'Middleware’i `getDefaultMiddleware().prepend(...)` ile ekle. Favori düğmesinde `useAppSelector(state => state.favorites.ids.includes(movieId))` gibi dar seçim yap ve `useAppDispatch` kullan.',
   ],
 })

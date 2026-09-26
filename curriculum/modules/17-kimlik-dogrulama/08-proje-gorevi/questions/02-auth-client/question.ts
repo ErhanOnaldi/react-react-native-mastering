@@ -11,8 +11,8 @@ export default defineQuestion({
     'src/pages/ProfilePage.tsx',
   ],
   hints: [
-    'get isteğine güncel access token’ı Bearer olarak ekle.',
-    '401’de refresh Promise’ını paylaş; iki istek tek rotation kullanmalı.',
+    'İki paralel 401’in aynı yeni token çiftini kullanması için hangi işi paylaşmalısın?',
+    'GET isteğine Bearer token ekle; 401’de refresh Promise’ını paylaş. Profil için TanStack Query kullanabilirsin.',
     'İki yeni token’ı store ve kalıcı depoda birlikte güncelle; retry yalnız bir kez olsun.',
   ],
 })

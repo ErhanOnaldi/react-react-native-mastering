@@ -12,7 +12,7 @@
 | `getMovieDetails(id)` | `/movie/:id`, `append_to_response=credits,videos` | `MovieDetails` |
 | `getGenres()` | `/genre/movie/list` | `{ genres: Genre[] }` |
 
-- `MovieListResponse`, `MovieDetails` ve `Genre` tipleri taşınan `src/shared` veya ilgili `src/features/movies` dosyalarından gelsin; aynı tipi beş kez yeniden tanımlama.
+- Fonksiyonların dönüşleri `MovieListResponse`, `MovieDetails` ve `Genre` tipleriyle uyumlu olsun; aynı veri biçimi beş farklı tip gibi görünmesin.
 - Tüm fonksiyonlar `tmdbClient.get<T>` kullansın. Sayfalar, search ve favorites feature’ları bu fonksiyonlara bağlansın. `getMovieDetails` favorilerde de kullanılabilir.
 - Önceki v1 davranışını koru: `?page=2`, `?genre=28`, Türkçe arama, detayda kadro ve favoriler çalışmalı.
 

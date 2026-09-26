@@ -8,7 +8,7 @@ export default defineQuestion({
   files: ['SearchAgain.tsx'],
   hints: [
     'Arama sonucunu ayrı bir child component yap ki detay görünümünde unmount olsun.',
-    'Child içinde `useQuery` key’ine normalize `query` ekle ve `staleTime` ayarla.',
+    'Child içinde `useQuery` key’ine normalize `query` ekle ve `staleTime: 60_000` ayarla.',
     'Button ile `details` state’ini değiştir; detayda yalnız metin, dönüşte `<Results query={query} />` göster.',
   ],
 })

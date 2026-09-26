@@ -9,9 +9,9 @@ export default defineQuestion({
   focusFiles: ['src/features/movies/components/VirtualMovieList.tsx', 'src/pages/SearchPage.tsx'],
   reviewFiles: ['src/features/movies/components/VirtualMovieList.tsx', 'src/pages/SearchPage.tsx'],
   hints: [
-    'Önce aynı veriye filtre uygula, sonra virtualizer count değerini filtreli diziye bağla.',
-    '`getScrollElement` için scroll container ref kullan; `getTotalSize` ve virtual row start değerlerini yerleştir.',
-    'SearchPage inputu güncel sorguyla kalsın; listeye `useDeferredValue(query)` ver.',
+    'Hangi sonuçlar gerçekten DOM’da olmalı? Inputun güncel kalması için liste işini nasıl erteleyebilirsin?',
+    '`useVirtualizer` ile filtrelenmiş diziyi sanallaştır; scroll container ref, getTotalSize ve satır başlangıçlarını kullan.',
+    'SearchPage inputu güncel sorguyla kalsın; listeye `useDeferredValue(query)` ver. Virtualizer count değerini filtreli diziye bağla.',
   ],
   rubric: [
     'Liste gerçek arama sonuçlarıyla bağlanmış, URL ve Query cache akışı korunmuş.',

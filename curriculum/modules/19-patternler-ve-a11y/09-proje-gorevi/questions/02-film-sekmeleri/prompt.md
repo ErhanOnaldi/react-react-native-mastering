@@ -19,7 +19,7 @@ Sinema'nın detay sayfasında özet, oyuncular ve (varsa) videolar alt alta uzay
 ## Tabs davranışı
 - `List` → `tablist` (+ `aria-label`), `Trigger` → `<button type="button" role="tab">`, `Panel` → `tabpanel`.
 - Seçili sekme `aria-selected="true"` ve `tabIndex={0}`; diğerleri `tabIndex={-1}`.
-- Trigger `aria-controls` ile paneline, panel `aria-labelledby` ile sekmesine bağlı. Id'leri `useId` ile üret: sayfada iki `Tabs` olsa da çakışmasın.
+- Trigger `aria-controls` ile paneline, panel `aria-labelledby` ile sekmesine bağlı. Sayfada iki `Tabs` olsa da kimlikler çakışmasın.
 - ArrowRight/ArrowLeft döngüyle, Home/End ilk/son sekmeye gider; seçim ve focus birlikte taşınır.
 - Seçili olmayan paneller görünmez (DOM'dan çıkar ya da `hidden`).
 

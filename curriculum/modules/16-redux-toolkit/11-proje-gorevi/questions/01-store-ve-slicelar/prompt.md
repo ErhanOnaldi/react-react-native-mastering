@@ -12,7 +12,7 @@ Favori yıldızı beş Context provider’ından geçiyor; tema bileşeni de ger
 | `src/features/ui/store/uiSlice.ts` | `uiSlice`, `setTheme('light' | 'dark')`; state `{ theme: 'light' | 'dark' }` |
 | `src/features/recentlyViewed/store/recentlyViewedSlice.ts` | `recentlyViewedSlice`, `viewMovie(id)`; state `{ ids: number[] }`, en yeni başta ve en fazla 5 |
 
-`setupStore(preloadedState?)` her çağrıda yeni store kursun; `store` uygulamanın varsayılan store’u olsun. `RootState` ve `AppDispatch` tiplerini bu store’dan türet. Mevcut favori ve watchlist kullanımını bu slice’lara bağla; Context provider zincirini kaldır. `useAppSelector` ile her bileşen yalnız ihtiyacı olan alanı seçsin. Favori ekleme/çıkarma ve watchlist’in liste/film sırası korunmalı.
+`setupStore(preloadedState?)` her çağrıda yeni store kursun; `store` uygulamanın varsayılan store’u olsun. `RootState` ve `AppDispatch` tipleri kurulan store ile uyumlu olsun. Mevcut favori ve watchlist kullanımı yeni state ile çalışsın; Context provider zinciri kalksın. Favori değişimi ilgisiz tema tüketicisini yeniden render etmesin. Favori ekleme/çıkarma ve watchlist’in liste/film sırası korunmalı.
 
 ## Elle dene
 

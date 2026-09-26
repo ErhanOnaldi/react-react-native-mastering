@@ -21,8 +21,8 @@ export default defineQuestion({
     'src/features/favorites/components/*.tsx',
   ],
   hints: [
-    '4. dersteki `KeyboardTabs` alıştırması neredeyse hazır bir başlangıç. Kökte `useState(defaultValue)` ve `useId()`; parçalar Context’ten `useTabs()` ile okusun.',
-    'Trigger id’si `${baseId}-tab-${value}`, panel id’si `${baseId}-panel-${value}` olabilir. List’in `onKeyDown`’unda `[role="tab"]` düğmelerini DOM sırasıyla bul, hedefe `focus()` ver ve seçimi değiştir.',
+    '4. dersteki `KeyboardTabs` alıştırmasını ve iki ayrı sekme grubunun kimliklerini düşün.',
+    'Kökte `useState(defaultValue)` ve `useId()` kullanıp parçaları Context ile bağla. List’in `onKeyDown` olayında görünen tabları DOM sırasıyla bul.',
     'Detay sayfasında `const videos = movie.videos?.results ?? []`; `videos.length > 0` değilse hem Videolar Trigger’ını hem Panel’ini render etme.',
   ],
   rubric: [
