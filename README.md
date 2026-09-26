@@ -50,6 +50,14 @@ pnpm check                  # son açtığın soru
 pnpm checkpoint 12          # → projects/sinema@12
 ```
 
+- Birçok modülün sonunda bir **Atölye** dersi var: daha az yönlendirmeyle teşhis, refactor ve "sadece gereksinim" görevleri. Mimari görevleri ayrı bir pratik projesinde yaparsın (ilk kez Modül 9'da):
+
+```bash
+pnpm setup:projects atolye   # projects/atolye'yi oluşturur (bir kez)
+pnpm install
+cd projects/atolye && pnpm dev   # http://localhost:5175
+```
+
 - Açık uçlu görevlerde **"AI review prompt'unu kopyala"** butonu, görevi, değerlendirme kriterlerini ve kodunu hazır bir prompt'a dönüştürür; istediğin AI aracına (Claude, ChatGPT…) yapıştırıp geri bildirim al.
 
 İlerlemen `progress.json`'da, platformdaki çözümlerin `workspace/` altında durur (ikisi de git dışında).
@@ -64,6 +72,7 @@ packages/content   İçerik şemaları, yükleyici, Markdown motoru
 packages/cli       pnpm check / checkpoint / validate:content
 curriculum/        Modüller, dersler, sorular, sahte API'ler (MSW), Sinema checkpoint'leri
 projects/sinema    Senin projen (modül modül büyür)
+projects/atolye    Atölye mimari görevleri için pratik projen
 docs/              Tasarım, müfredat planı, içerik yazım rehberi, araştırma notları
 ```
 

@@ -34,7 +34,7 @@ switch (command) {
     exitCode = await checkpoint(paths, arg)
     break
   case 'setup':
-    exitCode = await setupProjects(paths)
+    exitCode = await setupProjects(paths, arg)
     break
   case 'validate':
     exitCode = await validate(paths, {
@@ -49,7 +49,7 @@ switch (command) {
     console.log(`${pc.bold('Kullanım:')}
   pnpm check [kısa-kod] [--watch]    Soruyu terminalde çalıştır (varsayılan: son açılan soru)
   pnpm checkpoint <modül>             Sinema'nın o modül başındaki halini aç
-  pnpm setup:projects                 projects/sinema'yı başlangıç iskeletinden oluştur
+  pnpm setup:projects [proje]         projects/<proje>'yi (varsayılan: sinema) başlangıç iskeletinden oluştur
   pnpm validate:content [-m N]        İçerik doğrulama hattı
       --skip-runs                     Test çalıştırmadan (şema + kod blokları)
       --skip-projects                 Proje görevlerini atla (checkpoint henüz yoksa)`)

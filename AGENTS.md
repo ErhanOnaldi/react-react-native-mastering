@@ -4,7 +4,7 @@ Local, LeetCode-style platform that teaches React to a Turkish-speaking learner.
 
 - `apps/platform` (Vite + React UI), `apps/server` (Hono API), `packages/{content,runner,cli}` — the engine. **Do not modify the engine unless your task explicitly says so.**
 - `curriculum/` — all learning content (modules, lessons, questions, tests, fixtures, test env, Sinema checkpoints).
-- `projects/sinema` — the learner's own project. **Never modify it.**
+- `projects/sinema`, `projects/atolye`, `projects/kitaplik` — the learner's own projects. **Never modify them.** (`curriculum/checkpoints/atolye/start` is the practice project's skeleton; `pnpm setup:projects atolye` copies it.)
 - `workspace/`, `progress.json` — learner state. **Never modify.**
 
 ## Content authoring

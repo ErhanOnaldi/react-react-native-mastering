@@ -281,3 +281,20 @@ Bitti sayılması için:
 - [ ] Quiz şıklarının her birinin açıklaması öğretici.
 - [ ] Türkçe sade ve doğru; terimler tutarlı.
 - [ ] Sinema görevleri `docs/curriculum-plan.md`'deki sözleşmeye (dosya yolu, export) uyuyor.
+
+## 9. Atölye görevleri
+
+Atölye, öğrenciye hangi çözümü seçeceğini giderek daha az söyleyen bağımsız kodlama çalışmasıdır. Görev sözleşmesi ve tekrar sırası `docs/practice-plan.md` içindedir. Her ilgili modülün **sonuna**, proje dersinden sonra `NN-atolye/` ekle; `NN` mevcut son dersin bir sonrasıdır. `lesson.md` için `kind: practice` kullan. Eski dersleri ve soruları yeniden numaralandırma; Sinema checkpoint'lerine dokunma.
+
+Beş biçim kullanılır:
+
+1. **Teşhis et, düzelt** (`code`): Starter çalışır ama hatalıdır. `prompt.md` yalnızca kullanıcının gördüğü belirtiyi ve tekrar adımlarını söyler; nedeni ve çözüm yöntemini söylemez. Test belirtiyi üretir; uygun yerde `requests()`, fake timer veya `server.use(...)` kullan.
+2. **Sadece gereksinim** (`code`): İş gereksinimini ve testlerin import edeceği açık giriş noktasını ver. Yöntem ve iç dosya seçimi öğrenciye aittir.
+3. **Refactor** (`code`): Çalışan büyük bileşeni ver. Testler mevcut davranışı korur ve ikinci sayfada yeniden kullanım gibi yeni bir gereksinimle starter'ı başarısız kılar. Kod kalitesini somut `rubric` ile değerlendir.
+4. **Tasarım karşılaştırma** (`code`): İki uygulanabilir component API'si göster. Öğrenci birini seçer, uygular, gerekçesini yorumda açıklar. Testler iki tasarımın da sağlayabileceği davranışı denetler; seçim gerekçesi ve kalite için `rubric` gerekir.
+5. **Mimari** (`project`): `project: 'atolye'` kullan. `tests/` veya başka test dosyası koyma. `reviewFiles: ['src/<task-slug>/**']` ve 5–8 somut, kontrol edilebilir `rubric` maddesi yaz. Öğrenci dosyaları VS Code'da `projects/atolye/src/<task-slug>/` altında kendisi oluşturur; görev metni dosya listesi vermez. Doğrulama yolu görev sayfasındaki **“AI review prompt'unu kopyala”** düğmesidir. İlk mimari görev (modül 9), kurulumu açıkça anlatır: repo kökünde `pnpm setup:projects atolye`, ardından `pnpm install`, ardından `cd projects/atolye && pnpm dev`.
+
+Yönlendirmeyi kademeli azalt: **L1 rehberli (3–6)** dosyayı ve function/export adını verir; yöntem de adlandırılabilir. **L2 yarı açık (9–16)** yalnızca testlerin import ettiği public entry point'i verir; yöntem yalnızca ipuçlarında geçebilir. **L3 açık (17–22)** iş gereksinimini ve gerekiyorsa public entry point'i verir. L3 `prompt.md` metninde hook adı, kütüphane API adı veya iç dosya adı geçmez; bunlar yalnızca ipuçlarında bulunabilir. İpuçları yön → yöntem → neredeyse çözüm sırasıyla azalır.
+
+Kod testleri yalnızca public entry point üzerinden görülen davranışı sınar: RTL role/text sorguları, kullanıcı etkileşimi ve MSW cevapları. Hook'lara spy bağlama, iç dosya adı veya tek bir uygulama yolunu assert etme. Refactor ve tasarım karşılaştırma dahil kalite değerlendirmesi gereken görevlerde `rubric` **4–8 somut, kontrol edilebilir madde** içerir. Mimari görevlerde test yerine bu rubric kullanılır. Diğer code görevlerinde starter davranış testinden kalmalı, solution geçmelidir.
+Atölye refactor görevlerinde bu davranış testi kuralı, §2.3'teki yapı testi önerisinin yerini alır: starter'ın kalmasını, public entry üzerinden görülebilen yeni kullanım gereksinimi sağlar.
