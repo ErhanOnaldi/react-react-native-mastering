@@ -10,6 +10,12 @@ kind: concept
 SearchPage hem `?q=` okuyor, hem isteği atıyor, hem loading/error gösteriyor, hem kartları çiziyor. Yeni bir sonuç görünümü eklemek 300 satırlık sayfaya dokunmak demek.
 :::
 
+## Sayfanın sorumluluğunu incelt
+
+Bir sayfa hem URL okuyor, hem ağ isteğini yönetiyor, hem veriyi biçimlendiriyor, hem de JSX çiziyorsa değişikliklerin etkisi birbirine karışır. Davranışı uygun hook veya API fonksiyonuna, kullanıcıya gösterilen durumu ise component'e bırakmak sorumlulukları ayırır. Her hesaplama için ayrı hook yazmak gerekmez; basit türetilmiş değer render'da kalabilir.
+
+Sinema SearchPage'in büyümesi, önceki custom hook bilgisini mimari düzeyde tekrar kullanma nedenidir. URL ile veri yüklemenin ayrılması, ileride özel fetch hook'undan TanStack Query'ye geçerken sayfa UI'ını daha az etkiler.
+
 ## İhtiyaçtan karar
 
 Önce tekrarlanan davranışı custom hook’a taşı: parametreyi al, yükleme/başarı/hata durumunu döndür. Bileşen kullanıcıya ne gösterileceğine karar versin.

@@ -10,6 +10,12 @@ kind: concept
 Sıralamayı azalttın ama filtrelenen 500 satırı ekrana koymak hâlâ inputu bekletiyor. Her tuşun görünmesi acil, liste güncellemesi bekleyebilir.
 :::
 
+## Acil ve ertelenebilir güncelleme
+
+Kullanıcının input'a yazdığı harfin görünmesi acildir; büyük listenin aynı anda yeniden hesaplanması biraz gecikebilir. `useDeferredValue` değerin tüketimini erteleyebilir, `useTransition` ise belirli state güncellemelerini düşük öncelikli işaretler. Bu araçlar hesaplamayı veya ağ isteğini kendiliğinden azaltmaz; arayüzün yanıt verme sırasını düzenler.
+
+Sinema aramasında controlled input güncel state'e bağlı kalır, liste daha eski sorguyu kısa süre gösterebilir. Önceki sayfalama placeholder'ında olduğu gibi bekleyen geçişin kullanıcıya dürüstçe anlatılması gerekir. Debounce ile scheduling'i aynı kavram sayma.
+
 ## İki ihtiyaç
 `useDeferredValue(query)` pahalı listeye gecikmeli bir değer geçirir; input güncel `query` ile controlled kalır. `useTransition` ise açıkça başlattığın state güncellemesini düşük öncelikle işler ve `isPending` verir. Transition içindeki controlled input state'ini erteleme.
 

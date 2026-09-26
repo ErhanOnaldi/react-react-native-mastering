@@ -10,6 +10,12 @@ kind: concept
 `cn()` çakışmayı çözdü ama primary, secondary ve ghost düğmelerin renkleri üç dosyada; küçük ve büyük boyut için iç içe ternary çoğalıyor.
 :::
 
+## Varyantı sözleşme yap
+
+Bir butonun primary, secondary veya ghost görünümü ile boyutu serbest string birleştirme yerine sınırlı seçenekler olarak modellenebilir. `cva` ortak class'ları ve varyant tablosunu bir araya getirir; `VariantProps` bu seçeneklerin tipini çıkarır. Böylece görünüm kararları kullanım yerlerinde tekrar edilmez ve geçersiz varyantlar daha erken fark edilir.
+
+Sinema düğmeleri bu tasarım dilini paylaşır. Önceki `cn` dersi çakışan class'ları birleştirdi; `cva` ise hangi seçeneklerin desteklendiğini tanımlar. Semantik HTML, disabled davranışı ve erişilebilir ad yine gerçek Button bileşeninin sorumluluğudur.
+
 ## Karar tablosu
 
 `cva` ortak class ve sınırlı varyantları bir yerde tutar. `VariantProps` tablodan TypeScript props tipi çıkarır.

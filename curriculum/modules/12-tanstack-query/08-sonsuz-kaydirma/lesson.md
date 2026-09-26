@@ -10,6 +10,12 @@ kind: concept
 Trend sayfasında "Daha fazla" ile sayfa 2’yi getirince sayfa 1 kayboluyor. Burada önceki sayfanın yerine koymak değil, sayfaları birleştirmek istiyorsun.
 :::
 
+## Sayfaları biriktiren okuma
+
+Sonsuz liste ile klasik sayfalama aynı API sayfalarını kullanabilir, fakat ekran davranışı farklıdır. Klasik sayfalama bir sayfayı diğerinin yerine gösterir; sonsuz listede yeni sayfa öncekilere eklenir. `useInfiniteQuery` bu sayfaları ve onları getirmek için kullanılan parametreleri birlikte takip eder. Sonraki sayfanın varlığı da son cevaptan türetilir.
+
+Önceki derste geçici olarak eski sayfayı göstermeyi öğrendin. Sinema trend ekranında ise eski sayfa gerçekten listede kalmalıdır. Bu nedenle tek sayfalı `useQuery` durumunu elle diziye kopyalamak yerine, veri modeline uygun query türünü seçiyorsun.
+
 ## Sayfa zinciri
 
 `useInfiniteQuery` sonucunda `data.pages` ve `data.pageParams` bulunur. `initialPageParam: 1` ile başlat; `getNextPageParam` son cevabın `page` ve `total_pages` alanlarından sonraki sayfayı hesaplar. `hasNextPage` yanlışsa düğmeyi kapat, `isFetchingNextPage` sürerken tekrar tıklamayı engelle.

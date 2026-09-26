@@ -10,6 +10,12 @@ kind: concept
 Mobil ağ yavaş. Puan verdikten sonra liste yeni GET’i bekleyerek boş kalıyor. Bu kez 8,5’i hemen göstermek istiyorsun; fakat sunucu 500 dönerse ekrandaki sahte başarı nasıl silinecek?
 :::
 
+## Sonucu beklemeden gösterme
+
+Optimistic update, sunucu yanıtı gelmeden olası başarılı sonucu kullanıcıya göstermektir. Ağ hızlı algılanır, fakat yazma başarısız olursa geçici görünüm geri alınmalıdır. Bu nedenle işlem öncesi durum, bekleyen istekler ve nihai sunucu cevabı birlikte düşünülür. Her etkileşim için ortak cache'i değiştirmek şart değildir.
+
+Önceki derste başarıdan sonra cache'i yeniledin. Burada zamanlamayı öne alıyorsun. Sinema puan düğmesinde yalnız yerel bekleme değeri yeterli olabilir; aynı puanı birkaç ekran eşzamanlı okuyorsa cache güncellemesi gerekir. Hata testi geri dönüşü de doğrulamalı.
+
 ## En küçük optimistic UI: variables
 
 Yalnızca butonun yanında “8,5 gönderiliyor” göstereceksen cache’e dokunma. `mutation.isPending` iken `mutation.variables.value` değerini göster; hata geldiğinde pending durum biter ve geçici değer kaybolur. Başka bir bileşenin pending değişkenlerini okuması gerekiyorsa aynı `mutationKey` ile `useMutationState({ filters: { mutationKey, status: 'pending' }, select })` kullan.

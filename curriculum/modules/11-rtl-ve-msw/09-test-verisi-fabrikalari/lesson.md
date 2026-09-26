@@ -10,6 +10,12 @@ kind: concept
 Üç kart testine aynı 16 alanlı TMDB nesnesini kopyaladın. poster_path boş vaka eklenince kopyalardan biri unutuldu.
 :::
 
+## Test verisinin temel biçimi
+
+Bir test nesnesinde çok alan varsa senaryo için önemli birkaç alan kopyalar arasında kaybolur. Test data factory, geçerli bir varsayılan nesne üretir ve yalnız o senaryoya özgü alanların değiştirilmesine izin verir. Böylece testin niyeti okunur; varsayılan sözleşme değiştiğinde tek yer güncellenir. Her çağrının bağımsız nesne üretmesi test sızıntısını önler.
+
+Sinema film fixture'ında `poster_path: null` gibi özel durum yalnız ilgili testte görünmelidir. MSW ile HTTP yanıtı kurarken de fabrika kullanılabilir. Zod modülünde aynı verinin gerçekten geçerli olup olmadığını şemayla doğrulayacaksın.
+
 ## İhtiyaç ve çözüm
 
 `makeMovie(overrides: Partial<TmdbListMovie> = {})` geçerli varsayılan film üretir, sonra `...overrides` uygular. Testte yalnızca önemli fark görünür: `makeMovie({ poster_path: null })`.

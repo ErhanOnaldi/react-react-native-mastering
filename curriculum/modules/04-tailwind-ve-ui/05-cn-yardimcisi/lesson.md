@@ -10,6 +10,12 @@ kind: concept
 `'btn ' + (active ? 'on' : '')` ifadesinde boşluk unutulunca `btnon` oluştu. Kartın `p-2` class'ına dışarıdan `p-4` eklendi; HTML'de son yazılması hangi CSS kuralının kazanacağını garanti etmiyor.
 :::
 
+## Dinamik sınıfları güvenli birleştir
+
+React bileşenleri duruma göre farklı class string'leri üretebilir. Basit string ekleme, boşluk veya çakışma hatasına açıktır. `clsx` koşullu parçaları birleştirir; `tailwind-merge` birbiriyle çatışan Tailwind utility'lerini yorumlar. `cn()` bu iki ihtiyacı tek yardımcıda toplar, fakat hangi class'ın tasarım sözleşmesi olduğunu yine component API'si belirler.
+
+Sinema kartının kendi `p-2` değeri ile dışarıdan verilen `p-4` çatışınca sorun görünür olur. Tema token'ı ortak değeri, `cn` ise kullanım anındaki sınıf birleşimini yönetir. Bir sonraki derste sınırlı varyantları ayrı bir tabloda tanımlayacaksın.
+
 ## İki sorun, iki yardımcı
 
 `clsx` koşullu parçaları birleştirir. `tailwind-merge` çatışan Tailwind utility'lerinden son girdiyi tutar. Birlikte `cn()` olur:

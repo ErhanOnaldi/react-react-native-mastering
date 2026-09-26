@@ -10,6 +10,12 @@ kind: concept
 Sinema’daki kartı çağıran biri `movie` yerine `movies` yazdı; kart başlığı çalışma zamanında kayboldu. Bir de favori düğmesini standart `disabled` ile kapatmak isterken kendi props tipin HTML düğme özelliklerini kabul etmiyor.
 :::
 
+## Component'in dış sözleşmesi
+
+Props, üst component'in alta verdiği salt okunur girdilerdir. TypeScript ile props tipini yazmak yalnızca yazım hatasını yakalamaz; hangi bilginin zorunlu, hangisinin opsiyonel ve hangi olayın dışarı bildirileceğini görünür kılar. `children` de özel bir içerik prop'udur; component'in etiketleri arasına konan öğeleri taşır.
+
+Önceki derste render'ın props ve state'ten üretildiğini gördün. Şimdi o girdilerin sözleşmesini belirliyorsun. Sinema kartı üzerinden `Movie` tipini kullanmak, önce kurduğun veri modeliyle UI sınırının birleştiği yer. Yerleşik HTML props'larını türetmek de erişilebilir özellikleri kaybetmeden bileşen kurmanı sağlar.
+
 ## Bileşenin sözleşmesi
 Props tipi, çağıranın ne vermesi gerektiğini ve bileşenin ne kullanabileceğini açıklar. Varsayılan değer, prop verilmezse kullanılır; zorunlu alanı gizlemek için rastgele `as` kullanma.
 

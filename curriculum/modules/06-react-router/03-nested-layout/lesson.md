@@ -10,6 +10,12 @@ kind: concept
 "Ana sayfa", "Ara" ve "Favoriler" sayfalarına aynı menüyü kopyaladın. Bir link değişince üç dosyayı düzeltmen gerekiyor; birinde eski menü kalıyor.
 :::
 
+## İç içe rota ve ortak kabuk
+
+Nested route, bir üst sayfanın içinde farklı alt içeriklerin gösterilmesidir. Üst route ortak yapıyı taşır; `Outlet` ise eşleşen çocuğun yerleştirileceği boşluktur. Bu düzen, URL hiyerarşisiyle ekrandaki yerleşimi birbirine yaklaştırır. Ortak menü yalnızca bir yerde bulunur, sayfa içeriği değişirken kabuk kalır.
+
+Önceki derste tek tek route tanımladın. Sinema'daki menü tekrarının çözümü, route'ları tek bir layout altında toplamaktır. Aynı fikir yönetim paneli, hesap sayfaları veya sekmeli ürün bölümlerinde de kullanılır; ortak olanla sayfaya özgü olanı ayırır.
+
 ## Üst rota ortak kabuk olsun
 
 `RootLayout` menüyü bir kez gösterir. `<Outlet />`, eşleşen alt rotanın içeriğine ayrılmış yerdir. Üst rotanın `children` dizisinde `index: true`, `/` adresinin varsayılan çocuğudur.

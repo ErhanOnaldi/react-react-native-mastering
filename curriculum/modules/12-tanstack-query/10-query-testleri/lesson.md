@@ -10,6 +10,12 @@ kind: concept
 Bir testte aranan film diğer testte cache’den geliyor; testler tek başına geçip birlikte kalıyor. Paylaşılan `QueryClient` testleri birbirine bağlıyor.
 :::
 
+## Cache davranışını test etmek
+
+Query kullanan bir bileşenin sonucu yalnız ağ cevabına değil, cache'in önceki durumuna da bağlıdır. Bu yüzden testler arasında aynı `QueryClient` paylaşılırsa biri diğerinin verisini miras alabilir. İzole test, her senaryoya yeni client ve denetlenebilir ağ cevabı verir. Bekleme, hata ve yeniden istek davranışı böyle ölçülebilir.
+
+Vitest, RTL ve MSW modüllerinde ayrı ayrı test aracı, kullanıcı görünümü ve ağ taklidini kurdun. Burada üçü Query cache'i etrafında birleşiyor. Sinema'da geri navigasyonda GET sayısının düşmesi, yalnız ekrana bakarak değil, istek sayısını ölçerek doğrulanır.
+
 ## Her test yeni istemci
 
 `new QueryClient({ defaultOptions: { queries: { retry: false } } })` oluştur, bileşeni `QueryClientProvider` ile sar. `retry: false` hata testinde beklemeyi ve tekrar GET’leri önler. MSW gerçek TMDB taklidi sunar; `requests()` ise ağ davranışını sayar.

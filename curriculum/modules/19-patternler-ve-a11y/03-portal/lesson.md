@@ -10,6 +10,12 @@ kind: concept
 Film kartının içinde açtığın modal, kartın `overflow: hidden` sınırında kesiliyor. `z-index` yükseltmek de kartın stacking context'inden çıkaramıyor.
 :::
 
+## React ağacı ile DOM konumu
+
+Normalde bir component'in ürettiği DOM, üst component'in DOM düğümü altında yer alır. Portal, React'teki sahiplik ve Context ilişkisini koruyup DOM'u başka bir düğüme yerleştirir. Böylece kesme ve stacking context sorunlarının dışına çıkabilirsin. Yine de event'ler React ağacındaki üstlere yayılabilir; DOM konumunu değiştirmek bütün olay ilişkilerini silmez.
+
+Sinema kartındaki modal bu ayrımı görünür kılıyor. Önceki erişilebilirlik ve focus derslerinin kuralları portal sonrasında da geçerli: dialogun adı, klavye dolaşımı ve kapanınca focus dönüşü ayrıca yönetilmelidir.
+
 ## DOM yerini değiştir
 `createPortal(children, document.body)` React bileşen ilişkisini korur, DOM düğümünü ise `body` altına taşır. Böylece kartın `overflow` sınırına takılmaz.
 

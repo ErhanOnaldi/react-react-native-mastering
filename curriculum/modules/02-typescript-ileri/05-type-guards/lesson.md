@@ -10,6 +10,12 @@ kind: concept
 TMDB'den gelen JSON'u `Movie` diye varsaydın. 401 cevabı da JSON, ama `title` yerine `status_code` taşıyor; `movie.title.toUpperCase()` çöküyor.
 :::
 
+## Tip bilgisinin bittiği sınır
+
+TypeScript tipleri derleme sırasında çalışır; ağdan gelen JSON'u çalışma zamanında incelemez. Bu nedenle dış veri önce `unknown` kabul edilmeli, kullanacağın özellikler gerçek kontrollerle doğrulanmalıdır. Type guard, bu kontrolü isimlendiren ve doğruysa TypeScript'e hangi tipe güvenebileceğini söyleyen bir fonksiyondur.
+
+Önceki derste durumların olası biçimlerini tanımladın. Burada farklı soru var: dışarıdan gelen değerin o biçime gerçekten uyup uymadığı. Sinema'nın 401 cevabı bu sınırı görünür kılıyor. Küçük kontrolleri elle yazabilirsin; daha karmaşık cevaplarda ileride Zod şemasına geçeceğiz.
+
 ## Önce gerçekten bak
 
 `unknown`, ağ sınırındaki dürüst tiptir. `typeof`, `Array.isArray` ve `in` ile şekli kademeli kontrol et. Tekrar eden kontrolü `value is T` dönen type guard'a taşıyabilirsin.

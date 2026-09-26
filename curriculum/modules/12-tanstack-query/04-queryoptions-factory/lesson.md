@@ -10,6 +10,12 @@ kind: concept
 Detay sayfası ve kartın hover davranışı `/movie/550` için farklı key yazarsa prefetch edilen veri sayfada kullanılamaz.
 :::
 
+## Sorgu tanımını tek yerde tut
+
+Bir query'nin kimliği (`queryKey`) ve veriyi getiren işlevi (`queryFn`) birlikte bir sözleşme oluşturur. İkisini farklı yerlerde ayrı ayrı yazmak, aynı veriye farklı key verme riskini büyütür. `queryOptions` bu seçenekleri yeniden kullanılabilir, tipli bir tarif hâline getirir; tarifi oluşturmak kendi başına ağ isteği başlatmaz.
+
+Generic ve tek kaynak ilkelerini TypeScript modülünde gördün. Sinema'nın detay sorgusu hem ekranda hem prefetch sırasında kullanılınca aynı tip ve key bilgisini paylaşması gerekir. Bu tarif, ileride router loader'ı ve testlerde de aynı veriye işaret edebilir.
+
 ## Tek tarif
 
 `queryOptions` key ile fetch fonksiyonunu aynı tipli nesnede toplar. `useQuery(movieQueries.detail(id))` ve `queryClient.prefetchQuery(movieQueries.detail(id))` aynı tarifi kullanır.

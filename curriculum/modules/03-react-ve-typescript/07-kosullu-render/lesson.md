@@ -10,6 +10,12 @@ kind: concept
 Sinema’nın “seçili favori sayısı” sıfırken `count && <p>…</p>` yazdın. Yazı gizlendi ama ekranda yalnız bir `0` kaldı.
 :::
 
+## Duruma göre ekran seç
+
+Koşullu render, state veya props'a bakarak hangi JSX parçasının üretileceğini belirlemektir. JavaScript koşulları burada aynen çalışır; bu yüzden `&&` operatörünün döndürdüğü değer ile "hiçbir şey gösterme" niyetini karıştırmamalısın. Yükleme, hata, boş sonuç ve başarı ayrı kullanıcı durumlarıdır.
+
+Önceki TypeScript modülündeki discriminated union yalnızca veri tipi değildi; şimdi her dalın ekrandaki karşılığını kuruyorsun. Sinema'nın sıfır favori örneği küçük bir JavaScript ayrıntısını gösterir. Aynı düşünce, ağdan gelen sonucun eksik veya hatalı olduğu daha büyük sayfalarda da gerekecek.
+
 ## JSX ifade sonucunu render eder
 `&&` operatörü sol taraf yanlışsa onu döndürür. `0` React tarafından metin olarak gösterilir. `count > 0 && ...` gibi boolean koşul veya ternary kullan. Boş liste için erken dönüş de nettir.
 

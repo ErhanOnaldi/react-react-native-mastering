@@ -10,6 +10,12 @@ kind: concept
 Ana sayfadaki "Ara" düğmesi `setPage('search')` çağırıyor. Ekran değişse de adres `/` kalıyor; yenileyince ana sayfa geri geliyor.
 :::
 
+## Rota ağacı nasıl çalışır?
+
+Route, bir URL deseninin hangi React içeriğini göstereceğini tarif eder. Router bu desenleri mevcut adresle eşleştirir; `RouterProvider` sonuçları uygulamaya sunar. Rota tanımını tek yerde tutmak, ekran adlarını ve sayfa hiyerarşisini görünür kılar. `Link` ise adres değişimini uygulama içi gezinme olarak gerçekleştirir.
+
+Önceki derste neden URL gerektiğini gördün. Şimdi Sinema'nın ana sayfa ve arama ekranını ayrı adreslere bağlıyorsun. Aynı rota ağacının testte bellek geçmişiyle açılabilmesi, kullanıcı gezinmesini gerçek tarayıcıya bağlı olmadan sınamayı sağlar.
+
 ## Rota ağacını kur
 
 Data mode'da rota tanımları bileşenlerden ayrıdır. `createBrowserRouter` tarayıcı geçmişini kullanır; `RouterProvider` uygulamaya bu router'ı verir.

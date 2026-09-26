@@ -10,6 +10,12 @@ kind: concept
 Aramaya yazdığında hem input hem değişmeyen film rozeti tekrar çalışıyor. Listeyi hızlandırmadan önce hangi state'in kimi etkilediğini bulmalısın.
 :::
 
+## Render'ın yayılma yolları
+
+State değişen component yeniden render edilir; üst component yeniden render olduğunda çocukları da varsayılan olarak yeniden çağrılabilir. Context aboneliği ve değişen props da ayrı nedenlerdir. Render, DOM'un mutlaka yeniden yazılması demek değildir; React hesaplar ve sonra gerekli değişiklikleri uygular. Bu ayrım optimizasyon hedefini doğru seçtirir.
+
+Sinema arama state'ini hangi component'e koyduğun, her tuşta ne kadar ağacın çalışacağını belirler. Önceki controlled input ve lifting state bilgisi burada maliyet yönü kazanır. Ölçmeden memo eklemek, asıl sorunu saklayabilir.
+
 ## Render zinciri
 Bir bileşenin state'i değişince kendisi yeniden render edilir. Varsayılan olarak çocukları da yeniden çağrılır. Context değeri değişirse onu okuyan bileşenler etkilenir. Yeni bir `key`, eski bileşeni korumaz; yeniden oluşturur.
 

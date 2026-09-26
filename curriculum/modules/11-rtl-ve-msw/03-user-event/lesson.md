@@ -10,6 +10,12 @@ kind: concept
 Favori butonunun onClick prop’unu doğrudan çağıran test geçiyor. Gerçek buton disabled olduğu için kullanıcı hiçbir şey yapamıyor.
 :::
 
+## Olayı kullanıcı başlatsın
+
+Bir callback'i doğrudan çağırmak, HTML kontrolünün gerçekten etkileşime açık olduğunu kanıtlamaz. `userEvent` tıklama ve yazma gibi eylemleri DOM üzerinden uygular; disabled, focus ve input akışını daha gerçekçi yaşatır. Etkileşimler asenkron olabileceği için sonuçlarını `await` ile beklersin.
+
+Sinema favori butonu disabled iken prop fonksiyonu hâlâ çağrılabilir, fakat kullanıcı butona basamaz. Sorgular dersinde kontrolü role ve adla buldun; şimdi o kontrol üzerinde eylem yapıp ekrandaki değişimi gözlüyorsun. Bu, RTL'nin davranış testine dönüşmesidir.
+
 ## İhtiyaç ve çözüm
 
 `userEvent.setup()` bir etkileşim oturumu açar. `await user.click(button)` ve `await user.type(input, "Matrix")` gerçek kullanıcıya yakın olay dizisi gönderir. Promise döndüklerinden `await` gerekir.

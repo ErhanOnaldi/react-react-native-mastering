@@ -10,6 +10,12 @@ kind: concept
 İzleme listesine ilk etiket kolaydı. “Bir etiket daha” tuşuyla alan sayısı değişince ayrı state ve indeksle silme kodu kırılganlaştı.
 :::
 
+## Sayısı değişen form alanları
+
+Bazı formlarda alan sayısı baştan sabit değildir: kullanıcı etiket ekler, satır siler veya sıralar. `useFieldArray` bu diziyi form durumuyla birlikte yönetir; `append` ve `remove` gibi işlemlerle alanların kimliği korunur. React'teki liste `key` kuralı burada özellikle önemlidir, çünkü her satırın kendi input durumu vardır.
+
+Sinema izleme listesinde etiket sayısı kullanıcıya bağlıdır. Önceki `key` dersinde konum ile kimlik farkını gördün; `field.id` bu formdaki kararlı kimliği sağlar. Dizi indeksi alan yolunda kullanılsa da render kimliği olarak kullanılmamalıdır.
+
 ## Alan dizisini yönet
 
 `useFieldArray({ control, name: 'tags' })`, `fields`, `append`, `remove` verir. RHF 7'de her `field.id` sabit React key'idir; dizinin indeksi key olmaz. Dizi öğesi bir nesne olmalı: `{ value: string }`. `append({ value: '' })` tüm alanlarıyla yeni öğe ekler. `register(`tags.${index}.value`)` yolu ilgili input'u bağlar.

@@ -10,6 +10,12 @@ kind: concept
 `tmdbClient` testini gerçek TMDB’ye gönderince token ve ağ durumuna bağlı sonuç alırsın. Ayrıca `fetch` kaç kez ve hangi başlıklarla çağrıldı sorusuna cevap veremezsin.
 :::
 
+## Kontrol edemediğin sınırı denetle
+
+Mock, testte dış bağımlılığın yerine kontrollü bir davranış koyar. Ağ, saat ve tarayıcı API'leri gerçek koşullarda değişebilir; testin aynı girdide aynı sonucu vermesi için uygun sınırda taklit edilir. Ama bütün uygulamayı taklit edersen gerçek bileşenler arasındaki ilişkiyi ölçemezsin.
+
+Sinema API client'ını denerken `fetch` sınırını kontrol etmek, URL ve yetkilendirme başlığını güvenilir biçimde doğrular. Önceki dersin dış davranış ilkesi burada da geçerli: `fetch`'in nasıl çağrıldığını, client'ın sunucuyla kurduğu sözleşme olduğu için ölçüyorsun. Sonraki modülde MSW ile daha geniş ağ akışını test edeceksin.
+
 ## Sorunu nasıl görürsün?
 
 `vi.fn` çağrı geçmişi olan bir sahte fonksiyon kurar. `vi.stubGlobal("fetch", fake)` global sınırı değiştirir; test sonunda `vi.unstubAllGlobals()` ile geri al. `vi.spyOn` mevcut nesne metodunu izler; `vi.mock` ise tüm modül sınırını taklit eder.

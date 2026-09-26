@@ -10,6 +10,12 @@ kind: concept
 `Modal.Trigger` içine film kartının mevcut `<button>`unu koydun. DOM'da `<button><button>Fragmanı aç</button></button>` oluştu; click ve focus davranışı karıştı.
 :::
 
+## Tek semantik öğe üret
+
+Bir davranış bileşenini başka bir butonun çevresine koyarsan iç içe etkileşimli HTML oluşabilir. `asChild` veya Slot yaklaşımı, sarmalayıcı DOM düğümü üretmek yerine davranışı tek child öğeye aktarır. Event handler, class ve ref aktarımı dikkat ister; bir tarafın değerini sessizce ezmek davranışı bozabilir.
+
+Sinema fragman düğmesi bu sorunu somutlaştırıyor. Önceki composition dersinde içerik yerleştirmeyi, a11y dersinde semantik öğe seçimini gördün. Slot ikisini birleştirir: ortaya tek doğru button veya link çıkmalı ve kullanıcının kendi handler'ı çalışmaya devam etmelidir.
+
 ## Tek DOM öğesi
 `asChild` seçeneğinde Trigger kendi `<button>`unu render etmez; tek child'ı `cloneElement` ile zenginleştirir. Çocuğun `onClick` handler'ı da çalışmalı, Trigger'ın açma handler'ı da. `aria-*`, `className` ve ref birleşimi kaybolmamalı.
 

@@ -10,6 +10,12 @@ kind: concept
 Adres `/movie/550` iken Dövüş Kulübü açılıyor. `/movie/155`’e geçince URL doğru ama sayfa aynı filmi gösteriyor: effect, `id` değişimini dinlemiyor.
 :::
 
+## Hook sırası ve bağımlılık doğruluğu
+
+React Hook'ları her render'da aynı sırayla çağrılmalıdır; koşulun içine konan Hook bu sırayı bozabilir. Effect'in okuduğu reactive değerler de dependency listesinde doğru temsil edilmelidir. ESLint'in React Hooks kuralları bu iki ayrı hatayı kaynakta arar. Uyarı yalnız stil konusu değil, yanlış state veya eski veri gösterebilen davranış problemidir.
+
+Sinema detayında `id` değişince eski filmin kalması önceki effect dersinin somut hatasıydı. Config dersinde kurduğun lint akışı şimdi bu ilişkiyi otomatik izler. Kuralı susturmak yerine senkronize edilen dış sistemin gerçekten hangi değere bağlı olduğunu bul.
+
 ## Önce elle izle
 
 ```tsx title="MovieDetailsPage.tsx"

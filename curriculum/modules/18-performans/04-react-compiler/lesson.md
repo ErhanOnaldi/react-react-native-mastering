@@ -10,6 +10,12 @@ kind: concept
 Kartlara tek tek `memo` eklemek bakım yükü oldu. Aynı kodun compiler tarafından optimize edilmesini istiyorsun.
 :::
 
+## Derleyicinin optimizasyon alanı
+
+React Compiler, uygun React kodundaki bazı tekrar hesaplama ve render işlerini otomatik azaltmayı hedefler. Bu, component'in saf render kurallarına ve Hook kurallarına uymasına dayanır; bozuk state mutasyonunu veya yanlış veri akışını düzeltmez. Elle yazılmış her memo'yu körlemesine silmek yerine davranışı ve ölçümü korumalısın.
+
+Sinema kartlarına tek tek memo ekleme yükü, derleyicinin hangi problem için düşünüldüğünü gösteriyor. React temellerindeki saflık ve ESLint kuralları burada performansın da önkoşulu olur. Sonuçları geliştirme modunun fazladan kontrollerinden ayrı değerlendireceksin.
+
 ## Otomatik memoization
 React Compiler 1.0 kararlı. Yeni kodda varsayılan olarak compiler'ın memoization yapmasına izin ver. Eski `useMemo`/`useCallback` kullanımını topluca silme: bazı referanslar davranış sözleşmesidir. Effect dependency'sinde bilerek sabit referans gerektiğinde el yazısı kontrol hâlâ uygundur.
 

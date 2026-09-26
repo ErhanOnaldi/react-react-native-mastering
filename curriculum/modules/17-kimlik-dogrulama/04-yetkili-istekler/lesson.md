@@ -10,6 +10,12 @@ kind: concept
 Token Redux’ta var ama profil isteği yine 401. Network sekmesinde `/auth/me` isteğinde `Authorization` başlığı yok.
 :::
 
+## Token'ı doğru isteğe bağla
+
+Access token, sunucunun koruduğu bir kaynağa istekte kimlik bilgisini taşır. Bearer şeması bu değeri `Authorization` başlığında gönderir; token'ı URL'ye koymak geçmiş ve log gibi yerlerde görünmesine yol açabilir. Başlık eklemek yine de isteğin başarılı olacağı anlamına gelmez: sunucu token'ı doğrular ve gerekirse 401 döndürür.
+
+Önceki derste token'ı sakladın, şimdi onu yalnız ait olduğu API'ye gönderiyorsun. Sinema'nın TMDB token'ı ile DummyJSON kullanıcı token'ını ayırmak burada zorunlu. API client sınırı, başlık kuralını her component'e kopyalamadan uygular.
+
 ## İsteğe kanıt ekle
 
 `GET /auth/me` için `Authorization: Bearer <accessToken>` gönder. Token’ı URL query string’ine koyma: URL geçmişe ve log’lara sızabilir. `fetch` hata statülerinde çözülür; `response.ok` değerini kontrol edip anlamlı hata yükselt.

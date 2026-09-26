@@ -10,6 +10,12 @@ kind: concept
 Bir önceki görevde `no-unused-vars` çalıştı; çünkü test kuralları verdi. Sinema’nın kendi dosyalarında aynı kontrol yok. Her dosya için kuralları tek tek yazamayız.
 :::
 
+## Kuralları proje sözleşmesine dönüştür
+
+Tek seferlik lint çağrısı yalnız o çalışmada etkili olur. Config dosyası hangi dosyalara hangi parser, plugin ve kuralların uygulanacağını repoda açıkça tanımlar. ESLint'in flat config yapısı bu parçaları sıralı bir dizi olarak birleştirir; dosya kapsamı yanlışsa kural doğru olsa bile ilgili dosya denetlenmeyebilir.
+
+Önceki derste Sinema'daki bir hatayı tek kuralla yakaladın. Şimdi TypeScript ve React dosyaları için aynı denetimi terminal, editör ve CI'da tekrarlanabilir yapıyorsun. Bu, araç ayarının da uygulama davranışı kadar gözden geçirilebilir olduğunu gösterir.
+
 ## Proje kuralı nerede yaşar?
 
 ESLint 10 yalnızca **flat config** okur: proje kökündeki `eslint.config.js` gibi bir dosya. `.eslintrc` ve `.eslintignore` bu sürümde çözüm değil. ESLint 10 aramaya lint edilen dosyanın klasöründen başlar; monorepoda paketlerin ayrı config’leri olabilir.

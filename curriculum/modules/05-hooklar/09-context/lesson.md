@@ -10,6 +10,12 @@ kind: concept
 App’ten karttaki favori düğmesine ulaşmak için aynı `favoriteIds` ve `onToggleFavorite` prop’ları dört kat aktarılıyor. Aradaki bileşenler onları kullanmıyor.
 :::
 
+## Ağaçta ortak değer taşı
+
+Context, bir değeri her ara component'e prop olarak geçirmeden alt ağaçtaki tüketicilere ulaştırır. Provider hangi bölümün değeri paylaşacağını belirler; tüketici onu hook üzerinden okur. Context bir veri taşıma mekanizmasıdır, otomatik olarak cache, kalıcılık veya ince abonelik sağlamaz.
+
+Sinema favori id'leri dört kat prop üzerinden taşınıyorsa aradaki bileşenler yalnız kurye hâline gelmiştir. Custom hook ile tüketimi adlandırabilir, yerel saklamayı ayrı hook'ta yönetebilirsin. İleride sık değişen ortak state büyüdüğünde Redux kararını bu sınır üzerinden değerlendireceksin.
+
 ## Ne değişiyor?
 
 Context ortak değeri ağaçtan geçirir. `createContext<Value | null>(null)` ve provider dışında kullanımı açıklayıcı hata ile engelleyen `useFavorites()` yaz.

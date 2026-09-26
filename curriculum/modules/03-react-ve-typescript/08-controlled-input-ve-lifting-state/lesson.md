@@ -10,6 +10,12 @@ kind: concept
 Sinema arama kutusu yazılanı biliyor, kart listesi ise kendi içinde bütün filmleri tutuyor. Kutudaki “Kara” yazısı listede hiçbir şeyi değiştirmiyor.
 :::
 
+## Girdi ile verinin tek sahibi
+
+Controlled input'ta görünen değer React state'inden gelir ve `onChange` bu state'i günceller. Böylece input'un iç değeri ile uygulamanın kullandığı değer ayrı ayrı yönetilmez. Bir bilgiye kardeş component'ler ihtiyaç duyuyorsa onu en yakın ortak üst component'e taşımaya **lifting state up** denir.
+
+Event handler'ın state'i değiştirmesiyle render'ın yeni değer üretmesi burada tek akış hâline gelir. Sinema'da arama kutusu ve liste aynı sorguyu kullanır. Bu ilişkiyi kurarken filtrelenmiş listeyi ayrıca saklamak yerine mevcut film ve sorgudan hesaplamak, ikinci bir senkronizasyon sorununu önler.
+
 ## Tek kaynak
 Controlled input’un `value` değeri state’ten gelir; `onChange` aynı state’i günceller. Hem arama kutusu hem liste bu değere ihtiyaç duyuyorsa state’i ikisinin ortak üst bileşeni App’e taşı. Kutunun yalnızca `value` ve `onChange` sözleşmesi kalır.
 

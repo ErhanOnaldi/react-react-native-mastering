@@ -10,6 +10,12 @@ kind: concept
 Üç bileşende aynı debounce timer’ı, localStorage okuması ve loading/error/fetch akışı kopyalanmış. Bir cleanup düzeltmesini üç yere de taşımak gerekiyor.
 :::
 
+## Tekrarlanan davranışı paylaş
+
+Custom hook, React hook'larını kullanarak state ve effect davranışını yeniden kullanılabilir bir fonksiyonda toplar. Component gibi render üretmez; çağırana değer ve eylemler döndürür. Her kullanım kendi hook state'ine sahiptir; custom hook yazmak otomatik ortak cache veya global state yaratmaz. Hook kuralları onun içinde de geçerlidir.
+
+Sinema'nın üç ekranındaki debounce ve fetch tekrarı bu soyutlamayı haklı çıkarır. Önceki cleanup dersindeki doğru iptal kuralı tek yere taşınır. Fakat aynı URL'ye tekrar istek gitmesi devam edebilir; TanStack Query'nin sonraki gerekliliği tam bu farktan doğacak.
+
 ## Ne değişiyor?
 
 Custom hook, başka hook’ları çağıran ve `use` ile başlayan yeniden kullanılabilir fonksiyondur. `useDebounce` timer’ı; `useLocalStorage` kalıcılığı; `useFetch<T>` ağ durumunu taşır.

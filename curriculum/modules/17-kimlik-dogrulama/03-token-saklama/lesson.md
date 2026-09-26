@@ -10,6 +10,12 @@ kind: concept
 Girişten sonra profil görünüyor. F5’e basınca Redux store yeniden kuruluyor ve token boş: kullanıcı tekrar girişe gidiyor.
 :::
 
+## Bellek, kalıcılık ve tehdit modeli
+
+Redux store sayfa açıkken bellekte yaşar; yenileme yeni store kurar. Oturumun yenilemede sürmesi isteniyorsa sunucunun sunduğu oturum mekanizması veya kalıcı istemci saklama gerekir. `localStorage` kullanım kolaylığı sağlar fakat sayfadaki JavaScript tarafından okunabilir; XSS tehdidine karşı gizli kasa değildir.
+
+Sinema'nın DummyJSON örneği token çiftini JSON olarak verdiği için bu derste kalıcılık kararı açıkça veriliyor. Önceki listener middleware bilgisi saklama ve temizleme akışına bağlanabilir. Bu seçimin sınırlarını bilmek, daha sonra cookie tabanlı sunucu oturumuyla aynı şey sanmamanı sağlar.
+
 ## Üç saklama seçeneği
 
 | Yer | Yenilemeden sonra | Ana risk |

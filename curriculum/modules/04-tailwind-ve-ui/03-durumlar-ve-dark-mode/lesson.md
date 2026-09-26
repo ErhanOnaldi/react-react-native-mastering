@@ -10,6 +10,12 @@ kind: concept
 Fareyle favori yıldızını buluyorsun ama Tab ile gezerken odak görünmüyor. Koyu temada kart okunuyor, düğme hâlâ açık tema rengiyle parlıyor.
 :::
 
+## Görünüm duruma tepki verir
+
+Bir öğenin görünümü yalnız sabit rengiyle tanımlanmaz. Hover, klavye odağı, disabled ve tema seçimi farklı durumlarda farklı kurallar gerektirir. Tailwind varyantları CSS pseudo-class veya üst öğe koşulunu sınıf adına taşır. Görsel işaretin gerçek HTML davranışıyla uyumlu olması gerekir; soluk görünüm tek başına disabled anlamına gelmez.
+
+Sinema favori düğmesini fareyle ve klavyeyle denemenin nedeni budur. React state'i `aria-pressed` gibi anlamı belirler, Tailwind o durumu görsel olarak anlatır. Daha sonraki erişilebilirlik modülünde bu ilişkinin ekran okuyucu tarafını ayrıntılandıracaksın.
+
 ## Duruma class ekle
 
 `hover:` fare işaretçisi üstündeyken, `focus-visible:` görünür klavye odağında, `disabled:` gerçek `disabled` niteliği varken uygulanır. Görsel durum ile HTML davranışını birlikte kur.

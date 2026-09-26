@@ -10,6 +10,12 @@ kind: concept
 Detay kutusu önce “Dövüş Kulübü” diyor. `id` 27205 olunca başlık hâlâ eski film: effect yeni `id` ile çalışmadı.
 :::
 
+## Effect hangi değere bağlı?
+
+Effect, belirli dış sistemi o andaki props ve state ile eşleştirir. İçinde kullanılan reactive değer değiştiğinde eski eşleşme artık doğru değildir; dependency array React'e ne zaman temizleyip yeniden kuracağını söyler. Bu liste yalnız performans ayarı değildir, effect'in doğruluğunun parçasıdır.
+
+İlk effect dersinde sabit film kimliği için boş liste yeterliydi. Sinema detayında `id` değişince aynı component yeni filmi anlatmalı. Bu ilişkiyi yazmak, ileride Query key'ine parametre koymanın da zihinsel temelini oluşturur.
+
 ## Ne değişiyor?
 
 Effect içinde okunan reactive değerler dependency array’de bulunur. `id` değişince eski senkronizasyon biter, yeni film çekilir.

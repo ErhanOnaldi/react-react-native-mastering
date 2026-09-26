@@ -10,6 +10,12 @@ kind: concept
 Beş provider’ı tek bir Context nesnesine topladın; güncelleme sınırı hâlâ bulanık. Favori ekleme kuralı da üç bileşene kopyalandı.
 :::
 
+## Olay ve durumun ortak dili
+
+Redux store uygulamanın paylaşılan client state'ini tutar. Action ne olduğunu anlatan veridir; reducer eski state ve action'dan yeni state üretir. Slice, belirli özellik alanının başlangıç durumunu, reducer'larını ve action creator'larını bir arada tanımlar. `configureStore` bu parçaları çalışır bir bütün yapar.
+
+Önceki derste hangi verinin Redux'a ait olduğunu seçtin. Şimdi Sinema favorileri ile UI tercihlerini ayrı slice'lara bölüyorsun. Böylece bir düğmenin verdiği karar bileşenlerde dağılmaz; aynı action farklı yerden gönderilse aynı kural işler.
+
 ## Sorunu çöz
 
 `configureStore` reducer’ları ve geliştirme varsayılanlarını kurar. `createSlice` state, reducer ve action creator’ı birlikte üretir. `combineSlices` birden çok slice’ı açıkça birleştirebilir. Önce saf reducer’ı sınayacağız; sonra store’a bağlayacağız.

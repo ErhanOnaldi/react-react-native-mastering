@@ -10,6 +10,12 @@ kind: concept
 Boş isimli izleme listesi kaydedildi. Önceki formda tek bir `if` bunu engelliyordu; şimdi kuralı input'a yakın yazıp hatayı doğru alanda göstermen gerekiyor.
 :::
 
+## Geçerli veri ile anlaşılır hata
+
+Validation, kullanıcı girdisinin belirlediğin kuralları sağlayıp sağlamadığını kontrol eder. Formda kural kadar hatanın hangi alana ait olduğu ve kullanıcıya nasıl anlatıldığı da önemlidir. RHF, alan kurallarını çalıştırıp sonuçları `formState.errors` içinde tutar; `handleSubmit` geçersiz veriyle başarı callback'ini çağırmaz.
+
+Önceki derste alanları forma kaydettin. Şimdi Sinema liste adının boş veya kısa olmasını alan düzeyinde açıklıyorsun. Bu kurallar daha sonra Zod şemasına taşınacak; önce hata akışını form içinde anlaman, resolver'ın neyi değiştirdiğini görmeni sağlar.
+
 ## Kurallar alanın yanında
 
 `register('name', { required: 'Ad gerekli', minLength: { value: 3, message: 'En az 3 karakter' } })` yerleşik RHF 7 doğrulamasıdır. `handleSubmit` geçerli veriyi callback'e geçirir; geçersiz durumda onu çağırmaz. Hatalar `formState.errors` altında alan adına göre bulunur. `mode: 'onSubmit'` varsayılandır: ilk hata submit'te görünür.

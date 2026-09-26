@@ -10,6 +10,12 @@ kind: concept
 İzleme listesi adını hem RHF `register` kuralında hem TypeScript tipinde tutuyorsun. Birini değiştirince diğeri eski kalıyor.
 :::
 
+## Form davranışı ile kuralı birleştir
+
+RHF alan kaydı, touched/dirty bilgisi ve submit akışını yönetir. Zod ise hangi verinin geçerli olduğunu ve dönüşümden sonra hangi tipe dönüştüğünü tanımlar. `zodResolver`, Zod'un doğrulama sonucunu RHF'nin alan hatalarına bağlar. Böylece aynı iş kuralını formun `register` seçeneklerinde yeniden yazman gerekmez.
+
+Sinema izleme listesinde önce ayrı ayrı kurduğun form ve şema şimdi birleşiyor. TypeScript'in generic bilgisi de giriş ve çıkış farklı olduğunda doğru `useForm` tiplerini taşımaya yarar. Form UX'i RHF'de, veri sözleşmesi Zod'da kalır.
+
 ## Neden bu araç?
 
 `useForm({ resolver: zodResolver(schema) })` RHF alan durumunu korurken kuralları Zod şemasından alır. `formState.errors` alanlara bağlı mesajları gösterir.

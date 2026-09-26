@@ -10,6 +10,12 @@ kind: concept
 Profil sayfası ve kullanıcı menüsündeki hesap rozeti aynı anda `/auth/me` istiyor. Süresi dolmuş token yüzünden ikisi de 401 alıyor; iki ayrı refresh isteği gidiyor. DummyJSON refresh token’ı tek kullanımlık tuttuğu için ikinci istek 403 oluyor.
 :::
 
+## Süresi dolan oturumu yenile
+
+Access token kısa ömürlü olabilir. Refresh token, sunucunun izin verdiği durumda yeni token çifti almak için kullanılır; sıradan profil isteğine eklenmez. Birden çok istek aynı anda 401 aldığında her birinin ayrı yenileme başlatması yarış ve geçersiz token sorunları doğurabilir. Paylaşılan tek yenileme işlemi ve sınırlı retry bu akışı düzenler.
+
+Sinema profil ve kullanıcı menüsü aynı oturuma bakar. Önceki Bearer isteği bilgisi burada hata sonrası tekrar denemeye bağlanır. Refresh başarısızsa oturum temizlenmeli; yeni token üretmek istemcinin değil sunucunun yetkisidir.
+
 ## Önce rotation
 
 `POST /auth/refresh` gövdesine `{ refreshToken }` gönder. Başarılı yanıttaki **iki** token’ı sakla. 403 dönerse oturum artık devam ettirilemez; giriş ekranına dön. Refresh isteği kendi kendini yeniden refresh etmemeli.

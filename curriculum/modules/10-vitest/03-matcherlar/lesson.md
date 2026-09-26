@@ -10,6 +10,12 @@ kind: concept
 TMDB listesinden dönen nesnede `results` doğru olsa da `total_pages` yanlış. Bir nesneyi `toBe` ile karşılaştırmak aynı referansı arar; istediğin alanı nasıl sınarsın?
 :::
 
+## Beklentinin hassasiyetini seç
+
+Matcher, gerçekleşen sonuçla beklenen sonuç arasındaki ilişkiyi tanımlar. Birebir değer, derin nesne eşitliği, nesnenin yalnız ilgili alanları veya hata fırlatma farklı sözleşmelerdir. Yanlış matcher ya gereksiz kırılgan test üretir ya da önemli hatayı görmez.
+
+İlk testte tek stringi karşılaştırdın. Şimdi Sinema'nın liste cevabı gibi iç içe verilerde hangi alanların gereksinim olduğunu seçiyorsun. Testin kapsamı, uygulama içindeki bütün ayrıntıları değil kullanıcının veya çağıranın güvendiği davranışı yansıtmalı.
+
 ## Sorunu nasıl görürsün?
 
 `toEqual` iç içe yapının değerlerini karşılaştırır. `toMatchObject` yalnızca ilgili alanları denetler. `toThrow` fırlatılan hatayı sınar. `expect.objectContaining` ve `expect.arrayContaining` değişken sıralı veya ek alanlı cevaplarda işe yarar.

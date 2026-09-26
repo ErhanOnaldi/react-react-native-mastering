@@ -10,6 +10,12 @@ kind: concept
 Bir tuşla 500 film için pahalı puan hesabı tekrarlandı. Önce hesaplamayı say; sonra referans eşitliğinin neden önemli olduğunu gör.
 :::
 
+## Tekrar yapılan işi seçici azalt
+
+`memo` aynı props alan component render'ını atlamayı, `useMemo` hesaplanan değeri, `useCallback` fonksiyon referansını korumayı amaçlar. Bunlar doğruluk kuralları değil performans araçlarıdır; bağımlılıklar yanlışsa eski veri gösterebilirler. Ayrıca her render'da yeni nesne veya fonksiyon vermek referans eşitliğini bozabilir.
+
+Sinema'nın 500 kartlı listesinde pahalı hesap gerçekten ölçüldüyse bu araçların etkisi görülebilir. Önceki render nedenleri dersinde belirlediğin sınırı hedefle. Sonraki React Compiler dersinde aynı optimizasyonun daha otomatik yolu ele alınacak.
+
 ## Üç ayrı araç
 `memo` aynı props ile çocuk render'ını atlayabilir. `useMemo` pahalı hesaplamanın sonucunu bağımlılıkları değişene kadar tutar. `useCallback` fonksiyon referansını sabit tutar; tek başına iş hızlandırmaz.
 

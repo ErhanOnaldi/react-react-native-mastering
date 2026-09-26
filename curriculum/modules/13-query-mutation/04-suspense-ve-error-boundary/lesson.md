@@ -10,6 +10,12 @@ kind: concept
 Detay sayfasında başlık, kadro ve puanlama birlikte. Her alt bileşen ayrı `isPending` koşulu yazıyor; bir GET 500 dönünce yalnızca bir kutu hata gösteriyor, sayfanın geri kalanı eski filmde kalıyor.
 :::
 
+## Bekleme ve hatayı sınıra taşı
+
+Suspense, bir alt ağacın verisi hazır değilken en yakın fallback'in gösterilmesini sağlar. Error boundary ise o ağacın render veya sorgu hatasında ayrı bir toparlanma UI'ı sunar. Bunlar farklı durumlardır: bekleme normal bir aşama, hata ise işlemin başarısızlığıdır. Sınırı ne kadar geniş çizdiğin, ekranda ne kadar bölümün etkileneceğini belirler.
+
+Query'de `isPending` ve `isError` ile koşullu ekran kurdun. Sinema detayının alt bölümleri çoğalınca aynı dalları her yerde yazmak yorucu olabilir. Suspense ve boundary, bu tekrarın yerine ortak bir UI sınırı kurar; mutation hatalarının yerel bağlamı ise hâlâ ayrı düşünülür.
+
 ## Suspense sınırı
 
 `useSuspenseQuery(movieQueries.detail(id))` ilk veri gelene kadar en yakın `<Suspense fallback={...}>` sınırını bekletir. `data` başarı kolunda tanımlıdır; `enabled` veya `placeholderData` bu hook’un seçenekleri değildir. Film id’sini route parametresinden doğrulayıp query key’e kat. 550’den 27205’e geçiş ayrı cache girdisidir.

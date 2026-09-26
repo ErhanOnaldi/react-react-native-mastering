@@ -10,6 +10,12 @@ kind: concept
 Film kartı `/movie/550` için veriyi render sırasında çekiyor. Her cevap `setState` ile yeni render başlatıyor; önizlemedeki istek sayacı 100’de “Sonsuz istek döngüsü” diye duruyor.
 :::
 
+## Render ile dış dünya arasındaki sınır
+
+React render'ı props ve state'ten UI hesaplar. Ağ isteği, timer veya tarayıcı API'si ise component dışındaki bir sistemle etkileşimdir; aynı render hesabı tekrar çalıştırıldığında böyle bir işi tekrar başlatmak güvenli değildir. `useEffect`, component commit edildikten sonra dış sistemle senkronizasyon kurar ve gerekirse bu ilişkiyi temizler.
+
+React render modeli dersindeki saflık kuralı burada uygulamaya dönüşüyor. Sinema film isteğinin render içinde döngü yaratması, kodu başka fonksiyona taşıyarak değil yaşam döngüsünü doğru yere koyarak çözülür. Daha sonra Query bu isteklerin cache davranışını üstlenecek.
+
 ## Ne değişiyor?
 
 Render saf olmalı: aynı props ve state ile aynı ekranı hesaplar. Ağ isteği dış sistemle senkronizasyondur; `useEffect` render tamamlandıktan sonra çalışır.

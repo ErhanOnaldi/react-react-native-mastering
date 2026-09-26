@@ -10,6 +10,12 @@ kind: concept
 “Ad gerekli” yazısı ekranda görünüyor, fakat ekran okuyucu hangi alana ait olduğunu bilmiyor. Bir hata mesajının görünmesi tek başına erişilebilirlik sağlamaz.
 :::
 
+## Formu herkes için anlaşılır kıl
+
+Erişilebilir formda alanın amacı ve hatası yalnız görsel konum veya renkle anlatılmaz. `label` ile input'un programatik bağı, ekran okuyucunun alan adını söylemesini sağlar. `aria-invalid` geçersiz durumu, `aria-describedby` ise yardım ve hata metnini ilgili alana bağlar. Mesajın ne yapılacağını açıklaması da teknik bağ kadar önemlidir.
+
+Sinema listesi adındaki hata metnini önceki validation dersinde ürettin; şimdi doğru input'a bağlayacaksın. RTL testlerinde alanı role ve erişilebilir adla bulabilmek, bu kullanıcı bağının da kontrolü olur.
+
 ## Alanı ve hatayı bağla
 
 `<label htmlFor="name">Liste adı</label>` ve `<input id="name">` aynı kimliği kullanır. Hata varken `aria-invalid={true}` ekle. `aria-describedby="name-error"`, hata metninin `id` değerini gösterir; hata yoksa `undefined` olabilir. Böylece kullanıcı alana geldiğinde açıklamayı duyabilir.

@@ -10,6 +10,12 @@ kind: concept
 Detay kartındaki 500 hatası görünüyor, ama üst çubuktaki “senkronize ediliyor” göstergesi susuyor. Kullanıcı başka route’a geçince hata mesajını hiç görmüyor.
 :::
 
+## Hatanın kapsamını seç
+
+Bir hatanın nerede gösterileceği, onu kimin düzeltebileceğine bağlıdır. Tek puan düğmesinin reddedilmesi o düğmenin yanında açıklanabilir; birçok sayfayı ilgilendiren bağlantı sorunu ortak bildirim gerektirebilir. Yerel mutation durumu bağlama özgü geri bildirim verir, ortak hata callback'i ise genel izleme veya bildirim için kullanılır.
+
+Önceki derslerde Query ve mutation hata durumlarını gördün. Sinema'da route değişince kaybolan hata mesajı, yalnız yerel sinyalin bazen yetersiz olduğunu gösteriyor. Ortak bildirim kurarken kullanıcıya aynı hatayı iki kez göstermemeye ve düzeltilebilir alan hatasını ilgili formda tutmaya dikkat et.
+
 ## Yerel ve genel hata sorumluluğu
 
 Yerel `mutation.isError`, ilgili butonun yanında “Puan kaydedilemedi” göstermek içindir. Uygulamanın her yerinde çalışan bildirim için `MutationCache({ onError })` ile tek bir genel callback kurabilirsin. Bu callback’i her bileşende tekrar kurma; `QueryClient` oluştururken kur.

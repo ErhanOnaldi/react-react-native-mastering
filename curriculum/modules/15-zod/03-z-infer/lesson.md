@@ -10,6 +10,12 @@ kind: concept
 Watchlist formunda `name` şemada zorunlu oldu ama elle yazılan `WatchlistValues` tipinde opsiyonel kaldı.
 :::
 
+## Kuraldan tip üret
+
+Aynı alanları hem Zod şemasında hem TypeScript interface'inde elle yazarsan iki kaynak farklılaşabilir. `z.infer<typeof schema>` doğrulanmış sonucun tipini şemadan çıkarır. Böylece uygulama kodu, çalışan doğrulama kuralının tip düzeyindeki karşılığını kullanır. Dönüşüm yapan şemalarda ham girdi tipi ve doğrulanmış çıktı tipi farklı olabilir.
+
+Utility type dersindeki tek kaynak düşüncesi burada çalışma zamanı sınırına taşınır. Sinema izleme listesinde isim kuralı değiştiğinde form ve kaydetme kodu aynı şemaya bakmalıdır. Sonraki dönüşüm dersinde `z.input` ve `z.output` farkı daha görünür olacak.
+
 ## Neden bu araç?
 
 `z.infer<typeof schema>` parse edilmiş çıktının tipidir. Şema tek kaynak olunca form kuralı ve TypeScript tipi beraber değişir.

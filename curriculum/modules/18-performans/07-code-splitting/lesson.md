@@ -10,6 +10,12 @@ kind: concept
 Film detayındaki büyük oyuncu bölümü ana sayfanın ilk indirmesine katıldı. Kullanıcı henüz detaya gitmeden bu kodu taşımak pahalı.
 :::
 
+## İlk yükü küçült
+
+Code splitting, uygulama JavaScript'ini ihtiyaç anında yüklenebilecek parçalara ayırır. Lazy import belirli modülün ilk pakete girmesini engelleyebilir; kullanıcı o parçaya geldiğinde indirme ve fallback gerekir. Bu nedenle başlangıç kazancı ile sonraki geçiş gecikmesi birlikte değerlendirilmelidir.
+
+Router modülünde route düzeyinde lazy yüklemeyi gördün. Sinema oyuncu paneli ise component düzeyinde örnek. Her iki durumda amaç kullanıcının henüz ihtiyaç duymadığı kodu geciktirmektir; her küçük bileşeni bölmek otomatik iyileşme sağlamaz.
+
 ## Bileşen ve route
 `React.lazy(() => import('./CastPanel'))` modülü gerektiğinde ister. `Suspense fallback` yüklenme sırasında görünür. React Router 8 data route'unda `lazy: () => import('./routes/movie')` route modülünü böler; modül `Component`, `loader` gibi route anahtarlarını export eder. `path` gibi eşleme alanları statik kalır.
 

@@ -10,6 +10,12 @@ kind: concept
 Sinema'da `const [page, setPage] = useState('home')` ile görünümü değiştiriyorsun. Detaydayken tarayıcının geri tuşu seni listeye götürmüyor; `/` adresi hem listeyi hem detayı gösteriyor. Aynı filmi açacak bağlantıyı gönderemiyorsun.
 :::
 
+## Router'ın görevi
+
+Bir web uygulamasında adres, kullanıcının hangi kaynağı veya görünümü açtığını temsil eder. Router, tarayıcıdaki URL ile gösterilen React ekranı arasında eşleme kurar; gezinirken geçmiş kaydını da yönetir. Böylece geri/ileri düğmeleri, yenileme ve doğrudan bağlantı aynı sayfayı anlatır.
+
+Şimdiye kadar görünümü yerel state ile seçtin. Bu, yalnız o anki component belleğinde anlamlıydı. Sinema'da film detayını adresle temsil etme ihtiyacı, route ile state arasındaki farkı görünür kılıyor. Hangi bilginin URL'de kalacağına, paylaşma ve geri dönebilme gereksinimine göre karar vereceksin.
+
 ## State ile sayfa seçmeyi dene
 
 ```tsx title="src/App.tsx"

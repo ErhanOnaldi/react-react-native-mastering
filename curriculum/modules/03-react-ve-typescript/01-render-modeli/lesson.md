@@ -10,6 +10,12 @@ kind: concept
 Sinema kartının başlığını değiştirince bileşen tekrar çalışıyor. İçine `console.log` koyunca geliştirmede beklediğinden fazla satır görüyorsun. “React her seferinde bütün DOM’u mu yeniden kuruyor?” sorusu doğuyor.
 :::
 
+## React'in hesaplama modeli
+
+React'te component, o andaki props ve state'ten ekranda ne görünmesi gerektiğini hesaplar. Bu hesaplama **render** aşamasıdır; ortaya çıkan değişikliklerin gerçek DOM'a uygulanması **commit** aşamasıdır. Bir component'in yeniden çağrılması, bütün sayfanın baştan DOM'a yazıldığı anlamına gelmez.
+
+JavaScript fonksiyonlarını ve JSX'i biliyorsun; burada önemli ek kural, render hesabının dış dünyayı değiştirmemesidir. React aynı hesabı tekrar deneyebilir. Sinema kartındaki fazladan `console.log`, bu modeli sorgulamak için bir işaret; ağ isteğini render'a koymama kararının temeli de budur.
+
 ## Render bir hesaplamadır
 React bileşeni, props ve o andaki state ile JSX hesaplayan bir fonksiyondur. Bir render sonucunun DOM’a uygulanması ayrı bir adımdır: **commit**. Yeniden çağrılan fonksiyon, bütün DOM’un baştan yazıldığı anlamına gelmez.
 

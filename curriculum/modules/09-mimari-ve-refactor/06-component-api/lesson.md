@@ -10,6 +10,12 @@ kind: concept
 Bir MovieShelf için `showTitle`, `showCount`, `titleColor`, `emptyText`, `showFooter` derken prop listesi büyüdü. Bir sayfanın istediği özel alt bilgi için yine bileşenin içine koşul ekliyorsun.
 :::
 
+## Bileşenin kullanım sözleşmesi
+
+Component API'si dışarıdan hangi girdilerin verildiğini, hangi olayların bildirildiğini ve state'in kime ait olduğunu açıklar. Çok sayıda birbirine bağlı boolean prop, geçersiz kombinasyonlar ve zor okunan kullanım üretebilir. Sabit seçenek için prop, serbest içerik için composition, dışarıdan yönetilen değer için controlled model seçebilirsin.
+
+React props ve composition derslerinde tek bileşen düzeyinde bu araçları gördün. Sinema MovieShelf artık farklı sayfalarda kullanılınca bu kararlar uzun ömürlü sözleşmeye dönüşüyor. Amaç en az prop sayısı değil, kullanım yerinde anlamı açık bir API kurmak.
+
 ## İhtiyaçtan karar
 
 Tek bir kararlı seçenek için açık bir config prop kullan. Serbest içerik için `children`/composition seç. Bileşen state’inin sahibi dışarıdaysa controlled (`value`, `onChange`), içerideyse uncontrolled (`defaultValue`) olur.

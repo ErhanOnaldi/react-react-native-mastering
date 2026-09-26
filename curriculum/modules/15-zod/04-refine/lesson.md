@@ -10,6 +10,12 @@ kind: concept
 Yorum metni dolu, puan da geçerli; fakat spoiler işaretli yorumun açıklaması yok. Tek alan kuralları bu ilişkiyi göremiyor.
 :::
 
+## Birden çok alanı birlikte değerlendirmek
+
+Alan kuralları tek bir değeri denetler: metin boş mu, sayı aralıkta mı? Bazı iş kuralları ise alanlar arasındaki ilişkiye bağlıdır. `.refine` nesnenin tamamına bakıp bu ilişkiyi sınar; hata yolu, mesajın hangi alan altında gösterileceğini belirler. Çok sayıda özel hata üretmen gerektiğinde daha ayrıntılı doğrulama gerekir.
+
+Sinema yorumunda spoiler açıklaması yalnız spoiler işaretliyse zorunlu. Bunu her zaman çalışan bir `body.min` kuralı yapamazsın. RHF'nin alan hatası gösterme akışı ile Zod'un nesne kuralı burada birleşir.
+
 ## Neden bu araç?
 
 `.refine(predicate, { error, path })` bütün nesneye bakar ve hatayı ilgili alanın yoluna yerleştirir.

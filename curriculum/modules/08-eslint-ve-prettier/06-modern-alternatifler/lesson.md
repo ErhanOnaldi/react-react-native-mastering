@@ -10,6 +10,12 @@ kind: concept
 Sinema için ESLint ve Prettier ayarlarını kurduk. Yeni bir Vite React projesi açan arkadaşın “template bende oxlint getirdi; sizin config yanlış mı?” diye soruyor.
 :::
 
+## Araç seçimini amaçla ilişkilendir
+
+Lint ve formatter ekosisteminde hız, kural kapsamı ve yapılandırma maliyeti farklı araçlarla değişebilir. Yeni bir template'in varsayılanı, mevcut projedeki araçları otomatik olarak yanlış yapmaz. Karşılaştırırken gereken React/TypeScript kurallarını, plugin uyumunu ve geçiş maliyetini birlikte ölçmelisin.
+
+Sinema'da ESLint ve Prettier'ın hangi somut hatayı çözdüğünü gördün. Oxlint veya Biome gibi alternatifleri değerlendirirken de aynı davranışları kontrol edersin. Böylece karar teknoloji modasına değil, ekip ve proje ihtiyaçlarına dayanır.
+
 ## Yeni varsayılanı oku
 
 Güncel resmi `create-vite` React TypeScript template’i oxlint ile geliyor. Bu, Sinema’da ESLint öğrenmenin boşa gittiği anlamına gelmez. Araçların kontrol ettiği kural kümesi, eklenti ekosistemi ve proje ihtiyaçları farklıdır.

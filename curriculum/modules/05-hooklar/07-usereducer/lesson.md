@@ -10,6 +10,12 @@ kind: concept
 Arama ekranında query, sonuçlar, loading, error ve page ayrı ayrı güncelleniyor; hata yolunda loading açık kalıyor.
 :::
 
+## Durum geçişlerini isimlendir
+
+Bir ekranda ilgili birkaç state alanı birlikte değişiyorsa setter çağrıları farklı kombinasyonlar üretebilir. `useReducer`, action denen olaylara göre tek bir fonksiyonun yeni state'i hesaplamasını sağlar. Action tipi hangi geçişin hangi veriye ihtiyaç duyduğunu açıklar; reducer saf kalır ve dış etki yapmaz.
+
+TypeScript'teki discriminated union burada action modeline dönüşür. Sinema aramasındaki yükleniyor, başarı ve hata geçişleri tek yerde görünür. Daha sonra Redux slice reducer'ları aynı temel düşünceyi uygulama düzeyindeki paylaşılan state'e taşıyacak.
+
 ## Ne değişiyor?
 
 `useReducer`, ilgili geçişleri tek fonksiyonda toplar. `Action` için `type` alanlı discriminated union kullan; her eylemin payload’ı kendi dalında tiplenir.

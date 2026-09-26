@@ -10,6 +10,12 @@ kind: concept
 TMDB, Dövüş Kulübü detayında `title: null` döndürdü. `getJson<MovieDetails>` bunu string sandı; başlığı işleyen ekran çöktü.
 :::
 
+## Tip ile çalışma zamanı arasındaki boşluk
+
+TypeScript, kodu yazarken ve derlerken olası tip hatalarını yakalar; çalışan uygulamaya gelen JSON'u incelemez. Ağ, URL, form ve environment değişkenleri uygulamaya dışarıdan girer. Bu sınırları güvenilir hâle getirmek için çalışma zamanında veri doğrulaması gerekir. Zod şeması beklenen biçimi tarif eder ve gerçek değeri buna göre kontrol eder.
+
+Önce `unknown` ve type guard ile küçük kontroller yaptın, sonra RHF'de form kurallarını yazdın. Sinema'daki bozuk film cevabı bu iki ihtiyacın ortak yönünü gösterir: veri kullanılmadan önce doğrulanmalıdır. Şema, aynı kuralı farklı sınırlarda tekrar kullanmana da yardım eder.
+
 ## Neden bu araç?
 
 TypeScript yalnızca derleme anında çalışır. `as MovieDetails` ya da generic dönüş tipi JSON içeriğini denetlemez. Formun alan kuralları da ayrı yerde tutulunca aynı kopukluk oluşur.

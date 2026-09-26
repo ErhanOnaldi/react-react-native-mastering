@@ -10,6 +10,12 @@ kind: concept
 Sinema'daki favori, arama ve filtre düğmesine aynı on iki CSS kararını kopyaladın. Birindeki boşluğu değiştirince öbür ikisi farklı kaldı.
 :::
 
+## Utility-first yaklaşımı
+
+Geleneksel CSS'te bir sınıfa birçok görsel karar yazarsın. Utility-first yaklaşımında ise boşluk, renk ve düzen gibi küçük, tek amaçlı sınıfları HTML/JSX üzerinde birleştirirsin. Tailwind bu sınıfları kaynak kodunda gördüğü adlardan üretir. Bu yöntem stil kararını bileşenin yanında görünür kılar; ortaklaşan tasarımın ne zaman bileşene taşınacağını yine sen seçersin.
+
+Sinema düğmelerindeki tekrar, yöntem değişiminin gerekçesi. Önce ayrı CSS kurallarının neyi tekrarladığını görüp sonra utility'lerle aynı görünümü kuracaksın. Tailwind React'in veri akışını değiştirmez; yalnız görünüm katmanında çalışır.
+
 ## Bildiğin yöntem nerede zorlanıyor?
 
 Ayrı `.favorite-button`, `.search-button` ve `.filter-button` kuralları kısa başlar; ortak kararlar çoğaldığında her tanıma geri dönmen gerekir. Tailwind'in **utility-first** yaklaşımında `px-4`, `py-2`, `rounded-lg` gibi tek görevli class'lar öğenin üstünde durur. Önizlemede class'ı değiştir ve farkı hemen gör.

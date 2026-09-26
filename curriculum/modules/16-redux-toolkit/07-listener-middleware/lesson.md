@@ -10,6 +10,12 @@ kind: concept
 Favoriler çalışıyor; sayfayı yenileyince kayboluyor. Her reducer’a `localStorage.setItem` koyunca saf testler bozuluyor.
 :::
 
+## Saf kural ile yan etkiyi ayır
+
+Reducer yalnız state dönüşümünü hesaplamalıdır. `localStorage`, ağ veya bildirim gibi dış dünya işlemleri yan etkidir; bunları reducer içine koyarsan aynı action'ın sonucu ortam koşullarına bağlanır. Listener middleware belirli action'ları izleyip reducer tamamlandıktan sonra bu işleri yapabilir.
+
+Sinema favorisinin yenilemede kaybolması kalıcılık gereksinimidir, favori ekleme kuralının kendisi değildir. Önceki slice dersindeki saf reducer'ı koruyup storage yazmasını olay sonrasına taşıyorsun. İleride çıkış temizliğinde bu saklama sırası yeniden önem kazanacak.
+
 ## Sorunu çöz
 
 `createListenerMiddleware` action’ı gözler; reducer çalıştıktan sonra `listenerApi.getState()` ile yeni state’i okur. localStorage yazımı burada yan etkidir. Başlangıç verisini kontrollü biçimde oku; bozuk JSON için güvenli varsayılan kullan.

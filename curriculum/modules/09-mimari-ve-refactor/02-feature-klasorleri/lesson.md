@@ -10,6 +10,12 @@ kind: concept
 MovieCard’ı değiştirmek için components/, pages/, hooks/ ve lib/ arasında dolaşıyorsun. Favorilere özel bir yardımcıyı genel lib/ içinde bulmak da zorlaştı.
 :::
 
+## Dosya sınırı sorumluluğu gösterir
+
+Klasör yapısı yalnız dosya bulma kolaylığı değildir; hangi kodun hangi özelliğe ait olduğunu ve bağımlılığın hangi yönde aktığını anlatır. Feature temelli düzen, bir özelliğin sayfasını, hook'unu ve API işini yakın tutar. Birden çok özelliğin gerçekten paylaştığı kod ise ortak alana taşınır.
+
+Sinema MovieCard değişiminde dört klasöre dağılmış parçalar, değişikliğin sınırını belirsizleştiriyor. Önceki state sahipliği dersindeki soru burada dosyaya uygulanır: bu kod kimin? Erken `shared` soyutlaması yeni bir genel klasör yığını yaratabilir.
+
 ## İhtiyaçtan karar
 
 Bir özelliğin sayfası, bileşeni ve hook’u birlikte yaşayabilir: `features/movies/`, `features/search/`, `features/favorites/`. Birden çok feature’ın gerçekten kullandığı kod `shared/` olur.

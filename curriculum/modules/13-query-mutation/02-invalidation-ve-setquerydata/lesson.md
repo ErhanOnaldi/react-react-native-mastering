@@ -10,6 +10,12 @@ kind: concept
 POST 201 ve “Kaydedildi” yazısı geldi. Puanladıklarım sayfasına dönünce hâlâ “Henüz puan yok” görüyorsun. `requests()` yalnızca bir eski GET ve bir yeni POST sayıyor: liste için **yeni GET yok**.
 :::
 
+## Yazma sonrası okunan veri
+
+Başarılı bir mutation sunucuyu değiştirse de istemcideki eski query sonuçlarını kendiliğinden değiştirmez. **Invalidation**, ilgili cache girdilerini bayat işaretleyip uygun koşulda yeniden okutur. **setQueryData** ise elindeki yeni bilgiyle cache değerini doğrudan günceller. Seçim, sunucudaki son gerçeği yeniden okumak isteyip istemediğine bağlıdır.
+
+Query key dersinde veriye kimlik verdin; şimdi aynı kimlik ailesiyle hangi okumanın etkilendiğini buluyorsun. Sinema'da puan kaydedildikten sonra puan listesinin eski kalması bu bağlantının eksik olduğuna işaret eder.
+
 ## Cache neden kendiliğinden değişmez?
 
 `useMutation`, hangi query’lerin yazmadan etkilendiğini bilemez. `['ratings', sessionId]` listesi ile `['movies', 'detail', 550]` başka key’lerdir. Başarılı POST, bu cache girdilerini otomatik güncellemez. `staleTime` dolmasını beklemek bile görünür ve güvenilir bir çözüm değildir.

@@ -10,6 +10,12 @@ kind: concept
 Tek hamlede SearchPage’i taşıdın, API yolunu değiştirdin, boş sonuç metnini de yeniledin. Sayfalama bozulduğunda hangi değişimin etkilediğini bilmiyorsun.
 :::
 
+## Yapıyı değiştirirken davranışı sabit tut
+
+Refactor, kullanıcıya görünen davranışı değiştirmeden kodun iç düzenini iyileştirmektir. Aynı anda hem yapıyı hem metni hem API sonucunu değiştirirsen hangi adımın hataya yol açtığını bulmak zorlaşır. Önce mevcut sözleşmeyi test veya gözlemle sabitle, sonra küçük bir taşıma yapıp yeniden kontrol et.
+
+Sinema SearchPage'in parçalanması önceki feature ve API client kararlarını uyguluyor. Bu işlemde doğru arama, boş sonuç ve hata ekranları aynı kalmalı. Sonraki Vitest modülü, bu güvenlik ağını senin yazmanı öğretecek.
+
 ## İhtiyaçtan karar
 
 Önce mevcut davranışı ölç: başarılı sonuç, boş sonuç, 404 ve sayfa parametresi. Sonra tek sorumluluğu ayır, testleri tekrar çalıştır. Refactor kullanıcı davranışını değiştirmez.

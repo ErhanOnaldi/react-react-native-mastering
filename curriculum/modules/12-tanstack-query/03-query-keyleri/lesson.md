@@ -10,6 +10,12 @@ kind: concept
 `?q=Matrix` ve `?q=Dövüş` aynı `['movies']` key’ini kullanınca ikinci arama ilk filmleri gösteriyor. Cache var ama kimlik yanlış.
 :::
 
+## Cache girdisinin kimliği
+
+Cache, bir sonucu daha sonra bulabilmek için anahtar kullanır. Query key'i yalnızca bir etiket değildir; hangi parametre birleşiminin hangi veriyi temsil ettiğini belirleyen kimliktir. Sonucu etkileyen `q`, `page` veya `id` değişirse key de değişmelidir. Aynı key'i paylaşan okumalar aynı cache girdisini paylaşır.
+
+Router dersinde URL'yi ekran durumunun kaynağı yaptın. Şimdi URL'den okunan değerler Query key'ine geçiyor. Sinema'da iki aramanın karışması, bu bağlantının eksik kurulmasından doğar. Sonraki mutation dersinde hangi cache girdisinin güncelleneceğini de bu kimlik üzerinden belirleyeceksin.
+
 ## Parametreler kimliğin parçası
 
 ```ts check title="src/features/movies/api/movie-keys.ts"

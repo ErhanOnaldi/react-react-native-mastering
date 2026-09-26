@@ -10,6 +10,12 @@ kind: concept
 “Baş” yazıp hemen “Dövüş” yazdın. İlk arama daha yavaş dönünce yeni sonuçları eski sonuçlarla değiştirebiliyor.
 :::
 
+## Eski işin sonucu artık geçerli mi?
+
+Asenkron istekler başlatıldıkları sırayla bitmek zorunda değildir. Yeni parametreyle ikinci istek başlamışken eski istek sonradan dönebilir. Cleanup, önceki effect çalışmasının artık ekrana yazma hakkı olmadığını belirtir; `AbortController` desteklenen fetch'i ayrıca iptal edebilir. İki mekanizma aynı amaca farklı yönlerden hizmet eder.
+
+Dependency array yeni Sinema aramasını başlatır, fakat eskisinin Promise'ini kendiliğinden durdurmaz. Bu yüzden ilk arama sonucunun ikinciyi ezmesi mümkündür. Aynı yaşam döngüsü timer ve aboneliklerde de geçerlidir; ileride Query bu yarışların bir kısmını sorgu kimliğiyle yönetir.
+
 ## Ne değişiyor?
 
 Her effect çalışması ayrı bir istektir. Cleanup içindeki `ignore = true`, eski isteğin sonucunun state’e yazılmasını önler.

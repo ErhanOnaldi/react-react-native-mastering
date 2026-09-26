@@ -10,6 +10,12 @@ kind: concept
 İlk formda sekiz `value`, sekiz `onChange` ve kaydet tuşunda elle toplanan sekiz değer var. Yeni bir alan eklerken üç yeri değiştirmeyi unutmak kolay.
 :::
 
+## Formun veri akışını bir araya getir
+
+Form, alan değerlerini toplar, geçerliliğini kontrol eder ve uygun olduğunda gönderir. Her input için ayrı React state kurmak mümkündür, fakat alan sayısı büyüdükçe aynı bağlama kodu tekrar eder. React Hook Form, native input'ları `register` ile forma tanıtır; `handleSubmit` gönderimi ve doğrulama sonucunu yönetir.
+
+Controlled input dersinde değer ile `onChange` ilişkisinin nasıl kurulduğunu öğrendin. Sinema'daki çok alanlı izleme listesinde bu ilişkiyi tek tek yazmak yerine RHF'nin form modelini kullanıyorsun. Özel bileşenler için farklı bağlantı gerekecek; onu Controller dersinde göreceksin.
+
 ## Form verisini tek yerde tanımla
 
 React Hook Form 7'nin `useForm<FormValues>()` hook'u `register` ve `handleSubmit` verir. `register('name')` native input'a ref ve event bağları sağlar. Değerleri her tuşta üst bileşenin state'ine kopyalaman gerekmez. Bu, formun **hiç render etmeyeceği** anlamına gelmez: abone olduğun `formState` veya izlediğin değerler render tetikleyebilir.

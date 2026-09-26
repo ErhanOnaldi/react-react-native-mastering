@@ -10,6 +10,12 @@ kind: concept
 Sinema aramasında 500 kart varken bir harfe basınca input takılıyor. 'Yavaş' demek yeterli değil: kaç commit olduğunu görmen gerekiyor.
 :::
 
+## Performansın farklı maliyetleri
+
+Performans, yalnız kodun az satır olması değil, kullanıcının eylemine uygulamanın verdiği süredir. React tarafında render ve commit sayısı, hesaplama maliyeti ve DOM boyutu farklı darboğazlar yaratır. Profiler belirli bir alt ağacın commit'lerini gözlemlemeye yardım eder; ölçüm karşılaştırılabilir koşullarda yapılmalıdır.
+
+Sinema'nın büyük arama listesi tek bir belirti gösteriyor: yazarken takılma. Önceki state ve render modeli dersleri, bu belirtinin nereden doğabileceğini anlatmıştı. Bu modül her değişiklikte aynı akışı ölçerek varsayımdan kanıta geçecek.
+
 ## Önce ölç
 `Profiler`, bir alt ağacın commit edildiği an `onRender(id, phase, actualDuration)` çağırır. Geliştirme ve production süreleri aynı değildir; önce commit sayısını ve hangi etkileşimde arttığını gözle. `StrictMode` geliştirmede fazladan render yapabilir.
 

@@ -10,6 +10,12 @@ kind: concept
 Dövüş Kulübü kartında 8,5 yıldızı seçtin. Ekranda sayı değişti, ama `GET /guest_session/.../rated/movies` boş. Sadece React state’i güncelledin; TMDB’ye hiçbir şey yazılmadı.
 :::
 
+## Okuma ile yazmayı ayır
+
+Query sunucudaki bilgiyi okumayı ve cache'lemeyi yönetir. Mutation ise bir değişiklik istemektir: oluşturma, güncelleme veya silme. Yazma aynı veriyi tekrar okumak gibi otomatik ve risksiz tekrar edilemez; kullanıcı eylemiyle başlar, bekleme ve hata durumları ayrı izlenir. `useMutation` bu işlem yaşamını yönetir.
+
+Önceki modülde Sinema film verisini Query ile okudun. Puan verme, sunucudaki kaydı değiştirdiği için yeni bir sınır açar. `mutate` işlemi başlatır; ardından eski cache'in ne zaman ve nasıl yenileneceği sonraki derste ele alınır.
+
 ## Önce gerçek yazma isteği
 
 Önceki modüldeki `useQuery`, sunucudan **okuma** işini cache’ledi. Puanlama bir **yazma**: TMDB önce guest session verir, sonra `POST /movie/550/rating?guest_session_id=...` bekler. `Authorization: Bearer` başlığı iki istekte de gerekir. Gövde `{ "value": 8.5 }` biçimindedir; değer 0,5–10 arasında, 0,5’lik adımlarla olmalı. Geçersiz değer 400, geçersiz oturum 401 döner.

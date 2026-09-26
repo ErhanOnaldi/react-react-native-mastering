@@ -10,6 +10,12 @@ kind: concept
 Sinema'da arama kutusuna yeni bir film yazıyorsun; sonuç yok. Çünkü bugüne kadar yalnızca `sampleMovies` dizisinde aradın. Şimdi `/search/movie?query=...` adresinden canlı veri alman gerekiyor. İlk çıplak `fetch` denemesi 401 dönebilir; Türkçe başlıkları da ayrıca istemelisin.
 :::
 
+## Dış API ile veri alışverişi
+
+API, bir uygulamanın başka bir hizmetten hangi adres ve kurallarla veri isteyebileceğini tanımlayan sözleşmedir. HTTP isteğinde yol, query parametreleri ve header'lar ne istediğini belirtir; durum kodu ve JSON gövdesi cevabı taşır. İstek başarılı görünse bile gövdenin biçimini ve boş alanlarını ayrıca düşünmen gerekir.
+
+Şimdiye kadar Sinema'nın filmleri statik fixture'lardan geliyordu. React render, URL state'i ve effect bilgisi değişmiyor; yalnız verinin kaynağı dış hizmete taşınıyor. TMDB bu genel API ilişkisinin somut örneği: arama terimi URL'den gelir, yetki başlığı isteğe eklenir, cevap ekranda yükleme veya hata durumundan geçerek görünür.
+
 ## İstek sözleşmesini oku
 
 TMDB API'nin tabanı `https://api.themoviedb.org/3`. Hesabından aldığın **API Read Access Token** değerini kökteki `.env` dosyasında `VITE_TMDB_TOKEN=...` olarak tut. İstekte `Authorization: Bearer <token>` başlığı gönder. Vite'da `import.meta.env.VITE_TMDB_TOKEN` bunu okur; `VITE_` değerleri tarayıcı paketine girdiğinden üretim uygulamasında gizli kimlik bilgilerini sunucu tarafında korursun.

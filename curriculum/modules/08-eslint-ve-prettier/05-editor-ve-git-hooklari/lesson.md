@@ -10,6 +10,12 @@ kind: concept
 Sinema’da `MovieCard.tsx`’i sen formatladın; ekip arkadaşın kaydettiğinde dosya tekrar değişti. Bir commit’te 40 dosyalık biçim farkı oluştu ve eski film hatası arada kayboldu.
 :::
 
+## Kontrolün çalıştığı zaman
+
+Aynı kalite kuralı farklı anlarda çalışabilir: editör kaydederken hızlı geri bildirim verir, Git hook commit öncesi seçili dosyaları kontrol eder, CI ise herkes için ortak son kapıdır. Bu katmanlar farklı amaçlar taşır; birinin atlanabilir olması diğerinin değerini azaltmaz. Hepsi repodaki aynı config'e dayanmalıdır.
+
+Sinema'da ekip üyelerinin dosyayı farklı biçimde kaydetmesi önceki Prettier kararının uygulama sorunudur. Şimdi kuralın yalnız belgede kalmamasını sağlıyorsun. CI'nın görevi dosyayı sessizce değiştirmek değil farkı görünür kılmaktır.
+
 ## Geri bildirimi erkene çek
 
 Önce tek kaynak: `.prettierrc.json` ve `eslint.config.js`. Editörde “format on save” ve Prettier varsayılan formatter seçilirse kaydederken aynı kurallar uygulanır. Editör ayarı kişisel olabilir; repodaki `format:check` komutu ekip için kesin ölçüdür.

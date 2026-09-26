@@ -10,6 +10,12 @@ kind: concept
 Trend ve popüler cevapları için ayrı ayrı `page`, `results`, `total_pages`, `total_results` yazdın. Bir alana yapılan düzeltme öteki cevapta unutuldu.
 :::
 
+## Generic düşüncesi
+
+Generic, tek bir tip tanımını farklı veri tipleriyle yeniden kullanmanın yoludur. Bir fonksiyonun veya nesnenin hangi veriyle çalışacağı tanım sırasında bilinmeyebilir; tip parametresi bu bilgiyi kullanım anına erteler. Böylece ortak yapı bir kez yazılır, içindeki veri tipi ise her kullanımda korunur.
+
+Önceki modülde `Movie` gibi somut nesne tipleri kurdun. Şimdi o tipleri sayfalama gibi tekrar eden bir yapının içine yerleştireceksin. Sinema'daki iki cevap yalnızca bu genel fikrin örneği: aynı yaklaşım ürün, kullanıcı veya yorum listelerinde de geçerlidir.
+
 ## Önce bildiğin yöntem
 
 `MovieListResponse` ve `GenreListResponse` ayrı tipler olabilir. Ama ikisinde de aynı dört sayfalama alanı tekrar eder. `results` değişirken kabuk aynı kalır.

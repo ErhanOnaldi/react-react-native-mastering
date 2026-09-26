@@ -10,6 +10,12 @@ kind: concept
 Film detayını Redux’a kopyaladın. Arka planda TanStack Query yeniden veri çekti; detay ekranı yeni, Redux’taki başlık eski kaldı. Şimdi iki kaynak var.
 :::
 
+## Verinin sahibi ve ömrü
+
+Server state, uzaktaki sistemin sahibi olduğu ve zamanla yenilenmesi gereken bilgidir. Client state ise kullanıcının bu uygulamada verdiği seçim veya yerel UI durumudur. Hangi kütüphaneyi kullanacağını seçmeden önce bu ayrımı yapmalısın; aynı veriyi iki yerde bağımsız saklamak senkronizasyon yükü yaratır.
+
+Sinema film başlığı TMDB'den gelir ve Query cache'inde yaşar. Favori işareti yerel seçimse Redux'ta yalnız film kimliği tutulabilir. URL'deki arama, RHF'deki form taslağı ve sunucu filmi de ayrı sahiplerinde kalır. Bu harita, sonraki slice tasarımının temelidir.
+
 ## Sorunu çöz
 
 TMDB arama sonuçları, detaylar, puanlar ve liste sayfaları server state: TanStack Query cache, refetch, staleTime ve invalidation yönetir. Favoriler, listeler, tema ve son bakılan ID’ler kullanıcıya ait client state: slice’lar için uygun. Arama metni URL’de; formun geçici alanları RHF’de kalır.

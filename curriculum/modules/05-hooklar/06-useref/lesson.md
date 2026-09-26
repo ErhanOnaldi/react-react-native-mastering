@@ -10,6 +10,12 @@ kind: concept
 Arama kutusu açılıyor ama imleç orada değil. Klavye ile film adını hemen yazamıyorsun.
 :::
 
+## Render gerektirmeyen kalıcı işaretçi
+
+`useRef`, render'lar arasında aynı nesneyi korur; `current` alanı değişebilir ama bu değişim yeni render başlatmaz. Bu nedenle DOM düğümüne erişim veya timer kimliği gibi ekrana doğrudan yansımayan bilgiler için uygundur. Görüntülenen değerler ise state'te tutulmalıdır.
+
+Sinema arama kutusuna odak vermek tarayıcı DOM'u ile etkileşimdir. Effect sınırını öğrendikten sonra şimdi bu düğüme nasıl erişileceğini görüyorsun. Ref'i render sırasında karar vermek için kullanmak, render'ın saf ve öngörülebilir kalmasını bozabilir.
+
 ## Ne değişiyor?
 
 DOM düğümüne `useRef<HTMLInputElement>(null)` bağla; event handler içinde `inputRef.current?.focus()` çağır. Ref değişimi render başlatmaz.

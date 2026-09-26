@@ -10,6 +10,12 @@ kind: concept
 Normal TMDB cevabıyla arama hep yeşil. Sunucu 500 döndürdüğünde hata mesajı kayboluyor; boş listede eski filmler kalıyor.
 :::
 
+## Aynı ekranı farklı sunucu gerçekleriyle sınamak
+
+Bir API'nin başarı cevabı tek olası davranışı değildir. Boş liste, sunucu hatası, yetkisiz yanıt ve gecikme kullanıcıya farklı durumlar gösterir. MSW handler'ını test için değiştirmek, component'i yeniden yazmadan yalnız HTTP senaryosunu değiştirir. Testlerin birbirinden bağımsız olması için geçici handler'lar sonrasında sıfırlanmalıdır.
+
+Sinema aramasındaki 500 ve boş sonuç, önceki asenkron ekran dersinin hata ve boş durumlarını gerçek HTTP cevabıyla birleştirir. Her senaryoda yalnız istek yapıldığını değil kullanıcıya gösterilen sonucu ölçmelisin.
+
 ## İhtiyaç ve çözüm
 
 `server.use(http.get(url, () => HttpResponse.json(body, { status: 500 })))` bir testte varsayılan handler’ın önüne geçer. Ortak setup `afterEach` içinde `server.resetHandlers()` çağırır. Boş liste TMDB biçimini korur: `page`, `results`, `total_pages`, `total_results`.

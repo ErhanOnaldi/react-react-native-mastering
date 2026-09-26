@@ -10,6 +10,12 @@ kind: concept
 Sinema arama kutusunda `filteredMovies` state’i `movies` ve `query` ile ayrı ayrı tutuluyor. Bir render boyunca eski filtre görünüyor.
 :::
 
+## Türetilen değer effect istemez
+
+Effect dış sistemle senkronizasyon içindir. Yalnız mevcut props ve state'ten hesaplanan bir değer, render sırasında doğrudan türetilebilir. Onu ayrıca state'e yazıp effect ile güncellersen aynı bilginin iki kopyası oluşur; bir render boyunca eski değer gösterme ihtimali doğar. Event sonucu ise çoğu kez doğrudan handler'da ele alınır.
+
+Sinema'nın filtrelenmiş film listesi `movies` ve `query` ile hesaplanır. Önceki controlled input ve composition dersleri, bu verinin sahibini zaten belirledi. Şimdi hangi değişimin gerçekten dış dünyaya dokunduğunu ayırıyorsun.
+
 ## Ne değişiyor?
 
 Var olan props/state’ten hesaplanabilen değer render sırasında türetilir. Kullanıcı tıklamasının sonucu event handler’da yapılır.

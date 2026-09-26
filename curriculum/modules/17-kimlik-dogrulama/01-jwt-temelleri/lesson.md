@@ -10,6 +10,12 @@ kind: concept
 Sinema’da aynı tarayıcıda oturum açmadan `/watchlists` adresine gidince daha önce kaydedilmiş yerel listeyi görebiliyorsun. Uygulama kimin geldiğini bilmiyor; yalnız `isLoggedIn` boolean’ı da yenilemede kayboluyor.
 :::
 
+## Kimlik doğrulama neyi kanıtlar?
+
+Authentication kullanıcının kim olduğunu belirleme, authorization ise hangi kaynağa erişebileceğine karar verme sürecidir. JWT, sunucunun imzaladığı ve istemcinin isteklerde taşıyabildiği bir token biçimidir. Üç bölümden oluşur; payload okunabilir ama yalnız okunması geçerlilik kanıtı değildir. İmzayı ve yetkiyi sunucu denetler.
+
+Sinema'daki yerel izleme listesi ile gerçek kullanıcı oturumu aynı şey değil. Bu modülde DummyJSON'un verdiği access ve refresh token'ları kullanacaksın; TMDB uygulama token'ı başka bir hizmete aittir. Route gizleme kullanıcı deneyimi sağlar, veri güvenliğini tek başına sağlamaz.
+
 ## Sunucunun verdiği kanıt
 
 DummyJSON’a `POST /auth/login` ile kullanıcı adı ve parola gönderince `accessToken` ve `refreshToken` gelir. Test hesabı `emilys` / `emilyspass`. Hatalı bilgilerde 400 ve `Invalid credentials` gelir. `accessToken` bir JWT biçimindedir: `header.payload.signature`.

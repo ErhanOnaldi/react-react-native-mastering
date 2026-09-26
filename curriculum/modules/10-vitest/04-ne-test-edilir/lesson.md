@@ -10,6 +10,12 @@ kind: concept
 Arama refactor’unda yardımcı fonksiyonun adı değişti. Eski test private fonksiyonun kaç kez çağrıldığını ölçüyordu; kullanıcı hâlâ aynı yanlış sayfayı görüyordu.
 :::
 
+## Dışarıdan görülen sözleşme
+
+Bir modülün içindeki yardımcı fonksiyonlar değişebilir; kullanıcıya verdiği sonuç aynı kalabilir. Davranış odaklı test, girdiyi ve dışarıdan gözlenebilir sonucu ölçer. Böylece iç düzenlemeye alan bırakır. Yine de beklenti yeterince somut olmalı: yalnız "istek atıldı" demek yanlış sayfa parametresini yakalamaz.
+
+Sinema'nın URL sayfalaması burada iyi sınırdır; `page=2` adresinden ikinci sayfanın istenmesi gereksinimdir. Önceki matcher dersindeki seçimi artık test seviyesine taşıyorsun: neyi karşılaştıracağına karar vermek, hangi davranışı koruduğuna karar vermektir.
+
 ## Sorunu nasıl görürsün?
 
 Testin en değerli sınırı dışarıdan görülen sözleşmedir: `?page=2` ile oluşan URL, dönen film listesi, hata halinde kullanıcıya verilen sonuç. İç değişken ve çağrı sırası ancak gerçek gereksinimse önemlidir.

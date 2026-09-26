@@ -10,6 +10,12 @@ kind: concept
 Film kartında `useSelector` kullandın; `state` tipi belirsiz kaldı, her dosyada RootState yazmaya başladın.
 :::
 
+## Component ile store arasındaki bağ
+
+Redux state'i store'da durur; React component'i onu seçerek okur ve action göndererek değiştirir. `useSelector` okuma, `useDispatch` yazma yönüdür. Store'dan türetilen `RootState` ve `AppDispatch` tiplerini ortak hook'lara bağlamak, her bileşende tipleri tekrar kurmadan doğru alanları ve action'ları görmeni sağlar.
+
+Sinema kartının yalnız favori kimliklerini seçmesi, tema değişiminden etkilenmemesi gereken bağı açıkça gösterir. Önceki slice sınırı burada abonelik sınırına dönüşür. Selector'ın yeni nesne üretmesi gibi ayrıntılar sonraki derste render davranışını etkileyecek.
+
 ## Sorunu çöz
 
 Store’dan `RootState = ReturnType<typeof store.getState>` ve `AppDispatch = typeof store.dispatch` türet. React Redux 9.3’te `useDispatch.withTypes<AppDispatch>()` ve `useSelector.withTypes<RootState>()` ile uygulama hook’larını bir kez oluştur. `Provider` store’u bileşen ağacına verir.

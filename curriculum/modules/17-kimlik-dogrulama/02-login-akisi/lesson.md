@@ -10,6 +10,12 @@ kind: concept
 Login kutusu yalnız `setLoggedIn(true)` yapıyor. Yanlış parola bile başarılı görünüyor; `/auth/me` ise gerçek access token olmadığı için 401 döndürüyor.
 :::
 
+## Oturum açmanın adımları
+
+Login akışı yalnız ekranda giriş yapılmış görünmesini sağlamak değildir. Form önce temel girdileri denetler, istek sunucuya gider, HTTP ve cevap biçimi incelenir, başarılı yanıtın token'ları oturum durumuna alınır. Başarısız parola veya ağ hatası ayrı sonuçlardır; kullanıcıya anlaşılır gösterilmelidir.
+
+RHF ve Zod modüllerindeki form doğrulaması burada tekrar kullanılır. Sinema'nın `setLoggedIn(true)` yaklaşımı sunucu onayı olmadan kimlik varsayar. JWT dersindeki token çiftinin gerçek kaynağı bu istektir; sonraki ders o çiftin yenileme sırasında nasıl korunacağını ele alacak.
+
 ## İlk istek
 
 Önce `fetch` ile `/auth/login` yanıtını işle. `fetch` 400’de kendiliğinden hata fırlatmaz; `response.ok` kontrolünden sonra kullanıcıya anlaşılır mesaj göster. Yanıtın `accessToken` ve `refreshToken` alanlarını ayrı tut.

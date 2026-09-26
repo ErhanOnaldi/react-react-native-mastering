@@ -10,6 +10,12 @@ kind: concept
 Sinema detay sayfasında `loading = true`, `error = 'Hata'` ve eski `movie` aynı anda durabiliyor. Ekran hem spinner hem eski filmi gösteriyor.
 :::
 
+## Durumları ayrı seçenekler olarak modelle
+
+Bir ekranda birkaç boolean ve opsiyonel alan tutmak kolay görünür; fakat bu alanların her birleşimi geçerli değildir. Discriminated union, her olası durumu ayrı bir nesne tipi yapar ve ortak bir ayırt edici alanla birbirinden ayırır. Böylece "yükleniyor" durumunda veri, "hata" durumunda başarılı cevap varmış gibi davranamazsın.
+
+Önceki union ve narrowing bilgisi burada birleşir: `status` kontrol edildiğinde TypeScript ilgili dala ait alanları bilir. Sinema'nın istek ekranı bir örnek; aynı model ödeme, dosya yükleme veya oturum açma akışına da uygulanır. Daha sonra React state ve reducer bu tipin geçişlerini yönetecek.
+
 ## İmkânsız birleşimleri kaldır
 
 Üç ayrı değişken tüm kombinasyonlara izin verir. `RemoteData<T>` her durumda hangi alanların bulunacağını kesinleştirir.

@@ -10,6 +10,12 @@ kind: concept
 `MovieCard` yalnızca `id`, `title` ve `poster_path` okuyor. Kart için bütün `Movie` alanlarını yeniden yazınca `poster_path` bir dosyada `string`, diğerinde `string | null` olmuş.
 :::
 
+## Tip türetmek ne demek?
+
+Bir veri modelinin her kullanım yeri bütün alanlara ihtiyaç duymaz. Ayrı ayrı tipler kopyalamak yerine mevcut tipten yeni bir görünüm türetirsen, ortak alanların anlamı tek kaynaktan gelir. TypeScript'in `Pick`, `Omit`, `Partial`, `Record` ve `Readonly` gibi utility type'ları bu dönüşümleri tip düzeyinde ifade eder.
+
+Bu, generic fikrinin pratik devamıdır: `Pick<T, K>` bir nesne tipi ve anahtar kümesi alır. Sinema kartında daha küçük bir `Movie` görünümü istemen bu genel ilişkinin somut hâli. Türetilen tipin yalnızca derleyiciye yol gösterdiğini, çalışma zamanındaki nesneyi değiştirmediğini aklında tut.
+
 ## Tek kaynaktan türet
 
 `Pick<Movie, 'id' | 'title' | 'poster_path'>` kartın ihtiyacını ana `Movie` tipinden alır. Böylece null bilgisi de taşınır. Ters ihtiyaçta `Omit<Movie, 'id'>` kimliği çıkartır. `Omit` merdivenine burada başlıyoruz: önce tek alan, sonra birkaç alan; daha sonra `Partial` ile birleşecek.

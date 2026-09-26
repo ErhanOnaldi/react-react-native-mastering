@@ -10,6 +10,12 @@ kind: concept
 Tür renkleri tablosunda 53 numaralı Gerilim rengi unutulmuş. Tabloya `Record<number,string>` açıklaması ekleyince de tek tek renk literal'leri kaybolmuş.
 :::
 
+## Sabit veri ile tip sözleşmesini ayır
+
+Kaynak koduna yazdığın sabit bir nesnenin iki özelliği olabilir: belirli bir şekle uyması ve içindeki değerlerin mümkün olduğunca kesin tiplerini koruması. Açık tip açıklaması şekli denetler ama bazen literal bilgiyi genişletir. `satisfies` uygunluğu kontrol ederken çıkarılan tipi korur; `as const` ise literal değerleri ve readonly alanları muhafaza eder.
+
+`keyof` ve `typeof` ile tek kaynaktan tip üretmiştin. Bu derste kaynağın kendisini güvenli kuruyorsun. Sinema'nın tür-renk tablosu örnek olsa da aynı karar rota adlarında, izin listelerinde ve UI varyantlarında da gerekir. Dış JSON içinse hâlâ çalışma zamanı doğrulaması gerekir.
+
 ## Şekli denetle, çıkarımı koru
 
 `as const` değerleri literal ve readonly tutar. `satisfies` verilen biçimi kontrol eder ama değişkenin çıkarılan tipini gereksiz yere genişletmez.

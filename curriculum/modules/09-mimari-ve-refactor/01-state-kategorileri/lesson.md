@@ -10,6 +10,12 @@ kind: concept
 Arama metni, favoriler, sayfa numarası ve TMDB sonuçları aynı sayfada dört ayrı useState olarak duruyor. Geri tuşu filtreyi geri getirmiyor; veri tekrar çekiliyor.
 :::
 
+## State'i saklamadan önce sahibini bul
+
+State, zaman içinde değişen bilginin tutulduğu yerdir; fakat her bilgi aynı yere ait değildir. Sunucunun yönettiği veri, paylaşılabilir URL seçimi, geçici form taslağı ve uygulamanın yerel tercihi farklı yaşam döngülerine sahiptir. Yanlış yerde tutulan bilgi başka yerdeki kopyasıyla ayrışabilir.
+
+Router'da arama parametresini URL'ye, Context'te favoriyi ortak ağaca koydun. Sinema sayfasında bu kararların hepsi bir arada görünür. Query, RHF ve Redux'u ileride öğrenirken önce bu sahiplik haritasına geri döneceksin; araç seçimi verinin doğasından çıkar.
+
 ## İhtiyaçtan karar
 
 Önce her değerin sahibini bul: TMDB cevabı server state, favori tercihi client state, paylaşılabilir arama ve sayfa URL state, henüz gönderilmemiş form alanı form state.

@@ -10,6 +10,12 @@ kind: concept
 Arama kutusunu test id ile bulan test, tasarımcı id’yi değiştirince kırıldı. Ekran okuyucu ise kutuyu hâlâ Film ara etiketiyle buluyor.
 :::
 
+## Kullanıcının bulabildiği öğeyi bul
+
+DOM sorgusu, testin hangi öğeyi hangi özellik sayesinde tanıdığını söyler. Rol ve erişilebilir ad, düğme veya input'un kullanıcıya sunduğu anlamı temsil eder. Test id teknik bir işaret olabilir, fakat görünen arayüz sözleşmesini açıklamaz. `getBy`, `queryBy` ve `findBy` de öğenin hemen, hiç veya gecikerek bulunması beklentisini ayırır.
+
+Sinema arama kutusunun label'ı ekran okuyucu için de RTL testi için de aynı adı sağlar. Önceki a11y ipuçları burada pratik geri bildirim kazanır. Yanlış sorgu seçmek, gerçek kullanıcı davranışını testten gizleyebilir.
+
 ## İhtiyaç ve çözüm
 
 Önce `getByRole` ve `name` kullan. `name`, görünen metinden ya da `label`’dan hesaplanır. `searchbox` rolü arama input’unu, `button` rolü düğmeyi belirtir. `getByLabelText` de etiketli input için uygundur. `getByTestId` son çaredir.

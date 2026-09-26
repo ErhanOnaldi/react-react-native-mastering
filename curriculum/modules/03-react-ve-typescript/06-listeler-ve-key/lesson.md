@@ -10,6 +10,12 @@ kind: concept
 Film notları listesinde her satıra bir input koydun. “Puana göre sırala” deyince yazdığın not başka filmin yanında göründü. Her satıra `key={index}` vermiştin.
 :::
 
+## Liste öğesinin kimliği
+
+React bir diziden ürettiğin kardeş elementleri sonraki render'daki elementlerle eşleştirir. `key`, bu eşleştirme için kararlı kimliktir; sıralama veya filtreleme değişse bile aynı veri öğesine ait kalmalıdır. Dizi indeksi ise öğenin kimliğini değil, o anki konumunu anlatır.
+
+Immutability ile yeni liste üretmeyi öğrendin; şimdi React'in o listenin eski hâliyle yenisini nasıl ilişkilendirdiğini görüyorsun. Sinema notunun başka filme taşınması bu eşleştirmenin bozulmuş hâli. Form satırları, sepet ürünleri ve yeniden sıralanabilen her listede aynı ilke geçerlidir.
+
 ## Key kimliği taşır
 React, kardeş öğeleri render’lar arasında `key` ile eşler. Sıra değiştiğinde index yeni bir filme ait olabilir; React eski input DOM’unu yeni filme bağlar. Film id’si sıralamada da aynı filme aittir.
 

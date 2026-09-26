@@ -10,6 +10,12 @@ kind: concept
 Yorum formu geçerli görünüyor ama “Gönder” tıklamasında ağ hatası olursa kullanıcıya hiçbir şey söylenmiyor. Form doğrulaması ile sunucu isteği ayrı sorumluluklar.
 :::
 
+## İki ayrı başarı koşulu
+
+Formun geçerli olması, sunucunun kaydı kabul ettiği anlamına gelmez. `handleSubmit` istemcideki alan kurallarını geçirir; `useMutation` ağdaki yazma işleminin bekleme, başarı ve hata durumunu yönetir. Bu iki aşamanın mesajları ve temizleme zamanı farklıdır. Kullanıcı geçerli veri girmiş olsa bile sunucu hatasıyla karşılaşabilir.
+
+Sinema yorumunda RHF ile toplanan veri mutation'a aktarılır. Önceki cache derslerindeki ağ hata yönetimi burada form deneyimine bağlanır. Gönderim başarısızsa alanlar korunur; başarılıysa uygun bildirim ve gerekirse `reset` yapılır.
+
 ## Önceki modülle birleşim
 
 `handleSubmit` geçerli veriyi üretir; `useMutation` asenkron yazmayı yönetir. DummyJSON `POST /comments/add` gövdesi `{ body, postId, userId }` biçimindedir. Boş `body` 400 döner; başarılı istek 201 ve oluşturulan yorumu döndürür. `fetch` başarısız HTTP durumunda throw etmediği için `response.ok` kontrolü gerekir.

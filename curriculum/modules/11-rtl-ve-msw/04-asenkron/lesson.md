@@ -10,6 +10,12 @@ kind: concept
 Film listesi için getByText yazdın. İstek birkaç milisaniye sonra dönüyor; test yüklenirken bitti.
 :::
 
+## Ekranın zaman içindeki hâlleri
+
+Ağlı bir component tek anda tamamlanmaz: önce bekleme, sonra başarı veya hata görünür. Testin de bu durum geçişini izlemesi gerekir. `getBy` mevcut öğeyi hemen arar, `findBy` sonradan belirecek öğeyi bekler; `waitFor` ise belirli bir assertion'ı koşul sağlanana kadar tekrar dener. Sabit uyku süresi gerçek davranışa bağlanmaz.
+
+Sinema film detayı ilk render'da bilinmez. Effect ve Query derslerinde gördüğün asenkron durumlar şimdi kullanıcı gözünden sınanıyor. Loading mesajının kaybolması ve hata yüzeyinin görünmesi de başarı başlığı kadar önemli olabilir.
+
 ## İhtiyaç ve çözüm
 
 Başta görünen loading durumunu `getByRole` ile hemen sınarsın. Sonradan gelen film için `await screen.findByRole("heading", { name: "Dövüş Kulübü" })` kullan. Öğenin kaybolmasını `waitForElementToBeRemoved(() => screen.queryByRole("status"))` ile izle; çağrı anında öğe mevcut olmalı.

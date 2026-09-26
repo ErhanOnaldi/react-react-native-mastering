@@ -10,6 +10,12 @@ kind: concept
 Detay rotası ilk anda geçerli bir `id` vermiyorsa `/movie/NaN` isteği gidiyor. Favori listesinde `id` henüz yokken detay sorgusu başlamamalı.
 :::
 
+## Bir veriyi bekleyen ikinci sorgu
+
+Bazı istekler ancak başka bir değer hazır olduğunda anlamlıdır. Bağımlı query, gerekli kimlik veya önceki sorgu sonucu gelene kadar başlatılmaz; hook yine her render'da aynı sırayla çağrılır. Koşul sorgunun seçeneklerinde ifade edilir. Böylece geçersiz parametreyle istek atmak yerine veri bağımlılığını açıkça modelliyorsun.
+
+Router'da URL parametresini doğrulamayı öğrendin; Query burada doğrulanmış değeri bekler. Sinema'daki `/movie/NaN` semptomu, URL sınırıyla ağ sınırının kopmasından doğar. Aynı yaklaşım önce kullanıcıyı, sonra o kullanıcının kayıtlarını yükleyen akışlarda da geçerlidir.
+
 ## Koşullu başlat
 
 `enabled: Boolean(id)` sorguyu durdurur; `id` geldiğinde otomatik başlatır. TypeScript yine `id` tipini daraltmanı isteyebilir. `skipToken` ise `queryFn` yerine konur ve tip çıkarımını korur:

@@ -10,6 +10,12 @@ kind: concept
 Şimdiye dek TMDB testlerinin gerçek ağa çıkmadığı halde Dövüş Kulübü döndürdüğünü gördün. Bu cevap nereden geldi?
 :::
 
+## Ağ sınırını uygulama dışından değiştir
+
+Mock Service Worker, HTTP isteklerini uygulamanın `fetch` kodunu değiştirmeden yakalayıp kontrollü cevaplar verir. Böylece gerçek URL, header ve cevap ayrıştırma kodu çalışır; yalnız ağın öteki ucundaki davranış test tarafından seçilir. Fonksiyon mock'undan farkı, bütün HTTP akışının daha gerçekçi bir sınırda sınanmasıdır.
+
+Sinema'nın sahte TMDB sonuçları şimdiye kadar görünmez bir test ortamı gibi çalıştı. Vitest'teki `fetch` mock'unu hatırla: orada global fonksiyon değiştirilmişti. Burada aynı ekran koduyla başarı, 401 ve bozuk cevap senaryolarını kurabileceksin.
+
 ## İhtiyaç ve çözüm
 
 Gerçek dosyaları oku: `curriculum/test-env/setup.ts`, `server.listen({ onUnhandledRequest: "error" })` açar; testten sonra `cleanup()`, `server.resetHandlers()` ve `clearRequests()` çağırır. `msw/node.ts`, `setupServer(...handlers)` kurar. `server.events.on("request:start", ({ request }) => recordRequest(request))` isteği kaydeder. MSW 2’de callback tek nesne alır; `requestId` de içindedir.

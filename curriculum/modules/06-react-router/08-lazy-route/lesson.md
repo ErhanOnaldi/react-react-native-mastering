@@ -10,6 +10,12 @@ kind: concept
 Sinema açıldığında kullanıcı yalnızca ana sayfaya bakıyor ama büyük Favoriler ekranının kodu da ilk pakete giriyor. Açılış yükü büyüyor.
 :::
 
+## Kodun yüklenme zamanını seç
+
+Varsayılan olarak import edilen sayfa kodu başlangıç paketine katılır. Lazy route, seyrek açılan bir sayfanın modülünü ancak o route gerektiğinde yükler. Bu teknik **code splitting** yapar: kullanıcı ilk ekranda gerekmeyen JavaScript'i baştan indirmez. Karşılığında o sayfaya ilk geçişte ek bir yükleme süresi olabilir.
+
+Nested route ile sayfaları sınırlandırdın; bu sınırlar kodu bölmek için de kullanılabilir. Sinema'nın Favoriler ekranı bir adaydır, fakat her küçük sayfayı bölmek otomatik kazanç değildir. İleride performans modülünde ağ ve render maliyetini ölçerek karar vereceksin.
+
 ## Rota modülünü geç yükle
 
 Data mode'da bir rota için `lazy: () => import('./routes/favorites')` yazabilirsin. O modül `Component` gibi route alanlarını export eder. Eşleşme için gereken `path` rota ağacında kalır; içerik ancak rota ziyaret edilince yüklenir.

@@ -10,6 +10,12 @@ kind: concept
 `formatVote(8)` ekranda `8.0` yerine `8` gösterirse TypeScript şikâyet etmez. Bu küçük sapmayı otomatik olarak nasıl görürsün?
 :::
 
+## Bir örneği yürütülebilir kural yap
+
+Birim testinde küçük bir kod parçasını bilinen girdilerle çalıştırır, sonucu beklediğin değerle karşılaştırırsın. Vitest testleri toplar ve çalıştırır; `expect` ile matcher ise hangi davranışı ölçtüğünü ifade eder. İyi test adı, "çalışıyor" yerine hangi girdiyle hangi sonucu beklediğini söyler.
+
+Önceki derste neden davranış güvencesi gerektiğini gördün. Sinema'nın oy biçimlendirmesi, ağ ve DOM gerektirmeyen ilk örnek. Burada öğrendiğin hazırlık–eylem–beklenti düzeni, sonraki API ve component testlerinde de aynı kalır.
+
 ## Sorunu nasıl görürsün?
 
 `describe` ilgili senaryoları gruplar, `it` davranışı adlandırır, `expect` gerçekleşen değeri alır. `toBe` ilkel değerlerin birebir eşitliğini sınar. Test adı bir gereksinim cümlesi olsun.

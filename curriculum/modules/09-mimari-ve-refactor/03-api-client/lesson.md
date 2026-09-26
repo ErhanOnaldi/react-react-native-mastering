@@ -10,6 +10,12 @@ kind: concept
 Detay sayfası Bearer başlığını ekliyor, arama sayfası unutuyor: sahte TMDB birinde 200, ötekinde 401 dönüyor. Hata mesajları da dört yerde farklı.
 :::
 
+## Ağ sınırını tek yerde yönet
+
+API client, HTTP adresi, kimlik başlığı, ortak parametreler ve hata dönüşümü gibi her istekte geçerli kuralları toplar. Endpoint'e özgü anlam ise feature fonksiyonunda kalır. Bu ayrım, tüm ekranların aynı protokol sözleşmesini kullanmasını sağlar; ama generic dönüş tipi dış veriyi çalışma zamanında doğrulamaz.
+
+Sinema aramasının Bearer başlığını unutması, aynı kuralın birkaç sayfada kopyalanmasının bedelidir. Feature klasörü dersindeki sınır burada somutlaşır: ortak client HTTP'yi bilir, film API'si `getTrendingMovies` anlamını bilir. Zod modülünde client sınırına gerçek cevap doğrulaması ekleyeceksin.
+
 ## İhtiyaçtan karar
 
 `tmdbClient.get<T>(path, params?)` URL, `language=tr-TR`, Bearer ve HTTP kontrolünü toplar. Başarısız cevap için `ApiError(status, statusCode, message)` fırlatır. Feature API fonksiyonları bu kapıyı kullanır.

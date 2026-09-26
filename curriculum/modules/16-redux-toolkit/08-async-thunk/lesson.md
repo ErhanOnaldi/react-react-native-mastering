@@ -10,6 +10,12 @@ kind: concept
 Bir buton “cihaza dışa aktar” işlemi yapıyor; pending/fulfilled/rejected durumunu paylaşman gerekiyor. TMDB detayını da aynı yolla mı çekmelisin?
 :::
 
+## Paylaşılan asenkron işlem
+
+Async thunk, bir eylemin bekleme, başarı ve hata aşamalarını action akışına taşıyan araçtır. Özel bir client işleminin sonucunu birkaç yerde takip etmek gerektiğinde yararlı olabilir. Ancak sunucu verisinin cache, tazelik ve tekrar istek yönetimi gerekiyorsa TanStack Query zaten bu işi üstlenir; aynı endpoint'i iki ayrı sistemde yönetmemelisin.
+
+Sinema'da watchlist dışa aktarma bir işlem olarak düşünülebilir. Film detayını okumak ise önceki Query sınırında kalır. Bu karşılaştırma, teknoloji seçimini async sözcüğüne değil verinin yaşam döngüsüne bağlar.
+
 ## Sorunu çöz
 
 `createAsyncThunk` özel bir client işleminin pending/fulfilled/rejected action’larını üretir. `create.asyncThunk` için `buildCreateSlice({ creators: { asyncThunk: asyncThunkCreator } })` gerekir. TMDB detayını Query zaten cache’ler; onu thunk’a taşımak ikinci bir sunucu cache’i yaratır.

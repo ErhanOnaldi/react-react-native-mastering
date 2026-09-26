@@ -10,6 +10,12 @@ kind: concept
 Sıralama kontrolünde `'title'` ve `'vote_average'` elle yazılmış. Bir yerde `'vote_avrage'` yazılınca geçersiz alan sessizce okunuyor.
 :::
 
+## Tipler arasındaki ilişkiyi çıkar
+
+Bir nesnenin alan adlarını başka yerde elle tekrar yazarsan iki liste zamanla ayrışabilir. `keyof`, bir nesne tipinin geçerli anahtarlarını; indeksli erişim ise seçilen alanın değer tipini çıkarır. `typeof` farklı yönde çalışır: kodda gerçekten bulunan bir değerin tipini tip dünyasına taşır.
+
+Önceki derste var olan tipten görünüm türetmiştin. Burada da aynı tek kaynak ilkesi geçerli, fakat kaynak bazen tip, bazen sabit değer. Sıralama seçeneklerinin film alanlarıyla uyumlu kalması bunun Sinema'daki karşılığıdır; menü seçenekleri ve form alanlarında da aynı ilişkiyi kurabilirsin.
+
 ## Anahtarın da tipi var
 
 `keyof Movie` geçerli alan adlarını birleştirir. `Movie['genre_ids']` ise alanın tipini doğrudan alır. `typeof` bir değerin tipini yakalar; tip ve çalışma zamanı arasındaki yön farkına dikkat et.

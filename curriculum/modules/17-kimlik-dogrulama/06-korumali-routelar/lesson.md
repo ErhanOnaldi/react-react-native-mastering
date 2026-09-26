@@ -10,6 +10,12 @@ kind: concept
 Giriş butonunu gizledin ama `/watchlists` URL’sini doğrudan yazınca özel sayfa açılıyor. Bir bağlantıyı saklamak, route’u korumaz.
 :::
 
+## UI erişimi ile veri yetkisini ayır
+
+Protected route, oturum yokken belirli React ekranlarını göstermeyip kullanıcıyı girişe yönlendirir. Bu, gezinme deneyiminin bir kuralıdır. Özel verinin gerçekten korunması sunucunun her istekte yetki denetlemesine bağlıdır; istemci kodu değiştirilebilir. Yönlendirme yaparken kullanıcının gitmek istediği adresi saklamak giriş sonrası geri dönüşü sağlar.
+
+Router modülünde nested route ve `Outlet` öğrendin. Sinema'nın izleme listesi sayfası bu yapıda korumalı gruba alınabilir. Token'ın storage'dan yüklenmesini beklemeden erken yönlendirme yapmak da yanlış giriş ekranı gösterebilir.
+
 ## Layout route
 
 React Router 8’de `Outlet` çocuk route’u yerleştirir. Koruma bileşeni token yoksa `<Navigate to="/login" replace state={{ from: location.pathname }} />` döndürür. Token varsa `<Outlet />` döndürür. İlgili sayfaları tek bir pathless parent altında grupla; her sayfaya aynı kontrolü kopyalama.

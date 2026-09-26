@@ -10,6 +10,12 @@ kind: concept
 `getJson<Movie>('/movie/550')` yazınca editör `Movie` gösterdi. Sunucu 401 hata JSON'u döndürdüğünde tip yeşil kaldı, ekran ise çöktü.
 :::
 
+## Asenkron tür ile gerçek cevabı ayır
+
+`Promise<T>`, gelecekte tamamlanacak bir işlemin başarılı değer tipini anlatır. `async` fonksiyon doğrudan değer döndürse bile çağırana Promise verir; `await` bu sonucu bekleyip işleme devam etmeyi sağlar. Bu tip, işlemin ne zaman tamamlanacağını veya dış servisin gerçekten `T` biçiminde cevap verdiğini garanti etmez.
+
+Generics ile cevap tipini taşımayı ve `unknown` veriyi kontrol etmeyi öğrendin. Ağ isteğinde ikisi birlikte gerekir: `getJson<Movie>` kod içindeki beklentiyi ifade eder, HTTP durumu ve cevap gövdesi ise ayrıca incelenir. Sinema'daki hata cevabı, tip açıklaması ile çalışma zamanı gerçeği arasındaki farkı gösterir.
+
 ## Async imza
 
 `async` fonksiyon `Promise<T>` döndürür. `await` Promise içindeki değeri verir. `ReturnType` fonksiyonun dönüşünü, `Parameters` parametre tuple'ını, `Awaited` ise Promise içindeki sonucu çıkarır.

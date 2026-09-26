@@ -10,6 +10,12 @@ kind: concept
 Arama sayfasında `?page=2` açıldığında birinci sayfanın filmleri tekrar göründü. Refactor yeşil build ile bitti; hata iki gün sonra kullanıcı tarafından bulundu.
 :::
 
+## Testin koruduğu şey
+
+Test, bir girdiye veya kullanıcı eylemine karşı beklenen davranışı otomatik denetleyen çalıştırılabilir örnektir. TypeScript bir değerin biçimini kontrol eder; test ise doğru biçimdeki değerin doğru sonuç üretip üretmediğine bakar. İkisi birbirini tamamlar. Testin değeri, değişiklikten sonra daha önce çalışan davranışın bozulduğunu görünür kılmasındadır.
+
+Sinema'da `page` hâlâ sayı olabilir ama yanlış sayfa seçilebilir. Bu, tip hatası değil davranış hatasıdır. Önce küçük saf fonksiyonları test edeceksin; sonra React ekranı, ağ isteği ve bütün kullanıcı akışına kadar kapsam büyüyecek.
+
 ## Sorunu nasıl görürsün?
 
 Tip kontrolü `page` değerinin number olduğunu bilir; yanlış sayfanın seçildiğini bilemez. Eski yöntemin elle gezinip bakmaktı. Her değişiklikten sonra arama, filtre, detay ve hata sayfalarını tek tek açmak hem yavaştır hem de unutulabilir.

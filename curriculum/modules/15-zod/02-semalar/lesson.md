@@ -10,6 +10,12 @@ kind: concept
 Film kartında `poster_path` bazen null; onu string sayan şema gerçek katalog kaydını reddediyor.
 :::
 
+## Şema bir veri sözleşmesidir
+
+Zod şeması, çalışan kodun bir değerden ne beklediğini ifade eder: alan adları, tipleri ve ek kuralları. `parse` değeri denetleyip geçerliyse sonucu verir, değilse hata üretir; `safeParse` aynı kararı sonuç nesnesiyle döndürür. `nullable`, değerin açıkça `null` olabildiğini, `optional` ise alanın eksik olabildiğini belirtir.
+
+TypeScript'te `Movie` tipini yazmıştın; şimdi o beklentiyi gerçek API cevabına uyguluyorsun. Sinema posteri için `null` geçerli iken başlık için olmayabilir. Bu ayrım, şemayı varsayıma göre değil gözlenen veri sözleşmesine göre kurmanı gerektirir.
+
 ## Neden bu araç?
 
 `z.object` alanları, `z.string`, `z.number`, `z.array` ve `.nullable()` ile verinin gerçek biçimini tarif et. `.parse` yanlış veride hata fırlatır; `.safeParse` sonuç nesnesi döndürür.

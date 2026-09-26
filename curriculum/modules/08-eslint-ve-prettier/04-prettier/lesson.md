@@ -10,6 +10,12 @@ kind: concept
 Sinema’daki `MovieCard` bir bilgisayarda çift tırnak ve noktalı virgülle, diğerinde tek tırnak ve noktalı virgülsüz kaydediliyor. PR’da gerçek değişikliği yüzlerce biçim satırı arasında arıyorsun.
 :::
 
+## Biçimi otomatik ve ortak tut
+
+Prettier kodu ayrıştırıp seçilen biçim kurallarına göre yeniden yazar. Kodun niyetini veya Hook doğruluğunu denetlemez; boşluk, tırnak ve satır düzeni gibi görünümü tekleştirir. ESLint'in mantıksal kurallarıyla çakışan biçim kuralları kapatılınca iki araç farklı sorumluluk taşır.
+
+Sinema PR'ındaki gereksiz biçim farkları gerçek davranış değişikliğini okumayı zorlaştırır. Lint dersindeki hata denetimi ile Prettier'ın düzenleme işini ayırmak, kod incelemesinde dikkati doğru yere toplar. Aynı config editör ve CI tarafından kullanılmalıdır.
+
 ## Biçimi otomatikleştir
 
 Prettier 3.9 kodu ayrıştırır ve seçilen seçeneklerle yeniden yazar. `singleQuote`, `semi` ve `printWidth` ortak dosyada yaşar. Kodun anlamını veya Hook bağımlılığını düzeltmez; o ESLint’in alanıdır.

@@ -10,6 +10,12 @@ kind: concept
 Sinema’daki “üç bilet ekle” düğmesinde `setCount(count + 1)` satırını üç kez yazdın. Ekrandaki sayı 3 yerine 1 arttı.
 :::
 
+## Her render kendi değerlerini görür
+
+State, component'in render'lar arasında sakladığı bilgidir; fakat bir render içindeki değişken anında değişmez. O render sırasında tanımlanan event handler, o anın state **snapshot**'ını görür. `setState` bir sonraki render için güncelleme planlar. Bu yüzden aynı handler içinde eski değere bağlı birkaç güncelleme yaparken updater fonksiyonu gerekir.
+
+Props dışarıdan gelirken state component'in zaman içindeki değişimini temsil eder. Sinema'daki sayaç, tek olayda üç güncellemenin neden aynı eski değeri okuduğunu gösterir. Bu zihinsel model biraz sonra controlled input, effect ve asenkron callback davranışlarını anlamanı kolaylaştıracak.
+
 ## Aynı render’ın fotoğrafı
 Bir render sırasında `count` sabittir. Üç çağrı da aynı `count + 1` değerini sıraya koyar. Handler bittiğinde React güncellemeleri işler. Üç bağımsız artış gerekiyorsa sıradaki değeri alan updater kullan.
 

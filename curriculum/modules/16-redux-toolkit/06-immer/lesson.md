@@ -10,6 +10,12 @@ kind: concept
 Son bakılan filmleri başa almak için eski diziyi doğrudan değiştirmek istedin; reducer dışındaki eski snapshot da etkilenmesin.
 :::
 
+## Reducer'da değişiklik nasıl yazılır?
+
+Redux reducer'ı eski state'i bozmadan yeni durum üretmelidir. Redux Toolkit, Immer ile bir draft üzerinde mutasyon gibi görünen kodu güvenli immutable güncellemeye çevirir. Bu yalnız `createSlice` reducer bağlamında geçerlidir; uygulamanın her yerindeki nesneyi yerinde değiştirmeyi serbest bırakmaz.
+
+React immutability dersinde spread ve `filter` ile yeni dizi kurdun. Sinema'nın son bakılanlar sırası aynı ilkeyi reducer içinde daha okunur sözdizimiyle uyguluyor. Eski snapshot'ın değişmemesi, test ve hata ayıklama için önemini korur.
+
 ## Sorunu çöz
 
 RTK `createSlice` reducer’ları Immer draft’ı üzerinde çalışır. `state.ids.unshift(id)` yazabilirsin; gerçek eski state değişmez. Tek reducer’da hem draft’ı değiştirip hem farklı state dönme.

@@ -10,6 +10,12 @@ kind: concept
 On iki film kartı telefonda taşıyor, geniş ekranda tek sütun boşluk bırakıyor. Kart içindeki puan da uzun başlığın üstüne biniyor.
 :::
 
+## Düzen kurmanın iki ekseni
+
+Flexbox, öğeleri bir satır veya sütun boyunca hizalayıp kalan alanı dağıtmak için uygundur. Grid, satır ve sütunları birlikte tanımlayan iki boyutlu düzen kurar. Tailwind'in `flex` ve `grid` class'ları bu CSS mekanizmalarını kaldırmaz; kısa adlarla uygular. Responsive varyantlar da viewport genişliğine göre aynı kuralların ne zaman değişeceğini belirtir.
+
+Sinema kartının içindeki başlık-puan ilişkisi ile kartların sayfadaki dizilişi farklı düzen problemleri. Utility-first dersindeki küçük sınıfları burada yerleşim kararına bağlıyorsun. Önce dar ekranı düşünmek, geniş ekrandaki kolonları daha kontrollü artırmanı sağlar.
+
 ## İki düzen ihtiyacı
 
 Kart **içinde** yatay ilişkiler için `flex`, kartlar **arasında** iki boyutlu ızgara için `grid` kullan. `gap` çocuklar arasındaki boşluğu verir; her çocuğa margin eklemen gerekmez.

@@ -10,6 +10,12 @@ kind: concept
 Buton `sky-700`, badge `blue-700`, arama alanı `indigo-700` kullanıyor. Ürün rengini değiştirirken hangi tonu nerede kullandığını bulamıyorsun.
 :::
 
+## Değeri anlamıyla adlandır
+
+Tek tek renk kodları bir tasarımın görevlerini açıklamaz. Design token, örneğin marka rengi veya yüzey rengi gibi ortak karara anlamlı bir ad verir. Tailwind v4 `@theme` değişkenlerinden utility adları üretebilir; normal CSS değişkeni ise değeri taşır. Token sayesinde aynı karar birkaç bileşende tutarlı kalır ve tema değişimi tek yerden yönetilir.
+
+Sinema'da farklı mavi tonlarının kazara çoğalması, görsel tekrarın veri tekrarı gibi bakım maliyeti taşıdığını gösterir. Önceki utility dersleri tek öğeyi biçimlendirdi; bu ders öğeler arasında paylaşılan tasarım dilini kurar.
+
 ## Karara ad ver
 
 Tailwind v4 `@theme` içindeki `--color-brand-*` değişkeninden `bg-brand-*`, `text-brand-*` utility'lerini üretir. İsim rengin görevini anlatır; tasarım değişince kullanım yerleri aynı kalır.

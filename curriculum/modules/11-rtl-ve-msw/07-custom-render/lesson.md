@@ -10,6 +10,12 @@ kind: concept
 Detay sayfası tek başına render edilince useParams boş dönüyor, Link router bağlamı bulamıyor. Her testte 15 satır kurulum yazmaya başladın.
 :::
 
+## Bileşenin ihtiyaç duyduğu bağlam
+
+Bir component Router, QueryClient veya başka Provider kullandığında onu çıplak render etmek gerçek uygulama koşullarını kurmaz. Custom render helper, testte aynı bağlamları oluşturur ve senaryonun başlangıç adresi gibi değerleri seçmeyi kolaylaştırır. Ortak hazırlık tekrarı azalır; testler hangi kullanıcı davranışını ölçtüğüne odaklanır.
+
+Sinema detayının `useParams` ve `Link` kullanması Router bağlamı gerektirir. Router dersindeki rota ağacı burada test girdisine dönüşür. Testte bellek geçmişi kullanmak, gerçek tarayıcı navigasyonuna ihtiyaç duymadan doğrudan `/movie/550` açmanı sağlar.
+
 ## İhtiyaç ve çözüm
 
 `createMemoryRouter` test URL geçmişini bellekte tutar. `RouterProvider`’ı `react-router/dom`’dan al. `renderWithRouter` ortak yardımcıda route ve UI alıp bu ikiliyi kurar; router’ı döndürürse navigation sonrası adresi de sınarsın.

@@ -10,6 +10,12 @@ kind: concept
 `releaseYear` boş tarihte doğru, ama geçerli tarihlerin yalnızca birinde doğru. Her sınır için ayrı test yazmak aynı gövdeyi tekrar ettiriyor.
 :::
 
+## Aynı kuralı farklı örneklerle sınamak
+
+Bir davranışın boş, geçerli ve sınır değerlerde nasıl çalıştığını görmek için aynı test mantığını tekrar kullanabilirsin. `it.each`, her veri satırını ayrı test olarak yürütür; hata çıktısında hangi örneğin bozulduğu görünür. Bu yöntem aynı kuralı sınayan örnekler içindir, birbirinden farklı gereksinimleri tek torbaya koymak için değil.
+
+Sinema tarih biçimlendirmesinde normal ve boş tarih aynı fonksiyonun iki önemli durumudur. İlk test ve matcher bilgisini burada örnek kümesine genişletiyorsun. Sonraki pekiştirmede sayfalama sınırlarını da aynı düşünceyle yoklayacaksın.
+
 ## Sorunu nasıl görürsün?
 
 `it.each` veri tablosundaki her satırı ayrı test yapar. Başlıkta `%s` ile girdiyi göster; kırılan satır doğrudan görünür. Bu, aynı kuralın farklı örnekleri içindir; farklı davranışlar için ayrı adlandırılmış test kullan.

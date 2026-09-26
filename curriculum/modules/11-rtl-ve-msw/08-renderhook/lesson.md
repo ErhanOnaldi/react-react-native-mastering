@@ -10,6 +10,12 @@ kind: concept
 Favoriye iki kez bastığında film listeden çıkmıyor. Hook’u normal fonksiyon gibi çağırıp test etmeye kalkınca Invalid hook call hatası alıyorsun.
 :::
 
+## Hook'un kendi sözleşmesini ölç
+
+Hook'lar yalnız React render akışında çağrılabilir; normal fonksiyon gibi doğrudan çalıştırılamaz. `renderHook` küçük bir React ortamı kurup hook'un döndürdüğü değeri ve güncellemelerini gözlemletir. Hook'un bağımsız API'si önemliyse bu uygundur; kullanıcıya görünen sonuç önemliyse component testi daha güçlü olabilir.
+
+Sinema favori hook'unun iki tıklama sonrası döndürdüğü id dizisi, kendi sözleşmesi olarak sınanabilir. Önceki userEvent dersinde ise favori düğmesinin gerçekten tıklanabilir olmasını ölçtün. Hangi sınırın hata yakalayacağını bilerek test düzeyini seç.
+
 ## İhtiyaç ve çözüm
 
 `renderHook(() => useMovieTitle(id))` hook’u küçük bir React bileşeninde çalıştırır. `result.current` son değerdir. `rerender` yeni prop’la tekrar çalıştırır; dependency array hatası görünür.

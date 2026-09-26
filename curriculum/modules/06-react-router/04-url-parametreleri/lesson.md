@@ -10,6 +10,12 @@ kind: concept
 Karttan detaya gidiyorsun ama `selectedMovie` state'i yenilemede boşalıyor. `/movie/550` adresini doğrudan açan arkadaşın Dövüş Kulübü'nü göremiyor.
 :::
 
+## Yolun değişken bölümü
+
+URL path parametresi, aynı sayfa şablonunun farklı bir kaynağı açmasını sağlar. `/movie/:id` bir rota desenidir; `/movie/550` ise bu desenin belirli film için adresidir. Router parametreyi string olarak verir, çünkü URL metindir. Sayıya çevirmek ve geçerliliğini kontrol etmek uygulamanın sorumluluğudur.
+
+Liste key'inde kullandığın film kimliği şimdi gezinme kimliği oluyor. Sinema kartına tıklayıp detay açarken yalnız component state'ine güvenirsen doğrudan URL ile gelen kişi filmi bulamaz. Parametreyi okuyup veriyi ona göre seçmek, paylaşılabilir detay sayfasının temelidir.
+
 ## Dinamik rota
 
 Rota `movie/:id` ise `/movie/550` için `useParams()` içindeki `id` değeri **`'550'` string'idir**. İsteğe sayısal id göndereceksen önce doğrula. TypeScript'in `string | undefined` uyarısı gerçek bir ihtimali gösterir: bileşen yanlış rota altında da render edilebilir.

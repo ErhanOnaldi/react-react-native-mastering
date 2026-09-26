@@ -10,6 +10,12 @@ kind: concept
 `?page=abc` ya da `?page=0` arama sayfasına geliyor. `Number(...)` tek başına `NaN` ve geçersiz aralıkları yönetmiyor.
 :::
 
+## Ham girdi ile kullanılan değer
+
+URL ve HTML form alanları çoğu zaman metin üretir; uygulama ise sayı veya başka bir biçim bekler. **Coercion** gelen değeri hedef tipe dönüştürmeyi dener, **transform** doğrulanmış değerden yeni bir çıktı üretir. Dönüştürme tek başına geçerlilik anlamına gelmez: `NaN`, sıfır veya aralık dışı sayı ayrıca reddedilmelidir.
+
+Router'da `page` değerini string olarak okudun. Sinema'nın sayfalama şeması bu dış girdiyi güvenli sayıya taşır. Tip düzeyinde de ham `z.input` ile kullanılan `z.output` ayrılabilir; sonraki form resolver dersinde bu ayrım önem kazanacak.
+
 ## Neden bu araç?
 
 URLSearchParams her zaman string ya da null döndürür. `z.coerce.number().int().min(1)` dönüşüm ve sınırı birleştirir; eksik parametreyi `undefined` olarak geçirirsen `.default(1)` kullanılabilir.

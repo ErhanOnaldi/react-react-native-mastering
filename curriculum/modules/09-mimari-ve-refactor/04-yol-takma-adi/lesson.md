@@ -10,6 +10,12 @@ kind: concept
 MovieCard taşınınca `../../../shared/lib/format` import’u bir klasör daha derine indi ve kırıldı. Aynı taşıma onlarca göreli yolu etkiliyor.
 :::
 
+## Import yolunun görevi
+
+Göreli import, dosyanın bulunduğu klasöre göre hesaplanır; derin taşımalarda `../../../` zinciri kırılganlaşabilir. Path alias belirli bir kökü kısa adla işaretler. Bu, dosyaların sahipliğini veya bağımlılık yönünü değiştirmez; yalnız yolu ifade etme biçimini sadeleştirir. Editörün tip çözümü ve bundler'ın çalışma zamanı çözümü aynı kökü bilmelidir.
+
+Sinema MovieCard taşınırken görülen hata mekanik bir yol sorunu. Önce feature sınırını doğru seçtin; şimdi taşımanın import yükünü azaltıyorsun. Alias'ı her dosya için zorunluluk saymadan, uzun ve sık taşınan yolları okunur kılmak için kullan.
+
 ## İhtiyaçtan karar
 
 `@/` kökü `src/` yap. TypeScript için `tsconfig.app.json` içindeki `paths`, Vite için `vite.config.ts` içindeki `resolve.alias` gerekir.

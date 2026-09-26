@@ -10,6 +10,12 @@ kind: concept
 Sinema v1’de detay sayfası 550’den 155’e geçince eski filmi gösteriyor. `tsc -b` temiz; `pnpm dev` açılıyor. Bir de eskiden kalmış `import MovieCard` var. Hangi satırları gözden geçireceksin?
 :::
 
+## Otomatik kod inceleme kuralı
+
+Lint, kaynak kodu çalıştırmadan inceleyip belirlenmiş kurallara uymayan yerleri raporlar. Tip kontrolü bir değerin biçimine, testler davranışa, lint ise kullanılmayan import veya eksik Hook bağımlılığı gibi kod kalıplarına bakabilir. Kuralın verdiği uyarı, nedenini anlamadan kapatılacak bir engel değil, inceleme işaretidir.
+
+Sinema'nın eski filmi göstermesi TypeScript'in tek başına yakalamadığı bir ilişki hatasıdır. Effect dersindeki dependency bilgisini artık otomatik kurala bağlıyorsun. Sonraki derslerde bu kontrolün yapılandırma ve ekip akışındaki yerini kuracaksın.
+
 ## Önce bildiğin yöntem
 
 Dosyayı elle oku; `useEffect` içinde `id` kullanılıp dependency array’de bulunmadığını ve `MovieCard` import’unun artık kullanılmadığını fark et. Bir dosyada yapılabilir. Beş sayfa ve her değişiklikte tekrar etmek zorlaşır.

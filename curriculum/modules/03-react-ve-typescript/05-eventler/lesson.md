@@ -10,6 +10,12 @@ kind: concept
 Arama kutusuna yazdığın metni almak isterken `event.target.value` için tip hatası aldın. Formdaki “Ara” düğmesi de sayfayı yeniliyor; favori işaretlerin kayboluyor.
 :::
 
+## Kullanıcı olayı ile state değişimi
+
+Event handler, kullanıcının tıklama, yazma veya gönderme gibi eylemlerine verdiğin tepkidir. React event nesnesi, olayın hangi HTML öğesiyle ilişkili olduğunu taşır; TypeScript'te öğe türünü yazmak kullanılabilir alanları doğru gösterir. Handler render sırasında çalışmaz, kullanıcı eylemi gerçekleşince çağrılır.
+
+Önceki state dersleri ekrandaki değişimin nasıl saklandığını anlattı; event ise bu değişimi başlatan sınırdır. Sinema arama formunda yazılan değeri almak ve varsayılan submit davranışını yönetmek bunun iki örneği. Semantik form kullanmak klavye ve ekran okuyucu davranışını da korur.
+
 ## Olayı kaynağında tiple
 Input değişiminde `ChangeEvent<HTMLInputElement>` kullan; metni `event.currentTarget.value` üzerinden oku. Form submit’inde `FormEvent<HTMLFormElement>` kullan ve tarayıcının varsayılan gönderimini `preventDefault()` ile durdur.
 

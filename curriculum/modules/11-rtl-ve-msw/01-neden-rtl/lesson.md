@@ -10,6 +10,12 @@ kind: concept
 Sinema testinde fetch mock sırası değişince yeşil test kırmızı oldu. Kullanıcı aynı butona basıp aynı filmi görüyor; test neden bozuldu?
 :::
 
+## Component'i kullanıcı yüzeyinden test et
+
+Saf fonksiyon testinde girdi ve dönüş değeri yeterliydi. React component'inde kullanıcı DOM'daki kontrolü görür, ona tıklar ve ekrandaki sonucu okur. React Testing Library bu yüzeyi test etmeye yarar; component'in iç state'ini veya özel callback'lerini doğrudan kurcalamayı merkeze almaz. Böylece iç düzen değişse de kullanıcı davranışı korunur.
+
+Sinema favori düğmesi yalnız `onClick` prop'u var diye çalışıyor sayılmaz. Vitest'te kurduğun beklenti düzeni burada render, erişilebilir sorgu ve kullanıcı etkileşimiyle birleşir. Sonraki MSW dersleri aynı testi ağlı ekranlara genişletecek.
+
 ## İhtiyaç ve çözüm
 
 Vitest ile fonksiyonun dönüşünü sınadın. Bileşende DOM’a bakmak gerekir. RTL’nin `render` fonksiyonu bileşeni gerçek DOM’a yerleştirir; `screen` kullanıcının gördüğü öğeleri bulur. `getByRole`, butonun rolünü ve erişilebilir adını birlikte sınar.

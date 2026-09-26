@@ -10,6 +10,12 @@ kind: concept
 TMDB 200 döndü ama `title: null`; Query başarılı saydı, detay başlığında `.toUpperCase()` çöktü.
 :::
 
+## HTTP başarısı veri başarısı değildir
+
+Sunucu 200 yanıtı verdiğinde istek protokol düzeyinde başarılıdır; JSON alanlarının uygulamanın beklentisine uyduğu henüz bilinmez. API client önce HTTP durumunu, sonra cevap gövdesinin şemaya uyumunu kontrol etmelidir. Hata bu sınırda yakalanırsa UI bozuk veriyi normal film gibi render etmeye çalışmaz.
+
+Type guard, Query ve Zod dersleri burada birleşir. Sinema detayında `title: null` gelen 200 cevabı, Query'nin otomatik olarak veri sözleşmesini kanıtlamadığını gösterir. Parse hatasının Query hata durumuna taşınması, kullanıcıya kontrollü hata ekranı sunar.
+
 ## Neden bu araç?
 
 HTTP başarısı veri şeklinin doğruluğu değildir. `response.json()` sonucunu `unknown` al, API client içinde şemayla parse et. Böylece Query hata durumuna geçer ve UI kontrollü hata gösterir.

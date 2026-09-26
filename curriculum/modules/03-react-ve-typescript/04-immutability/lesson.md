@@ -10,6 +10,12 @@ kind: concept
 Sinema’da `favoriteIds.push(movie.id)` yaptın, sonra `setFavoriteIds(favoriteIds)` çağırdın. Diziye bakınca id var; ama karttaki “Favoride” işareti güncellenmedi.
 :::
 
+## Değişikliği yeni değerle bildir
+
+Immutability, mevcut dizi veya nesneyi yerinde değiştirmeden, güncellenmiş yeni bir değer üretme ilkesidir. React state güncellemelerinde bu önemlidir; eski referansın içine `push` yapmak değişimi güvenilir biçimde bildirmez. Yeni dış nesneyi üretirken değiştirdiğin iç nesneyi de kopyalaman gerekir.
+
+State snapshot'ı önceki render'ın verisidir. Onu sonradan mutasyona uğratırsan eski ve yeni render'ın neyi gördüğü belirsizleşir. Sinema favorileri bunun görünür örneği; aynı kural form verisinde, reducer'larda ve önbelleğe alınmış nesnelerde de işe yarar.
+
 ## Yeni referans üret
 React state’i eski ve yeni değerleri karşılaştırır. Aynı dizi nesnesini geri vermek değişim sinyali değildir. Eklemede spread, çıkarmada `filter`, tek nesne değiştirmede `map` + object spread kullan.
 

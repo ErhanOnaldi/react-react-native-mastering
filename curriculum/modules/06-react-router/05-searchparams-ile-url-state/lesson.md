@@ -10,6 +10,12 @@ kind: concept
 Sinema'da `q`, `page` ve `genre` üç ayrı `useState`. "Matrix" aramasında 4. sayfaya geldin; aramayı "Dövüş" yapınca hâlâ 4. sayfadasın ve sonuç yok sanıyorsun. Yenileyince tüm filtreler siliniyor.
 :::
 
+## Adresteki görünüm durumu
+
+Path genelde hangi kaynağın açık olduğunu, query string ise o kaynağın nasıl görüntülendiğini anlatır. `?q=Matrix&page=2` gibi search parametreleri arama, filtre ve sayfalama seçimlerini URL'de taşır. Tarayıcı bunları string olarak saklar; varsayılan ve geçersiz değer politikası uygulamada belirlenir.
+
+Controlled input dersinde görünen değerin tek sahibi state idi. Paylaşılabilir arama ekranında bu sahip URL olabilir: input mevcut parametreyi gösterir, kullanıcı değiştirince adres güncellenir. Sinema örneğindeki sayfa sıfırlama kuralı, birbirine bağlı filtrelerin nasıl birlikte yönetileceğini gösterir.
+
 ## URL tek doğru kaynak olsun
 
 `useSearchParams()` mevcut query string'i okur ve adresi günceller. `q` metin, `page` ve `genre` da URL'de **string** gelir. Uygun varsayılanları ver: sayfa yoksa 1, geçersiz veya 1'den küçükse 1. Filtre değişince sayfayı 1'e döndür.

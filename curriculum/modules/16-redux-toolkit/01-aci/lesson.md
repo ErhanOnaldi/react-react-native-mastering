@@ -10,6 +10,12 @@ kind: concept
 Favori yıldızına bastın; tema düğmesinin ve izleme listesi formunun render sayacı da arttı. Beş provider iç içe olunca değişimin yayılma alanını gözden kaçırmak kolay.
 :::
 
+## Paylaşılan istemci durumunun sınırı
+
+Bir component'in state'i yalnız kendisini ilgilendiriyorsa yerelde kalabilir. Aynı bilgi çok uzak ekranlarca okunup değiştirilince ortak bir sahip gerekir. Context bu bilgiyi taşır; fakat büyük ve sık değişen tek bir değer, onu okuyan bileşenleri gereksiz yere yeniden çalıştırabilir. Redux Toolkit, güncellemeyi action ve slice sınırlarıyla düzenlemeye yarar.
+
+Sinema'daki favori ile tema farklı yaşam döngülerine sahip. Önce React Profiler ile etkiyi ölçmen, araç değişimini gerçek ihtiyaçla ilişkilendirir. Sunucu verisinin sahibi ise önceki Query modülünde kaldı.
+
 ## Sorunu çöz
 
 Context kötü bir araç değildir. Provider değeri değişince onu okuyan bileşenler yeniden render olur. Bir provider değeri büyük bir nesneyse farklı alanları okuyan tüketiciler de etkilenir. Ayrıca provider gövdesindeki çocuk ağacı kendi başına yeniden render olabilir; sayacı yorumlarken bunu ayır.

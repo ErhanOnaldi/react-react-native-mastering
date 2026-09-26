@@ -10,6 +10,12 @@ kind: concept
 Arama kutusunda hızlıca “ba” yazıp “başlangıç”a geçtin. Eski timer temizlenmezse kısa arama için istek de yola çıkar; gerçek 500 ms bekleyen testler ise yavaşlar.
 :::
 
+## Zamanı bağımlılık olarak gör
+
+Debounce gibi davranışlarda sonuç yalnız girdiyle değil geçen süreyle de belirlenir. Gerçek saati bekleyen test yavaş ve kırılgan olabilir. Fake timer testin saati kontrollü ilerletmesini sağlar; böylece tam sınır anlarını, iptal edilen eski timer'ı ve cleanup davranışını ayrı ayrı gözlersin.
+
+Hook dersinde eski arama cevabının yeniyi ezmesini engelledin. Sinema'nın debounce akışında benzer zaman yarışı timer düzeyinde yaşanır. Final değeri görmek yetmez; aradaki yanlış değerin hiç görünmediğini de sınamak gerekir.
+
 ## Sorunu nasıl görürsün?
 
 `vi.useFakeTimers()` saati senin kontrolüne verir. `vi.advanceTimersByTime(499)` henüz güncellenmemeli; bir milisaniye sonra son değer gelmeli. `vi.useRealTimers()` temizliği unutma.

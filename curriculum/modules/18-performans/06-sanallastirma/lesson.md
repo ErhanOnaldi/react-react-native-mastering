@@ -10,6 +10,12 @@ kind: concept
 Filtre hızlı olsa bile 500 `li` tarayıcının yerleşim işini artırıyor. Ekranda 8 film görünürken neden 500 DOM düğümü tutalım?
 :::
 
+## Görünen kadar DOM üret
+
+Virtualization, uzun bir listede yalnız görünür satırları ve çevresindeki küçük tamponu DOM'da tutar. Toplam kaydırma alanı korunur; kullanıcı listede ilerledikçe oluşturulan satırlar değişir. Bu, tarayıcının yerleşim ve boyama yükünü azaltır, veri getirme veya sıralama algoritmasını değiştirmez. Kararlı öğe kimliği yine gerekir.
+
+Sinema'nın 500 filmi bu tekniğin nedenini görünür kılar. Önceki `key` dersi, filtre değişince aynı satırın başka filme dönüşmemesi için burada da geçerlidir. Query sayfalaması ağdaki parça sayısını, virtualization ise ekrandaki DOM sayısını yönetir.
+
 ## Görünen aralık
 `useVirtualizer({ count, getScrollElement, estimateSize, overscan })` görünür indeksleri verir. `getTotalSize()` kaydırma alanının yüksekliğini korur; her `virtualItem.start` satırı doğru konuma yerleştirir.
 
