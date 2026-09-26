@@ -1,0 +1,1 @@
+`/search?q=matrix` adresini aç. Arama bağlantısından `q=dovus` adresine git ve hemen tarayıcının geri tuşuna bas. Adres yeniden `q=matrix` olsa da biraz sonra listede “Dövüş Kulübü” beliriyor. Önizlemedeki bağlantı ve geri düğmesiyle bunu tekrar et. `SearchPage.tsx` içindeki `SearchPage`, geri dönüşten sonra adresin anlattığı sonucu göstermeli.

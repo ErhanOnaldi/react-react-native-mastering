@@ -1,0 +1,1 @@
+Önizlemede önce 550 numaralı “Dövüş Kulübü” açılıyor. “Başlangıç'a geç” düğmesine basınca aynı sayfa açık kalıyor; film kimliği 27205'e dönüyor ama bir süre daha eski başlık görünüyor ve yeni detay gelmiyor. İki film arasında tekrar gidip gelerek belirtinin sürdüğünü gör. `MovieDetail.tsx` içindeki `MovieDetail` bu akışta doğru filmi göstermeli.

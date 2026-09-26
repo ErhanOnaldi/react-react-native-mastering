@@ -1,0 +1,1 @@
+Önizlemede “Dövüş” yaz, hemen alanı “Matrix” olarak değiştir. “Matrix” sonucu önce geliyor; biraz sonra eski “Dövüş Kulübü” onu ekrandan siliyor. Bu sırada iki arama isteği de gönderilmiş oluyor. `MovieSearch.tsx` içindeki `MovieSearch` üzerinde bu akışı tekrar edip ekranda son yazdığın aramanın sonucunu bırak.

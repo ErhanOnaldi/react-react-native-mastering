@@ -1,0 +1,1 @@
+Önizlemede ilk film “Dövüş Kulübü”. “Başlangıç” düğmesine basınca seçim değişiyor, fakat özet hâlâ ilk filmin süresini ve başlığını anlatıyor. Aynı sayfada birkaç kez film değiştirerek hatayı tekrar et. `MovieSummary.tsx` içindeki `MovieSummary` bu belirtiden kurtulmalı.
