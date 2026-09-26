@@ -27,3 +27,6 @@ workspace/
 
 # Claude Code yerel durum
 .claude/scheduled_tasks.lock
+
+# Öğrencinin kendi projeleri (pnpm setup:projects ile oluşturulur)
+/projects/*/

@@ -8,10 +8,12 @@ Sektör standardında React öğrenmek için yerelde çalışan, LeetCode tarzı
 
 ## Kurulum
 
-Gereksinimler: Node.js 24+, pnpm 10+.
+Gereksinimler: Node.js 24+, pnpm 10+ (`corepack enable` pnpm'i açar). macOS ve Linux'ta çalışır; Windows'ta WSL kullan.
 
 ```bash
 pnpm install
+pnpm setup:projects               # projects/sinema'yı başlangıç iskeletinden oluşturur
+pnpm install                      # yeni projenin bağımlılıklarını bağlar
 npx playwright install chromium   # 21. modül (E2E testleri) için, bir kez
 ```
 
