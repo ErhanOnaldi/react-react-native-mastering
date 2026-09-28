@@ -1,5 +1,20 @@
-Yan menü yalnız başlık ister; detaylı TMDB cevap nesnesini UI’ye taşımak gereksiz.
+Popüler filmlerin başlıklarını gösterirken tam API cevabını cache’de kullanılabilir bırak.
 
-## İstenen
+## Gereksinimler
 
-`MovieTitles` popüler filmleri Bearer ile alsın. `useQuery` içinde `select` ile `results` alanını `string[]` başlıklara dönüştürsün ve `<ol>` içinde göster. Cache’de ham API cevabı kalmalı. Yükleme ve HTTP hata dallarını da göster.
+- Popüler filmleri al ve başlıklarını sıralı `<ol>` içinde göster.
+- Beklerken yükleme metni, HTTP hatasında görünür hata göster.
+- Başlık görünümü hazırlanırken cache’deki cevap `results` nesnelerini ve film id’lerini korusun.
+
+## Örnek
+
+Başarılı yanıttaki ilk film `Örümcek-Adam: Yepyeni Bir Gün` olarak görünür; cache’te aynı filmin `id` değeri `969681` kalır.
+
+## Sözleşme
+
+- `MovieTitles.tsx` dosyasından `MovieTitles()` named export edilir.
+- Listedeki her film başlığı görünür metindir.
+
+## Kısıtlar
+
+- İstek `Authorization: Bearer test-token` ve `language=tr-TR` taşır.

@@ -1,59 +1,60 @@
 ---
 title: "Gereksinimler: “bitti” ne demek?"
-minutes: 10
+minutes: 11
 kind: project
 ---
 
 # Gereksinimler: “bitti” ne demek?
 
 :::pain[Problem]
-Sinema v1’i (7. modül) yazarken kimse sana şunları sormadı: *Arama kutusu boşken ne gösterilecek? Posteri olmayan filmde ne olacak? Olmayan bir film id’si açılınca?* Bu soruların cevabını kodu yazarken, tek tek **bug olarak** keşfettin — `NOTES.md` acı günlüğün bunlarla doldu.
+Sinema projesini geliştirirken acı günlüğün (`NOTES.md`) beklenmedik sürprizlerle dolmuştu: *Arama kutusu boşken ne olacak? Posteri olmayan filmde kırık resim mi görünecek? Olmayan bir film kimliği açılınca sayfa çökecek mi?* Bu soruların cevabını kodu yazarken, tek tek **hata olarak** keşfettin.
 
-Sorun kodda değildi: “bitti” kelimesinin ne demek olduğu hiç yazılmamıştı. Tanımı olmayan bir işi ne bitirebilirsin ne de test edebilirsin.
+Sorun kod yazma yeteneğinde değildi: “bitti” kelimesinin ne anlama geldiği ve sınır durumlarında ne beklendiği baştan yazılmamıştı. Tanımı net olmayan bir işi ne güvenle bitirebilirsin ne de doğru test edebilirsin.
 :::
 
-Bu derste henüz tek satır kod yazmıyorsun. Müşterinin belirsiz isteğini, herkesin aynı şekilde anladığı ve **test edilebilen** bir belgeye çeviriyorsun: `REQUIREMENTS.md`.
+Bu derste henüz tek satır kod yazmıyorsun. Müşterinin belirsiz isteğini, ekipteki herkesin aynı şekilde anladığı, kenar durumlarını, güvenlik sınırlarını ve yayına hazırlık şartlarını içeren **test edilebilir** bir belgeye çeviriyorsun: `REQUIREMENTS.md`.
 
 ## Müşteriden gelen mesaj
 
-> “Kitap okumayı seviyorum ama neyi okuduğumu, neyi okumak istediğimi hep unutuyorum. Bir kitabı arayıp detayına bakabileceğim, ‘okumak istiyorum / okuyorum / okudum’ diye işaretleyip kısa not düşebileceğim sade bir uygulama istiyorum. Open Library’nin ücretsiz bir API’si var, anahtar istemiyor. Telefonda da rahat açılsın. Hesap, giriş falan istemem; bu tarayıcıda kalsın yeter.”
+Bir sabah ürün sahibinden şu mesajı aldın:
 
-Güzel bir mesaj. Ama içinde tek bir ölçülebilir cümle yok. “Sade” ne kadar sade? “Rahat açılsın” neyle ölçülür? Arama kaç sonuç gösterir?
+> “Kitap okumayı seviyorum ama neyi okuduğumu, neyi okumak istediğimi hep unutuyorum. Bir kitabı arayıp detayına bakabileceğim, ‘okumak istiyorum / okuyorum / okudum’ diye işaretleyip kısa not düşebileceğim sade bir uygulama istiyorum. Open Library’nin ücretsiz bir API’si var, anahtar da istemiyor. Telefonda da rahat açılsın. Hesap, giriş falan istemem; bu tarayıcıda kalsın yeter.”
 
-## Belirsizden ölçülebilire
+Bu mesaj iyi bir başlangıçtır ancak içinde tek bir ölçülebilir cümle yoktur. “Sade” ne kadar sade? “Rahat açılsın” neyle ölçülür? Arama kutusuna her harf yazıldığında istek atılacak mı? Güvenlik nasıl sağlanacak?
 
-İyi bir gereksinim **doğru ya da yanlış** diye kontrol edilebilir. Kontrol edemiyorsan, test de yazamazsın.
+## Belirsizden ölçülebilire dönüşüm
 
-| Belirsiz | Ölçülebilir |
-| --- | --- |
-| “Arama hızlı olsun.” | Aynı arama 5 dakika içinde tekrar açılırsa **yeni istek atılmaz**. |
-| “Kullanıcı dostu hata mesajı.” | Sunucu hatasında `role="alert"` bir uyarı ve **“Tekrar dene”** butonu görünür. |
-| “Liste kaybolmasın.” | Liste `localStorage`’da saklanır; sayfa yenilenince geri gelir; bozuk kayıt uygulamayı çökertmez. |
-| “Sayfalama olsun.” | Sayfa başına 10 sonuç; “Sayfa 2 / 5”; ilk sayfada “Önceki” pasif. |
+İyi bir gereksinim **doğru ya da yanlış** diye nesnel olarak kontrol edilebilir. Kontrol edemediğin bir iddiaya otomatik test yazamazsın.
 
-## Kullanıcı hikâyesi + kabul kriterleri
+| Belirsiz talep | Ölçülebilir kabul kriteri | Doğrulama yöntemi |
+| --- | --- | --- |
+| “Arama hızlı olsun.” | Aynı arama ve sayfa için 5 dakika içinde tekrar açıldığında **ağdan yeni istek atılmaz**, önbellekten sunulur. | Ağ istek sayacı kontrolü |
+| “Kullanıcı dostu hata mesajı.” | Sunucu hatasında `role="alert"` içeren bir uyarı ve **“Tekrar dene”** butonu görünür; butona basınca istek yinelenir. | RTL rol ve metin sorgusu |
+| “Liste kaybolmasın.” | Liste `localStorage` üzerinde saklanır; sayfa yenilenince geri gelir; bozuk JSON kaydı uygulamayı çökertmez. | Depolama okuma ve hata testi |
+| “Sayfalama olsun.” | Sayfa başına 10 sonuç; “Sayfa 2 / 5” metni; ilk sayfada “Önceki”, son sayfada “Sonraki” pasif (`aria-disabled="true"`). | UI etkileşim testi |
+| “Uygulama güvenli olsun.” | Dış API'den gelen veya kullanıcının girdiği metinler asla ham HTML olarak yorumlanmaz; dış bağlantılarda `rel="noreferrer"` bulunur; kodda sır saklanmaz. | Güvenlik statik analizi |
 
-Sektörün ortak dili iki parçadır:
+## Kabul kriterleri ve test bağlantısı
 
-**Kullanıcı hikâyesi** — kim, ne istiyor, *neden*:
+Sektörde iş gereksinimleri genellikle iki temel parçayla ifade edilir:
 
-> **Kullanıcı olarak** kitap adı ya da yazarla arama yapmak istiyorum, **çünkü** aklımdaki kitabı bulmak istiyorum.
-
-“Çünkü” kısmı süs değil: bir özelliği kesip kesmemeye karar verirken bakacağın yer orası.
-
-**Kabul kriterleri** — hikâyenin “bitti” sayılması için doğru olması gerekenler. En net yazım *Diyelim ki / … yaptığımda / … görürüm* (İngilizcesi **Given / When / Then**):
+1. **Kullanıcı hikâyesi:** Kim, ne istiyor ve *neden*?
+   > **Kullanıcı olarak** kitap adı ya da yazarla arama yapmak istiyorum, **çünkü** ilgilendiğim kitabı hızla bulmak istiyorum.
+2. **Kabul kriterleri:** Hikâyenin tamamlanmış sayılması için doğrulanması gereken koşullar. En kesin format **Given / When / Then** (Diyelim ki / ... yaptığımda / ... görürüm) yapısıdır:
 
 ```text
-K-5  Diyelim ki arama kutusu boş ya da sadece boşluk içeriyor,
-     Enter'a bastığımda,
-     hiçbir istek atılmaz ve sayfa değişmez.
+K-5  Diyelim ki arama kutusu boş veya yalnızca boşluklardan oluşuyor,
+     Kullanıcı "Ara" butonuna bastığında,
+     Ağ üzerinden hiçbir istek atılmaz ve mevcut arayüz/URL değişmez.
 ```
 
-Bu cümle neredeyse bir test adı: `it('boş ya da sadece boşluk içeren aramada istek atmaz')`. 6. derste kendi testlerini yazarken kriterlerini **test başlığı** olarak kullanacaksın.
+Bu ifade doğrudan çalıştırılabilir bir test cümlesine dönüşür: `it('boş ya da sadece boşluk içeren aramada istek atmaz', ...)`.
 
-## Önce veriyi tanı
+![Gereksinimden teste giden doğrulama adımları](diagram:test-anatomisi)
 
-Gereksinimleri kafadan yazma; önce API’nin gerçekte ne döndürdüğüne bak. Terminalde dene (Open Library anahtar istemez):
+## API verisini önceden keşfetmek
+
+Gereksinimleri varsayımlarla yazamazsın; önce entegre olacağın API’nin gerçekte ne döndürdüğünü incelemelisin. Open Library anahtar istemediği için uç noktaları terminalde doğrudan deneyebilirsin:
 
 ```bash
 curl 'https://openlibrary.org/search.json?q=dune&limit=2&fields=key,title,author_name,first_publish_year,cover_i'
@@ -61,62 +62,60 @@ curl 'https://openlibrary.org/works/OL893414W.json'
 curl 'https://openlibrary.org/authors/OL79034A.json'
 ```
 
-Kısaltılmış bir arama cevabı:
+Bu çağrılar sana belgende mutlaka yer alması gereken şu **kenar durumlarını** gösterir:
 
-```json
-{
-  "numFound": 48232,
-  "docs": [
-    {
-      "key": "/works/OL893414W",
-      "title": "Dune",
-      "author_name": ["Frank Herbert"],
-      "first_publish_year": 1965,
-      "cover_i": 11481354
-    },
-    { "key": "/works/OL12943962W", "title": "Suc ve ceza", "author_name": ["Фёдор Михайлович Достоевский"] }
-  ]
-}
-```
+- Bazı kitaplarda `cover_i` alanı tanımsızdır veya eser kaydındaki `covers` dizisinde "kapak yok" anlamında `-1` döner. Kırık resim göstermek yerine nötr bir yer tutucu gösterilmelidir.
+- `author_name` eksik olabilir ya da Kiril alfabesi gibi farklı alfabelerle gelebilir.
+- Eserin `description` alanı bazen düz metin, bazen `{ "type": "/type/text", "value": "..." }` nesnesi olarak gelir. UI bu iki biçimi de zarifçe karşılamalıdır.
+- Eser kaydında yazarın adı doğrudan yer almaz; yalnızca yazar anahtarı (`/authors/OL79034A`) bulunur. Bu ikinci istek 404 dönerse bile ana eser ekranı çökmeyip "Yazar bilinmiyor" demelidir.
+- `numFound` değeri 48.000 gibi yüksek sayılara ulaşabilir. Sayfa sayısını istemci tarafında formülle hesaplaman gerekir (`Math.ceil(total / 10)`).
 
-Birkaç dakikalık `curl` sana şunları söyler — hepsi birer **kenar durumu** ve gereksinim belgesine girmeli:
+## Sabit sözleşme kuralları
 
-- Bazı kitaplarda `cover_i` **hiç yok**; eser kaydındaki `covers` dizisinde “kapak yok” anlamında `-1` olabiliyor.
-- `author_name` eksik olabiliyor; olduğunda bile Kiril alfabesiyle gelebiliyor.
-- Eserin `description` alanı bazen düz metin, bazen `{ "type": "/type/text", "value": "..." }` **nesnesi**.
-- Yazar bilgisi eser kaydında yok, sadece anahtarı var (`/authors/OL79034A`) → ikinci bir istek gerekiyor; o istek 404 dönebiliyor.
-- `numFound` 48.232 olabiliyor; sayfa sayısını sen hesaplıyorsun (`total_pages` yok — TMDB’den farkı).
-- Cevaplar 1–3 saniye sürebiliyor.
+Gerçek hayatta projeye başladığında bazı sınırlar tasarım sistemi veya altyapı ekibi tarafından önceden kararlaştırılmıştır. Kitaplık için de aşağıdaki sözleşme maddeleri sabittir:
 
-:::tip[Sözlük yaz]
-Open Library’de bir **eser** (work, “Dune”) ile onun yüzlerce **baskısı** (edition) ayrı kayıtlardır. Belgenin başına küçük bir sözlük koy: ekipteki herkes “kitap” derken aynı şeyi kastetsin.
-:::
-
-## Sabit sözleşme: ekibin önceden verdiği kararlar
-
-Gerçek projelerde bazı kararlar sen gelmeden verilmiştir: tasarımcı metinleri yazmış, backend adresleri belirlemiş. Kitaplık’ta da öyle. Aşağıdakiler **değişmez**; platformun testleri bunlara bakar. Geri kalan her şey (klasör yapısı, state yönetimi, bileşenler, stil) **senin kararın**.
-
-| Konu | Karar |
+| Konu | Karar ve kural |
 | --- | --- |
-| Adresler | `/` ana sayfa · `/search?q=dune&page=2` arama · `/works/OL893414W` eser detayı · `/reading-list?status=read` okuma listem (`status`: `want`, `reading`, `read`) · diğer her adres “Sayfa bulunamadı” |
-| Arama | Form gönderilince (Enter / “Ara”) yapılır, yazarken değil. Sayfa başına **10** sonuç: `GET https://openlibrary.org/search.json?q=…&page=…&limit=10` |
-| Detay | `GET /works/{id}.json`, yazarlar için `GET /authors/{id}.json` |
-| Kapaklar | `https://covers.openlibrary.org/b/id/{cover_id}-M.jpg` (`S`, `M`, `L` boyutları) |
-| Okuma listesi | Tarayıcıda, `localStorage` anahtarı `kitaplik:reading-list` |
-| Arayüz metinleri | Ana sayfa h1 **Kitaplık** · arama kutusu etiketi **Kitap ara**, buton **Ara** · **Önceki / Sonraki**, **Sayfa 2 / 5** · **Tekrar dene** · **Yazar bilinmiyor** · **Açıklama yok.** · **Kitap bulunamadı** · menüde **Okuma listem (n)** |
+| Adresler | `/` (ana sayfa), `/search?q=dune&page=2` (arama), `/works/OL893414W` (eser detayı), `/reading-list?status=read` (okuma listesi; durumlar: `want`, `reading`, `read`), diğer tüm yollar için "Sayfa bulunamadı". |
+| Arama akışı | Arama metin kutusuna yazarken değil, form gönderilince (Enter veya "Ara" butonu) yapılır. Sayfa başına **10** sonuç listelenir. |
+| Detay ve kapak | Eser için `GET /works/{id}.json`, yazar için `GET /authors/{id}.json`. Kapaklar: `https://covers.openlibrary.org/b/id/{cover_id}-M.jpg`. |
+| Okuma listesi | Tarayıcıda yerel saklanır; `localStorage` anahtarı **`kitaplik:reading-list`** olarak kullanılır. |
+| Arayüz metinleri | Başlık **Kitaplık** · arama etiketi **Kitap ara**, buton **Ara** · **Önceki / Sonraki**, **Sayfa 2 / 5** · **Tekrar dene** · **Yazar bilinmiyor** · **Açıklama yok.** · **Kitap bulunamadı** · menüde **Okuma listem (n)**. |
 
-Metinlerin tamamı ilgili görevlerde tekrar listelenecek; şimdilik belgeye kararların kendisini yaz.
+## Güvenlik ve yayına hazırlık kriterleri
 
-## İşlevsel olmayan gereksinimler ve kapsam dışı
+Gereksinim belgesi sadece mutlu kullanıcı yolunu değil, savunma ve dağıtım gereksinimlerini de açıkça tanımlamalıdır:
 
-“Ne yapacak?”ın yanında “**nasıl** olacak?” da gereksinimdir: erişilebilirlik (her alanın etiketi var, hatalar duyuruluyor), mobil (360 px’te yatay kaydırma yok), gizlilik (veri tarayıcıdan çıkmıyor), **API nezaketi** (gönüllü bir servisi her tuşta yormamak).
+1. **Güvenlik kriterleri:**
+   - **XSS önleme:** Dış API'den gelen kitap açıklamaları veya kullanıcı notları kesinlikle `dangerouslySetInnerHTML` veya kontrolsüz DOM manipülasyonu ile ekrana basılamaz. React'in varsayılan metin kaçışlama mekanizmasına güvenilmelidir.
+   - **Güvenli dış bağlantılar:** Open Library veya kaynak sayfalarına verilen tüm dış linklerde `rel="noreferrer"` (veya `rel="noopener noreferrer"`) özniteliği zorunludur.
+   - **Sır saklama:** İstemci tarafı kodunda ve Vite bundle'ında hiçbir özel gizli anahtar veya yetkili API parolası saklanamaz.
 
-En az onun kadar önemli bir bölüm: **kapsam dışı**. “Hesap ve giriş yok, cihazlar arası eşitleme yok, sonsuz kaydırma yok.” Bunu yazmazsan her toplantıda yeni bir özellik “küçük bir ekleme” olarak içeri sızar (*scope creep*).
+2. **Yayına hazırlık kriterleri:**
+   - **SPA fallback:** Statik barındırma sunucusunda tüm derin yolların (`/search`, `/works/:id`, `/reading-list`) `index.html` dosyasına yönlenmesi şarttır.
+   - **Cache başlıkları:** Vite tarafından üretilen hash'li varlıklar (`/assets/*.js`, `*.css`) için uzun süreli değişmez cache (`max-age=31536000, immutable`), kök `index.html` için ise her ziyarette tazelik denetimi yapan `no-cache` kuralı belgelenmelidir.
+   - **Hata raporlama:** Çalışma zamanında yakalanmayan beklenmedik hatalar arayüzü beyaz ekrana boğmamalı; bir hata sınırı (ErrorBoundary) ile yakalanıp konsola veya izleme servisine bildirilmelidir.
 
-:::mistake
-Gereksinim belgesine **çözüm** yazmak: “Okuma listesi Redux’ta tutulur.” Bu bir gereksinim değil, mimari karardır ve bir sonraki dersin konusu (ADR). Gereksinim *ne* ve *neden*i söyler; *nasıl*ı ekip seçer. Karışırsa, yarın Redux’tan vazgeçtiğinde gereksinim belgen yanlış hale gelir.
+:::mistake[Gereksinime mimari çözüm yazmak]
+**Belirti:** Gereksinim belgesinde “Okuma listesi Redux Toolkit ile tutulacak” veya “Veri çekmek için TanStack Query kullanılacak” ifadelerinin yer alması.  
+**Neden:** Gereksinim *ne* yapılacağını ve *neden* istendiğini anlatır; *nasıl* yapılacağı mimari kararların (ADR) konusudur.  
+**Düzeltme:** Kütüphane isimlerini belgeden çıkar; işlevsel davranışı yaz: “Okuma listesi tarayıcıda kalıcı olarak saklanır, sayfa yenilendiğinde veriler korunur.”
 :::
 
-:::sector
-Şirketlerde bu belgenin adı değişir — PRD (*product requirements document*), “spec”, Jira’daki epic’ler — ama iskelet aynıdır: amaç, kullanıcı, hikâyeler, kabul kriterleri, kapsam dışı, açık sorular. BDD kullanan ekipler kabul kriterlerini Gherkin (`Given/When/Then`) diliyle yazıp doğrudan otomatik teste çevirir. “Bitti tanımı” (*Definition of Done*) da çoğu ekipte yazılı bir sözleşmedir: “kriterler testlerle kanıtlandı, review’dan geçti, CI yeşil.”
+:::sector[Sektörde gereksinim ve Definition of Done]
+Yazılım ekiplerinde bu belge PRD (*Product Requirements Document*), ürün şartnamesi veya Jira Epic'leri şeklinde yaşar. Bir özelliğin kodlanması bitmeden önce "Bitti Tanımı" (*Definition of Done - DoD*) devreye girer: "Tüm kabul kriterleri otomatik testlerle kanıtlandı, güvenlik kontrolleri geçti, linter ve tip kontrolü sıfır hatayla tamamlandı, CI hattı yeşil yandı."
 :::
+
+## Özet
+
+- Gereksinim belgesi (`REQUIREMENTS.md`), belirsiz ürün isteklerini ölçülebilir ve test edilebilir kriterlere dönüştürür.
+- Kabul kriterleri *Given / When / Then* yapısıyla yazıldığında doğrudan test senaryolarına kaynaklık eder.
+- API'nin gerçek yanıtları curl ile incelenmeli; eksik kapak, kayıp yazar ve farklı açıklama formatları gibi kenar durumları baştan tanımlanmalıdır.
+- Güvenlik (XSS koruması, güvenli bağlantılar, sırsız mimari) ve yayına hazırlık (SPA fallback, cache politikası) gereksinim belgesinin ayrılmaz parçasıdır.
+
+### Kendini yokla
+
+1. **Soru:** “Arama sayfası hızlı ve kullanıcı dostu olmalı” cümlesi neden kötü bir kabul kriteridir?  
+   **Cevap:** Çünkü “hızlı” ve “kullanıcı dostu” ifadeleri kişiseldir ve ölçülemez. Otomatik bir test bu cümleyi doğrulayamaz. Bunun yerine "Arama sonuçları 10'lu sayfalarda sunulur, hata durumunda Tekrar dene butonu görünür" gibi ikili (doğru/yanlış) doğrulanabilir kurallar yazılmalıdır.
+2. **Soru:** Güvenlik ve yayına hazırlık maddeleri neden kodlama bittikten sonra değil de gereksinim aşamasında belgelenir?  
+   **Cevap:** SPA yönlendirmesi veya XSS kaçışlaması sonradan akla gelirse mimariyi ve test kurgusunu baştan değiştirmek gerekir. Erken tanımlamak, hem test stratejisini hem de dağıtım yapılandırmasını en baştan sağlam kurmayı sağlar.

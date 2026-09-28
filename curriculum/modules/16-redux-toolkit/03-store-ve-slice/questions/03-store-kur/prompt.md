@@ -1,7 +1,17 @@
-# Store’u birleştir
+Uygulama iki bağımsız ortak veriyi tek store üzerinden kullanmalı: kayıt kimlikleri ve görünüm tercihi.
 
-Favoriler hazır; tema da eklendiğinde `setupStore()` ikisini taşımalı. `add(550)` ve `toggle()` sonrası state `{ favorites: { ids: [550] }, ui: { theme: "dark" } }` olmalı.
+## Gereksinimler
 
-## İstenen davranış
+- `setupStore()` başlangıçta `{ favorites: { ids: [] }, ui: { theme: "light" } }` döndürür.
+- Bir kayıt ekleme ve temayı koyuya alma işlemlerinden sonra state `{ favorites: { ids: [550] }, ui: { theme: "dark" } }` olur.
+- Her `setupStore()` çağrısı bağımsız başlangıç state’i olan yeni bir store üretir.
 
-Testlerdeki Türkçe adları gereksinim listesi olarak oku. Starter derlenir; davranışı tamamlaman gerekiyor.
+## Örnek
+
+Bir store’da kayıt ekleyip temayı değiştirdikten sonra ikinci bir store oluştur. İkinci store’un kayıt listesi boş ve teması açık olmalı.
+
+## Sözleşme
+
+- Dosya: `store.ts`
+- Export: `setupStore()`; hazır slice action’ları `add(id: number)` ve `toggle()` import edilir.
+- Store kök anahtarları: `favorites` ve `ui`.

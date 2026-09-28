@@ -7,6 +7,7 @@ export default defineQuestion({
   concepts: ['test.vitest-basics', 'test.aaa', 'test.matchers', 'js.string-formatting'],
   files: ['formatVote.test.ts'],
   hints: [
+    'Her testin hangi gözlenebilir çıktıyı güvenceye aldığını önce adlandır.',
     'Önce tam sayı ve henüz oy verilmemiş durumu ayrı senaryo say.',
     '`@impl/formatVote` import et ve `expect(...).toBe(...)` yaz.',
     '`formatVote(8)` için `"8.0"`, `formatVote(0)` için `"Henüz oy yok"` bekle.',

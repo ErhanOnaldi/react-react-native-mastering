@@ -7,6 +7,7 @@ export default defineQuestion({
   concepts: ['test.each', 'test.matchers', 'fetch.query-params'],
   files: ['pageSlice.test.ts'],
   hints: [
+    'Hangi yanlış sayfa diliminin kullanıcıya benzer uzunlukta sonuç verebileceğini düşün.',
     'İkinci sayfanın ilk öğesini ve son sayfanın uzunluğunu sınayan veri kur.',
     '`pageSlice(items, page, 20)` için 41 id kullan; istersen `it.each` ile sayfaları ayır.',
     'Sayfa 2 ilk id 21, sayfa 3 tek id 41 olmalı.',

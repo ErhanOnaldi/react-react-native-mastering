@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420">
+  <title>HTTP cache karar akışı</title>
+  <defs>
+    <marker id="ok-cache-karar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-cache-karar-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-accent" x="300" y="20" width="160" height="50" rx="8"/>
+  <text class="d-title" x="380" y="50" text-anchor="middle">Cache girdisi</text>
+
+  <rect class="d-box" x="300" y="110" width="160" height="64" rx="8"/>
+  <text class="d-title" x="380" y="136" text-anchor="middle">Taze mi?</text>
+  <text class="d-code" x="380" y="158" text-anchor="middle">yaş &lt; max-age</text>
+
+  <rect class="d-success" x="80" y="110" width="170" height="64" rx="8"/>
+  <text class="d-title" x="165" y="136" text-anchor="middle">Evet: cache'ten ver</text>
+  <text class="d-muted" x="165" y="158" text-anchor="middle">ağ isteği yok</text>
+
+  <rect class="d-warning" x="510" y="110" width="170" height="64" rx="8"/>
+  <text class="d-title" x="595" y="136" text-anchor="middle">Hayır: bayat</text>
+  <text class="d-code" x="595" y="158" text-anchor="middle">If-None-Match: etag</text>
+
+  <rect class="d-violet" x="510" y="214" width="170" height="64" rx="8"/>
+  <text class="d-title" x="595" y="240" text-anchor="middle">Sunucu</text>
+  <text class="d-muted" x="595" y="262" text-anchor="middle">ETag hâlâ aynı mı?</text>
+
+  <rect class="d-success" x="420" y="344" width="150" height="64" rx="8"/>
+  <text class="d-title" x="495" y="370" text-anchor="middle">304</text>
+  <text class="d-muted" x="495" y="392" text-anchor="middle">saklı gövde geçerli</text>
+
+  <rect class="d-success" x="600" y="344" width="150" height="64" rx="8"/>
+  <text class="d-title" x="675" y="370" text-anchor="middle">200</text>
+  <text class="d-muted" x="675" y="392" text-anchor="middle">yeni gövde saklanır</text>
+
+  <line class="d-line" x1="380" y1="70" x2="380" y2="106" marker-end="url(#ok-cache-karar)"/>
+  <line class="d-line-accent" x1="300" y1="142" x2="254" y2="142" marker-end="url(#ok-cache-karar-accent)"/>
+  <line class="d-line" x1="460" y1="142" x2="506" y2="142" marker-end="url(#ok-cache-karar)"/>
+  <line class="d-line" x1="595" y1="174" x2="595" y2="210" marker-end="url(#ok-cache-karar)"/>
+  <line class="d-line-accent" x1="565" y1="278" x2="512" y2="340" marker-end="url(#ok-cache-karar-accent)"/>
+  <line class="d-line-accent" x1="625" y1="278" x2="668" y2="340" marker-end="url(#ok-cache-karar-accent)"/>
+  <text class="d-muted" x="523" y="314" text-anchor="end">değişmedi</text>
+  <text class="d-muted" x="662" y="314" text-anchor="start">değişti</text>
+</svg>

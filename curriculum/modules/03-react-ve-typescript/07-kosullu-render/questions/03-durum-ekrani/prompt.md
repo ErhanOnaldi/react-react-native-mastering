@@ -1,3 +1,19 @@
-Önceki modülün `RemoteData<T>` union’ını bu kez JSX’te kullan. Bu görevdeki dört durum: `{status:'idle'}`, `{status:'loading'}`, `{status:'error', message:string}`, `{status:'success', data:{id:number,title:string}[]}`. `RemoteView({ state })` idle → “Arama yap”, loading → “Yükleniyor”, error → `role="alert"` içinde mesaj, success → film başlıkları listesi; boş success → “Film bulunamadı” göstersin. Fetch yazma; durumlar props olarak geliyor.
+Arama ekranı, hazır durum bilgisine göre uygun kullanıcı mesajını veya film listesini göstermeli. Uzak istek başlatma; bileşene gelen state'i sun.
 
-**Örnek:** `{ status: "error", message: "Bağlantı yok" }` → alert içinde “Bağlantı yok”.
+## Gereksinimler
+
+- Idle → “Arama yap”; loading → “Yükleniyor” göster.
+- Error durumunda hata mesajı `alert` rolüyle görünmelidir.
+- Başarı durumunda film başlıkları listelenmelidir.
+- Başarı verisi boşsa “Film bulunamadı” görünmelidir.
+- Dört durum birbirinden farklı ve doğru görünmelidir.
+
+## Örnek
+
+`{ status: "error", message: "Bağlantı yok" }` → alert içinde “Bağlantı yok”.
+
+## Sözleşme
+
+- Dosya ve export: `RemoteView.tsx` → named export `RemoteView`
+- Props: `{ state: RemoteData<{ id: number; title: string }[]> }`; `RemoteData` dört status'lu discriminated union olarak starter'da tanımlıdır.
+- Arayüz: başarı listesi `li` öğeleri olarak görünür.

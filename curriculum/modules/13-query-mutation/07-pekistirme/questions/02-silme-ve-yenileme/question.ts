@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['query.invalidation', 'query.useMutation', 'query.keys'],
   files: ['useDeleteRating.ts'],
   hints: [
-    'useQueryClient ile client al.',
-    'onSuccess içinde sessionId’li rating key’ini invalidate et.',
-    'Callback Promise döndürsün.',
+    'Başarılı ve başarısız DELETE sonrası cache’in farklı davranması gerektiğini ayır.',
+    '`useQueryClient` ve mutation callback’lerini kullan.',
+    '`onSuccess` içinde `client.invalidateQueries({ queryKey: ["ratings", sessionId] })` döndür.',
+    'Invalidation’ı `onError` veya `onSettled` içine koyma; hata eski listeyi korumalı.',
   ],
 })

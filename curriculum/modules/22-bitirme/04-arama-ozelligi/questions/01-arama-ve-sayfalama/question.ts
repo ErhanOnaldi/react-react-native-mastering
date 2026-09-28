@@ -30,8 +30,9 @@ export default defineQuestion({
     'Bileşenler küçük ve tek sorumluluklu mu (form, liste, kart, sayfalama ayrı)?',
   ],
   hints: [
-    'Sorgu URL’deyken aynı sayfa yenilendiğinde arama nasıl yeniden kurulmalı? Boş sorguda istek olmamalı.',
-    'Veri katmanı için openLibraryGet → searchBooks → bookQueries.search() kurabilirsin. Sayfada useQuery ve keepPreviousData ile sayfa geçişini yönet.',
-    'readSearchParams(searchParams) ile q/page oku; useQuery içinde enabled: q.length > 0 kullan. Retry varsayılanını createQueryClient içinde ayarla. Form gönderiminde trim edilmiş q değerini URL’ye taşı.',
+    'Sorgu (`q`) ve sayfa numarasını (`page`) doğrudan URL adres çubuğundan oku; ayrı bir `useState` içine kopyalama.',
+    'URL’den gelen parametreleri bir araya getirerek query key oluştur. Boş sorguda ağ isteği atmamak için `enabled: Boolean(q)` koşulunu uygula; sayfa geçişlerinde eski sonuçların ekranda kalması için `placeholderData: keepPreviousData` kullan.',
+    'API cevabını Zod şemasıyla doğrula: eksik alanları (örneğin `cover_i` eksikse veya yazar dizisi yoksa) varsayılan güvenli tiplere dönüştür.',
+    'Bozuk `page` değerlerini (`abc`, negatif veya sıfır) doğrudan API’ye gönderme; sayıya çevrilip en az 1 olarak normalize edildiğinden emin ol. Arama formunun submit olayında `e.preventDefault()` çağrısını unutma.',
   ],
 })

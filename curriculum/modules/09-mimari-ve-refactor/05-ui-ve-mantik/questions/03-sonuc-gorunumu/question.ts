@@ -11,8 +11,8 @@ export default defineQuestion({
   ],
   files: ['MovieResult.tsx'],
   hints: [
-    'Önce `status` alanıyla dallan.',
-    'loading ve error için kullanıcıya okunabilir metin ver.',
-    'success durumunda `movies.length` sıfırsa ayrı boş mesajı göster; doluysa liste oluştur.',
+    'Dört görünür durumdan hangilerinde liste gerçekten anlamlı?',
+    "Discriminated union'ı `status` alanıyla daralt; JSX conditional rendering kullan.",
+    'Loading/error dallarını ayır; success içinde boş diziyi kontrol edip dolu halde id ile `<li>` üret.',
   ],
 })

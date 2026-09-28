@@ -9,7 +9,7 @@ export default defineQuestion({
   hints: [
     'Ekranda hangi bilgi gerçekten değişiyor, hangisi ondan hesaplanabilir?',
     'Özeti ayrı state’te tutarsan seçim ile nasıl uyumlu kalacağını da yönetmen gerekir.',
-    'Seçilen id’den filmi her render’da bulup özetini doğrudan göster; yalnızca id state’te kalsın.',
+    'Seçilen id’den filmi her render’da bulup özeti doğrudan göster; yalnızca id state’te kalsın.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

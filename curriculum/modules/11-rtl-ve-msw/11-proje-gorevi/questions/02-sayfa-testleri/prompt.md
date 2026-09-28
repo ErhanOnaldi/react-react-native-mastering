@@ -1,13 +1,20 @@
-## Sorun
-Sinema’nın altyapısı var ama kullanıcı arama yapınca hangi başlığın geldiğini, 404’te ne gördüğünü koruyan test yok.
+Sinema arama ve film detay sayfalarının kullanıcıya görünen başarı, boş sonuç ve hata davranışlarını koruyan testleri yaz.
 
-## Görev
-Tam bu iki dosyaya component test yaz:
+## Gereksinimler
+- Arama sayfası `?q=Matrix` ile açılabilmeli; kullanıcı arama kutusunda metin girebilmeli.
+- Sonuçta Matrix başlığı görünmeli ve istek query değeri `Matrix` olmalı.
+- Boş sonuçta açıklayıcı boş durum, 500 yanıtında alert veya hata metni görünmeli.
+- Detay sayfasında `/movie/550` Dövüş Kulübü’nü, bulunmayan id ise 404 hata durumunu göstermeli.
+- Asenkron sonuç görünene kadar beklenmeli; testler birbirinden bağımsız olmalı.
+- Gerçek ağa çıkılmamalı; fixture istekleri `Authorization: Bearer` taşımalı.
 
-- `src/pages/SearchPage.test.tsx`: `renderWithRouter` ile `?q=Matrix` adresini aç. `userEvent.setup()` ile arama kutusuna da yaz; debounce sonrası istekte `query=Matrix` olduğunu ve Matrix başlığının göründüğünü denetle. `server.use(http.get(...))` ile boş sonuçta açıklayıcı durum mesajı, 500’de alert/hata metni sınansın. `findBy` veya `waitFor` ile asenkron sonucu bekle.
-- `src/pages/MovieDetailsPage.test.tsx`: `/movie/550` adresinde Dövüş Kulübü başlığını gör. `/movie/999999` için 404 cevabını ve kullanıcıya görünen hata durumunu sınayarak test yaz. `createMemoryRouter` helper içinden route parametresini geçir.
+## Örnek
+`?q=Matrix` → Matrix başlığı; `/movie/999999` → kullanıcıya görünür hata.
 
-TMDB fixture başlıkları Türkçe: 550 **Dövüş Kulübü**, 603 **Matrix**. `Authorization: Bearer` zorunlu; gerçek ağa çıkma. Testler `@testing-library/react`, `@testing-library/user-event`, `src/test/setup.ts` ve MSW handler’larını kullansın. Farklı sayfaların testleri birbirinden bağımsız olsun.
+## Sözleşme
+- `projects/sinema/src/pages/SearchPage.test.tsx` ve `projects/sinema/src/pages/MovieDetailsPage.test.tsx` dosyalarını oluştur.
+- Sayfalar projedeki `src/test/setup.ts`, `src/test/render.tsx` ve MSW handler altyapısını kullanır.
+- Türkçe fixture başlıkları: 550 `Dövüş Kulübü`, 603 `Matrix`.
 
-## Kontrol
-Sinema’da `pnpm test` çalıştır; bir testte beklenen başlığı bilerek değiştirip kırmızı sonucu gör, sonra düzelt.
+## Kısıtlar
+- Test dosyalarının dışında proje dosyalarını değiştirme.

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280">
+  <title>Dependency array sözleşmesi</title>
+  <defs>
+    <marker id="deps-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-lane" x="30" y="35" width="700" height="210" rx="12"/>
+
+  <rect class="d-accent" x="70" y="75" width="150" height="90" rx="8"/>
+  <text class="d-title" x="145" y="105" text-anchor="middle">Render</text>
+  <text class="d-text" x="145" y="132" text-anchor="middle">id = 550</text>
+
+  <rect class="d-violet" x="305" y="75" width="150" height="90" rx="8"/>
+  <text class="d-title" x="380" y="105" text-anchor="middle">Effect</text>
+  <text class="d-text" x="380" y="132" text-anchor="middle">/movie/550</text>
+
+  <rect class="d-success" x="540" y="75" width="150" height="90" rx="8"/>
+  <text class="d-title" x="615" y="105" text-anchor="middle">Dependency</text>
+  <text class="d-code" x="615" y="132" text-anchor="middle">[id]</text>
+
+  <line class="d-line-accent" x1="220" y1="120" x2="301" y2="120" marker-end="url(#deps-ok)"/>
+  <line class="d-line-accent" x1="455" y1="120" x2="536" y2="120" marker-end="url(#deps-ok)"/>
+
+  <text class="d-muted" x="380" y="205" text-anchor="middle">id değişirse eski eşleşme biter, yeni effect kurulur</text>
+  <text class="d-text-accent" x="380" y="230" text-anchor="middle">Liste performans ayarı değil, doğruluk sözleşmesidir</text>
+</svg>

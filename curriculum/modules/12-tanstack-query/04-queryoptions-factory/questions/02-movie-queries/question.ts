@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['query.query-options', 'query.keys', 'ts.generics', 'arch.api-client'],
   files: ['movieQueries.ts'],
   hints: [
-    'Önce iki endpoint için tek Bearer’lı `get<T>` yardımcı fonksiyonu kur.',
-    '`queryOptions({queryKey, queryFn, staleTime})` döndüren iki factory yaz.',
-    '`detail` key’ine id, `search` key’ine `query.trim()` ve page ekle.',
+    'Önce iki API fonksiyonunun parametre ve dönüş tiplerini eşleştir.',
+    '`queryOptions` ile kimlik, fetch function ve tazelik süresini aynı tarifte kur.',
+    '`detail(id)` ve `search(query, page)` için TMDB endpoint’ine giden tarifleri döndür.',
+    'Generic HTTP helper çalışma zamanı doğrulaması yapmaz; yalnız response tipini taşır.',
   ],
 })

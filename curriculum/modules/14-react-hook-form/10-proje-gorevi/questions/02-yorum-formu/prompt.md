@@ -1,8 +1,25 @@
-Sinema'ya yorum formu ekle. `src/features/watchlists/ReviewForm.tsx` dosyasından named export `ReviewForm({ postId }: { postId: number })` olsun.
+Sinema'da filme puan ve yorum metni ekleyen form oluştur. Alan hatalarını ve kayıt durumunu kullanıcıya açıkça göster.
 
-- Formda `body: string` ve `rating: number` değerleri olsun. Puan kontrolü 1–5 arasındaki yıldız düğmelerini göstersin; her düğmenin erişilebilir adı “N yıldız” olsun ve seçili düğme `aria-pressed="true"` taşısın.
-- Puan seçilmediyse “Puan seç”, yorum boşsa “Yorum gerekli” hatalarını göster. Label ve hata ilişkilerini kur.
-- Geçerli yorumda `POST https://dummyjson.com/comments/add` gönder. JSON gövdesi `{ body, postId, userId: 1 }` olsun. Puanı bu endpoint'e gönderme; UI form değerinde tut.
-- İstek sürerken gönderim düğmesini kapat. 201 sonrası “Yorum kaydedildi” mesajı göster; HTTP hatasında hata mesajı göster. Başarıda metni temizleyebilirsin.
+## Gereksinimler
 
-Sinema uygulamasının mevcut `QueryClientProvider` yapısını kullan. Testler bu bileşeni taze bir provider ile render eder.
+- Puan seçimi 1–5 arasındaki yıldız düğmeleriyle çalışsın; her düğmenin erişilebilir adı “N yıldız”, seçilinin `aria-pressed="true"` olsun.
+- Yorum textarea'sı ve puan seçimi tek form verisinde bulunsun. İki alana da görünür label veya uygun erişilebilir ad ver.
+- Puan yoksa “Puan seç”, metin boşsa “Yorum gerekli” alan hatalarını göster; her hata ilgili alanla ilişkilendirilsin.
+- Geçerli gönderimde `POST https://dummyjson.com/comments/add` adresine JSON `{ body, postId, userId: 1 }` gönder. `postId` bileşen prop'undan gelsin.
+- `rating` UI form değerinde kalsın ve JSON gövdesine eklenmesin.
+- İstek sürerken gönderim düğmesini devre dışı bırak; başarıda “Yorum kaydedildi”, HTTP hatasında görünür hata göster.
+
+## Örnek
+
+`postId: 550`, 4 yıldız ve `Dövüş Kulübü harika` → `{ body: 'Dövüş Kulübü harika', postId: 550, userId: 1 }`.
+
+## Sözleşme
+
+- Dosya: `src/features/watchlists/ReviewForm.tsx`.
+- Export: `ReviewForm({ postId }: { postId: number })` named export.
+- Bileşen mevcut `QueryClientProvider` altında çalışmalıdır.
+- Arayüz: “1 yıldız”–“5 yıldız”, “Yorum” ve “Gönder”; alan hataları `role="alert"` ve doğru `aria-describedby` ilişkisiyle bulunabilsin.
+
+## Kısıtlar
+
+- Yorum isteğine puan alanını ekleme; endpoint yalnız yorum metni, film kimliği ve sabit kullanıcı kimliğini alır.

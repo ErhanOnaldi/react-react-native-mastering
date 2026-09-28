@@ -1,9 +1,15 @@
-Bir taslak seçip başlığını değiştir, sonra listeden başka bir taslağa geç. Form yeni taslağın değerlerini göstermez, önceki taslaktan kalan yazıyı göstermeye devam eder.
+Bir taslak seçip başlığını değiştir, sonra başka taslağa geç. Form yeni taslağın değerlerini göstermiyor; önceki metin ekranda kalıyor. Bitiş tarihini boşaltıp kaydettiğinde de boş değer tutarsız ele alınıyor.
 
-Ayrıca bitiş tarihini tamamen sil (alanı boşalt) ve gönder: bazen kabul ediliyor, bazen bir hata çıkıyor ama hangi durumda ne olacağı tutarlı değil. Yalnızca gerçekten geçersiz bir tarih yazıldığında (ör. `10 Ocak`) hata beklenir; boş bırakmak "tarih yok" anlamına gelmeli ve sorunsuz gönderilebilmeli.
+## Gereksinimler
+- draft prop'u farklı kayıt olduğunda Başlık ve Bitiş tarihi alanları yeni kaydın değerlerini göstermeli.
+- Geçersiz, boş olmayan tarih metninde Geçerli bir tarih ile başlayan hata gösterilmeli ve kayıt yapılmamalı.
+- Boş tarih “tarih yok” sayılmalı; boş değerle kayıt yapılabilmeli.
 
-`DraftEditor.tsx` içindeki `DraftEditor` bileşeni bu iki belirtiden kurtulmalı.
+## Örnek
+Taslak A tarih taşır, Taslak B'nin dueDate alanı boş. B'ye geçince input boş görünür; taslak A'da tarihi silip kaydetmek dueDate: undefined gönderir.
 
-## Arayüz sözleşmesi
+## Sözleşme
+- DraftEditor.tsx içinde DraftEditor({ draft, onSave }: { draft: Draft; onSave: (values: { title: string; dueDate: string | undefined }) => void }) bileşenini dışa aktar.
+- Draft tipi id, title ve dueDate string alanlarını taşır.
+- Alan etiketleri Başlık ve Bitiş tarihi, düğme Kaydet olmalı.
 
-- Geçersiz tarihte gösterilen hata mesajı `Geçerli bir tarih` ifadesiyle başlasın.

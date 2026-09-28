@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['redux.testing', 'test.vitest-basics', 'react.immutability'],
   files: ['bulk.ts'],
   hints: [
-    'Reducer’a eski ID dizisi ve payload gelir.',
-    'Her ID için `includes` kontrolü yap.',
-    'Yalnız yoksa `state.ids.push(id)` kullan.',
+    'Başlangıç listesindeki ve payload’ın kendi içindeki tekrarlar eklenmemeli.',
+    'Her yeni kimlikten önce `includes` ile mevcut draft listesini kontrol et.',
+    'Yalnız bulunmayan ID için `state.ids.push(id)` çağır.',
   ],
 })

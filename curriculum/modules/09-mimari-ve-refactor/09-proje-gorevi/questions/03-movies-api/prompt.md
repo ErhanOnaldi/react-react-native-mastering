@@ -1,19 +1,30 @@
-`tmdbClient` artık ortak HTTP işini yapıyor. Yine de sayfalarda `/trending/movie/week` gibi endpoint metinleri dolaşıyorsa bir TMDB değişikliği çok yeri etkiler.
+Sinema sayfalarının ihtiyaç duyduğu film verilerini anlamlı feature API fonksiyonlarıyla sun; mevcut akışları koru.
 
-## İstenen
+## Gereksinimler
 
-`src/features/movies/api/movies-api.ts` dosyasından şu **named export** fonksiyonları çıkar ve sayfa/hook kullanımını bunlara taşı:
+- Trend listesi verilen sayfayı, keşif listesi tür ve sayfayı, arama listesi sorgu ve sayfayı getirir.
+- Detay cevabı filmle birlikte kadro ve video bilgisini de içerir.
+- Tür listesi Türkçe adlarla gelir.
+- Her endpoint ortak HTTP client'ı kullanır; sayfalar ham endpoint adresi taşımadan feature API'ye bağlanır.
+- Trend, filtre, arama, detay, favori ve URL sayfalama davranışı sürer.
+- Liste ve detay cevapları ortak veri tipleriyle ifade edilir.
+- Detay isteğinde kadro ve videolar beraber istenir; keşifte tür id'si, aramada sorgu ve sayfa iletilir.
 
-| Fonksiyon | TMDB çağrısı | Dönüş |
-| --- | --- | --- |
-| `getTrendingMovies(page)` | `/trending/movie/week`, `page` | `MovieListResponse` |
-| `discoverMovies({ genreId, page })` | `/discover/movie`, `with_genres`, `page` | `MovieListResponse` |
-| `searchMovies({ query, page })` | `/search/movie`, `query`, `page` | `MovieListResponse` |
-| `getMovieDetails(id)` | `/movie/:id`, `append_to_response=credits,videos` | `MovieDetails` |
-| `getGenres()` | `/genre/movie/list` | `{ genres: Genre[] }` |
+## Örnek
 
-- Fonksiyonların dönüşleri `MovieListResponse`, `MovieDetails` ve `Genre` tipleriyle uyumlu olsun; aynı veri biçimi beş farklı tip gibi görünmesin.
-- Tüm fonksiyonlar `tmdbClient.get<T>` kullansın. Sayfalar, search ve favorites feature’ları bu fonksiyonlara bağlansın. `getMovieDetails` favorilerde de kullanılabilir.
-- Önceki v1 davranışını koru: `?page=2`, `?genre=28`, Türkçe arama, detayda kadro ve favoriler çalışmalı.
+`Dövüş` sorgusu `Dövüş Kulübü` sonucunu içerir. İkinci trend sayfası `page=2` gönderir. Film detayı tek cevapta kadro ve video alanlarını içerir.
 
-Örnek: `searchMovies({ query: 'Dövüş', page: 1 })` sonucunda `Dövüş Kulübü` bulunur. Detay çağrısı `credits` ve `videos` verisini birlikte ister.
+## Sözleşme
+
+- `src/features/movies/api/movies-api.ts` named exportları:
+  - `getTrendingMovies(page: number)` → `MovieListResponse`
+  - `discoverMovies({ genreId, page }: { genreId: number; page: number })` → `MovieListResponse`
+  - `searchMovies({ query, page }: { query: string; page: number })` → `MovieListResponse`
+  - `getMovieDetails(id: number)` → `MovieDetails`
+  - `getGenres()` → `{ genres: Genre[] }`
+- Bu fonksiyonlar `src/shared/api/tmdb-client.ts` içindeki `tmdbClient` ile konuşur.
+- Detay parametresi: `append_to_response=credits,videos`; keşif parametresi: `with_genres`.
+
+## Kısıtlar
+
+- Arayüz bileşenleri endpoint yolunu, Bearer başlığını veya TMDB kök adresini tekrar etmez.

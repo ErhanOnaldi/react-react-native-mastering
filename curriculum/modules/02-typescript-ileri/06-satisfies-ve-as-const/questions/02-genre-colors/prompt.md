@@ -1,1 +1,20 @@
-`GENRE_IDS = [18, 53, 35] as const` ve bundan `GenreId` türet. `GENRE_COLORS` nesnesi bu ID'lerin hepsini içersin: 18 `indigo`, 53 `rose`, 35 `amber`. `as const satisfies Record<GenreId, string>` kullan. `colorFor(id: GenreId)` doğru literal rengi döndürsün. Aynı kalıbı ikinci bağlamda kullan: `ROUTES` sabiti `home: "/"`, `details: "/movie/:id"` değerlerini taşısın ve `as const satisfies Record<'home' | 'details', string>` ile denetlensin. `routeFor(page: 'home' | 'details')` ilgili yolu döndürsün.
+Sinema türlerinin renk ve sayfa yolları sabit konfigürasyon tablolarında tutuluyor. Her zorunlu anahtar bulunmalı ve değerlerin literal bilgisi korunmalı.
+
+## Gereksinimler
+
+- Tür kimlikleri `18`, `53`, `35`; renkleri sırasıyla `indigo`, `rose`, `amber` olmalı.
+- Kimlik tipi sabit dizinin elemanlarından türetilmeli.
+- Renk tablosu tüm kimlikleri içermeli ve renk literal tiplerini korumalı.
+- Rota tablosunda `home: '/'` ve `details: '/movie/:id'` olmalı.
+- Seçilen tür ve sayfa için ilgili değer dönmeli.
+
+## Örnek
+
+53 numaralı türün rengi `"rose"`; `details` sayfasının yolu `"/movie/:id"` olur.
+
+## Sözleşme
+
+- Dosya: `task.ts`
+- Export sabitler: `GENRE_IDS`, `GENRE_COLORS`, `ROUTES`.
+- Export tipi: `GenreId`.
+- Export fonksiyonlar: `colorFor(id: GenreId): string`, `routeFor(page: 'home' | 'details'): string`.

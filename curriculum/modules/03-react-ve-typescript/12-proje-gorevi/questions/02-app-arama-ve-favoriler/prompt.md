@@ -1,9 +1,21 @@
-Artık parçaları `src/App.tsx` içindeki **default export `App`** ile birleştir.
+Statik Sinema ekranında arama sonuçları ve favoriler bir arada çalışmalı. Filtrelenen filmler tekrar göründüğünde seçilmiş favoriler korunmalıdır.
 
-- Önceki görevdeki `sampleMovies`, `MovieGrid`, `SearchBox` bileşenlerini kullan. Var olan Sinema başlığını koru.
-- Sorgu ve favori id’leri için state **App’te** olsun. `SearchBox` controlled kalsın.
-- Her render’da `sampleMovies` listesini başlığa göre filtrele. Büyük/küçük harfe duyarsız karşılaştır; sorgunun baş/son boşluklarını yoksay. Ağ isteği atma.
-- Favoriye ekleme/çıkarma yeni dizi döndüren updater ile yapılsın. Arama ile film gizlenip geri gelse de favori işareti korunmalı. Bir filmin değiştirilmesi diğerini etkilememeli.
-- `MovieGrid` boş sonuç için “Film bulunamadı” gösterebilmeli.
+## Gereksinimler
 
-Deneme sırası: Dövüş Kulübü’nü favorile → “Matrix” ara → aramayı temizle. İlk filmin favori düğmesi hâlâ basılı olmalı. Sonra tekrar tıkla; basılı durum kalkmalı.
+- Sayfa başlığı “Sinema” görünür olmalıdır.
+- “Film ara” alanı yazılan sorguyu başlığa göre filtrelemelidir; karşılaştırma büyük/küçük harfe duyarsız olmalı ve sorgunun baş/son boşluklarını yok saymalıdır.
+- Favoriye ekleme ve çıkarma düğmenin `aria-pressed` değerini güncellemelidir.
+- Bir film arama nedeniyle gizlenip geri geldiğinde favori durumu korunmalıdır.
+- Bir filmin favorisini değiştirmek diğer filmlerin durumunu etkilememelidir.
+- Arama eşleşmesi yoksa “Film bulunamadı” görünmelidir.
+- Bu ekran API isteği yapmamalıdır.
+
+## Örnek
+
+Dövüş Kulübü'nü favorile → “Matrix” ara → aramayı temizle → Dövüş Kulübü hâlâ favoridedir. Aynı düğmeye yeniden basınca favori kalkar.
+
+## Sözleşme
+
+- `src/App.tsx` → default export `App`.
+- Önceki görevdeki `sampleMovies`, `MovieGrid` ve `SearchBox` bileşenleri kullanılabilir.
+- Arayüz: “Film ara” textbox'ı, başlıkları görünen kartlar ve favori durumunu açıklayan button'lar.

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300">
+  <title>Sayfa, davranış hook'u, saf dönüşüm ve UI ayrımı</title>
+  <defs>
+    <marker id="ui-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path class="d-arrowhead-accent" d="M0 0 L8 4 L0 8 Z" />
+    </marker>
+  </defs>
+  <rect class="d-box" x="26" y="72" width="154" height="104" rx="10" />
+  <text class="d-title" x="103" y="108" text-anchor="middle">Sayfa</text>
+  <text class="d-muted" x="103" y="136" text-anchor="middle">URL seçimi</text>
+  <rect class="d-accent" x="222" y="48" width="218" height="132" rx="10" />
+  <text class="d-title" x="331" y="84" text-anchor="middle">Davranış hook'u</text>
+  <text class="d-code" x="331" y="114" text-anchor="middle">loading / success</text>
+  <text class="d-code" x="331" y="138" text-anchor="middle">error + cleanup</text>
+  <rect class="d-success" x="482" y="48" width="242" height="132" rx="10" />
+  <text class="d-title" x="603" y="84" text-anchor="middle">UI component</text>
+  <text class="d-code" x="603" y="114" text-anchor="middle">durum → görünür metin</text>
+  <text class="d-code" x="603" y="138" text-anchor="middle">boş / dolu görünüm</text>
+  <rect class="d-violet" x="246" y="222" width="170" height="54" rx="10" />
+  <text class="d-title" x="331" y="255" text-anchor="middle">Saf dönüşüm</text>
+  <path class="d-line-accent" d="M180 124 H212" marker-end="url(#ui-arrow)" />
+  <path class="d-line-accent" d="M440 112 H472" marker-end="url(#ui-arrow)" />
+  <path class="d-line-accent" d="M331 180 V212" marker-end="url(#ui-arrow)" />
+</svg>

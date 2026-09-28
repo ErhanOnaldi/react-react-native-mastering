@@ -1,9 +1,19 @@
-Gerçek POST çalışıyor; şimdi buton kullanıcıya ne olduğunu söylesin.
+Bir puan isteği beklerken düğme durumunu belli etmiyor. İşlem sırasında, başarıda ve hatada kullanıcıya doğru sonucu gösteren bileşeni oluştur.
 
-`RateButton({ movieId, rate })` bileşenini yaz. `rate` async fonksiyonu `{ movieId, value }` alır. 8,5 puan butonuna tıklanınca `useMutation` ile çağır.
+## Gereksinimler
 
-- Beklerken buton disabled ve “Kaydediliyor…” yazsın.
-- Başarılı olunca “Kaydedildi” görünsün.
-- Hata olunca “Puan kaydedilemedi” görünsün.
+- “8,5 ver” düğmesine tıklanınca `rate` fonksiyonu `{ movieId, value: 8.5 }` ile çağrılsın.
+- İstek sürerken düğme disabled olsun ve adı “Kaydediliyor…” olsun.
+- Başarıdan sonra “Kaydedildi” metni görünsün.
+- Hata sonrası `role="alert"` içeren “Puan kaydedilemedi” metni görünsün.
+- İlk render sırasında `rate` çağrılmasın.
 
-Mutation’ı render sırasında çağırma; yalnızca click event’inde başlat.
+## Örnek
+
+550 numaralı film için “8,5 ver” tıklanır; beklerken düğme kilitlenir, sonra başarı ya da hata metni görünür.
+
+## Sözleşme
+
+- `RateButton.tsx` dosyasından `RateButton({ movieId, rate })` named export et.
+- `movieId: number`; `rate(input: { movieId: number; value: number }): Promise<void>`.
+- Düğme adı başlangıçta “8,5 ver” olsun.

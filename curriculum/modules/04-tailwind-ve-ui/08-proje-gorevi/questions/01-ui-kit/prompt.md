@@ -1,8 +1,18 @@
-Sinema'da aynı class kararları kopyalandı. Ortak UI kit'i gerçek projeye kur:
+Sinema'da aynı görünüm kararları kopyalandı. Ortak bir UI kit kurarak sayfaların erişilebilir ve tutarlı HTML parçalarını paylaşmasını sağla.
 
-1. `src/lib/cn.ts` içinden `cn(...inputs)` export et; `clsx` ile koşulları birleştir, `tailwind-merge` ile Tailwind çatışmalarını çöz. `cn('p-2', 'p-4')` sonucu `p-4` olmalı.
-2. `src/components/ui/button.tsx` içinden `Button` ve `buttonVariants` export et. `variant`: `primary | secondary | ghost`; `size`: `sm | md | lg`; varsayılan primary/md. cva ve `VariantProps` kullan. Gerçek `<button>` props'ları (`disabled`, `type`, `aria-*`, `data-*`, `onClick`) iletilsin. `className` son override olsun. Klavye odağı ve disabled görünümü de tanımla.
-3. Ayrı dosyalardan `src/components/ui/badge.tsx` → `Badge` (`span`), `card.tsx` → `Card` (`article`), `skeleton.tsx` → `Skeleton` (`div`), `input.tsx` → `Input` (`input`) export et. `children` uygun olanlarda gösterilsin; doğal HTML props'ları ve `className` iletilsin. Skeleton `aria-hidden="true"` ve görsel pulse class'ı taşısın.
-4. `src/index.css` içinde Tailwind v4 `@import "tailwindcss";`, `@theme` içinde en az bir `--color-brand-*` ve bir `--font-*` token'ı, `.dark` üst öğesi için `@custom-variant dark (&:where(.dark, .dark *));` tanımla. Eski JS config ve v3 direktiflerini kullanma.
+## Gereksinimler
+- `src/lib/cn.ts` içindeki `cn` koşullu class'ları birleştirsin; `cn('p-2', 'p-4')` sonucu `p-4` olsun.
+- Button primary/secondary/ghost ve sm/md/lg seçeneklerini, primary/md varsayılanlarıyla sunsun. Native button props'ları aktarılsın, dış class override edebilsin, klavye odağı ve disabled görünümü tanımlansın.
+- Badge (`span`), Card (`article`), Skeleton (`div`) ve Input (`input`) kendi dosyalarından export edilsin. Native props ve `className` iletilsin; uygun bileşenler children göstersin. Çakışan utility'lerde dış class temel class'ı override etsin.
+- Skeleton `aria-hidden="true"` ve pulse görünümü taşısın.
+- `src/index.css` `@import "tailwindcss";`, `@theme` içinde `--color-brand-*` ve `--font-*` token'larını, `@custom-variant dark (&:where(.dark, .dark *));` tanımını içersin.
 
-Kit'i `App` dışında basit bir yerde önizleyebilirsin: üç Button varyantını, üç boyutu, bir Card içinde Badge'i ve Skeleton'ı yan yana gör. Renkleri kendi tasarımına göre seçebilirsin; testler renk pikselini değil varyantların ayrı class üretmesini ve davranış sözleşmesini kontrol eder.
+## Örnek
+Bir Button disabled ve `aria-label` taşıdığında native davranışını korur. Bir Card içinde Badge gösterilir; Card'a `p-8` verilince temel padding değişir.
+
+## Sözleşme
+- `src/lib/cn.ts` → `cn(...inputs): string`.
+- `src/components/ui/button.tsx` → `Button`, `buttonVariants`.
+- `src/components/ui/badge.tsx` → `Badge`; `card.tsx` → `Card`; `skeleton.tsx` → `Skeleton`; `input.tsx` → `Input`.
+- `src/index.css` tema ve Tailwind giriş dosyasıdır.
+- Önizleme için üç Button görünümünü/boyutını ve diğer primitive'leri gösteren basit bir alan ekleyebilirsin.

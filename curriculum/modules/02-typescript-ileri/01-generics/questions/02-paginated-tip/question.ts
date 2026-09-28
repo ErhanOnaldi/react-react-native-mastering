@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['ts.generics', 'ts.arrays-tuples', 'ts.api-types'],
   files: ['task.ts'],
   hints: [
-    'Tekrarlanan dört alanı bir generic tipte topla.',
-    '`results` alanı `T[]`; iki cevap tipini aynı kabuktan türet.',
-    'İlk sonuç için `response.results[0]` kullan; boş diziyi ayrıca düşün.',
+    'Yanıtlarda sabit kalan alanları ve öğe tipi değişen alanı ayır.',
+    '`Paginated<T>` generic tipini tanımla; `results` alanı `T[]` olsun.',
+    '`MovieListResponse` ve `GenreListResponse` tiplerini aynı kabuktan türet; `firstResult` ilk öğeyi döndürsün.',
+    'Boş dizide ilk öğe `undefined` olur; dönüş sözleşmende bunu koru.',
   ],
 })

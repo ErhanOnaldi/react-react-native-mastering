@@ -1,14 +1,23 @@
-Ağ mantığı hook’a taşındı. Şimdi bileşen yalnız hangi durumda ne görüleceğini söylesin.
+Arama sonucunun yüklenme, hata, boş ve dolu hallerini kullanıcıya açık biçimde göster.
 
-## İstenen
+## Gereksinimler
 
-`MovieResult({ state })` şu görünümü versin:
+- `loading` iken `Filmler yükleniyor` metnini göster.
+- `error` iken `Hata: <message>` göster.
+- Başarılı ama boş sonuçta `Film bulunamadı` göster.
+- Başarılı sonuçta her film başlığını ayrı `<li>` içinde göster.
+- Yalnız dolu başarı durumunda listeyi göster; her öğenin kimliği React anahtarı olsun.
 
-| Durum | Görünüm |
+## Örnek
+
+| Durum | Görünür çıktı |
 | --- | --- |
-| `loading` | `Filmler yükleniyor` metni |
-| `error` | `Hata: <message>` |
+| `loading` | `Filmler yükleniyor` |
+| `error`, mesaj `TMDB kapalı` | `Hata: TMDB kapalı` |
 | `success`, boş liste | `Film bulunamadı` |
-| `success`, dolu liste | Her film için `<li>` içinde başlık |
+| `success`, Matrix | `<li>Matrix</li>` |
 
-Başarı listesindeki `key` film id’si olsun. Union tipini starter’da hazır verdik.
+## Sözleşme
+
+- Dosya ve export: `MovieResult.tsx` → named export `MovieResult({ state })`.
+- `state` tipi başlangıç dosyasında hazırdır: loading, error/message ve success/movies union'ı.

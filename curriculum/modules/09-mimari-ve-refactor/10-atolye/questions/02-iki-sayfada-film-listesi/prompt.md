@@ -1,12 +1,19 @@
-Popüler filmler ekranı çalışıyor. Aynı liste arama ekranında da kullanılacak; yeni ekran için kopya bir liste istemiyoruz.
+Popüler ve arama ekranlarında aynı film liste görünümünü kullan; ekranda değişen veri alma akışı ve ortak görünüm birbirinden bağımsız kalsın.
 
-## Giriş ve davranış
+## Gereksinimler
 
-Testler `MoviePages.tsx` içindeki `MoviePages` bileşenini açar.
+- `Popüler` ve `Arama` düğmeleri ilgili ekranı gösterir.
+- Arama ekranında accessible name'i `Film ara` olan alan bulunur; `Dövüş` yazıldığında `Dövüş Kulübü` görünür.
+- Her iki ekranda başlıklar liste öğeleri olarak sunulur.
+- Yükleme ve boş sonuç kullanıcıya anlaşılır biçimde bildirilir; istek hatası `alert` rolünde `yüklenemedi` ifadesini içerir.
+- Aramadan popülere dönünce popüler liste çalışır.
 
-- `Popüler` ve `Arama` düğmeleri ekran değiştirir.
-- Arama ekranında `Film ara` alanı vardır. `Dövüş` yazılınca `Dövüş Kulübü` görünür.
-- Her iki ekranda film başlıkları liste olarak, yükleme, boş sonuç ve hata anlaşılır metinle görünür.
-- Popüler ekrana dönünce liste yine çalışır. Ekranların görsel dili aynı kalır.
+## Örnek
 
-Örnek: Popüler → Arama → `Dövüş` → Popüler.
+Popüler ekranı aç → `Arama` seç → `Film ara` alanına `Dövüş` yaz → `Dövüş Kulübü` gör → `Popüler` seç → popüler film listesi görünür.
+
+## Sözleşme
+
+- Dosya ve export: `MoviePages.tsx` → named export `MoviePages`.
+- Ekran düğmeleri accessible name `Popüler` ve `Arama`; arama alanının adı `Film ara`.
+- Film başlıkları `<li>` semantiğiyle listelenir.

@@ -1,5 +1,21 @@
-Cache’e rağmen geri dönüşte GET gördün. Detay verisi için tazelik ve saklama süresini ayrı seç.
+Film detay sorgusunu taze veri ve kullanılmayan cache için ayrı sürelerle ayarla.
 
-## İstenen
+## Gereksinimler
 
-`detailOptions(id)` `queryOptions` döndürsün: key `['movies','detail',id]`, `staleTime: 60_000`, `gcTime: 300_000`. TMDB `/movie/:id` çağrısına Bearer ve `language=tr-TR` ekle; HTTP hatasını fırlat. Aynı id için art arda iki `fetchQuery` bir GET olmalı.
+- Detay id’sini cache kimliğine ekle ve TMDB detay cevabını döndür.
+- Aynı taze id iki kez okunduğunda yalnız bir GET gönder.
+- Farklı id’ler ayrı istek ve cache girdisi kullansın.
+- Tazelik süresini 60 saniye, kullanılmayan cache süresini 300 saniye yap.
+
+## Örnek
+
+`detailOptions(550)` ve `detailOptions(27205)` ayrı kimlik üretir. Aynı id iki kez okunduğunda `/3/movie/550` için bir istek görülür.
+
+## Sözleşme
+
+- `cachePolicy.ts` dosyasından `detailOptions(id: number)` named export edilir.
+- Seçenekler QueryClient’in `fetchQuery` metoduna verilebilir ve data başlığı içerir.
+
+## Kısıtlar
+
+- İstek `Authorization: Bearer test-token` başlığını taşır; HTTP hata yanıtı reject olur.

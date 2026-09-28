@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['react.lists-keys', 'react.state', 'react.derived-state'],
   files: ['MovieNotes.tsx'],
   hints: [
-    'React bileşen state’ini konuma ve key’e göre korur.',
-    'Key’i `Notes` bileşeni çağrısına ekle.',
-    '`<Notes key={id} id={id} />` yeni filmde yeni state oluşturur.',
+    'Not state’i alt `Notes` bileşeninin kimliğine bağlı.',
+    'React bileşen state’ini ağaçtaki konuma ve `key` değerine göre korur.',
+    '`Notes` çağrısına film kimliğinden gelen bir key ver.',
+    '`<Notes key={id} id={id} />` aynı filmde state’i korur, yeni filmde yeni state oluşturur.',
   ],
 })

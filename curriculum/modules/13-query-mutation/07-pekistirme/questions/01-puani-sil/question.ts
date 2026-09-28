@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['query.useMutation', 'fetch.headers-auth', 'fetch.error-handling'],
   files: ['deleteRating.ts'],
   hints: [
-    'fetch method DELETE olmalı.',
-    'URL query parametresinde guest_session_id kullan.',
-    'response.ok false ise Error fırlat.',
+    'Silme isteğinin hangi film ve hangi guest session için gönderildiğini belirle.',
+    '`fetch` seçeneklerinde `method: "DELETE"`, Bearer header ve URL query parametresi kullan.',
+    '`guest_session_id` değerini encode et; `response.ok` false ise `Error` fırlat.',
   ],
 })

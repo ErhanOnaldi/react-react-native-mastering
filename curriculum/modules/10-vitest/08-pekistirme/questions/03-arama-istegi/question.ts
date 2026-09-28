@@ -13,6 +13,7 @@ export default defineQuestion({
   ],
   files: ['searchMovies.test.ts'],
   hints: [
+    'Dolu arama ile boş sorguda beklenen dış etkilerin farklı olup olmadığını belirle.',
     '`vi.fn` ile film listesi cevabı döndür; `fetch` çağrısının URL’sini çöz.',
     '`query`, `page`, `language` parametrelerini ve Bearer başlığını denetle.',
     'Başlığın `Dövüş Kulübü` geldiğini de kontrol et; boş sorgu ayrı testte hiç istek atmamalı.',

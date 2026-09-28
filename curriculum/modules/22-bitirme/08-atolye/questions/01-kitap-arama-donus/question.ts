@@ -8,8 +8,9 @@ export default defineQuestion({
   files: ['BookSearch.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Hangi bilgi paylaşılabilir olmalı: arama metni mi, sayfa mı? İkisi de kullanıcının adres çubuğunda görünmeli.',
-    'Aynı arama + sayfa kombinasyonu için sonucu bir kere alıp bir süre elde tutabileceğin bir veri katmanı kullan.',
-    'URL’deki arama metni ve sayfa değerini query key’e koy; aynı anahtarla gelen isteği önbellek karşılar, ayrı bir ağ isteği atmaz.',
+    'Arama parametrelerini (`q` ve `page`) URL üzerinden yönet; bileşen render olduğunda URL’den gelen parametrelere göre veriyi yükle.',
+    "Veri çekme işleminde `useQuery` kullan; sorgu anahtarını `['search', q, page]` olarak kurarak her arama ve sayfa sonucunun önbellekte tutulmasını sağla.",
+    "Sayfa değiştiğinde `setSearchParams` ile URL’deki `page` değerini artır; form gönderildiğinde `setSearchParams({ q: searchInput, page: '1' })` çalıştır.",
+    'Sorgu anahtarında `page` değerini unutursan sayfa değiştiğinde yeni veri çekilmez; `q` parametresini dahil etmezsen farklı aramalar birbirine karışır.',
   ],
 })

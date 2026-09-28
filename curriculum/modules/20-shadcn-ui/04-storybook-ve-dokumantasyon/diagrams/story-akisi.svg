@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 190">
+  <title>Storybook meta verisinden named story durumlarına ve ortak kataloğa akış</title>
+  <defs>
+    <marker id="story-flow-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 Z" class="d-arrowhead-accent" />
+    </marker>
+  </defs>
+  <rect x="20" y="55" width="155" height="82" rx="10" class="d-accent" />
+  <text x="97" y="84" text-anchor="middle" class="d-title">Default export</text>
+  <text x="97" y="108" text-anchor="middle" class="d-muted">component + meta</text>
+  <text x="97" y="128" text-anchor="middle" class="d-muted">varsayılan args</text>
+  <rect x="215" y="55" width="155" height="82" rx="10" class="d-box" />
+  <text x="292" y="84" text-anchor="middle" class="d-title">Named story'ler</text>
+  <text x="292" y="108" text-anchor="middle" class="d-muted">hata, boş, bekleme</text>
+  <text x="292" y="128" text-anchor="middle" class="d-muted">isimli props durumu</text>
+  <rect x="410" y="55" width="155" height="82" rx="10" class="d-success" />
+  <text x="487" y="84" text-anchor="middle" class="d-title">İzole görünüm</text>
+  <text x="487" y="108" text-anchor="middle" class="d-muted">sabit veri + tema</text>
+  <text x="487" y="128" text-anchor="middle" class="d-muted">tekrar açılabilir</text>
+  <rect x="605" y="55" width="135" height="82" rx="10" class="d-violet" />
+  <text x="672" y="84" text-anchor="middle" class="d-title">Ekip kataloğu</text>
+  <text x="672" y="108" text-anchor="middle" class="d-muted">tasarım + a11y</text>
+  <text x="672" y="128" text-anchor="middle" class="d-muted">kararları paylaşır</text>
+  <path d="M175 96 H208" class="d-line-accent" marker-end="url(#story-flow-arrow)" />
+  <path d="M370 96 H403" class="d-line-accent" marker-end="url(#story-flow-arrow)" />
+  <path d="M565 96 H598" class="d-line-accent" marker-end="url(#story-flow-arrow)" />
+  <text x="380" y="173" text-anchor="middle" class="d-text">Story örneği gerçek bileşen API'sini ve ürün token'larını kullanır.</text>
+</svg>

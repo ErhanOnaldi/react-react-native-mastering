@@ -28,8 +28,43 @@ Her temel kavram için: `tanıt → birebir örnek → biraz farklı → daha fa
 - Türkçe, sade, samimi ("sen" dili). Teknik terimler İngilizce kalır: `props`, `state`, `hook`, `query`, `mutation`, `render`…
 - Kısa paragraflar (2–4 cümle), bol ve DOĞRU kod örneği, gerektiğinde tablo.
 - "Neden?" sorusunu her zaman cevapla. Kural ezberletme; gerekçeyi göster.
-- Ders ~5–10 dk okuma. Uzarsa iki derse böl.
-- Yanlış bilgi vermektense konuyu dar tut. Emin olmadığın API'yi `docs/research/`'ten doğrula.
+- Yanlış bilgi vermektense konuyu dar tut. Emin olmadığın API'yi `docs/research/`'ten doğrula (web platformu konuları: `docs/research/web-platform.md`).
+
+### 1.4 Ders uzunluğu ve derinlik
+Dersler bir özet değil, **başvurulacak bir kaynak** gibi yazılır. Öğrenci dersi bitirdiğinde kavramı bir iş arkadaşına kendi cümleleriyle anlatabilmeli.
+
+| `kind` | Hedef uzunluk (kod hariç) | `minutes` |
+|---|---|---|
+| `concept` | 1.000–1.800 kelime; bir core zihinsel modeli ilk kez kuran derste 2.200'e kadar | 12–20 |
+| `review` | 400–800 kelime | 6–10 |
+| `practice` / `project` (atölye dahil) | 250–600 kelime: görevlerin bağlamı, neyin ölçüldüğü, nasıl çalışılacağı | 4–8 |
+
+`minutes` ≈ kelime / 130 + her büyük kod bloğu için 1 dk. 2.200 kelimeyi aşan dersi ikiye böl. Uzunluk hedefi derinliğin sonucudur, amacı değil: sayıyı tutturmak için bölüm ekleme; kelime eksikse zihinsel modeli, iz sürmeyi ve sınır durumlarını derinleştir.
+
+**Ders örneği ≠ görev çözümü.** Ders, sorularının cevabını birebir vermez. Derste kavramı **başka bir örnekle** öğret: görev `SearchTitle` bileşeniyse ders örneği başka ad, başka senaryo ve başka veriyle olsun (ör. görev film aramasıysa ders oyuncu listesini ya da tür filtresini kullanır). Görevin dosya/bileşen/fonksiyon adını ders kodunda tanımlama; görevin çözüm kodunu dersin "doğru örnek"i yapma. Öğrenci dersten yöntemi öğrenmeli, görevde kendisi uygulamalı.
+
+**Ders metni görevlerin iç yapısından söz etmez.** "Bu görevin testi şunu kontrol eder", "MSW ilk isteği 90 ms geciktiriyor", "prompt şunu söyler, ipucu şunu açıklar" gibi cümleler yazılmaz. Test yazmayı öğreten dersler (0.7, 3.10, 10–11. modüller) test tekniklerini genel örneklerle anlatır. Pekiştirme/proje/atölye derslerinin kısa girişleri görevlerin **ne ölçtüğünü** söyleyebilir, testlerin nasıl yazıldığını söylemez.
+
+Bir concept dersinde şunlar **bulunmak zorunda** (başlıklar konuya özgü olsun, "Kavram"/"Örnek" gibi jenerik başlık yazma):
+1. `:::pain` — somut belirti (ekranda ne görüldü, kaç istek, hangi hata mesajı).
+2. **Zihinsel model** — kuralların numaralı, kesin ve eksiksiz anlatımı (dokümantasyon ciddiyetinde); en az bir **diyagram** (§2.4).
+3. **Adım adım iz sürme** — kodu satır satır ya da zaman sırasıyla yürüt: hangi satır ne zaman çalışır, değişkenler hangi değerleri alır. Tablo bunun için iyidir.
+4. **Örnekler** — önce kırık hali (belirtiyi üreten kod), sonra düzeltilmiş hali; mümkünse `check`'li.
+5. **Sınır durumları ve sık hatalar** — her biri `belirti → neden → düzeltme` biçiminde, `:::mistake` kutularıyla.
+6. `:::sector` — sektörde bu nasıl kullanılır, ekip içinde hangi kural konur.
+7. **Özet** — 3–6 maddelik, dersin tamamını hatırlatan liste; ardından 1–2 "kendini yokla" sorusu (cevabı hemen altında, kısa).
+
+### 1.5 Zihinsel modeller ve tekrar
+Müfredatın taşıyıcı zihinsel modelleri §2.5'teki tabloda listelidir. Her model **bir kez**, tabloda gösterilen derste derinlemesine kurulur (ortak diyagramıyla). Sonraki derslerde bu modele dayanan her yerde `:::model[Model adı]` kutusuyla **hatırlatılır**: 2–5 cümlelik öz, gerekirse aynı ortak diyagram, ardından "bu yeni bağlamda ne değişiyor?" sorusunun cevabı. Hatırlatma, ilk anlatımın kopyası değildir; yeni bağlama uygulanmış halidir.
+
+### 1.6 Üslup: makine metni gibi yazma
+Metin, kıdemli bir geliştiricinin yanındaki arkadaşına anlatması gibi okunmalı. Şunlar **yasak**:
+- İçeriği olmayan köprü cümleleri: "X burada Y'ye dönüşüyor", "Sinema'daki sorun, aracın hangi problem için düşünüldüğünü gösteriyor", "Bu zihinsel model biraz sonra … anlamanı kolaylaştıracak", "React temellerindeki saflık kuralı burada uygulamaya dönüşüyor". Her paragraf yeni bir bilgi taşımalı; taşımıyorsa sil.
+- Aynı fikri iki başlık altında yeniden söylemek (tekrar merdiveni **yeni bağlam** ister, aynı paragrafı değil).
+- Soyut isim yığınları ("senkronizasyon ilişkisinin yaşam döngüsü bağlamında…"). Yerine somut ol: sayı, kod satırı, gözlenen çıktı ("ekranda 1 yazar", "Network'te 3 GET görürsün").
+- Öğrenciye görünen metinde iç terimler: "koordinatör", "araştırma notu", "yazar", "doğrulama hattı", "checkpoint sözleşmesi", "kök bağımlılıklar değiştirilmez" gibi. Kurulu olmayan bir paket gerekiyorsa öğrenciye ne kuracağını söyle ya da konuyu kavramsal anlat.
+- Paragraf yerine madde yığını. Açıklama paragrafla, kural listesi maddeyle yazılır.
+- "Bu derste şunu öğreneceksin" tarzı meta anlatım (en fazla bir cümle); görevlerin testlerinden, prompt'larından ya da ipuçlarından söz eden cümleler (§1.4).
 
 ---
 
@@ -72,24 +107,31 @@ export default defineModule({
 ### 2.2 lesson.md
 ```md
 ---
-title: Race condition ve AbortController
-minutes: 8
+title: "Race condition ve AbortController"
+minutes: 16
 kind: concept        # concept | review (tekrar) | practice (pekiştirme) | project (proje görevi)
 ---
 
-# Başlık
+# Race condition ve AbortController
 
 :::pain[Problem]
-Somut acı.
+"Dövüş" yazıp hemen "Matrix" yazınca liste bir an Matrix'i gösteriyor, sonra Dövüş Kulübü'ne geri dönüyor.
 :::
 
-## Kavram … ## Örnek … ## Sık hatalar … ## Sektörde
+## İki istek, bir ekran          ← zihinsel model + diyagram
+## Zaman çizelgesinde iz sürelim ← adım adım tablo
+## Önce kırık, sonra doğru       ← örnekler
+## Sık hatalar                    ← :::mistake kutuları
+:::sector … :::
+## Özet                           ← maddeler + kendini yokla
 ```
 Frontmatter YAML'dır: `title` değerini **her zaman çift tırnakla** yaz (`title: "Sinema v2: düzenli yapı"`) — iki nokta, `@`, `#` gibi karakterler tırnaksız YAML'ı bozar.
 
-Önerilen iskelet: **Problem → Kavram → Örnek → Sık hatalar → Sektörde**. Tekrar (`review`) derslerinde kısa bir hatırlatma + yeni bağlam yeterli.
+Zorunlu parçalar §1.4'te. Tekrar (`review`) derslerinde ilgili modeller `:::model` ile hatırlatılır ve yeni bağlamda uygulanır.
 
-**Bilgi kutuları:** `:::pain`, `:::tip`, `:::warning`, `:::mistake` (sık hata), `:::sector` (sektörde), `:::info`. Başlık opsiyonel: `:::tip[Kısa yol]`.
+**Bilgi kutuları:** `:::pain`, `:::model` (zihinsel model hatırlatması), `:::tip`, `:::warning`, `:::mistake` (sık hata), `:::sector` (sektörde), `:::info`. Başlık opsiyonel: `:::tip[Kısa yol]`, `:::model[Render → commit → effect]`.
+
+**Diyagram:** `![Ekran okuyucu açıklaması](diagram:render-commit)` (ortak) ya da `![Açıklama](diagrams/yaris.svg "Görünen altyazı")` (dersin kendi klasörü). Ayrıntılar §2.4.
 
 **Kod blokları:**
 - Dosya adı: ` ```tsx title="src/App.tsx" `
@@ -122,7 +164,7 @@ defineQuestion({
   type: 'code',
   title, difficulty, concepts,
   files: ['useDebounce.ts'],          // öğrencinin düzenleyeceği dosyalar (starter/ içinde olmalı)
-  hints: ['…', '…', '…'],             // 1–3 kademeli ipucu: yön → yöntem → neredeyse çözüm
+  hints: ['…', '…', '…'],             // 2–4 kademeli ipucu: yön → yöntem → iskelet (→ tuzak)
   preview: { entry: 'Preview.tsx' },  // (ops.) bileşen görevlerinde canlı önizleme
   rubric: ['…'],                      // (ops.) kod kalitesi için AI review kriterleri
   reviewFiles: ['…'],                 // (ops.) review'a girecek dosyalar (varsayılan: files)
@@ -132,7 +174,25 @@ defineQuestion({
 ```
 - `starter/` TÜM dosyaları içerir (düzenlenebilir + salt okunur yardımcılar). `files` dışındakiler salt okunur gösterilir.
 - `solution/` yalnızca `files` listesindeki dosyaların çözümünü içerir (doğrulamada starter'ın üstüne kopyalanır).
-- `prompt.md` görev metni: bağlam (neden?), net gereksinimler (tablo/örnek girdi-çıktı), gerekirse önizleme talimatı.
+- `prompt.md` görev metni **LeetCode gibi** yazılır: ne istendiği net, nasıl yapılacağı yok. Testi geçmek için bilinmesi **zorunlu** olan her şey metinde; yönteme dair her şey ipuçlarında. Biçim:
+  ```md
+  1–3 cümle: ne yapılacak, iş bağlamında neden gerekli. (Yöntem yok.)
+
+  ## Gereksinimler
+  - Gözlenebilir davranışlar (testlerin kontrol ettikleri), madde madde.
+
+  ## Örnek
+  Girdi → çıktı tablosu ya da kısa etkileşim senaryosu.
+
+  ## Sözleşme
+  - Dosya ve export: `useDebounce.ts` → `useDebounce<T>(value: T, delay: number): T`
+  - Arayüz: testlerin aradığı rol/ad/metin (ör. "`Favorilere ekle` adlı düğme, `aria-pressed` ile durumunu gösterir").
+
+  ## Kısıtlar            (opsiyonel)
+  - Testlerin zorladığı sert koşullar (ör. "her sorgu için en fazla 1 istek", "`Authorization: Bearer` başlığı gönderilir").
+  ```
+  Metinde hook, kütüphane API'si, desen ya da teknik adı (`useEffect`, `ignore` bayrağı, `AbortController`, `useReducer`, `queryOptions`, `Controller`…) **geçmez**. Tek istisna: testler o adı import ediyor ya da tipini kontrol ediyorsa Sözleşme'de imza olarak yazılır. Önizleme varsa "Önizlemede nasıl görürsün" tek cümleyle Örnek'e eklenebilir.
+- `hints`: **2–4** kademeli ipucu. Sıra: (1) yön — neye bakmalı, hangi soruyu sormalı; (2) yöntem — API/teknik adı; (3) iskelet — neredeyse çözüm, kısa kod parçası; (4) opsiyonel — en sık tuzak. Prompt'tan çıkarılan yardımcı ayrıntılar buraya taşınır.
 - `solution.md` "Neden böyle?": alternatifler, tuzaklar, sektör notu, sonraki modüle köprü.
 
 **project** (VS Code'da, `projects/sinema` içinde)
@@ -148,10 +208,77 @@ defineQuestion({
 })
 ```
 - Testler `tests/` altında ve `@project/...` üzerinden import eder: `import App from '@project/src/App'`.
-- Görev metni **dosya yolunu ve export adını açıkça** söylemeli (testler oraya bakar).
+- Görev metni **dosya yolunu ve export adını açıkça** söylemeli (testler oraya bakar). Geri kalanı code görevleriyle aynı LeetCode biçimindedir: davranış ve sözleşme metinde, yöntem ipuçlarında.
 - Testler davranışı test etsin (render çıktısı, fonksiyon sonucu), uygulama detayını değil — öğrencinin geçerli farklı çözümleri de geçmeli.
 
 **Refactor görevleri** (çalışan spagetti → temiz yapı): doğrulama başlangıç kodunun **kalmasını** ister. Bu yüzden testler iki katmanlı olur: (1) davranış testleri — spagetti de geçer, refactor sonrası da geçmeli; (2) yapı testleri — görev metninde açıkça istenen yeni birimler (örn. `useMovieSearch.ts`'ten export edilen hook, `MovieList` bileşeni) import edilip davranışları test edilir; spagetti bunlara sahip olmadığı için kalır. Kalan kalite (isimlendirme, sorumluluk ayrımı) `rubric` ile AI review'a bırakılır.
+
+### 2.4 Diyagramlar
+
+Ders metnindeki diyagramlar satır içi SVG olarak gösterilir ve platformun temasına (açık/koyu) uyar. SVG dosyalarını elle yazarsın; stil **yalnızca sınıflarla** verilir.
+
+**Yerleşim:** ortak zihinsel model diyagramları `curriculum/diagrams/<ad>.svg` (markdown'da `diagram:<ad>`); yalnızca bir derse ait olanlar `<ders>/diagrams/<ad>.svg` (markdown'da `diagrams/<ad>.svg`). Diyagram **tek başına bir paragrafta** durur; alt metni (köşeli parantez) ekran okuyucu açıklamasıdır ve boş olamaz; tırnaklı başlık varsa görünen altyazı olur.
+
+**Kurallar:**
+- Kök: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 H">` (genişlik 760; yükseklik içeriğe göre, genelde 180–420). `width`/`height` yazma. İlk çocuk `<title>`.
+- Yasak: `<style>`, `<script>`, `<foreignObject>`, `on*=` öznitelikleri, dış `href`, sabit renk (`fill="#…"`). Doğrulama hattı bunları reddeder.
+- Sınıf sözlüğü (renkler platform CSS'inden gelir):
+
+| Sınıf | Ne için |
+|---|---|
+| `d-box` | nötr kutu |
+| `d-accent`, `d-success`, `d-danger`, `d-warning`, `d-violet` | vurgulu kutu (dolgu yumuşak renk, kenar renk) |
+| `d-lane` | arka plan bandı / grup alanı (kesikli) |
+| `d-title` | kalın kutu başlığı |
+| `d-text` | normal metin (14px) |
+| `d-muted` | ikincil küçük metin (12px) |
+| `d-code` | kod metni (monospace, 12.5px) |
+| `d-text-accent`, `d-text-success`, `d-text-danger`, `d-text-warning` | renkli metin |
+| `d-line`, `d-line-accent`, `d-line-danger` | çizgi / ok gövdesi (`fill: none`) |
+| `d-dashed` | kesikli çizgi (diğer çizgi sınıfıyla birlikte) |
+| `d-arrowhead`, `d-arrowhead-accent`, `d-arrowhead-danger` | ok ucu `marker` içindeki `path` |
+
+- Metin: `text-anchor="middle"` ile kutuya ortala; satır aralığı 22px; bir satırda 14px metin için en fazla ~ (kutu genişliği / 8) karakter. Metin kutudan ve viewBox'tan **taşmamalı**. Satır kırmak için ayrı `<text>` kullan (`<tspan>` da olur).
+- Ok ucu: `<defs>` içinde `marker` tanımla (`orient="auto-start-reverse"`), çizgide `marker-end="url(#id)"`. id'ler dosya içinde benzersiz olsun (platform sayfa düzeyinde önek ekler).
+- Tek fikir, en fazla ~8 kutu. Renk anlam taşır: `d-danger` hata/bozulma, `d-success` doğru yol, `d-accent` odaktaki adım, `d-violet` dış sistem/yan etki.
+- Örnek ve stil referansı: `curriculum/diagrams/render-commit.svg`.
+
+**Kontrol zorunlu:** `pnpm preview:diagram <dosya ya da klasör>` iki şey yapar:
+1. **Yerleşim denetimi** (her ortamda çalışır): metnin kutudan ya da çizimden taşması, çizginin metnin üstünden ya da bir kutunun içinden geçmesi, metinlerin/kutuların üst üste binmesi. Sonuç **temiz** olmalı; `pnpm validate:content` derse özgü diyagramlarda bu sorunları hata sayar. Etiketleri çizgiden uzağa (çizginin üstüne/altına 12px+) koy; zaman çizelgesi çizgisini kutuların içinden geçirme, kutuların altından ya da üstünden geçir.
+2. **PNG** (yalnızca macOS `qlmanage` çalışabiliyorsa; sandbox'ta çalışmayabilir): iki temada `.cache/diagram-preview/` altına. Üretilebiliyorsa aç ve anlamı kontrol et: ok yönleri doğru mu, diyagram tek başına anlaşılıyor mu. Kendi rasterleştiricini yazma; PNG üretilemiyorsa yerleşim denetimi yeterlidir.
+
+### 2.5 Taşıyıcı zihinsel modeller (ortak diyagramlar)
+
+| Diyagram (`diagram:…`) | Model | İlk kurulduğu ders |
+|---|---|---|
+| `ts-derleme-ve-calisma` | Tipler derleme anında vardır, çalışma anında silinir; dışarıdan gelen veri doğrulanmalıdır | 1.1 |
+| `ts-narrowing-akisi` | Kontrol akışı union tipini daraltır | 1.6 |
+| `render-commit` | Tetikleme → render (saf) → commit → effect | 3.1 |
+| `state-snapshot` | Her render kendi props/state fotoğrafını görür; güncellemeler kuyruğa girer | 3.3 |
+| `agac-ve-kimlik` | State ağaçtaki konuma ve `key`'e bağlıdır | 3.6 |
+| `veri-akisi` | Props aşağı, olaylar yukarı; state ortak ebeveyne taşınır | 3.8 |
+| `test-anatomisi` | Hazırla → çalıştır → doğrula; test = çalıştırılabilir gereksinim; mutant yakalama | 0.7 |
+| `effect-yasam-dongusu` | setup → (deps değişti) cleanup → setup … → unmount'ta cleanup | 5.2 |
+| `closure-bayat-deger` | Callback, oluştuğu render'ın değerlerini yakalar | 5.3 |
+| `yaris-kosulu` | Yavaş eski cevap hızlı yeni cevabı ezer; iptal/yok sayma | 5.4 |
+| `context-yayilimi` | Provider değeri değişince tüm tüketiciler render olur | 5.9 |
+| `url-state` | URL tek doğru kaynak; iç içe route ağacı → `Outlet` | 6.3 |
+| `http-istek-cevap` | İstek/cevap anatomisi; `fetch` 4xx/5xx'te reddetmez | 7.1 |
+| `cors-preflight` | Tarayıcı → OPTIONS → izin başlıkları → asıl istek | 7.2 |
+| `http-onbellek-karari` | Taze mi? → kullan; bayat → ETag ile sor → 304/200 | 7.3 |
+| `state-kategorileri` | Server / client / URL / form state ve her birinin aracı | 9.1 |
+| `test-katmanlari` | Birim / entegrasyon / uçtan uca; neyi hangi katmanda test etmeli | 10.1 |
+| `msw-perdesi` | Uygulama `fetch` → MSW yakalar → handler → cevap | 11.5 |
+| `query-onbellek-yasam-dongusu` | fetching → fresh → stale → inactive → gc | 12.5 |
+| `mutation-ve-invalidation` | Mutation → (optimistic) → sunucu → invalidate/rollback → refetch | 13.2 |
+| `form-state` | RHF: alanlar kayıtlı, değerler form deposunda, abonelikle render | 14.2 |
+| `zod-sinir` | `unknown` → `parse` → tipli veri ya da hata; sınırlar: API, form, env | 15.1 |
+| `redux-veri-akisi` | dispatch → middleware → reducer → store → selector → UI | 16.3 |
+| `token-yenileme` | 401 → tek uçuşta refresh → bekleyen istekleri tekrar dene | 17.5 |
+| `xss-akisi` | Güvenilmeyen girdi → tehlikeli çıkış noktaları → kaçış/doğrulama/CSP | 17.8 |
+| `render-nedenleri` | Render tetikleyicileri ve memo sınırları | 18.2 |
+| `web-vitals` | LCP / INP / CLS'in sayfa zaman çizelgesindeki yeri | 18.9 |
+| `build-ve-yayin` | Kaynak → build (hash'li dosyalar) → host/CDN (cache politikası) → tarayıcı | 21.9 |
 
 ---
 
@@ -206,7 +333,9 @@ Egzersiz kodu ve testler kök `package.json`'daki paketleri import edebilir: `re
 
 ---
 
-## 4. Test yazma görevleri (mutation testing) — Modül 10'dan itibaren
+## 4. Test yazma görevleri (mutation testing) — Modül 1'den itibaren
+
+Test okumak Modül 0'da (0.7), küçük test yazmak Modül 1'de başlar: 1–6. modüllerde saf fonksiyonlar, reducer'lar ve basit bileşenler için kısa test yazma görevleri vardır; bunlar MSW gerektirmez (MSW'nin "perdesi" 11. modülde kalkar). 10–11. modüller aracı derinlemesine öğretir.
 
 ```ts
 defineQuestion({
@@ -276,10 +405,13 @@ Bitti sayılması için:
 - [ ] Planlanan soru sayısına yakın (±%20) ve karışım dengeli (~%40 quiz, ~%50 code, ~%10 project).
 - [ ] Her ders içinde zorluk artıyor; tekrarlar **yenilik** içeriyor (aynı sorunun kopyası yok).
 - [ ] Önceki modüllerin core kavramları yeni bağlamlarda kullanılmış ve `concepts`'e eklenmiş.
-- [ ] Her code görevinde: net `prompt.md`, 1–3 kademeli ipucu, `solution.md` ("neden böyle?"), Türkçe açıklayıcı test adları, starter testlerden kalıyor (tip hatasından değil).
+- [ ] Her code görevinde: LeetCode biçiminde `prompt.md` (yöntem adı yok), 2–4 kademeli ipucu, `solution.md` ("neden böyle?"), Türkçe açıklayıcı test adları, starter testlerden kalıyor (tip hatasından değil).
 - [ ] Kod örnekleri güncel API'lerle (React 19, React Router 8, TanStack Query 5, Zod 4, RHF 7, RTK 2, Vitest 5, MSW 2, Tailwind 4) — `docs/research/` ile kontrol edildi.
 - [ ] Quiz şıklarının her birinin açıklaması öğretici.
-- [ ] Türkçe sade ve doğru; terimler tutarlı.
+- [ ] Türkçe sade ve doğru; terimler tutarlı; §1.6'daki yasak kalıplar yok.
+- [ ] Ders örnekleri görevlerin çözümü değil (farklı ad, senaryo, veri); ders metni testlerden/ipuçlarından söz etmiyor.
+- [ ] Dersler §1.4 uzunluğunda ve zorunlu parçaları içeriyor; ilgili zihinsel modeller kurulmuş ya da `:::model` ile hatırlatılmış.
+- [ ] Diyagramlar §2.4 kurallarına uyuyor ve `pnpm preview:diagram` çıktısı gözle kontrol edildi.
 - [ ] Sinema görevleri `docs/curriculum-plan.md`'deki sözleşmeye (dosya yolu, export) uyuyor.
 
 ## 9. Atölye görevleri

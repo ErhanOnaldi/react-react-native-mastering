@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.msw-overrides', 'fetch.error-handling'],
   files: ['errorHandler.ts'],
   hints: [
-    'Handler’ı http.get ile fonksiyon içinde kur.',
-    'HttpResponse.json(body, { status }) kullan.',
-    'Önce status aralığını doğrula.',
+    'Geçerli hata kodu aralığını response oluşturmadan önce kontrol et.',
+    '`http.get` handler’ı ve `HttpResponse.json(body, { status })` kullan.',
+    '400–599 dışında `RangeError` fırlat; geçerli değeri response status’una aktar.',
   ],
 })

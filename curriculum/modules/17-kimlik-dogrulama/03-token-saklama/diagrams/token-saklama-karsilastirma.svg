@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300">
+  <title>Token saklama seçenekleri: bellek, localStorage ve HttpOnly cookie</title>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">Her saklama yerinin kalıcılık, XSS ve CSRF güvenlik ödünleşimi farklıdır</text>
+
+  <!-- Bellek / Store -->
+  <rect class="d-box" x="30" y="60" width="220" height="215" rx="8"/>
+  <text class="d-title" x="140" y="92" text-anchor="middle">Bellek / Store</text>
+  <text class="d-muted" x="140" y="122" text-anchor="middle">F5'te oturum sıfırlanır</text>
+  <text class="d-muted" x="140" y="147" text-anchor="middle">XSS: Bellekten okunabilir</text>
+  <text class="d-muted" x="140" y="172" text-anchor="middle">CSRF: Başlık elle eklenir</text>
+  <rect class="d-accent" x="45" y="200" width="190" height="60" rx="6"/>
+  <text class="d-text" x="140" y="224" text-anchor="middle">En dar saldırı yüzeyi</text>
+  <text class="d-muted" x="140" y="244" text-anchor="middle">Oturum her F5'te düşer</text>
+
+  <!-- localStorage -->
+  <rect class="d-warning" x="270" y="60" width="220" height="215" rx="8"/>
+  <text class="d-title" x="380" y="92" text-anchor="middle">localStorage</text>
+  <text class="d-muted" x="380" y="122" text-anchor="middle">F5'te oturum korunur</text>
+  <text class="d-muted" x="380" y="147" text-anchor="middle">XSS: JS doğrudan okur</text>
+  <text class="d-muted" x="380" y="172" text-anchor="middle">CSRF: Başlık elle eklenir</text>
+  <rect class="d-danger" x="285" y="200" width="190" height="60" rx="6"/>
+  <text class="d-text" x="380" y="224" text-anchor="middle">Kolay ama riskli</text>
+  <text class="d-muted" x="380" y="244" text-anchor="middle">XSS token'ı hemen çalar</text>
+
+  <!-- HttpOnly Cookie -->
+  <rect class="d-success" x="510" y="60" width="220" height="215" rx="8"/>
+  <text class="d-title" x="620" y="92" text-anchor="middle">HttpOnly Cookie</text>
+  <text class="d-muted" x="620" y="122" text-anchor="middle">F5'te oturum korunur</text>
+  <text class="d-muted" x="620" y="147" text-anchor="middle">XSS: JS asla okuyamaz</text>
+  <text class="d-muted" x="620" y="172" text-anchor="middle">CSRF: Tarayıcı otomatik yollar</text>
+  <rect class="d-violet" x="525" y="200" width="190" height="60" rx="6"/>
+  <text class="d-text" x="620" y="224" text-anchor="middle">Sunucu koruması</text>
+  <text class="d-muted" x="620" y="244" text-anchor="middle">SameSite ve CSRF şart</text>
+</svg>

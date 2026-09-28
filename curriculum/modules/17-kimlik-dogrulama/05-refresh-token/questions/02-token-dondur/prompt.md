@@ -1,17 +1,23 @@
-İlk access token’ın süresi doldu. Elindeki refresh token ile yeni çift alman gerekiyor; eski refresh token ikinci kez kullanılamaz.
+Kısa ömürlü erişim belirtecinin süresi dolduğunda, oturumun kesintiye uğramaması için eldeki yenileme belirteci sunucuya iletilerek yeni bir belirteç çifti alınmalıdır. Sunucunun uyguladığı belirteç döndürme (rotation) kuralı gereğince eski yenileme belirteci ikinci kez kullanılamaz.
 
-## Görev
+## Gereksinimler
 
-`refreshSession(storage)` fonksiyonu:
+- Depodan mevcut oturum belirteçleri okunmalı; depoda oturum yoksa ağa istek atılmadan hata fırlatılmalıdır.
+- Mevcut yenileme belirteci kimlik yenileme uç noktasına iletilmelidir.
+- Başarılı yanıttan gelen yeni erişim ve yenileme belirteçleri depoya atomik olarak kaydedilmeli ve fonksiyon tarafından döndürülmelidir.
+- Sunucu yenileme isteğini reddederse (örneğin kullanılmış belirteç nedeniyle `403`), hata fırlatılmalı ve depo durumu değiştirilmemelidir.
 
-1. `storage.getTokens()` ile eski çifti okur. Çift yoksa hata fırlatır.
-2. `POST https://dummyjson.com/auth/refresh` adresine `{ refreshToken }` JSON’u yollar.
-3. Başarılı yeni **iki** token’ı `storage.setTokens(...)` ile kaydeder ve döndürür.
-4. 403 veya başka başarısız yanıtta hata fırlatır; storage’ı değiştirmez.
+## Örnek
 
-| Durum | Beklenen |
+| Durum | Beklenen Davranış |
 | --- | --- |
-| Geçerli refresh token | Yeni access ve refresh token |
-| Aynı eski refresh token’ı tekrar kullan | 403 hatası |
+| Geçerli yenileme belirteci var | Yeni belirteç çifti döner, depodaki `setTokens` yeni çiftle çağrılır. |
+| Zaten kullanılmış yenileme belirteci | Hata fırlatılır (`403`), depodaki belirteçler değiştirilmez. |
+| Depoda hiçbir belirteç yok | Ağa istek atılmaz, doğrudan hata fırlatılır. |
 
-Bir sonraki görev iki paralel 401’in bu fonksiyonu tek kez paylaşmasını sağlayacak.
+## Sözleşme
+
+- `refreshSession.ts` dosyasından `refreshSession(storage: TokenStorage): Promise<Tokens>` fonksiyonunu named export et.
+- Tipler:
+  - `Tokens`: `{ accessToken: string; refreshToken: string }`
+  - `TokenStorage`: `{ getTokens: () => Tokens | null; setTokens: (tokens: Tokens) => void }`

@@ -11,8 +11,8 @@ export default defineQuestion({
     'src/features/movies/api/movie-queries.ts',
   ],
   hints: [
-    'Route parametresini Number + Number.isInteger ile doğrula.',
-    'Loader içinde `queryClient.ensureQueryData(movieQueries.detail(id))`, sayfada `useSuspenseQuery` kullan.',
-    'İkisi aynı key’i paylaşır; Suspense yüklemeyi, ErrorBoundary hatayı yakalar.',
+    'URL’den gelen id’nin geçersiz olabileceğini ve geçersizken GET çıkmaması gerektiğini düşün.',
+    '`Number.isInteger`, `ensureQueryData`, `useSuspenseQuery`, Suspense ve Error Boundary kullan.',
+    'Loader ve sayfaya aynı `movieQueries.detail(id)` tarifini ver; detay route’unun çevresine bekleme ve hata sınırlarını koy.',
   ],
 })

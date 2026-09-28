@@ -15,8 +15,9 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['src/types/tmdb.ts', 'src/lib/tmdb-image.ts'],
   hints: [
-    'Trend ve detay fixture’larının anahtarlarını karşılaştır; `genre_ids` detayda yok.',
-    '`MovieDetails` için `Omit<Movie, "genre_ids">` tabanı kullan; `credits` ve `videos` opsiyoneldir.',
-    'Poster URL’si için null erken dönüşü ve `https://image.tmdb.org/t/p/${size}${path}` biçimini kullan.',
+    'Liste ve detay cevaplarını karşılaştır; ortak alanlar ile yalnız belirli endpointte görünenleri ayır.',
+    '`Omit`, `Paginated<T>` ve opsiyonel nested alanları kullanarak cevap tiplerini türet.',
+    'Poster helper içinde null için erken dön; varsayılan boyutu parametre varsayılanında ver.',
+    'TMDB path başında slash bulunduğu için host sonundaki slash ile birleştirirken çift slash üretme.',
   ],
 })

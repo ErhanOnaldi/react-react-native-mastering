@@ -14,8 +14,8 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['src/App.tsx', 'src/components/MovieGrid.tsx', 'src/components/SearchBox.tsx'],
   hints: [
-    'Önce dosya yolları ve export adlarını sözleşmeyle eşleştir; fixture’daki gerçek film verisini kullan.',
-    'State’i yalnız ortak üst bileşende tut; bileşenler değeri props ile alıp olayı callback ile bildirsin.',
-    'Listeyi `filter` ile türet, favorileri `setFavoriteIds(ids => ...)` ile yeni dizi döndürerek değiştir.',
+    'Sorguyu ve favori id’lerini kim sahiplenmeli ki arama kutusu, grid ve kartlar aynı veriyi kullansın?',
+    'İki değeri `App` state’inde tut; görünür filmleri başlığa göre `filter` ile türet.',
+    'Favori updater’ında id varsa `ids.filter(...)`, yoksa `[...ids, id]` döndür; `SearchBox` callback’i sorgu state’ini güncellesin.',
   ],
 })

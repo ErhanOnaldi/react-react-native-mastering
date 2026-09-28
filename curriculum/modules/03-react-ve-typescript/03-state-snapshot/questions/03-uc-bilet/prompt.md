@@ -1,3 +1,18 @@
-Sinema seansına üç bilet eklemek istiyorsun. Başlangıç sayısı 0 olan `TicketCounter` yaz. Düğmede `Bilet: 0` göster; her tıklama sayıyı **3** artırsın. Önizlemede önce starter’a tıkla: aynı snapshot’tan üç kez `count + 1` yalnız 1 ekler. Updater fonksiyonlarıyla düzelt. İki tıklama sonrası 6 beklenir.
+Sinema seansına ek koltuk ekleyen bir sayaç yaz. Bir tıklama üç koltuk eklemeli ve sonraki tıklamalar önceki sayının üstüne eklenmelidir.
 
-**Örnek:** Başlangıç 0 → bir tıklama 3 → ikinci tıklama 6.
+## Gereksinimler
+
+- Başlangıç değeri 0 olmalıdır.
+- Düğme başlangıçta `Koltuk: 0` göstermelidir.
+- Her tıklama sayıyı tam 3 artırmalıdır.
+- İki tıklama sonrası ekranda `Koltuk: 6` görünmelidir.
+
+## Örnek
+
+Başlangıç 0 → bir tıklama 3 → ikinci tıklama 6.
+
+## Sözleşme
+
+- Dosya ve export: `TicketCounter.tsx` → named export `TicketCounter`
+- Props: yok
+- Arayüz: sayaç değeri düğmenin erişilebilir adında görünür.

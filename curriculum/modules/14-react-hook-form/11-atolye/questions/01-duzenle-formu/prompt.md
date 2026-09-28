@@ -1,9 +1,20 @@
-İzleme listesi kartı, seçilen listenin adını ve açıklamasını düzenlenebilir alanlarda gösterir.
+İzleme listesi düzenleme kartı başka bir kayda geçtiğinde ekrandaki alanlar seçilen listeyle eşleşmiyor.
 
-`WatchlistEditor.tsx` içindeki `WatchlistEditor` bileşenini tamamla:
+## Gereksinimler
 
-- `list` prop'u değişince alanlar **yeni** listenin adını ve açıklamasını göstermeli — önceki listeden kalan yazı görünmemeli.
-- Kullanıcı hiçbir alanı değiştirmeden `Kaydet`'e basarsa `onSave` çağrılmamalı.
-- Bir alan değiştirilip `Kaydet`'e basılınca `onSave`, güncel `{ name, description }` değeriyle çağrılmalı.
+- Seçilen listenin adı ve açıklaması düzenlenebilir alanlarda görünsün.
+- `list` başka kayda geçtiğinde iki alan da yeni listenin değerini hemen göstersin.
+- Hiçbir alan değişmemişse “Kaydet” etkin olmasın ve callback çağrılmasın.
+- Bir alan değişince “Kaydet” etkinleşsin; tıklanınca güncel ad ve açıklama callback'e gitsin.
+- Kayıt tamamlanınca aynı liste için düğme yeniden devre dışı olsun.
 
-Önizlemede birkaç listeyi arka arkaya aç; formun her seferinde doğru listeyi gösterdiğini gözle de doğrula.
+## Örnek
+
+İlk listede açıklamayı düzenle ve kaydet; sonra ikinci listeye geç. İkinci listenin adı/açıklaması görünmeli, düğme değişiklik yapılana kadar kapalı kalmalı.
+
+## Sözleşme
+
+- Dosya ve export: `WatchlistEditor.tsx` → named export `WatchlistEditor`.
+- Props: `list: { id: string; name: string; description: string }`; `onSave(values: { name: string; description: string }): void`.
+- Arayüz: “Liste adı”, “Açıklama” alanları ve “Kaydet” düğmesi.
+- Önizleme `Preview.tsx` içinden birkaç listeyi sırayla gösterir.

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270">
+  <title>Render, commit ve effect sırası</title>
+  <defs>
+    <marker id="ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-kirmizi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="285" y="28" text-anchor="middle">saf hesaplama — DOM'a dokunma, istek atma</text>
+  <text class="d-muted" x="665" y="28" text-anchor="middle">ekran boyandıktan sonra</text>
+
+  <rect class="d-box" x="20" y="45" width="150" height="100" rx="10"/>
+  <text class="d-title" x="95" y="75" text-anchor="middle">1 · Tetikleme</text>
+  <text class="d-text" x="95" y="102" text-anchor="middle">ilk açılış</text>
+  <text class="d-text" x="95" y="124" text-anchor="middle">ya da setState</text>
+
+  <rect class="d-accent" x="210" y="45" width="150" height="100" rx="10"/>
+  <text class="d-title" x="285" y="75" text-anchor="middle">2 · Render</text>
+  <text class="d-text" x="285" y="102" text-anchor="middle">bileşen fonksiyonu</text>
+  <text class="d-text" x="285" y="124" text-anchor="middle">çağrılır → JSX</text>
+
+  <rect class="d-success" x="400" y="45" width="150" height="100" rx="10"/>
+  <text class="d-title" x="475" y="75" text-anchor="middle">3 · Commit</text>
+  <text class="d-text" x="475" y="102" text-anchor="middle">React yalnızca</text>
+  <text class="d-text" x="475" y="124" text-anchor="middle">farkı DOM'a yazar</text>
+
+  <rect class="d-violet" x="590" y="45" width="150" height="100" rx="10"/>
+  <text class="d-title" x="665" y="75" text-anchor="middle">4 · Effect</text>
+  <text class="d-text" x="665" y="102" text-anchor="middle">useEffect çalışır:</text>
+  <text class="d-text" x="665" y="124" text-anchor="middle">dış sistemle eşleş</text>
+
+  <line class="d-line" x1="170" y1="95" x2="206" y2="95" marker-end="url(#ok)"/>
+  <line class="d-line" x1="360" y1="95" x2="396" y2="95" marker-end="url(#ok)"/>
+  <line class="d-line" x1="550" y1="95" x2="586" y2="95" marker-end="url(#ok)"/>
+
+  <path class="d-line-danger d-dashed" d="M665 145 V205 H95 V149" marker-end="url(#ok-kirmizi)"/>
+  <text class="d-text-danger" x="380" y="228" text-anchor="middle">effect ya da olay setState çağırırsa yeni tur başlar</text>
+  <text class="d-muted" x="380" y="252" text-anchor="middle">render içinde setState ya da fetch → her tur yeni tur doğurur: sonsuz döngü</text>
+</svg>

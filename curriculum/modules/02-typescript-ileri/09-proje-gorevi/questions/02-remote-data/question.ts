@@ -8,8 +8,8 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['src/lib/remote-data.ts'],
   hints: [
-    'Dört nesne biçimini `status` literal alanıyla union yap.',
-    'Guard dönüşünde `state is ...` yaz; gövdede status eşitliği yeterli.',
-    'Dört fonksiyon aynı kalıbı izler ama her biri ayrı durumu kontrol eder.',
+    'Önce her durumda hangi alanların bulunmasının anlamlı olduğunu yaz.',
+    '`status` literal alanıyla dört union dalı kur ve her helper için type predicate tanımla.',
+    'Her guard yalnızca kendi status eşitliğini döndürmeli; success dalı `T` bilgisini korur.',
   ],
 })

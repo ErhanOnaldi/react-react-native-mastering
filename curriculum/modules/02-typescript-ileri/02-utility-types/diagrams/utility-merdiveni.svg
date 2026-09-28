@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220">
+  <title>Kaynak nesne tipinden alan seçme, çıkarma ve kısmi güncelleme tipine geçiş</title>
+  <defs>
+    <marker id="utility-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path class="d-arrowhead-accent" d="M0 0 L8 4 L0 8 Z" />
+    </marker>
+  </defs>
+  <rect class="d-box" x="18" y="76" width="150" height="100" rx="12" />
+  <text class="d-title" x="93" y="108" text-anchor="middle">Kaynak tip</text>
+  <text class="d-code" x="93" y="138" text-anchor="middle">Article</text>
+  <text class="d-muted" x="93" y="159" text-anchor="middle">tüm alanlar</text>
+  <path class="d-line-accent" d="M178 126 H198" marker-end="url(#utility-arrow)" />
+  <rect class="d-accent" x="207" y="76" width="150" height="100" rx="12" />
+  <text class="d-title" x="282" y="108" text-anchor="middle">Alanları seç</text>
+  <text class="d-code" x="282" y="138" text-anchor="middle">Pick&lt;T, K&gt;</text>
+  <text class="d-muted" x="282" y="159" text-anchor="middle">gerekli görünüm</text>
+  <path class="d-line-accent" d="M367 126 H387" marker-end="url(#utility-arrow)" />
+  <rect class="d-warning" x="396" y="76" width="150" height="100" rx="12" />
+  <text class="d-title" x="471" y="108" text-anchor="middle">Alan çıkar</text>
+  <text class="d-code" x="471" y="138" text-anchor="middle">Omit&lt;T, K&gt;</text>
+  <text class="d-muted" x="471" y="159" text-anchor="middle">kalan görünüm</text>
+  <path class="d-line-accent" d="M556 126 H576" marker-end="url(#utility-arrow)" />
+  <rect class="d-success" x="585" y="76" width="157" height="100" rx="12" />
+  <text class="d-title" x="663.5" y="108" text-anchor="middle">Kısmi güncelle</text>
+  <text class="d-code" x="663.5" y="138" text-anchor="middle">Partial&lt;T&gt;</text>
+  <text class="d-muted" x="663.5" y="159" text-anchor="middle">alanlar opsiyonel</text>
+</svg>

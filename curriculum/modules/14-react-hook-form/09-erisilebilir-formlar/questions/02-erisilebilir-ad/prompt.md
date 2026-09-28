@@ -1,8 +1,18 @@
-Ad hatası görünüyor ama hangi input'a ait olduğu ekran okuyucu için belirsiz.
+Liste adı hatası oluştuğunda, hata mesajını alanla programatik olarak ilişkilendir ve geçerli değerlerin gönderilmesini sağla.
 
-- “Liste adı” görünür label'ı input'a bağla.
-- Geçersiz submit'te input `aria-invalid="true"` taşısın.
-- Hata mesajının id'si ile input'un `aria-describedby` değeri eşleşsin.
-- Geçerli ad gönderildiğinde `onSave` çalışsın.
+## Gereksinimler
 
-Testler semantik sorgularla alanı bulur; placeholder yeterli değildir.
+- “Liste adı” için görünür, textbox'a bağlı label göster.
+- Boş submit'te input `aria-invalid="true"` taşısın.
+- “Ad gerekli” mesajını görünür göster; mesajın `id` değeri input'un `aria-describedby` değeriyle aynı olsun.
+- Geçerli bir adla callback çağrılsın.
+
+## Örnek
+
+Boş submit → input geçersiz ve “Ad gerekli” açıklamasına bağlı. `Akşam` yazıp submit → callback'e `{ name: 'Akşam' }` gider.
+
+## Sözleşme
+
+- Dosya ve export: `AccessibleNameForm.tsx` → named export `AccessibleNameForm`.
+- Prop: `onSave(values: { name: string }): void`.
+- Arayüz: textbox erişilebilir adı “Liste adı”, hata `role="alert"` ile bulunabilir.

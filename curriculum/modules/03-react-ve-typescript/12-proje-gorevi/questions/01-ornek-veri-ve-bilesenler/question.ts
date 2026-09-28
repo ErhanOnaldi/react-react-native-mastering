@@ -13,8 +13,8 @@ export default defineQuestion({
     'src/components/SearchBox.tsx',
   ],
   hints: [
-    'Önce dosya yolları ve export adlarını sözleşmeyle eşleştir; fixture’daki gerçek film verisini kullan.',
-    'State’i yalnız ortak üst bileşende tut; bileşenler değeri props ile alıp olayı callback ile bildirsin.',
-    'Listeyi `filter` ile türet, favorileri `setFavoriteIds(ids => ...)` ile yeni dizi döndürerek değiştir.',
+    'Önce Movie tipinin alanlarını ve TMDB fixture kayıtlarının liste/detay biçimlerini karşılaştır.',
+    'Film verisini ve gösterim API’lerini görevdeki dosya/export sözleşmelerine göre ayır; tekrar eden kart bilgisi aynı kayıttan gelsin.',
+    'Her kartın favori düğmesi `movie.id` ile callback çağırsın; grid boş durum metnini, arama alanı ise etiketiyle kontrollü değerini göstersin.',
   ],
 })

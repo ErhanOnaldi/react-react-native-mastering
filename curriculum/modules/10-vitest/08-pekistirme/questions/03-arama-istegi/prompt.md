@@ -1,8 +1,27 @@
-Sinema araması birden fazla kavramı birleştiriyor: sorguyu kırp, sayfayı taşı, Türkçe içerik iste, yetkilendir ve sonucu döndür. `@impl/searchMovies` içindeki `searchMovies(query, page)` fonksiyonu için test yaz.
+Arama, sorguyu temizleyip doğru dil ve sayfa bilgisiyle istemciye göndermeli. Boş sorguda ağ isteği oluşturmamalı.
 
-- `"  dövüş  "`, sayfa `2` girdisinde URL’de `query=dövüş`, `page=2`, `language=tr-TR` olmalı.
-- `Authorization: Bearer test-token` gönderilmeli.
-- `{ page: 2, results: [{ id: 550, title: 'Dövüş Kulübü' }] }` yanıtı cevap olarak korunmalı.
-- Sadece boşluk içeren sorguda hiç istek atılmamalı; boş sonuç dönmeli.
+## Gereksinimler
 
-URL parametre sırasına bağlanma. Bu görev refactor’da kaybolan sayfa parametresine doğrudan regresyon testi olacak.
+- “  dövüş  ” girdisi query dövüş değerine dönüşmeli.
+- İstek page 2 ve language tr-TR taşımalı.
+- Authorization başlığı Bearer test-token olmalı.
+- Başarılı yanıttaki Dövüş Kulübü başlığı korunmalı.
+- Yalnız boşluk içeren sorgu boş sonuç vermeli ve fetch çağırmamalı.
+
+## Örnek
+
+| Girdi | Beklenen |
+| --- | --- |
+| sorgu “  dövüş  ”, sayfa 2 | query dövüş, page 2, language tr-TR |
+| sorgu yalnız boşluk | boş sonuç, sıfır istek |
+
+## Sözleşme
+
+- Yazılacak dosya: searchMovies.test.ts
+- Test edilecek modül: @impl/searchMovies
+- Çağrı: searchMovies(query: string, page: number)
+
+## Kısıtlar
+
+- URL query parametrelerinin sırasına bağlanma.
+- Gerçek ağa istek gönderme.

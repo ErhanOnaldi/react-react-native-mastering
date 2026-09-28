@@ -7,9 +7,9 @@ export default defineQuestion({
   concepts: ['test.render-hook', 'react.custom-hooks', 'react.immutability'],
   files: ['useFavoriteIds.test.ts'],
   hints: [
-    'renderHook sonucunu result.current ile oku.',
-    'State değiştiren çağrıyı act(() => ...) içine koy.',
-    'Aynı id’yi iki kez toggle ederek hem ekleme hem çıkarma davranışını yakala.',
+    'Hook’un başlangıç listesini ve bir id için beklenen iki ardışık geçişi belirle.',
+    '`renderHook`, `result.current` ve `act` ile React render’ları içinde test et.',
+    'Boş listeyi doğrula; `act` içinde aynı id’yi iki kez toggle edip `[550]` ve sonra `[]` bekle.',
   ],
   testWriting: {
     mutants: [

@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['query.infinite', 'query.keys', 'js.array-methods'],
   files: ['TrendingFeed.tsx'],
   hints: [
-    '`queryFn` içindeki `pageParam` değerini URL’ye koy.',
-    '`getNextPageParam` için `last.page < last.total_pages` karşılaştır.',
-    '`feed.data.pages.flatMap(page => page.results)` ile listeyi oluştur.',
+    'Yeni sayfayı eskilerin yerine koymak ile aynı listede biriktirmek arasındaki farkı düşün.',
+    '`useInfiniteQuery` içinde `initialPageParam`, `getNextPageParam` ve `maxPages` tanımla.',
+    '`pageParam` ile isteği yap; `data.pages.flatMap(page => page.results)` ile sırayı koru.',
   ],
 })

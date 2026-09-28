@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['react.useRef', 'react.events'],
   files: ['SearchFocus.tsx'],
   hints: [
-    'DOM düğümüne ulaşmak için ref kullan.',
-    'Input’a `ref={inputRef}` ver.',
-    'Düğmenin `onClick` içinde `inputRef.current?.focus()` çağır.',
+    'Odak, ekranda gösterilen veri değil; DOM düğümünde yaşayan bir durum.',
+    'DOM düğümüne ulaşmak için `useRef<HTMLInputElement>(null)` kullan.',
+    'Input’a `ref={inputRef}` ver; düğmenin `onClick` içinde `inputRef.current?.focus()` çağır.',
   ],
 })

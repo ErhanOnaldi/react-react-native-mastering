@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 200">
+  <title>Form alan adı ve DOM kimliğinin kontrol ile hata metnine bağlanması</title>
+  <defs>
+    <marker id="form-binding-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 Z" class="d-arrowhead-accent" />
+    </marker>
+  </defs>
+  <rect x="18" y="54" width="150" height="88" rx="10" class="d-accent" />
+  <text x="93" y="82" text-anchor="middle" class="d-title">FormField</text>
+  <text x="93" y="106" text-anchor="middle" class="d-muted">RHF adı: email</text>
+  <text x="93" y="128" text-anchor="middle" class="d-muted">ve alan hatası</text>
+  <rect x="205" y="54" width="150" height="88" rx="10" class="d-box" />
+  <text x="280" y="82" text-anchor="middle" class="d-title">FormItem</text>
+  <text x="280" y="106" text-anchor="middle" class="d-muted">benzersiz DOM id</text>
+  <text x="280" y="128" text-anchor="middle" class="d-muted">her alan örneği için</text>
+  <rect x="392" y="54" width="155" height="88" rx="10" class="d-warning" />
+  <text x="469" y="82" text-anchor="middle" class="d-title">useFormField</text>
+  <text x="469" y="106" text-anchor="middle" class="d-muted">adı + id + hata</text>
+  <text x="469" y="128" text-anchor="middle" class="d-muted">tek alan görünümü</text>
+  <rect x="585" y="54" width="157" height="88" rx="10" class="d-success" />
+  <text x="663" y="82" text-anchor="middle" class="d-title">DOM ilişkisi</text>
+  <text x="663" y="106" text-anchor="middle" class="d-muted">label → control</text>
+  <text x="663" y="128" text-anchor="middle" class="d-muted">control → message</text>
+  <path d="M168 98 H198" class="d-line-accent" marker-end="url(#form-binding-arrow)" />
+  <path d="M355 98 H385" class="d-line-accent" marker-end="url(#form-binding-arrow)" />
+  <path d="M547 98 H578" class="d-line-accent" marker-end="url(#form-binding-arrow)" />
+  <text x="380" y="178" text-anchor="middle" class="d-text">Hata yoksa açıklama bağı yok; hata varsa gerçek kontrol onu duyurur.</text>
+</svg>

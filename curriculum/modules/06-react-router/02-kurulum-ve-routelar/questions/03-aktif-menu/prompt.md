@@ -1,5 +1,16 @@
-Sinema menüsündeki düz `Link`ler hedefe götürüyor ama hangi sayfada olduğunu göstermiyor. Kök link, `/search` açıkken de etkin sanılmamalı.
+Sinema menüsünde kullanıcı hangi sayfada olduğunu anlayabilmeli. Ana sayfa bağlantısı arama sayfasındayken etkin görünmemeli.
 
-## Görev
+## Gereksinimler
 
-`Menu.tsx` içinde Ana sayfa (`/`) ve Ara (`/search`) linklerini `NavLink` yap. Ana sayfa linki yalnızca tam kök adreste etkin olsun. Ekran okuyucu `aria-current="page"` ile bunu anlar; NavLink bunu kendisi ekler.
+- Menüde `Ana sayfa` ve `Ara` bağlantıları olsun.
+- `/` adresinde yalnızca `Ana sayfa` bağlantısında `aria-current="page"` bulunsun.
+- `/search` adresinde yalnızca `Ara` bağlantısında `aria-current="page"` bulunsun.
+
+## Örnek
+
+`/search` açıldığında Ara etkin, Ana sayfa etkin değil.
+
+## Sözleşme
+
+- `Menu.tsx` içinden `Menu` named export edilir.
+- Route'lar `/` ve `/search` adreslerinde aynı menüyü render eder.

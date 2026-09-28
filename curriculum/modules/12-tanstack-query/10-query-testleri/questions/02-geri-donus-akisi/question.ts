@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['query.testing', 'query.useQuery', 'router.search-params', 'test.msw'],
   files: ['SearchAgain.tsx'],
   hints: [
-    'Arama sonucunu ayrı bir child component yap ki detay görünümünde unmount olsun.',
-    'Child içinde `useQuery` key’ine normalize `query` ekle ve `staleTime: 60_000` ayarla.',
-    'Button ile `details` state’ini değiştir; detayda yalnız metin, dönüşte `<Results query={query} />` göster.',
+    'Detay görünümünde arama component’i ağaçtan ayrılmalı; hangi UI sınırı bunu sağlar?',
+    'Arama child’ında `useQuery` key’ine temizlenmiş `query` ekle ve 60 saniyelik tazelik ver.',
+    '`details` state ile iki görünümü seç; Geri’de `<Results query={query} />` göster.',
   ],
 })

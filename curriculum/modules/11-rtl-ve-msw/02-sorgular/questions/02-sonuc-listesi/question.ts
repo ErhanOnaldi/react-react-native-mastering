@@ -7,9 +7,9 @@ export default defineQuestion({
   concepts: ['test.rtl-queries', 'react.conditional-rendering'],
   files: ['MovieResults.test.tsx'],
   hints: [
-    'Farklı props ile iki ayrı render kur.',
-    'Başlığı getByRole, yokluğu queryByRole ile sorgula.',
-    'Boş listede status rolünü ve metni doğrula.',
+    'Başarı ve boş durumları ayrı örneklerle hazırla; her durumda beklenen DOM’u belirle.',
+    '`getByRole` bulunan başlık, `queryByRole` yokluğu sorgulamak içindir.',
+    'Film heading’ini adıyla bul; boş listede status mesajını doğrula ve heading’in bulunmadığını kontrol et.',
   ],
   testWriting: {
     mutants: [

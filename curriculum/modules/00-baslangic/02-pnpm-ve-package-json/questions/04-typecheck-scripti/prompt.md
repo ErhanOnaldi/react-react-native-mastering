@@ -1,16 +1,12 @@
-İlk VS Code görevin! 🎉
+Sinema projesinde derleme paketlemesine girmeden yalnızca TypeScript tip doğrulaması yapabilmek için bağımsız bir komut kısayoluna ihtiyaç duyulmaktadır.
 
-Sinema projesinin `build` script'i önce tip kontrolü yapıyor (`tsc -b`), sonra paketliyor (`vite build`). Bazen **sadece** tip kontrolü yapmak isteriz — hızlıca "projede tip hatası var mı?" diye bakmak için.
+## Gereksinimler
 
-1. VS Code'da `projects/sinema/package.json` dosyasını aç (sağdaki bağlantı doğrudan açar).
-2. `scripts` içine `typecheck` adında, `tsc -b` çalıştıran bir script ekle.
-3. Terminalde dene:
+- `scripts` alanı altında tip denetimini başlatan `typecheck` komutu tanımlanmalıdır.
+- Komut, TypeScript derleyicisini proje referansları modunda (`-b`) çalıştırmalıdır.
+- Mevcut `build` script'inin yapısı bozulmadan korunmalıdır.
 
-```bash
-cd projects/sinema
-pnpm typecheck
-```
+## Sözleşme
 
-Hata yoksa komut sessizce biter — Unix dünyasında "sessizlik = başarı" demektir.
-
-4. Platformdan **Testleri çalıştır**'a bas ya da kökte `pnpm check 0.2.4` yaz.
+- Proje ve dosya: `projects/sinema/package.json`
+- Hedef alan: `scripts.typecheck` → `"tsc -b"`

@@ -1,11 +1,16 @@
-`?q=Matrix&page=3&genre=28` adresini yenileyince aynı ekranı kurmak istiyorsun. URL'deki tüm değerler önce metindir.
+Arama URL'sindeki metin değerlerini güvenli ve tutarlı bir görünüm seçimine dönüştür.
 
-## Görev
+## Gereksinimler
 
-`readSearch(params)` şu güvenli değeri dönsün:
+- `q` değerinin başındaki ve sonundaki boşlukları kaldır; yoksa `''` döndür.
+- `page` pozitif güvenli tam sayı değilse `1` döndür.
+- `genre` pozitif güvenli tam sayı değilse `null` döndür.
+- Ondalık değerleri ve sayısal olmayan metinleri geçersiz say.
 
-- `q`: baş ve son boşlukları kırpılmış metin; yoksa `''`.
-- `page`: pozitif güvenli tam sayı; yoksa veya geçersizse `1`.
-- `genre`: pozitif güvenli tam sayı; yoksa veya geçersizse `null`.
+## Örnek
 
-Örnek: `?q=Matrix&page=3&genre=28` → `{ q: 'Matrix', page: 3, genre: 28 }`.
+`?q=Matrix&page=3&genre=28` → `{ q: 'Matrix', page: 3, genre: 28 }`.
+
+## Sözleşme
+
+- `readSearch.ts` → `readSearch(params: URLSearchParams): { q: string; page: number; genre: number | null }`.

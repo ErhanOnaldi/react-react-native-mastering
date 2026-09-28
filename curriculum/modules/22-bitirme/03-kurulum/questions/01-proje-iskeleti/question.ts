@@ -50,9 +50,10 @@ export default defineQuestion({
     'Şablondan kalan kullanılmayan dosyalar (örnek App.css, logolar, sayaç bileşeni) temizlenmiş mi?',
   ],
   hints: [
-    'Yol haritasını sırayla izle ve her adımın sonunda ilgili komutu çalıştır (pnpm dev, pnpm typecheck, pnpm lint, pnpm test, pnpm test:e2e). Hata bir önceki adımda çıkarsa aramak kolay olur.',
-    "“pnpm test e2e/smoke.spec.ts’i çalıştırıyor” hatası: vitest.config.ts’te exclude: [...configDefaults.exclude, 'e2e/**']. “@/ bulunamadı”: alias hem tsconfig.app.json paths’te hem vite.config.ts resolve.alias’ta olmalı.",
-    'Duman testi için src/test/render.tsx’te bir renderApp(url) yaz: taze QueryClient (retry: false) → createMemoryRouter(createRoutes(queryClient), { initialEntries: [url] }) → <AppProviders queryClient={queryClient}><RouterProvider router={router} /></AppProviders>.',
+    'Kurulumu parça parça ilerlet: paketler → typescript & vite → eslint & prettier → test altyapısı (vitest + playwright) → uygulama iskeleti.',
+    'Vite ve Vitest konfigürasyonlarını ayır; Vitest içinde `e2e/**` dizinini hariç tut (`exclude`). `@/` alias ayarını hem `tsconfig.app.json` hem de `vite.config.ts` içinde tanımla.',
+    'Uygulama sağlayıcıları ve rotaları için `createRoutes(queryClient)` ve `AppProviders({ queryClient, children })` export’larını hazırla; duman testinde `createMemoryRouter` ile aç.',
+    'Şablondan gelen gereksiz dosyaları (`App.css`, `assets/react.svg`, sayaç state’i) temizlemeyi unutma. `vitest.config.ts`’te test ayarlarını doğrudan `vite.config.ts` içine gömme, ayrı dosyada tut.',
   ],
   timeoutMs: 240000,
 })

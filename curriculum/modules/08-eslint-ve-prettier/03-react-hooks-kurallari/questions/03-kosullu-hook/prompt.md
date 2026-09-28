@@ -1,10 +1,22 @@
-# Koşullu Hook’u düzelt
+# Film seçimine göre mesajı göster
 
-Seçili film yoksa `MovieNotice` erken döner. Şu anda `useEffect` bu dönüşün altında; bazı render’larda çalışıyor, bazılarında çalışmıyor.
+Seçili film yokken `MovieNotice` “Film seç” mesajını göstermeli. Film seçilince sayfa başlığı ve `Film {id}` metni görünmeli; Hook sırası her render’da aynı kalmalı.
 
-- `useEffect` her render’da aynı sırada çağrılsın.
-- `id` yoksa `Film seç` mesajı kalsın.
-- `id` varsa `document.title` ve `Film {id}` kalsın.
-- `react-hooks/rules-of-hooks` hatası **0** olsun.
+## Gereksinimler
 
-Düzenlediğin `hookSource` gerçek TSX kaynak metni olarak lint edilir.
+- `id` boşken “Film seç” çıktısı korunur.
+- `id` varken `document.title` ve `<p>Film {id}</p>` güncellenir.
+- Hook koşula bağlı çağrılmamalı ve lint hatası kalmamalıdır.
+
+## Örnek
+
+`id = null` → `Film seç`; `id = '155'` → `Film 155` ve belge başlığı `155`.
+
+## Sözleşme
+
+- Dosya: `hookSource.ts` içindeki `hookSource` adlı string dışa aktarımı.
+- String, `MovieNotice({ id: string | null })` bileşeninin lint edilecek TSX kaynağıdır.
+
+## Kısıtlar
+
+- İki görünür durumun metnini ve belge başlığı güncellemesini koru.

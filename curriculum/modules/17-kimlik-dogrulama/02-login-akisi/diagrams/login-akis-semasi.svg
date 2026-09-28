@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280">
+  <title>Login akışı: istemci doğrulaması, sunucu isteği ve oturum durumu</title>
+  <defs>
+    <marker id="ok-login" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-login-danger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">Form doğrulaması ağı korur; sunucu yanıtı oturum durumunu belirler</text>
+
+  <rect class="d-box" x="25" y="65" width="145" height="75" rx="8"/>
+  <text class="d-title" x="97" y="93" text-anchor="middle">1. Form Girdisi</text>
+  <text class="d-text" x="97" y="117" text-anchor="middle">Giriş bilgileri</text>
+
+  <rect class="d-accent" x="210" y="65" width="150" height="75" rx="8"/>
+  <text class="d-title" x="285" y="93" text-anchor="middle">2. Form Şeması</text>
+  <text class="d-text" x="285" y="117" text-anchor="middle">İstemci kontrolü</text>
+
+  <rect class="d-violet" x="400" y="65" width="155" height="75" rx="8"/>
+  <text class="d-title" x="477" y="93" text-anchor="middle">3. Sunucu İsteği</text>
+  <text class="d-code" x="477" y="117" text-anchor="middle">POST /auth/login</text>
+
+  <rect class="d-success" x="595" y="65" width="140" height="75" rx="8"/>
+  <text class="d-title" x="665" y="93" text-anchor="middle">4. Token Çifti</text>
+  <text class="d-code" x="665" y="115" text-anchor="middle">200 OK</text>
+  <text class="d-muted" x="665" y="131" text-anchor="middle">Oturum kurulur</text>
+
+  <line class="d-line" x1="170" y1="102" x2="204" y2="102" marker-end="url(#ok-login)"/>
+  <line class="d-line" x1="360" y1="102" x2="394" y2="102" marker-end="url(#ok-login)"/>
+  <line class="d-line" x1="555" y1="102" x2="589" y2="102" marker-end="url(#ok-login)"/>
+
+  <rect class="d-danger" x="210" y="180" width="150" height="65" rx="8"/>
+  <text class="d-title" x="285" y="206" text-anchor="middle">Geçersiz Girdi</text>
+  <text class="d-muted" x="285" y="228" text-anchor="middle">İstek atılmaz</text>
+
+  <path class="d-line-danger d-dashed" d="M285 140 L285 174" marker-end="url(#ok-login-danger)"/>
+
+  <rect class="d-danger" x="400" y="180" width="155" height="65" rx="8"/>
+  <text class="d-title" x="477" y="206" text-anchor="middle">Hatalı Bilgi</text>
+  <text class="d-muted" x="477" y="228" text-anchor="middle">400 / 401 hatası</text>
+
+  <path class="d-line-danger d-dashed" d="M477 140 L477 174" marker-end="url(#ok-login-danger)"/>
+</svg>

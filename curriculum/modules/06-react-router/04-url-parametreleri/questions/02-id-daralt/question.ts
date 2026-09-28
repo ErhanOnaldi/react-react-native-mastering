@@ -7,7 +7,8 @@ export default defineQuestion({
   concepts: ['router.params', 'ts.narrowing'],
   files: ['parseMovieId.ts'],
   hints: [
-    'Önce `undefined` ve rakam dışı karakterleri ayır.',
-    '`/^\\d+$/` biçimini ve `Number.isSafeInteger` sonucunu kontrol et.',
+    'URL değeri `undefined`, boş metin veya rakam dışında karakter içerebilir; önce hangi biçimleri kabul edeceğini listele.',
+    '`/^\\d+$/` ile karakterleri denetle, ardından `Number` dönüşümü ve `Number.isSafeInteger` kontrolü uygula.',
+    'Geçerli sayı pozitif olmalı. Her başarısız koşulda `null`, yalnız tüm koşullar geçince sayıyı döndür.',
   ],
 })

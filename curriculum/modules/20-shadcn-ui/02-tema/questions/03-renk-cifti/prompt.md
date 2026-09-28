@@ -1,22 +1,18 @@
-Koyu temayı eklerken `--primary`'yi açtın ama `--primary-foreground`'ı unuttun; düğme yazısı okunmuyor. Bunu gözle yakalamak yerine tema token'larını tarayan küçük bir **bekçi** yaz. (CI'da çalışan bir tema testi olarak düşünebilirsin.)
+Tema CSS'inde eşleşen yüzey ve metin renk çiftlerini denetle. Açıklık farkı küçük olan roller için tasarım ekibine inceleme listesi döndür.
 
-## Görev
-`contrastPairs.ts` içindeki iki fonksiyonu tamamla.
+## Gereksinimler
+- `oklchLightness(value)` OKLCH değerinin ilk açıklık sayısını 0–1 aralığında döndürsün; `78%` girişi `0.78` olsun.
+- `findLowContrastPairs(tokens, minGap = 0.4)` her `--x-foreground` token'ını `--x` yüzeyiyle eşleştirsin.
+- `--foreground` özel olarak `--background` ile eşleşsin ve sonuçta `background` rolü olarak adlandırılsın.
+- Eşi olmayan token'lar yok sayılsın. Açıklık farkı `minGap` değerinden küçükse rol adı döndürülsün.
+- Sonuçlar `tokens` nesnesindeki eşleşen foreground sırasını izlesin.
 
-### `oklchLightness(value)`
-OKLCH değerinin ilk sayısını (algısal açıklık) 0–1 aralığında döndür.
+## Örnek
+- `oklchLightness('oklch(78% 0.14 45)')` → yaklaşık `0.78`.
+- `--primary` açıklığı `0.85`, `--primary-foreground` açıklığı `0.98` ve `minGap: 0.4` ise sonuç `['primary']` olur.
 
-| Girdi | Çıktı |
-| --- | --- |
-| `oklch(0.55 0.18 40)` | `0.55` |
-| `oklch(78% 0.14 45)` | `0.78` |
+## Sözleşme
+- `contrastPairs.ts` → `ThemeTokens`, `oklchLightness(value: string): number`, `findLowContrastPairs(tokens: ThemeTokens, minGap?: number): string[]` export'ları.
 
-### `findLowContrastPairs(tokens, minGap = 0.4)`
-- Rol çiftlerini adlandırma sözleşmesinden bul: `--x-foreground` varsa yüzeyi `--x`'tir.
-- İstisna: `--foreground`'ın yüzeyi `--background`'dır; bu çiftin rol adı `background`.
-- Eşi olmayan token'ları (`--border`, `--radius`…) yok say.
-- İki açıklık arasındaki mutlak fark `minGap`'ten küçükse rol adını (`--` ve `-foreground` olmadan) listeye ekle. Sıra, token nesnesindeki sırayı izlesin.
-
-Örnek: `--primary: oklch(0.85 …)` ve `--primary-foreground: oklch(0.98 …)` → fark 0.13 → `['primary']`.
-
-Not: Açıklık farkı kaba bir ön kontroldür. WCAG kontrast oranı göreli parlaklıkla hesaplanır; gerçek üründe tarayıcı araçlarıyla da ölç.
+## Kısıtlar
+- Bu açıklık farkı yalnızca kaba bir inceleme uyarısıdır; WCAG kontrast oranı değildir.

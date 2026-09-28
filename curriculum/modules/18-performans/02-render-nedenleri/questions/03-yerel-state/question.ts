@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['perf.rerender', 'react.state', 'react.controlled-input'],
   files: ['SearchShell.tsx'],
   hints: [
-    'State değişimini hangi alt ağaç gerçekten kullanıyor?',
-    'Sabit sonuçları ayrı bileşene ayır ve aynı props ile yeniden çağrılmasını önle.',
-    '`memo(function Results({ onRender }) { ... })` kullan; callback yalnız bu bileşende çağrılsın.',
+    'State değişikliğinin bileşen ağacında hangi alt parçayı etkilediğini ve hangi parçanın değişmeyen veriyle kaldığını düşün.',
+    'Üst bileşen render olduğunda çocuklarının da varsayılan olarak yeniden çalışmasını engellemek için bileşeni `memo` ile sarmalayabilirsin.',
+    'Sabit sonuçları ayrı bir alt bileşene çıkar: `const Results = memo(function Results({ onRender }) { ... })`. `SearchShell` içinde `<Results onRender={onResultsRender} />` olarak çağır.',
+    '`onResultsRender` çağrısını doğrudan `SearchShell` gövdesinde bırakırsan, her tuş basışında üst bileşen render olduğu için callback yine gereksiz yere çalışır.',
   ],
 })

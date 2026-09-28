@@ -10,8 +10,8 @@ export default defineQuestion({
     'src/features/rating/api/rating-queries.ts',
   ],
   hints: [
-    'Önce getGuestSession ve localStorage tekrar kullanımını kur.',
-    'Var olan tmdbClient’in Bearer ve hata davranışını kullanabilirsin.',
-    'ratedMoviesQuery için queryOptions({ queryKey, queryFn }) yaz.',
+    'Session kimliğinin ne zaman yaratılacağını ve tekrar çağrılarda nasıl korunacağını belirle.',
+    'Mevcut `tmdbClient` yetkilendirme/hata davranışını ve TanStack Query `queryOptions` yardımcısını kullan.',
+    'API fonksiyonlarını kur; rated query key’ine session id ekleyip liste cevabını döndür.',
   ],
 })

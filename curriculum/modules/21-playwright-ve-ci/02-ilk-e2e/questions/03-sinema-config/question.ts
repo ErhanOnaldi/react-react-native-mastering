@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.playwright-config', 'tooling.env', 'zod.env', 'tooling.scripts'],
   files: ['sinemaConfig.ts'],
   hints: [
-    'Dört ayar yeterli: `testDir`, `use.baseURL`, `projects` ve `webServer`. Adresi (`http://localhost:5174`) bir sabite koyarsan `baseURL` ile `webServer.url` hiç ayrışmaz.',
-    '`reuseExistingServer` CI’ın tersidir: `!ci`. Token’ı `webServer.env` içinde ver; uygulamanın `env.ts`’i onu `import.meta.env.VITE_TMDB_TOKEN` olarak görür.',
-    "Proje: `{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }`. Sunucu: `{ command: 'pnpm dev', url: SINEMA_URL, reuseExistingServer: !ci, env: { VITE_TMDB_TOKEN: 'e2e-sahte-token' } }`.",
+    'Tarayıcı ve server adresini, test klasörünü ve yerel/CI sunucu farkını tek tek çıkar. Önce hangi ayarların birbiriyle aynı kaynağı göstermesi gerektiğini belirle.',
+    '`@playwright/test` config API’sinde `defineConfig` ve `devices` kullan; CI davranışını ci girdisine göre belirle.',
+    "`const url = 'http://localhost:5174'` sabitini kullan. Config’te `testDir: './e2e'`, Chromium Desktop Chrome projesi ve webServer için `command: 'pnpm dev'`, aynı url, `reuseExistingServer: !ci` ve sahte token env’i döndür.",
   ],
 })

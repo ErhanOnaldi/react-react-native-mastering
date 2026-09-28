@@ -13,9 +13,9 @@ export default defineQuestion({
   ],
   files: ['FocusDialog.tsx'],
   hints: [
-    'Açılış anında `document.activeElement`’i effect içinde bir değişkende sakla ve Oynat’a focus ver; cleanup’ta o öğeye geri dön.',
-    'Keydown dinleyicisinde Tab sınırlarını `preventDefault()` + `focus()` ile çevir. Effect yalnızca `open` değişince kurulmalı; `onClose`’u dependency’den nasıl çıkarırsın?',
-    '`const handleClose = useEffectEvent(() => onClose())`; Escape’te `handleClose()` çağır ve dependency array’i `[open]` yap.',
+    'Focus akışını açılış, dialog içindeki sınırlar ve kapanış olarak ayır. Callback prop’u değişince focus yerinden oynamamalı.',
+    '`useEffect`, `useEffectEvent`, `document.activeElement`, `focus()` ve `keydown` listener cleanup konularını gözden geçir.',
+    'Açılışta önceki elementi sakla; Escape handler’ı güncel callback ile çağır. Tab sınırlarında `preventDefault()` sonrası karşı uca focus ver; cleanup listener’ı kaldırıp önceki elemana dön.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

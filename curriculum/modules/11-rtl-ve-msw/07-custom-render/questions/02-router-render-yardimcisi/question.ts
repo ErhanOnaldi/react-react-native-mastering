@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.custom-render', 'router.params'],
   files: ['renderWithRouter.tsx'],
   hints: [
-    'createMemoryRouter ve render fonksiyonlarını birleştir.',
-    'RouterProvider’ı react-router/dom’dan import et.',
-    'render sonucunu spread edip router’ı da döndür.',
+    'Helper çağrısında route kalıbı, başlangıç adresi ve UI’nin nerede çalışacağını ayır.',
+    '`createMemoryRouter`, `RouterProvider` ve RTL `render` fonksiyonlarını birleştir.',
+    'Tek route kur; `initialEntries: [route]` ver ve `{ router, ...renderResult }` döndür.',
   ],
 })

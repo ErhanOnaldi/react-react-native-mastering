@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 275">
+  <title>Sayfa key'i değişir, eski sonuç yeni cevap gelene kadar yer tutar</title>
+  <defs>
+    <marker id="page-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+  <rect class="d-box" x="35" y="45" width="205" height="80" rx="8"/>
+  <text class="d-title" x="137" y="75" text-anchor="middle">Key: page 1</text>
+  <text class="d-code" x="137" y="101" text-anchor="middle">eski data görünür</text>
+  <rect class="d-warning" x="277" y="45" width="205" height="80" rx="8"/>
+  <text class="d-title" x="379" y="75" text-anchor="middle">Key: page 2</text>
+  <text class="d-code" x="379" y="101" text-anchor="middle">isPlaceholderData</text>
+  <rect class="d-success" x="520" y="45" width="205" height="80" rx="8"/>
+  <text class="d-title" x="622" y="75" text-anchor="middle">Yeni cevap</text>
+  <text class="d-code" x="622" y="101" text-anchor="middle">page 2 data</text>
+  <line class="d-line" x1="242" y1="85" x2="272" y2="85" marker-end="url(#page-arrow)"/>
+  <line class="d-line-accent" x1="484" y1="85" x2="515" y2="85" marker-end="url(#page-arrow)"/>
+  <rect class="d-lane" x="90" y="174" width="580" height="66" rx="8"/>
+  <text class="d-text" x="380" y="202" text-anchor="middle">Eski data yalnız geçişte görünür; page 2 cache'ine kopyalanmaz.</text>
+  <text class="d-muted" x="380" y="224" text-anchor="middle">Bu sırada yeni sayfaya ait ileri düğmesini dikkatle yönet.</text>
+</svg>

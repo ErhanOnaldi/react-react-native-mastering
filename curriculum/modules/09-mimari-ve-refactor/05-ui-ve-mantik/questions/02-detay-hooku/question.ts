@@ -13,8 +13,9 @@ export default defineQuestion({
   ],
   files: ['useMovieDetails.ts'],
   hints: [
-    'Yükleyici fonksiyon `id` değişince yeniden çalışmalı.',
-    'Effect içinde loading durumuna geçip `load(id, controller.signal)` çağır.',
-    'Cleanup’ta abort et; geç gelen eski cevabın yeni filmi ezmesine izin verme.',
+    'Seçili id değiştiğinde hangi işi durdurup hangisini yeniden başlatman gerekiyor?',
+    '`useEffect` cleanup ve `AbortController` API’lerine bak.',
+    'Effect içinde yeni controller oluştur, loading state yaz, signal ile loader’ı çağır; cleanup’ta controller’ı abort et.',
+    'Loader abort sinyalini yok sayarsa bile yalnızca aktif isteğin state yazmasına izin ver.',
   ],
 })

@@ -1,8 +1,15 @@
-## Sorun
-Kart testlerinde 16 alanlı film nesnesini kopyalamak poster’sız ve boş tarih vakalarını görünmez kılıyor.
+Testlerde kullanmak üzere geçerli film verisi üret; her çağrıda mutable alanları bağımsız tut ve yalnız gereken farkları değiştir.
 
-## Görev
-`makeMovie(overrides: Partial<TmdbListMovie> = {}): TmdbListMovie` yaz. Geçerli varsayılanlar kullan: id 550, title "Dövüş Kulübü", `poster_path` string veya null sözleşmesine uygun, `release_date` string. Diğer zorunlu TMDB liste alanlarını da doldur. En sonda overrides uygula; her çağrıda yeni nesne ve yeni `genre_ids` dizisi üret.
+## Gereksinimler
+- Varsayılan film alanları geçerli olmalı.
+- Varsayılan `original_title` boş olmamalı.
+- `overrides` içindeki değerler sonuçta korunmalı; `null` ve boş string aynen kalmalı.
+- Her çağrı yeni bir nesne ve yeni `genre_ids` dizisi üretmeli.
+- Varsayılan filmde başlık ve temel API alanları bulunmalı.
 
 ## Örnek
-`makeMovie({ poster_path: null, release_date: '' })` → bu alanlar aynen kalır; diğer alanlar geçerlidir.
+`makeMovie({ poster_path: null, release_date: '' })` → bu iki değer korunur; diğer alanlar geçerlidir.
+
+## Sözleşme
+- `makeMovie.ts` dosyasında `makeMovie(overrides?: Partial<TmdbListMovie>): TmdbListMovie` export et.
+- `TmdbListMovie` tipi `@test-utils` yolundan gelir.

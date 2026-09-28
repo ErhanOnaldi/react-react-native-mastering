@@ -1,40 +1,46 @@
 ---
-title: Liste cevabını birleştir
-minutes: 9
+title: "Tipleri bir arada kullan"
+minutes: 6
 kind: practice
 ---
 
-# Liste cevabını birleştir
+# Tipleri bir arada kullan
 
 :::pain[Problem]
-Tek bir `Movie` güvenli olsa da API cevabının `results` ve sayfa sayıları yanlış modellenirse Sinema listesi yine bozulur.
+Tek bir film tipi doğru olsa bile liste cevabının sayfa bilgisi, ham verideki boş alanlar ve ekranda gösterilecek biçim birbirinden farklı kararlardır. Bu pekiştirme, o kararları birlikte uygulamanı sağlar.
 :::
 
-## Birkaç fikri birlikte kullan
-Bu derste `MovieListResponse` ile sayfalama bilgisini tarif edeceksin; sonra eksik poster ve boş tarihi normalize edeceksin. `map` sonucu yeni bir dizi üretir; kaynak filmi değiştirmez.
+## API cevabından görünüm verisine
 
-```ts check
-type Movie = { id: number; poster_path: string | null; release_date: string }
-const movies: Movie[] = [{ id: 550, poster_path: null, release_date: '' }]
-const labels = movies.map((movie) => movie.release_date || 'Tarih yok')
-void labels
-```
+Önce sayfalanmış cevabın kabını ve eleman tipini bir arada düşün. `results` çok sayıda film tutar; dış nesne ayrıca sayfa ve toplam bilgisi taşır. Sonra ham filmden kartın kullanacağı başka bir nesne üretirken boş tarih ve poster olasılıklarını ayrı ele al.
 
-## Sınırlar
-Tipli cevap, sunucunun sözleşmeye uyduğunu varsayar. Bu aşamada `Movie` alanlarını doğru modellemek ve null/boş değerleri işlemek yeterli; ağdan gelen ham veriyi doğrulamayı ileride ekleyeceğiz.
+:::model[Tipler derleme anında yaşar]
+Tip açıklamaları derleyiciye yardım eder, fakat API cevabının gerçekten bu şekle sahip olduğunu kanıtlamaz. Bu çalışmada verilen veri sözleşmesini modelle; dış veriyi doğrulama ihtiyacını, `unknown` ile sınırda kontrol yaparken hatırla.
+:::
+
+![TypeScript tiplerinin derleme ve çalışma anındaki ayrımını gösteren ortak model](diagram:ts-derleme-ve-calisma)
+
+İki dönüşüm adımını zihninde ayır: önce dizi içindeki nesneleri seç veya dönüştür; sonra eksik alanı görünüm için anlamlı bir değere çevir. `map` yeni bir dizi üretir ve sırayı korur. Kaynak nesneye alan atamak, API verisini değiştirdiği için sonraki kullanım yerlerini şaşırtabilir.
+
+## İlk testini yaz
+
+Modül 0'da `describe`, `it` ve `expect` ile testlerin yapısını okudun. Yeni görevde ilk kez test dosyasını sen yazacaksın: verilen saf fonksiyon için beklentileri `toBe` veya `toEqual` ile kur. Her testte bir davranışa odaklan; olağan bir değer kadar sınır değerini de seç. Fonksiyon kodunu değiştirmeden yalnızca test dosyasında çalışırsın.
+
+Bir test adı davranışı Türkçe bir gereksinim cümlesi gibi anlatmalı. Böylece sonuç raporunda başarısız olan beklenti doğrudan anlaşılır. Tam saat, kısa süre ve geçersiz değerler ayrı davranışlardır; hepsini tek beklentide gizlemek yerine küçük testlere böl.
+
+:::mistake[Tipli veriyi doğrulanmış veri sanmak]
+Belirti → Hatalı cevap film gibi kullanılıyor. Neden → Statik tip çalışma zamanındaki JSON'u denetlemiyor. Düzeltme → Sınırda kontrol gerekip gerekmediğini açıkça değerlendir.
+:::
 
 :::sector
-Liste tipi birden çok endpoint'te tekrarlanmaya başlarsa generic bir `Paginated<T>` ihtiyacı doğacak. Bu Module 2'nin konusu.
+Saf fonksiyonların testleri ağ ve arayüzden bağımsızdır; hızlı çalışır ve küçük sözleşmeleri korur. Liste verisini görünüm biçimine dönüştürmek de UI bileşenlerinin aynı veri temizleme kurallarını kullanmasına yardım eder.
 :::
 
-## Dış sözleşme ve iç görünüm
-`MovieListResponse` TMDB'nin gönderdiği kabı anlatır: sayfa, sonuçlar ve toplamlar. `normalizeMovie` ise her ham filmden ekranda kullanacağın başka bir nesne üretir. Kaynak `release_date: ''` olarak kalabilir; görünüm `year: 'Tarih yok'` gösterebilir. Böylece API'nin gerçeğini saklamadan kullanıcıya anlamlı metin verirsin.
+## Özet
 
-`results.map(normalizeMovie)` ile bütün sayfayı dönüştürmek mümkün olur. Burada `map` hem önceki dizi dersini tekrarlar hem de tipli fonksiyonla birleşir: `Movie[]` içindeki her öğe, parametrenin istediği şekle uyarsa sonuç `DisplayMovie[]` olur. Fonksiyonlar arasındaki tip uyumunu derleyici takip eder.
+- Sayfalı cevap ile film elemanının sorumlulukları ayrıdır.
+- Normalize edilmiş görünüm verisi kaynak nesneyi değiştirmeden üretilir.
+- Test adı davranışı, test gövdesi tek bir beklentiyi anlatır.
+- Sınır değerleri temel örnek kadar önemlidir.
 
-## Kontrol noktası
-Bir filmde poster null ve tarih boşsa iki kararı birbirinden bağımsız ver. Posteri null bırakmak kartın fallback görselini seçmesine izin verir. Yılı görünüm metnine çevirmek kartın boş görünmesini önler. Aynı fonksiyonda kaynak nesneyi değiştirme; yeni bir nesne döndür. Bu alışkanlık sonraki React state dersinde önem kazanacak.
-
-:::mistake
-Liste cevabını `Movie[]` diye adlandırmak sayfa bilgisini kaybettirir. `results` yalnızca cevabın bir alanıdır.
-:::
+Kendini yokla: `results.map(...)` neden yeni dizi üretir? Cevap: `map` kaynak elemanlardan callback sonuçlarını toplar; kaynak diziyi değiştirmez.

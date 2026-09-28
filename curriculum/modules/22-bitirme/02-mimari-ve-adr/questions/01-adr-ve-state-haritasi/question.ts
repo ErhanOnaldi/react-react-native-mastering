@@ -26,8 +26,9 @@ export default defineQuestion({
     'Klasör yapısı kararı (ADR ya da state haritasında kısa bir bölüm) feature bazlı ayrımı ve gerekçesini anlatıyor mu?',
   ],
   hints: [
-    'REQUIREMENTS.md’yi baştan sona oku ve her isim-fiil çiftini (“sorgu”, “sayfa”, “liste”, “puan”…) bir satır yap; sonra kategorisini sor.',
-    'ADR yazmadan önce karar cümlesini tek satırda kur: “Okuma listesi … içinde tutulur ve … ile kalıcı hale getirilir.” Bağlam bu cümleyi neden kurduğunu, alternatifler neden başkasını kurmadığını anlatır.',
-    'Bedelleri bulmak için kendine sor: “Bu karar hangi durumda yanlış olur?” (liste binlerce kayda çıkarsa, ikinci bir cihaz gerekirse, ekip büyürse…)',
+    'REQUIREMENTS.md belgesini tara; arayüzde görünen veya saklanan her bilgi parçasını listele ve “Bunun tek sahibi kim?” sorusunu sor.',
+    'Bilgileri 5 kategoriye ayır: Sunucu (API önbelleği), URL (arama/sayfa parametreleri), İstemci (yerel kalıcı liste), Form (gönderilene dek geçici taslak) ve Türetilmiş (hesaplanan değerler).',
+    'ADR şablonu: Durum → Bağlam (K-n referansı) → Karar (tek net cümle) → Değerlendirilen alternatifler (en az 2) → Sonuçlar (artılar ve bedeller).',
+    'Türetilmiş değerleri (örneğin listedeki eleman sayısını) ayrı bir state olarak saklama; tek sahibinden hesapla. ADR’de yalnızca artıları değil, kararın getirdiği teknik bedelleri (⚠️) de açıkça belirt.',
   ],
 })

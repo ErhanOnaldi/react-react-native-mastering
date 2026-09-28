@@ -1,6 +1,14 @@
-TMDB detay yanıtı 200 olsa bile yanlış biçimli olabilir. `getMovie(path: string)` export et.
+TMDB yanıtı HTTP hatasıysa durum kodunu bildir; başarılı HTTP cevabındaki yanlış film verisini de uygulamaya geçirme.
 
-- `GET ${TMDB_BASE}${path}` at; `Authorization: Bearer test-token` başlığı gönder.
-- `!response.ok` için HTTP durumunu içeren hata fırlat.
-- JSON'u `unknown` olarak al; `z.object({ id: z.number().int(), title: z.string().min(1) })` ile parse et.
-- Başarılı sonuç `{ id, title }` olsun. `title: null` için promise reddedilmeli.
+## Gereksinimler
+- İstenen adrese GET isteği gönder ve Authorization başlığında Bearer test-token kullan.
+- HTTP başarısızsa durum kodunu içeren hata üret.
+- Başarılı yanıt gövdesinde id tam sayı, title boş olmayan string olmalı.
+- Başarılı sonuç yalnızca id ve title alanlarını içersin; title null ise işlem reddedilsin.
+
+## Örnek
+200 ve { id: 550, title: "Dövüş Kulübü" } → { id: 550, title: "Dövüş Kulübü" }. 404 yanıtı HTTP durumunu belirten hatayla reddedilir.
+
+## Sözleşme
+- client.ts dosyasında getMovie(path: string) named export'unu tanımla.
+

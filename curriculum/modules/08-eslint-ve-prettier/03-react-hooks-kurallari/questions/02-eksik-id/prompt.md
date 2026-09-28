@@ -1,10 +1,22 @@
-# Eksik `id` bağımlılığını düzelt
+# Effect’in film kimliğini izle
 
-Sinema’da route parametresi değişince detay başlığının da değişmesi gerekir. `detailsSource` string’i testin `MovieDetails.tsx` olarak lint edeceği kaynak kodu tutuyor.
+Sinema detayında route kimliği değiştiğinde tarayıcı başlığı ve sayfadaki film kimliği güncellenmeli. Var olan bileşende bu ilişkiyi düzelt.
 
-- `useEffect` içindeki `id` kullanımını koru.
-- Effect’i yeni `id` geldiğinde tekrar çalışacak hale getir.
-- `react-hooks/exhaustive-deps` mesajı **0** olsun.
-- Bileşenin `<h1>` çıktısını koru.
+## Gereksinimler
 
-Örnek: 550 → 155 geçişinde tarayıcı başlığı da yeni filme ait olmalı.
+- Effect içindeki güncelleme render’dan gelen `id` değerini kullanmaya devam etmelidir.
+- `id` değiştiğinde effect’in yeniden çalışacağı doğru biçimde bildirilmelidir.
+- Lint hatası kalmamalı; `<h1>` içindeki `Film {id}` çıktısı korunmalıdır.
+
+## Örnek
+
+İlk `id`: `550` → başlık `Film 550`; sonraki `id`: `155` → effect yeni değeri kullanır ve başlık `Film 155` olur.
+
+## Sözleşme
+
+- Dosya: `detailsSource.ts` içindeki `detailsSource` adlı string dışa aktarımı.
+- String, lint edilecek TSX bileşen kaynağını tutar; bileşen `MovieDetails`, prop `id` adını kullanır.
+
+## Kısıtlar
+
+- Effect içindeki `document.title` atamasını ve `<h1>` çıktısını kaldırma.

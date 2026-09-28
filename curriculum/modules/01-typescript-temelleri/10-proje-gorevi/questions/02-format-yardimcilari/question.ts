@@ -14,8 +14,9 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['src/lib/format.ts'],
   hints: [
-    'Üç fonksiyonda da parametre ve dönüş tipini açık yaz; boş tarihi en başta ayır.',
-    '`formatVote` için 0 özel durum, diğerleri `.toFixed(1)`. `releaseYear` için ilk dört karakter yeterli.',
-    "`formatDate` için `Intl.DateTimeFormat(\'tr-TR\', { day: \'numeric\', month: \'long\', year: \'numeric\', timeZone: \'UTC\' })` kullanabilirsin.",
+    '`Intl.DateTimeFormat` ile Türkçe ve UTC ayarlarıyla uzun tarih biçimlendirmeyi düşün.',
+    '`formatVote` için `.toFixed(1)`, `formatDate` için `new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })` kullan.',
+    'İskelet: `export function formatVote(n: number): string { if (n === 0) return "Henüz oy yok"; return n.toFixed(1); } export function releaseYear(date: string): string { if (!date) return ""; return date.slice(0, 4); }`',
+    '`releaseYear` boş tarihte boş string (`""`) dönerken `formatDate` boş tarihte `"Tarih yok"` döner; iki fonksiyonun boş değer sözleşmesi farklıdır.',
   ],
 })

@@ -1,11 +1,21 @@
-Emily çıkış yaptıktan sonra yeni oturum eski profil cache’ini ve watchlist state’ini görebiliyor.
+Kullanıcı oturumu sonlandırıldığında kişisel verilerin ekranda veya bellekte kalmaması, sonraki oturum açılışlarında önceki kullanıcıya ait bilgilerin sızmaması için çok katmanlı bir çıkış temizliği fonksiyonu oluştur.
 
-## Görev
+## Gereksinimler
 
-`logout(deps)` fonksiyonunu yaz. `deps` içinde `queryClient`, `storage` ve `resetStore` var.
+- İstemci depolama alanında tutulan oturum kaydı (`'sinema-auth'`) silinmelidir.
+- Kullanıcıya ve kimlik durumuna ait global durum sıfırlama eylemi tam bir kez tetiklenmelidir.
+- Önbellekteki tüm sorgu ve mutasyon verileri tamamen temizlenmeli, eski kullanıcıya ait hiçbir profil veya liste verisi bellekte bırakılmamalıdır.
 
-- `storage.removeItem('sinema-auth')` ile kalıcı token çiftini kaldır.
-- `resetStore()` ile auth ve kullanıcıya ait Redux state’ini başlangıç durumuna döndür. Uygulamanın gerçek reset action’ları bu callback’in arkasına bağlanacak.
-- `queryClient.clear()` ile eski oturuma ait query/mutation cache’ini sil.
+## Örnek
 
-Test, cache’e önce Emily profili koyar. Logout sonrası veri bulunmamalı ve yeni kullanıcıya ait oturum başladığında eski state geri gelmemeli.
+| Eylem | Beklenen Sonuç |
+| --- | --- |
+| `logout({ queryClient, storage, resetStore })` | Depodaki `'sinema-auth'` anahtarı silinir. |
+| Store durumu | `resetStore` bir kez çağrılarak başlangıç durumuna döner. |
+| Önbellekteki `['profile']` sorgusu | Çıkış sonrasında `undefined` değerine döner, tamamen silinir. |
+
+## Sözleşme
+
+- `logout.ts` dosyasından `logout(deps: LogoutDeps): void` fonksiyonunu named export et.
+- Sözleşme tipleri:
+  - `LogoutDeps`: `{ queryClient: QueryClient; storage: { removeItem: (key: string) => void }; resetStore: () => void }`

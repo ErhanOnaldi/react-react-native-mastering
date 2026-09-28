@@ -6,9 +6,9 @@ export default defineQuestion({
   concepts: ['pattern.slot', 'react.props', 'a11y.focus', 'js.optional-chaining'],
   files: ['SlotTrigger.tsx'],
   hints: [
-    'asChild=false durumunda doğal button döndür.',
-    'React.Children.only + cloneElement ile tek child’ı al; iki onClick handlerını sırayla çağır.',
-    'Ref callback’inde hem child ref’e hem dış ref’e node ata; object ve function ref biçimlerini ele al.',
+    'İki kullanımda da DOM’da tek etkileşimli öğe kalmalı. Click, ad ve focus bağlantılarının hangi kaynaktan geldiğini sırala.',
+    "`Children.only`, `cloneElement`, React 19 `ref` prop'unu ve `defaultPrevented` event alanını kullan.",
+    "Child handler'ını önce çağır; iptal etmediyse açma eylemini çalıştır. Class'ları birleştir, child adı varsa koru ve iki ref'i aynı node'a bağla.",
   ],
   preview: { entry: 'Preview.tsx' },
 })

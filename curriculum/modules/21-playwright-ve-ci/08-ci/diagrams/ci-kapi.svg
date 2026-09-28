@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250">
+  <title>CI doğrulama adımları</title>
+  <defs>
+    <marker id="ci-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path d="M0 0L8 4L0 8Z" class="d-arrowhead-accent" />
+    </marker>
+  </defs>
+  <rect x="18" y="62" width="124" height="76" rx="12" class="d-box" />
+  <text x="80" y="94" text-anchor="middle" class="d-title">Kur</text>
+  <text x="80" y="118" text-anchor="middle" class="d-muted">lockfile</text>
+  <rect x="168" y="62" width="124" height="76" rx="12" class="d-accent" />
+  <text x="230" y="94" text-anchor="middle" class="d-title">Lint + tip</text>
+  <text x="230" y="118" text-anchor="middle" class="d-muted">hızlı kapılar</text>
+  <rect x="318" y="62" width="124" height="76" rx="12" class="d-success" />
+  <text x="380" y="94" text-anchor="middle" class="d-title">Vitest</text>
+  <text x="380" y="118" text-anchor="middle" class="d-muted">birim testleri</text>
+  <rect x="468" y="62" width="124" height="76" rx="12" class="d-violet" />
+  <text x="530" y="94" text-anchor="middle" class="d-title">Chromium</text>
+  <text x="530" y="118" text-anchor="middle" class="d-muted">binary + sistem</text>
+  <rect x="618" y="62" width="124" height="76" rx="12" class="d-success" />
+  <text x="680" y="94" text-anchor="middle" class="d-title">E2E</text>
+  <text x="680" y="118" text-anchor="middle" class="d-muted">yolculuk</text>
+  <path d="M146 100H163" class="d-line-accent" marker-end="url(#ci-arrow)" />
+  <path d="M296 100H313" class="d-line-accent" marker-end="url(#ci-arrow)" />
+  <path d="M446 100H463" class="d-line-accent" marker-end="url(#ci-arrow)" />
+  <path d="M596 100H613" class="d-line-accent" marker-end="url(#ci-arrow)" />
+  <text x="380" y="196" text-anchor="middle" class="d-text">Erken ve ucuz hatalar önce görünür</text>
+  <text x="380" y="222" text-anchor="middle" class="d-muted">Başarısız E2E: trace artifact’ı</text>
+</svg>

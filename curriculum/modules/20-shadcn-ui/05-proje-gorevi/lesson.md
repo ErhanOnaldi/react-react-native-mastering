@@ -1,28 +1,43 @@
 ---
 title: "Sinema'ya sahip olduğun UI parçalarını ekle"
-minutes: 9
+minutes: 7
 kind: project
 ---
 
 # Sinema'ya sahip olduğun UI parçalarını ekle
 
 :::pain[Problem]
-19. modülde fragman modalını, focus trap'ini ve sekmeleri elle yazdın; çalışıyor. Şimdi ürün ekibi detay sayfasına bir "Film işlemleri" menüsü istiyor: ok tuşlarıyla gezinme, ilk harfe atlama, Escape, dışarı tıklama, focus'u geri verme… Bir de yorum formundaki yıldız düğmeleri aslında tek seçimli bir grup, ama ekran okuyucu onları beş ayrı "basılı/basılı değil" düğme olarak okuyor.
+Sinema'daki fragman penceresi ve film menüsü fareyle çalışıyor; klavye odağını, Escape ile kapanmayı ve doğru focus dönüşünü iki yerde de aynı tutmak zor. Yorum puanları da tek seçim olmasına rağmen beş ayrı düğme gibi davranıyor.
 :::
 
-## İki görev
-1. **UI parçaları ve detay sayfası.** CLI'ı Radix ile kur (`init -b radix`), `button`, `dialog`, `dropdown-menu`, `input`, `card`, `badge` ekle. Fragman modalını `Dialog`'a taşı, detay sayfasına `DropdownMenu` ile bir "Film işlemleri" menüsü ekle. Eski `src/shared/ui` kitinin yerini yeni parçalar alsın.
-2. **Yorum formu.** `form`, `label`, `textarea`, `radio-group` ekle. Sinema'nın yorum formunu kopyalanmış form parçalarıyla yeniden yaz; puan seçimi bir `RadioGroup` olsun.
+Bu proje Sinema'nın UI katmanını güncel bileşen parçalarına geçirirken uygulama davranışını korumanı ister. İş iki yüzeyde buluşur: film detayındaki dialog ve menü; yorum formundaki puan seçimi, alan hataları ve gönderim sonucu. Kaynak dosyaları ürünün diliyle uyumlu hale getir, sonra detay ekranını fare ve klavyeyle dolaş.
 
-## Kopyaladığın kod senin
-CLI'ın ürettiği dosyaları olduğu gibi bırakmak zorunda değilsin; tam tersine, **okuyup düzenlemen** bekleniyor:
-- `DialogContent`'teki kapatma düğmesinin ekran okuyucu metni İngilizce ("Close"). Sinema Türkçe: "Kapat" yap.
-- `form.tsx`'teki `FormLabel` bir `<label htmlFor>`; Radix `RadioGroup` bir `div` olduğu için etiket onu adlandıramaz. Gruba ad vermenin yolunu sen seçeceksin.
-- Tema: `.dark` sınıfı portal içeriklerini de kapsasın diye `<html>` öğesinde olmalı (2. ders).
+:::model[Compound component ve asChild]
+19. modülde compound parçaların ortak davranış bağlamını, `asChild`'ın DOM düğümünü çocuk elemente devretmesini öğrendin. Dialog ve dropdown birden fazla parçayla kullanılır; link eylemi link semantiğini korumalı. Burada yeni olan, primitive'in hazır klavye/focus davranışını senin sahip olduğun kaynak dosyaya bağlaman.
+:::
 
-## Doğrulama
-Testler bileşenleri tek başına ve gerçek detay sayfasını (550 Dövüş Kulübü) render ederek davranışı kontrol eder. Geçtikten sonra tarayıcıda klavyeyle dene: Film işlemleri → Enter → ok tuşları → Enter; Fragmanı aç → Escape; yorum formunda Tab ile puan grubuna gel ve ok tuşlarıyla puan seç. Koyu temada menü ve dialog da koyu açılmalı.
+:::model[Tema token'ları]
+4. modüldeki tema token'ları rolü ve rengi ayırır. `.dark` sınıfı portal içeriklerini de kapsamalı; bu yüzden ortak DOM kökünde durmalıdır. Sayfa karanlık görünürken dialogun açık kalması, tema kapsamının portalı dışarıda bıraktığını gösterir.
+:::
+
+## Çalışırken karar ver
+
+Önce mevcut `components.json`, alias'lar, tema class'ı ve detay sayfasının etkileşimlerini oku. Yeni kaynak dosyalarını eklerken proje içindeki `cn` yardımcısını yeniden kullan; aynı yardımcıyı ikinci kez üretme. Sonra görünür adları Türkçeleştir ve ürün state'iyle etkileşimleri koru.
+
+Yorum formunda her alanın etiketi, kontrolü ve hata açıklaması aynı alana bağlanmalı. Puan seçimi bir gruptur; yön tuşlarıyla hareket edebilmesi ve grubun adının “Puan” olması gerekir. Sunucu hatasında kullanıcının yazdığı metin kalmalı; başarılı gönderimde açık bir sonuç görünmelidir.
+
+:::mistake[Özel görünüm, kaybolan davranış]
+Belirti → Dialog görünümü yenilendi ama Escape kapatmıyor veya odağı açan kontrole döndürmüyor. Neden → Yalnız CSS ve görünür panel taşındı, etkileşim primitive'i eksik kaldı. Düzeltme → Trigger, içerik ve kapatma parçalarını birlikte kur; klavye akışını uçtan uca dene.
+:::
 
 :::sector
-shadcn/ui bir bağımlılık değil, bir başlangıç noktası. Takımlar genellikle CLI çıktısını ilk gün kendi tasarım diline uyarlar ve sonrasında dosyaları sıradan kaynak kod gibi test eder. Sonraki modülde bu uçtan uca akışları Playwright ile gerçek tarayıcıda sınayacaksın.
+Bir ürün ekibi kopyalanmış UI kaynaklarını kendi bileşenleri gibi sahiplenir. Kod incelemesinde görünüm kadar adlandırma, klavye kullanımı, portal teması ve hata ilişkileri de gözden geçirilir. Görsel olarak doğru duran bir control, erişilebilir adı veya focus sırası yanlışsa tamamlanmış sayılmaz.
 :::
+
+## Özet
+
+- Mevcut route ve veri davranışını koruyarak UI parçalarını değiştir.
+- Dialog/menu etkileşimlerini klavyeyle dolaş; focus dönüşünü kontrol et.
+- Tema sınıfının portalı kapsadığını ve form hatalarının doğru alana bağlandığını doğrula.
+
+Kendini yokla: Menü açıkken yön tuşları çalışmıyorsa yalnız class değiştirmek yeter mi? Cevap: Hayır, etkileşim primitive'inin doğru trigger/content/item parçaları da kullanılmalı.

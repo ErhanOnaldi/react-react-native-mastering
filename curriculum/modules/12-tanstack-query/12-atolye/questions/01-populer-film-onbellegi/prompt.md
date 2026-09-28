@@ -1,9 +1,20 @@
-Popüler filmler ekranını aç, başka yere git ve bir dakika dolmadan dön. Aynı listeyi yeniden ağdan beklemek istemiyoruz. İlk açılışta yükleme, başarısız cevapta hata görünmeli.
+Popüler film ekranında aynı listeye kısa süre sonra dönüldüğünde yeniden ağdan beklemek zorunda kalma.
 
-Testler `PopularMovies.tsx` içindeki `PopularMovies` bileşenini veri sağlayıcısıyla açar. TMDB `/movie/popular` filmlerinin başlıklarını listele; ağ hatasında okunabilir bir uyarı göster.
+## Gereksinimler
 
-Örnek: aç → ayrıl → dön → aynı başlıklar, toplam bir popüler film isteği.
+- Popüler film başlıklarını göster.
+- İlk açılışta yüklenme, başarısız cevapta okunabilir hata durumu göster.
+- Ekrandan ayrılıp bir dakika dolmadan dönünce aynı listeyi yeniden isteme.
 
-## Arayüz sözleşmesi
+## Örnek
 
-- Hata mesajı `yüklenemedi` kelimesini içersin.
+Aç → `Örümcek-Adam: Yepyeni Bir Gün` başlığını gör → ayrıl → geri dön → başlık görünür, popüler film isteği toplam bir kez yapılmış olur.
+
+## Sözleşme
+
+- `PopularMovies.tsx` dosyasından `PopularMovies()` named export edilir.
+- Hata görünümünde `yüklenemedi` sözcüğü yer alır.
+
+## Kısıtlar
+
+- İstek `Authorization: Bearer test-token` başlığı ve `language=tr-TR` parametresini taşır.

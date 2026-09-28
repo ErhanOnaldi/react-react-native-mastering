@@ -1,8 +1,18 @@
-## Sorun
-Arama sonucunda film bulunduğunda başlık; bulunmadığında "Film bulunamadı" mesajı görünmeli. Bir CSS seçicisi iki hatayı da kaçırabilir.
+Film listesi için başlığın ve boş sonuç mesajının doğru durumda göründüğünü test et.
 
-## Görev
-`@impl/MovieResults` için iki test yaz: verilen "Matrix" filmini heading rolüyle ve adıyla bul; boş listede "Film bulunamadı" status mesajını bul. Boş listede film başlığı olmadığını `queryByRole` ile doğrula.
+## Gereksinimler
+- Tek film olduğunda film adı bir başlık olarak görünür.
+- Liste boş olduğunda “Film bulunamadı” durum mesajı görünür.
+- Boş listede film başlığı bulunmaz.
 
 ## Örnek
-`movies={[]}` → status; `movies={[{ id: 603, title: 'Matrix' }]}` → heading.
+`movies=[]` → “Film bulunamadı”; `movies=[Matrix]` → “Matrix” başlığı.
+
+## Sözleşme
+- `MovieResults.test.tsx` dosyasına test yaz.
+- Bileşen `@impl/MovieResults` yolundan import edilir ve `movies` prop’u alır.
+- Film girdisi en az `{ id: number, title: string }` alanlarını taşır.
+- Başlık heading rolüyle; boş mesaj status rolüyle sunulur.
+
+## Kısıtlar
+- İki mutantın her birini yakalayacak beklenti yaz.

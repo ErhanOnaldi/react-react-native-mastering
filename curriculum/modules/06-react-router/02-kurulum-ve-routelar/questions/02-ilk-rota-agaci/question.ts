@@ -6,5 +6,9 @@ export default defineQuestion({
   difficulty: 'kolay',
   concepts: ['router.setup', 'react.components'],
   files: ['routes.tsx'],
-  hints: ['Önce iki `path` tanımla.', 'Kök route `element` içinde `Link to="/search"` kullan.'],
+  hints: [
+    'Önce iki ayrı adres için hangi başlıkların görünmesi gerektiğini eşleştir.',
+    '`react-router` içinden route tanımları ve uygulama içi bağlantı için gereken API adlarına bak.',
+    'Kök route içeriğine `Sinema` başlığı ile `/search` hedefli `Ara` bağlantısını, ikinci route içine `Film ara` başlığını yerleştir.',
+  ],
 })

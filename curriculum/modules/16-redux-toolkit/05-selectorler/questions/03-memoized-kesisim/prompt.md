@@ -1,7 +1,18 @@
-# Memoized favori kesişimi
+Bir ekran seçili listedeki hangi kayıtların favori olduğunu, liste sırasını koruyarak göstermeli.
 
-`selectOverlap` seçili watchlist ID’lerinden favori olanları aynı sırayla versin. Örnek: favoriler `[550,155]`, liste `[603,550]` → `[550]`. Aynı girdi referanslarında aynı sonuç nesnesi dönmeli.
+## Gereksinimler
 
-## İstenen davranış
+- Sonuç, seçili listede bulunan favori kimliklerinden oluşur.
+- Çıktı seçili listenin sırasını korur.
+- Aynı state referanslarıyla tekrar çağrıldığında aynı sonuç dizisi referansı döner.
+- Favori girdisi değiştiğinde sonuç yeniden hesaplanır.
 
-Testlerdeki Türkçe adları gereksinim listesi olarak oku. Starter derlenir; davranışı tamamlaman gerekiyor.
+## Örnek
+
+Favoriler `[550, 155]`, seçili liste `[603, 550]` ise sonuç `[550]` olur.
+
+## Sözleşme
+
+- Dosya: `overlap.ts`
+- Export: `State`, `selectOverlap(state: State): number[]`
+- `State`: `{ favorites: { ids: number[] }; watchlists: { selectedIds: number[] } }`

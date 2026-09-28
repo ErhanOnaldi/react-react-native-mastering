@@ -23,8 +23,9 @@ export default defineQuestion({
     'src/App.tsx',
   ],
   hints: [
-    'Önce her hook’u bağımsız ekle ve proje testlerini çalıştır.',
-    'Debounce timer’ını ve fetch controller’ını ayrı effect’lerde cleanup et.',
-    '`useFetch<T>` success dalında `data: T` taşır; hata dalında mevcut `RemoteData` tipinin biçimini izle.',
+    'Önce her hook’u bağımsız ekle; sonra `App` aramasını yeni hook’a bağla.',
+    'Debounce için timer cleanup, fetch için AbortController cleanup gerekir.',
+    '`useFetch<T>` success dalında `data: T` taşır; error dalında mevcut `RemoteData` tipinin biçimini izle.',
+    '`useLocalStorage` setter’ı React state setter’ı gibi updater fonksiyonu da kabul etmeli.',
   ],
 })

@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.msw-overrides', 'test.async'],
   files: ['emptyHandler.ts'],
   hints: [
-    'MSW delay fonksiyonu Promise döndürür; await et.',
-    'new URL(request.url).searchParams.get("page") ile sayfayı oku.',
-    'Number.isInteger ve page < 1 kontrolünden sonra HttpResponse.json dön.',
+    'İstekten sayfa bilgisini al, geçersiz değeri reddet ve liste yanıtını kur.',
+    '`await delay(waitMs)`, `new URL(request.url).searchParams` ve `HttpResponse.json` kullan.',
+    'Query’yi sayıya çevir; `Number.isInteger(page)` ve `page < 1` kontrollerinden sonra success veya 400 response’u döndür.',
   ],
 })

@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['zod.schemas', 'zod.infer', 'form.rhf-errors', 'form.a11y'],
   files: ['reviewSchema.ts'],
   hints: [
-    'Kurallar zaten doğru; eksik olan mesajlar. Zod 4’te mesaj her kurala `{ error: "…" }` ile verilir.',
-    '“Puan seç” bir kontrol mesajı değil, **tip** mesajı: değer hiç yokken hangi kontrol çalışır? Mesajı şemanın kendisine ver.',
-    '`z.number({ error: "Puan seç" }).int({ error: "Puan tam sayı olmalı" }).min(1, { error: "…" }).max(5, { error: "…" })`',
+    'Kontrolleri giriş sırasına göre ele al: metni temizle, boşluğu reddet, sonra üst sınırı uygula.',
+    'Zod 4 doğrulama mesajları için `error` seçeneğini kullanır; tip hatası ile kural ihlalinin farklı noktaları vardır.',
+    '`z.number({ error: "Puan seç" }).int({ error: "Puan tam sayı olmalı" }).min(1, { error: "Puan 1 ile 5 arasında olmalı" }).max(5, { error: "Puan 1 ile 5 arasında olmalı" })`',
   ],
 })

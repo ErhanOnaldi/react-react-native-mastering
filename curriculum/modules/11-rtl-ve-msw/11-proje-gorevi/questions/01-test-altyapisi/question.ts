@@ -9,9 +9,10 @@ export default defineQuestion({
   focusFiles: ['src/test/setup.ts', 'src/test/msw/handlers.ts', 'src/test/render.tsx'],
   reviewFiles: ['src/test/setup.ts', 'src/test/msw/handlers.ts', 'src/test/render.tsx'],
   hints: [
-    'Önce handlers.ts ve setup.ts kur; onUnhandledRequest error gerçek ağa sızmayı görünür kılar.',
-    'renderWithRouter içinde ui dizi ise route’ları kullan; değilse mevcut route için tek route oluştur.',
-    'createMemoryRouter(routes, { initialEntries: [route] }); render(<RouterProvider router={router} />); return { router, ...result }.',
+    'Önce lifecycle, varsayılan HTTP cevapları ve URL başlangıçlı render sorumluluklarını ayrı ayrı planla.',
+    'MSW için `setupServer`, `onUnhandledRequest: "error"`, `beforeAll`/`afterEach`/`afterAll`; Router için `createMemoryRouter` ve `RouterProvider` kullan.',
+    '`renderWithRouter` içinde `Array.isArray(ui)` ile route tablosunu ayır; tek UI için wildcard route kur, `router` ile RTL sonucunu birlikte döndür.',
+    'Setup dosyasında jest-dom matcher’larını içe aktar; varsayılan endpoint handler’larında `http.get` ile Authorization kontrolünü uygula.',
   ],
   rubric: [
     'Handler’lar TMDB yanıt biçimini ve Bearer kontrolünü koruyor.',

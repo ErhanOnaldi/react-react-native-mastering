@@ -12,6 +12,7 @@ export default defineQuestion({
   ],
   files: ['useDebounce.test.ts'],
   hints: [
+    'Sonuçta görünmemesi gereken ara anı zaman çizelgesinde işaretle.',
     '`renderHook` ve `rerender` ile değeri değiştir.',
     'Saati `act(() => vi.advanceTimersByTime(...))` içinde ilerlet.',
     'Eski timer’ın süresi dolduğunda son değerin erken gelmediğini; yeni timer dolduğunda geldiğini denetle.',

@@ -1,5 +1,12 @@
-TMDB'den gelen film kaydı hatalıysa kart çökmek yerine uyarı göstersin. `movieLabel(raw: unknown)` export et.
+TMDB'den gelen film kaydı bozuksa kart çökmek yerine açıklayıcı bir yedek başlık göstersin.
 
-- `{ title: "Matrix" }` → `"Matrix"`.
-- `title` eksik, null veya boşsa → `"Film verisi geçersiz"`.
-- Doğrulama için `safeParse` kullan; `as` ile atlama.
+## Gereksinimler
+- title mevcut, boş olmayan string ise aynen döndür.
+- title eksik, null veya boşsa Film verisi geçersiz döndür.
+
+## Örnek
+{ title: "Matrix" } → "Matrix"
+
+## Sözleşme
+- label.ts dosyasında movieLabel(raw: unknown): string named export'unu tanımla.
+

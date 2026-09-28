@@ -7,9 +7,10 @@ export default defineQuestion({
   concepts: ['arch.refactoring', 'ts.optional-nullable', 'js.string-formatting'],
   files: ['describeMovie.ts', 'formatMovieYear.ts'],
   hints: [
-    'Önce davranış testlerinin zaten geçtiğini gör.',
-    'Her dalda tekrar edilen yıl üretimini bir kez hesapla.',
-    'Koşullar yalnız etiket seçsin; `release_date` okuma ve başlık biçimlendirme ortak kalsın.',
+    'Hangi gözlenen değerlerin refactor öncesiyle aynı kalması gerekiyor?',
+    'Saf tarih biçimleyici çıkarmak için yeni dosya ve export sözleşmesini kullan.',
+    'Yıl hesabını bir kez üret; etiket seçimiyle ortak çıktı cümlesini ayır.',
+    'Boş tarihi de taşı; yalnız normal tarihle aynı davranışı varsayma.',
   ],
   rubric: [
     'Yıl hesaplaması bir yerde yapılır; üç dala kopyalanmaz.',

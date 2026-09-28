@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280">
+  <title>Bearer başlığıyla korumalı kaynak isteği ve 401 kontrolü</title>
+  <defs>
+    <marker id="ok-bearer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-bearer-danger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">Bearer belirteci HTTP başlığında taşınır; sunucu geçerliliği her istekte teyit eder</text>
+
+  <rect class="d-box" x="35" y="65" width="200" height="85" rx="8"/>
+  <text class="d-title" x="135" y="93" text-anchor="middle">İstemci API İsteği</text>
+  <text class="d-code" x="135" y="117" text-anchor="middle">Authorization:</text>
+  <text class="d-code" x="135" y="137" text-anchor="middle">Bearer &lt;accessToken&gt;</text>
+
+  <rect class="d-violet" x="295" y="65" width="165" height="85" rx="8"/>
+  <text class="d-title" x="377" y="93" text-anchor="middle">Korumalı Sunucu</text>
+  <text class="d-code" x="377" y="117" text-anchor="middle">GET /auth/me</text>
+  <text class="d-muted" x="377" y="137" text-anchor="middle">Token doğrulanır</text>
+
+  <line class="d-line" x1="235" y1="107" x2="289" y2="107" marker-end="url(#ok-bearer)"/>
+
+  <!-- Başarı 200 -->
+  <rect class="d-success" x="535" y="55" width="190" height="70" rx="8"/>
+  <text class="d-title" x="630" y="82" text-anchor="middle">200 OK</text>
+  <text class="d-text" x="630" y="103" text-anchor="middle">Kullanıcı profili</text>
+  <text class="d-muted" x="630" y="119" text-anchor="middle">Veri arayüze teslim</text>
+
+  <line class="d-line" x1="460" y1="90" x2="529" y2="90" marker-end="url(#ok-bearer)"/>
+
+  <!-- Hata 401 -->
+  <rect class="d-danger" x="535" y="165" width="190" height="70" rx="8"/>
+  <text class="d-title" x="630" y="192" text-anchor="middle">401 Unauthorized</text>
+  <text class="d-text" x="630" y="213" text-anchor="middle">Süresi dolmuş token</text>
+  <text class="d-muted" x="630" y="229" text-anchor="middle">fetch hata fırlatmaz</text>
+
+  <path class="d-line-danger d-dashed" d="M460 125 C485 145 500 175 529 188" marker-end="url(#ok-bearer-danger)"/>
+</svg>

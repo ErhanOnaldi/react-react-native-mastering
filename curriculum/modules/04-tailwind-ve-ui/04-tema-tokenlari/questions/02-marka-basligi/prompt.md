@@ -1,1 +1,13 @@
-Sinema markasının rengi artık CSS `@theme` içinde `--color-brand-700` ve `--color-brand-300` olarak tanımlanacak. `BrandHeading({ children, className })` bir `<h2>` render etsin; temel class'ları `font-display text-brand-700 dark:text-brand-300` olsun. Dışarıdan gelen `className` de eklensin. Önizlemede token class'larını ve metni gör; projede gerçek token'ları son derste tanımlayacaksın.
+Sinema'nın marka başlığı farklı sayfalarda aynı tipografi ve tema rengini kullansın; çağıran ekran ek class da ekleyebilsin.
+
+## Gereksinimler
+- Başlık `<h2>` olarak render edilsin ve çocuk metnini göstersin.
+- `font-display`, `text-brand-700` ve `dark:text-brand-300` class'ları bulunsun.
+- Dışarıdan gelen `className` kaybolmasın.
+
+## Örnek
+`Sinema` çocuk metni ve `text-2xl` ek class'ı verildiğinde ikisi aynı h2 üzerinde görünür.
+
+## Sözleşme
+- Dosya ve export: `BrandHeading.tsx` → `BrandHeading({ children, className })`.
+- Önizleme marka başlığını ve utility class'larını gösterir.

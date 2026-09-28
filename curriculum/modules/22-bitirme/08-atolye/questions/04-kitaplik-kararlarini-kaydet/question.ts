@@ -8,9 +8,10 @@ export default defineQuestion({
   concepts: ['arch.adr', 'arch.api-client', 'capstone.requirements'],
   reviewFiles: ['src/kitaplik-kararlarini-kaydet/**'],
   hints: [
-    'Arama sonucundaki yazar bilgisiyle ayrı bir yazar sorgusu arasında seçim yapıyorsun; ikisinin bakım maliyeti farklı.',
-    'Seçimini kısa bir karar notunda yaz: hangi seçenekleri düşündün, hangisini seçtin, neden.',
-    'Örnek sınır: arama sonucundaki yazar adını doğrudan göster (basit, ayrıntı az) ya da yazarın kendi verisini ayrıca iste (daha fazla istek, daha zengin görünüm).',
+    'Arama sonucu ile yazarın kendi detayları arasındaki veri sınırını belirle; seçtiğin mimari kararın gerekçesini kısa bir notta açıkla.',
+    'Arama sonuçlarında gelen özet yazar bilgisiyle yetinmek (az istek, az detay) ile yazarın kendi uç noktasına (`/authors/{id}.json`) giderek tüm eserlerini çekmek (zengin görünüm, ek istek maliyeti) arasındaki ödünleşimi değerlendir.',
+    '`src/kitaplik-kararlarini-kaydet/KARAR.md` dosyasında: Bağlam → Karar → Seçenekler → Kabul edilen bakım maliyeti başlıklarını doldur.',
+    'Klavye erişilebilirliğini (Tab ile gezinme, Enter ile seçim) ve hata durumlarında kullanıcıya açık bilgi verilmesini gözden kaçırma.',
   ],
   rubric: [
     'Gerçek Open Library araması çalışır ve sonuçlar listelenir.',

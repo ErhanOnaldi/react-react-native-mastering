@@ -7,9 +7,10 @@ export default defineQuestion({
   concepts: ['query.useQuery', 'fetch.loading-states', 'test.msw'],
   files: ['MovieDetail.tsx'],
   hints: [
-    '`useQuery` sonucundaki `isPending`, `isError`, `data` dallarını sırayla işle.',
-    'Key içine `id` koy ve `staleTime` değerini 60_000 yap.',
-    'Başarılı dalda `<h2>{movie.data.title}</h2>` döndür.',
+    'İlk açılış, HTTP hatası ve 60 saniye içindeki dönüş için hangi üç görünüm gerekir?',
+    '`useQuery` ile sonucu oku; key’e `id`, seçeneklere `staleTime` ekle.',
+    '`isPending` → yükleme; `isError` → hata; success → `<h2>{movie.data.title}</h2>`.',
+    '`fetch` 500’de reject olmaz; `response.ok` değerini kontrol et.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['react.useReducer', 'ts.discriminated-union', 'ts.exhaustive-check'],
   files: ['searchReducer.ts'],
   hints: [
-    'Her action için `switch(action.type)` dalı kur.',
-    'Yeni state’i `...state` ile immutable döndür.',
-    'Action’ın kendine özgü alanı yalnızca ilgili case içinde görünür; default’ta `never` ile kapsam kontrolü yap.',
+    'Her action, arama ekranında tek bir anlamlı geçişi temsil ediyor.',
+    '`switch(action.type)` ile dallan; her dalda yeni state nesnesi döndür.',
+    '`query` dalında page/results/error birlikte sıfırlanır; `success` ve `error` loading’i kapatır.',
+    'Default dalında `const neverAction: never = action` ile kapsam kontrolü yapabilirsin.',
   ],
 })

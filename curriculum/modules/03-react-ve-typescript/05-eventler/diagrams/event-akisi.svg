@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260">
+  <title>Input event'i değer olarak state'e taşır, sonra yeni render gelir</title>
+  <defs>
+    <marker id="event-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-box" x="20" y="62" width="160" height="100" rx="8"/>
+  <text class="d-title" x="100" y="90" text-anchor="middle">Input</text>
+  <text class="d-text" x="100" y="116" text-anchor="middle">kullanıcı yazar</text>
+  <text class="d-muted" x="100" y="140" text-anchor="middle">browser event</text>
+
+  <rect class="d-accent" x="210" y="62" width="160" height="100" rx="8"/>
+  <text class="d-title" x="290" y="90" text-anchor="middle">Handler</text>
+  <text class="d-code" x="290" y="116" text-anchor="middle">currentTarget</text>
+  <text class="d-code" x="290" y="140" text-anchor="middle">.value</text>
+
+  <rect class="d-box" x="400" y="62" width="160" height="100" rx="8"/>
+  <text class="d-title" x="480" y="90" text-anchor="middle">Parent</text>
+  <text class="d-code" x="480" y="116" text-anchor="middle">onChange(value)</text>
+  <text class="d-text" x="480" y="140" text-anchor="middle">state güncellenir</text>
+
+  <rect class="d-success" x="590" y="62" width="150" height="100" rx="8"/>
+  <text class="d-title" x="665" y="90" text-anchor="middle">Render</text>
+  <text class="d-text" x="665" y="116" text-anchor="middle">yeni value</text>
+  <text class="d-text" x="665" y="140" text-anchor="middle">alana döner</text>
+
+  <line class="d-line-accent" x1="180" y1="112" x2="206" y2="112" marker-end="url(#event-ok)"/>
+  <line class="d-line-accent" x1="370" y1="112" x2="396" y2="112" marker-end="url(#event-ok)"/>
+  <line class="d-line-accent" x1="560" y1="112" x2="586" y2="112" marker-end="url(#event-ok)"/>
+
+  <rect class="d-warning" x="170" y="198" width="420" height="38" rx="8"/>
+  <text class="d-text" x="380" y="222" text-anchor="middle">Form: preventDefault yalnız tarayıcı submit'i istenmiyorsa.</text>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320">
+  <title>Mutation, optimistic update ve invalidation sırası</title>
+  <defs>
+    <marker id="ok-mutation" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-mutation-danger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">yazma işlemi eski okuma cache'ini kendiliğinden düzeltmez</text>
+
+  <rect class="d-accent" x="35" y="70" width="125" height="60" rx="8"/>
+  <text class="d-title" x="98" y="94" text-anchor="middle">mutation</text>
+  <text class="d-code" x="98" y="116" text-anchor="middle">POST</text>
+
+  <rect class="d-warning" x="190" y="70" width="145" height="60" rx="8"/>
+  <text class="d-title" x="263" y="94" text-anchor="middle">optimistic</text>
+  <text class="d-text" x="263" y="116" text-anchor="middle">ekranı güncelle</text>
+
+  <rect class="d-violet" x="365" y="70" width="125" height="60" rx="8"/>
+  <text class="d-title" x="428" y="94" text-anchor="middle">sunucu</text>
+  <text class="d-code" x="428" y="116" text-anchor="middle">201 / hata</text>
+
+  <rect class="d-success" x="520" y="70" width="185" height="60" rx="8"/>
+  <text class="d-title" x="613" y="94" text-anchor="middle">invalidate</text>
+  <text class="d-text" x="613" y="116" text-anchor="middle">query refetch</text>
+
+  <line class="d-line" x1="160" y1="100" x2="186" y2="100" marker-end="url(#ok-mutation)"/>
+  <line class="d-line" x1="335" y1="100" x2="361" y2="100" marker-end="url(#ok-mutation)"/>
+  <line class="d-line" x1="490" y1="100" x2="516" y2="100" marker-end="url(#ok-mutation)"/>
+
+  <rect class="d-danger" x="270" y="210" width="220" height="52" rx="8"/>
+  <text class="d-title" x="380" y="232" text-anchor="middle">hata dönerse</text>
+  <text class="d-text" x="380" y="254" text-anchor="middle">snapshot'a rollback</text>
+  <path class="d-line-danger d-dashed" d="M428 130 C430 165 405 185 390 206" marker-end="url(#ok-mutation-danger)"/>
+
+  <text class="d-muted" x="380" y="300" text-anchor="middle">İlk tercih çoğu zaman hedefli invalidation; küçük kesin değişiklikte setQueryData.</text>
+</svg>

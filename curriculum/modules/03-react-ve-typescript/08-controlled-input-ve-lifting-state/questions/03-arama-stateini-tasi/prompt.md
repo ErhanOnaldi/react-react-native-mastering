@@ -1,3 +1,19 @@
-Arama kutusu ve listeyi ortak state ile bağla. `SearchableMovies` 550 Dövüş Kulübü, 155 Kara Şövalye, 603 Matrix filmlerini statik olarak kullanır. “Film ara” input’una yazdıkça başlıkta büyük/küçük harfe duyarsız filtrele. Boş sonuçta “Film bulunamadı” göster. Görünür listeyi ayrı state’e kopyalama; render’da `filter` ile üret.
+Kitap rafındaki bir arama alanı yazıldıkça görünür kitapları başlığa göre daraltmalı. Arama temizlenince tüm kitaplar dönmeli; eşleşme yoksa açıklayıcı boş durum görünmelidir.
 
-**Örnek:** “kara” yaz → yalnız Kara Şövalye; input’u temizle → üç film.
+## Gereksinimler
+
+- “Rafı ara” adıyla bir textbox bulunmalıdır.
+- Verilen üç kitap için başlık eşleşmesi büyük/küçük harfe duyarsız olmalıdır.
+- Arama sırasında yalnız eşleşen başlıklar görünmelidir.
+- Input temizlenince üç kitap yeniden görünmelidir.
+- Eşleşme yoksa “Film bulunamadı” yazmalıdır.
+
+## Örnek
+
+`"otel"` yaz → yalnız “Anayurt Oteli”; alanı temizle → üç kitap.
+
+## Sözleşme
+
+- Dosya ve export: `SearchableMovies.tsx` → named export `SearchableMovies`
+- Props: yok; statik kitap verisi bileşen içinde sağlanır.
+- Arayüz: “Rafı ara” textbox'ı ve eşleşen kitapları içeren `li` öğeleri.

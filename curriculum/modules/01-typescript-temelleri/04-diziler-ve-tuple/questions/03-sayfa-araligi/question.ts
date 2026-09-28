@@ -2,13 +2,14 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'code',
-  title: 'Sayfa aralığı tuple’ı',
+  title: 'Sayfalama aralığı tuple’ı',
   difficulty: 'kolay',
   concepts: ['ts.arrays-tuples'],
   files: ['pageRange.ts'],
   hints: [
-    'İlk eleman için 1 alt sınırını düşün.',
-    '`Math.max` ilk, `Math.min` son konumu sınırlar.',
-    '`[Math.max(1, page - 1), Math.min(totalPages, page + 1)]` döndür.',
+    'Başlangıç ve bitiş değerlerini alt ve üst sınırlar dahilinde tutmayı düşün.',
+    'Sınırları belirlemek için `Math.max(1, page - 1)` ve `Math.min(totalPages, page + 1)` yardımcılarını kullanabilirsin.',
+    'İskelet: `export type PageRange = [first: number, last: number]; export function pageRange(page: number, totalPages: number): PageRange { return [Math.max(1, page - 1), Math.min(totalPages, page + 1)]; }`',
+    'Fonksiyon dönüş tipinin genel `number[]` değil, tam olarak iki elemanlı `PageRange` tuple’ı olduğundan emin ol.',
   ],
 })

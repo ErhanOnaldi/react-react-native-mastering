@@ -1,8 +1,19 @@
-## Sorun
-Sinema aramasında yalnızca fetch çağrısı kontrol edildiği için boş liste ve hata mesajı bozulsa da test geçiyor.
+Arama ekranında başarı, boş sonuç ve sunucu hatası davranışını kullanıcı etkileşimiyle sınayan testler yaz.
 
-## Görev
-`@impl/SearchPanel` için kullanıcı akışları yaz. Kullanıcı "Matrix" yazıp "Ara"ya basınca önce loading, sonra Matrix başlığı görünsün. Yanıtı loading durumunun gözlenebileceği kadar geciktir. Boş TMDB listesinde "Film bulunamadı", 500 yanıtında "Arama başarısız" alert’i görünsün. Arama isteğinin query değeri Matrix olsun.
+## Gereksinimler
+- Kullanıcı “Matrix” arar; önce loading, sonra Matrix başlığı görünür.
+- Arama alanı “Film ara” adıyla, gönderme düğmesi “Ara” adıyla bulunur.
+- Boş liste “Film bulunamadı” mesajını gösterir.
+- Boş sonuç mesajı status rolüyle sunulur.
+- 500 yanıtı “Arama başarısız” alert’ini gösterir.
+- İstek `query=Matrix` değerini taşır.
+- İki verilen mutant da en az bir testte başarısız olmalıdır.
 
 ## Örnek
-Gövde: `{ page: 1, results: [], total_pages: 1, total_results: 0 }`.
+`results=[Matrix]` → başlık görünür; `results=[]` → boş mesaj; HTTP 500 → alert.
+
+## Sözleşme
+- `SearchPanel.test.tsx` dosyasına test yaz.
+- Component `@impl/SearchPanel` yolundan import edilir.
+- Endpoint `${TMDB_BASE}/search/movie`; `@test-utils` MSW server ve request günlüğü sağlar.
+- Fixture auth başlığı `Authorization: Bearer test-token` kullanır.

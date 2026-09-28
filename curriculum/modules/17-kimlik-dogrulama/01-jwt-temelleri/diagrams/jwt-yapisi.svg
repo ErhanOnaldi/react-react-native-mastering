@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260">
+  <title>JSON Web Token anatomisi: Header, Payload ve Signature</title>
+  <defs>
+    <marker id="ok-jwt-1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">JWT üç parçadan oluşur; noktalarla ayrılır ve base64url ile kodlanır</text>
+
+  <rect class="d-accent" x="35" y="55" width="205" height="90" rx="8"/>
+  <text class="d-title" x="137" y="82" text-anchor="middle">1. Header</text>
+  <text class="d-code" x="137" y="106" text-anchor="middle">alg: HS256, typ: JWT</text>
+  <text class="d-muted" x="137" y="128" text-anchor="middle">Algoritma ve belirteç türü</text>
+
+  <text class="d-title" x="257" y="105" text-anchor="middle">.</text>
+
+  <rect class="d-success" x="277" y="55" width="205" height="90" rx="8"/>
+  <text class="d-title" x="379" y="82" text-anchor="middle">2. Payload</text>
+  <text class="d-code" x="379" y="106" text-anchor="middle">sub, username, exp</text>
+  <text class="d-muted" x="379" y="128" text-anchor="middle">Kullanıcı verisi ve süre</text>
+
+  <text class="d-title" x="499" y="105" text-anchor="middle">.</text>
+
+  <rect class="d-violet" x="519" y="55" width="205" height="90" rx="8"/>
+  <text class="d-title" x="621" y="82" text-anchor="middle">3. Signature</text>
+  <text class="d-code" x="621" y="106" text-anchor="middle">HMACSHA256(gizliSır)</text>
+  <text class="d-muted" x="621" y="128" text-anchor="middle">Sunucudaki sırla imza</text>
+
+  <rect class="d-box" x="35" y="175" width="447" height="60" rx="8"/>
+  <text class="d-title" x="258" y="200" text-anchor="middle">İstemcide okunabilir (Açık veri)</text>
+  <text class="d-muted" x="258" y="222" text-anchor="middle">Base64url çözülüp süre denetlenebilir; şifreli değildir</text>
+
+  <rect class="d-warning" x="519" y="175" width="205" height="60" rx="8"/>
+  <text class="d-title" x="621" y="200" text-anchor="middle">Sunucu doğrulaması</text>
+  <text class="d-muted" x="621" y="222" text-anchor="middle">İmza sırla teyit edilir</text>
+</svg>

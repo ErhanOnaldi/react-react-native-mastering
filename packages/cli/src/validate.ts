@@ -1,4 +1,5 @@
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import {
   allLessons,
@@ -7,7 +8,7 @@ import {
   type Curriculum,
   type QuestionEntry,
 } from '@rm/content'
-import { extractCheckedCodeBlocks } from '@rm/content/markdown'
+import { checkDiagrams, checkSvg, extractCheckedCodeBlocks } from '@rm/content/markdown'
 import {
   checkpointAfter,
   checkpointBefore,
@@ -18,6 +19,7 @@ import {
 } from '@rm/runner'
 import { spawn } from 'node:child_process'
 import pc from 'picocolors'
+import { knownDiagramClasses, lintDiagramLayout, unknownDiagramClasses } from './diagram-lint.ts'
 
 interface Problem {
   where: string
@@ -234,6 +236,118 @@ async function validateCodeBlocks(
   return map.size
 }
 
+/** Diyagram referansları (ders, görev ve çözüm metinleri) ile ortak diyagram klasöründeki SVG'ler. */
+async function validateDiagrams(
+  paths: RepoPaths,
+  curriculum: Curriculum,
+  moduleFilter: number | undefined,
+  problems: Problem[],
+) {
+  const diagramsDir = path.join(paths.curriculumRoot, 'diagrams')
+  const cssFile = path.join(paths.repoRoot, 'apps', 'platform', 'src', 'styles', 'index.css')
+  const known = existsSync(cssFile)
+    ? knownDiagramClasses(await readFile(cssFile, 'utf8'))
+    : undefined
+  const lint = (source: string) => [
+    ...(known ? unknownDiagramClasses(source, known) : []),
+    ...lintDiagramLayout(source),
+  ]
+  let count = 0
+  const localSvgs = new Set<string>()
+  for (const lesson of allLessons(curriculum)) {
+    const module = curriculum.modules.find((m) => m.id === lesson.moduleId)!
+    if (moduleFilter !== undefined && module.number !== moduleFilter) continue
+    const sources = [lesson.markdownPath]
+    for (const q of lesson.questions) {
+      if (q.promptPath) sources.push(q.promptPath)
+      if (q.solutionNotesPath) sources.push(q.solutionNotesPath)
+    }
+    for (const source of sources) {
+      const markdown = await readFile(source, 'utf8')
+      // GFM tablolarında kod içindeki kaçışsız | hücreyi böler: `number | null` → `number \\| null`
+      markdown.split('\n').forEach((line, index) => {
+        if (!line.trimStart().startsWith('|')) return
+        if ((line.match(/`[^`]*`/g) ?? []).some((span) => /(?<!\\)\|/.test(span)))
+          problems.push({
+            where: `${rel(paths, source)}:${index + 1}`,
+            message: 'Tablo hücresindeki kodda kaçışsız | var; tablo bozulur. `\\|` yaz.',
+          })
+      })
+      const found = checkDiagrams(markdown, { baseDir: path.dirname(source), diagramsDir })
+      count += (markdown.match(/!\[/g) ?? []).length
+      for (const problem of found)
+        problems.push({ where: `${rel(paths, source)}:${problem.line}`, message: problem.message })
+    }
+    const lessonDiagrams = path.join(lesson.dir, 'diagrams')
+    if (existsSync(lessonDiagrams))
+      for (const name of await readdir(lessonDiagrams))
+        if (name.endsWith('.svg')) localSvgs.add(path.join(lessonDiagrams, name))
+  }
+  // Derse özgü diyagramlar: yerleşim sorunu hatadır (taşan metin, çizgi-metin çakışması…)
+  for (const file of localSvgs) {
+    const layout = lint(await readFile(file, 'utf8'))
+    if (layout.length)
+      problems.push({
+        where: rel(paths, file),
+        message: `Diyagram yerleşim sorunları (pnpm preview:diagram ile incele):\n      - ${layout.join('\n      - ')}`,
+      })
+  }
+  if (existsSync(diagramsDir)) {
+    for (const name of (await readdir(diagramsDir)).filter((f) => f.endsWith('.svg'))) {
+      const file = path.join(diagramsDir, name)
+      const source = await readFile(file, 'utf8')
+      for (const message of checkSvg(source)) problems.push({ where: rel(paths, file), message })
+      const layout = lint(source)
+      if (layout.length)
+        problems.push({
+          where: rel(paths, file),
+          message: `Diyagram yerleşim sorunları:\n      - ${layout.join('\n      - ')}`,
+        })
+    }
+  }
+  return count
+}
+
+/**
+ * Ders örneği ≠ görev çözümü (rehber §1.4): ders metnindeki kod, aynı dersin code görevlerinin
+ * solution/impl dosyalarında export edilen bir bileşen/fonksiyonu tanımlamamalı.
+ */
+async function validateLessonSolutionOverlap(
+  paths: RepoPaths,
+  curriculum: Curriculum,
+  moduleFilter: number | undefined,
+  problems: Problem[],
+) {
+  for (const lesson of allLessons(curriculum)) {
+    const module = curriculum.modules.find((m) => m.id === lesson.moduleId)!
+    if (moduleFilter !== undefined && module.number !== moduleFilter) continue
+    const names = new Set<string>()
+    for (const q of lesson.questions) {
+      if (q.type !== 'code') continue
+      const files = [
+        ...q.solutionFiles.map((f) => path.join(q.dir, 'solution', f)),
+        ...q.implFiles.map((f) => path.join(q.dir, 'impl', f)),
+      ].filter((f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f))
+      for (const file of files)
+        for (const [, name] of (await readFile(file, 'utf8')).matchAll(
+          /export\s+(?:default\s+)?(?:async\s+)?(?:function|const|class)\s+([A-Za-z_$][\w$]*)/g,
+        ))
+          names.add(name!)
+    }
+    if (!names.size) continue
+    const markdown = await readFile(lesson.markdownPath, 'utf8')
+    const code = [...markdown.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map((m) => m[1]).join('\n')
+    const clashes = [...names].filter((name) =>
+      new RegExp(`(?:function|const|class)\\s+${name}\\b`).test(code),
+    )
+    if (clashes.length)
+      problems.push({
+        where: rel(paths, lesson.markdownPath),
+        message: `Ders kodu görev çözümündeki adları tanımlıyor: ${clashes.join(', ')}. Derste kavramı başka bir örnekle öğret (rehber §1.4 "Ders örneği ≠ görev çözümü").`,
+      })
+  }
+}
+
 function conceptReport(
   curriculum: Curriculum,
   moduleFilter: number | undefined,
@@ -307,6 +421,9 @@ export async function validate(paths: RepoPaths, options: ValidateOptions) {
 
   const blocks = await validateCodeBlocks(paths, curriculum, options.module, problems)
   console.log(pc.dim(`  ${blocks} işaretli kod bloğu derlendi`))
+  const images = await validateDiagrams(paths, curriculum, options.module, problems)
+  await validateLessonSolutionOverlap(paths, curriculum, options.module, problems)
+  if (images) console.log(pc.dim(`  ${images} görsel/diyagram referansı denetlendi`))
 
   if (!options.skipRuns) {
     const runnable = questions.filter(

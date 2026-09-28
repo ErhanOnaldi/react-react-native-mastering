@@ -1,10 +1,18 @@
-Sinema'da fragman dialogu, mobil filtre çekmecesi ve "Daha fazla" menüsü aynı aç/kapat kodunu tekrar ediyor. Görünüm üretmeyen, her yerde kullanılabilecek bir `useDisclosure` hook'u yaz.
+Dialog, filtre çekmecesi ve menü aynı aç/kapat davranışını tekrarlıyor. DOM üretmeyen, bu durumu ve eylemleri paylaşan bir hook oluştur.
 
 ## Gereksinimler
-- `useDisclosure(initial = false)` → `{ isOpen, open, close, toggle }` döndürsün.
-- Başlangıç değeri verilebilsin.
-- `open` art arda çağrılsa da açık, `close` art arda çağrılsa da kapalı kalsın.
-- `toggle` aynı olayda iki kez çağrılırsa durum **başa dönsün** (her çağrı en güncel değeri tersine çevirir).
-- `open`, `close` ve `toggle` render'lar arasında **aynı fonksiyon** kalsın: bu fonksiyonlar başka bileşenlerin effect bağımlılıklarına girecek.
 
-Hook DOM, rol ya da focus kararı vermez; onları kullanan bileşen seçer.
+- Başlangıç değeri verilmezse kapalı olsun; istenirse başlangıç değeri alınsın.
+- `open` her çağrıda açık, `close` her çağrıda kapalı duruma getirsin.
+- Aynı olayda iki `toggle` çağrısı başlangıç durumuna dönsün.
+- Dönen `open`, `close` ve `toggle` fonksiyonlarının referansı render'lar arasında değişmesin.
+- Hook DOM, rol veya focus davranışı üretmesin.
+
+## Örnek
+
+Başlangıç `false`; `open()` → `true`; `toggle()` iki kez → `true` durumuna geri döner.
+
+## Sözleşme
+
+- `useDisclosure.ts` içinden named export `useDisclosure(initial = false)`.
+- Dönüş tipi `{ isOpen: boolean; open: () => void; close: () => void; toggle: () => void }`.

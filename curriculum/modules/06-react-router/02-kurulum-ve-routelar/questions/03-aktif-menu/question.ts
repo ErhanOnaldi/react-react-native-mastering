@@ -7,7 +7,8 @@ export default defineQuestion({
   concepts: ['router.navigation', 'a11y.basics'],
   files: ['Menu.tsx'],
   hints: [
-    "Etkinlik bilgisini router'dan alan bağlantı bileşenini seç.",
-    '`NavLink` ve kök bağlantısında `end` kullan.',
+    'Menü öğesinin etkin olup olmadığını ayrıca state tutmadan hangi bilgiyle belirleyebilirsin?',
+    '`NavLink` eşleşme durumunu verir; kök adresin child yollarla eşleşmesini sınırlamak için prop desteğine bak.',
+    'Ana sayfa linkinde `end` kullan; Ara ve Favoriler linklerinde etkin adrese göre `aria-current` değerini doğrula.',
   ],
 })

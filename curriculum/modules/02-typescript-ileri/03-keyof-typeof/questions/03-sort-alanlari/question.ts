@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.as-const', 'ts.keyof-typeof', 'ts.literal'],
   files: ['task.ts'],
   hints: [
-    'as const olmadan eleman tipi string olur.',
-    'Guard için readonly dizide `some` ile eşitlik karşılaştır.',
-    'Her literal alan için Türkçe etiketi açıkça eşleştir.',
+    'İzinli alanların tek kaynağını bir sabit tuple olarak kur.',
+    '`as const` ve `(typeof SORT_FIELDS)[number]` literal unionı korur; `some` runtime guard için uygundur.',
+    'Guard ile üyeliği doğrula, sonra her alan için Türkçe etiketi döndür.',
   ],
 })

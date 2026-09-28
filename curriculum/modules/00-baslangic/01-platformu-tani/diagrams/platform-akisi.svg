@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260">
+  <title>Platformun çalışma ve geri bildirim döngüsü</title>
+  <defs>
+    <marker id="flow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <!-- Kutu 1: Editör -->
+  <rect class="d-box" x="30" y="40" width="200" height="180" rx="8"/>
+  <text class="d-title" x="130" y="70" text-anchor="middle">1 · Kod Editörü</text>
+  <text class="d-text" x="130" y="105" text-anchor="middle">Monaco / VS Code</text>
+  <text class="d-muted" x="130" y="135" text-anchor="middle">Kodu yazarsın</text>
+  <text class="d-code" x="130" y="170" text-anchor="middle">⌘ + Enter</text>
+
+  <!-- Kutu 2: Motor -->
+  <rect class="d-accent" x="270" y="40" width="220" height="180" rx="8"/>
+  <text class="d-title" x="380" y="70" text-anchor="middle">2 · Doğrulama Hattı</text>
+  <text class="d-text" x="380" y="105" text-anchor="middle">TypeScript (tsc)</text>
+  <text class="d-muted" x="380" y="130" text-anchor="middle">Tip kontrolü</text>
+  <text class="d-text" x="380" y="160" text-anchor="middle">Vitest Motoru</text>
+  <text class="d-muted" x="380" y="185" text-anchor="middle">Gereksinim denetimi</text>
+
+  <!-- Kutu 3: Sonuç -->
+  <rect class="d-success" x="530" y="40" width="200" height="180" rx="8"/>
+  <text class="d-title" x="630" y="70" text-anchor="middle">3 · Geri Bildirim</text>
+  <text class="d-text" x="630" y="105" text-anchor="middle">✓ Yeşil: Başarılı</text>
+  <text class="d-text" x="630" y="135" text-anchor="middle">✗ Kırmızı: Rapor</text>
+  <text class="d-code" x="630" y="165" text-anchor="middle">Expected / Received</text>
+
+  <!-- Bağlantı Okları -->
+  <line class="d-line" x1="230" y1="130" x2="266" y2="130" marker-end="url(#flow-ok)"/>
+  <line class="d-line" x1="490" y1="130" x2="526" y2="130" marker-end="url(#flow-ok)"/>
+</svg>

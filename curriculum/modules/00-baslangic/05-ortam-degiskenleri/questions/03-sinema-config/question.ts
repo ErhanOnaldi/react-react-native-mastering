@@ -8,8 +8,8 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['src/config.ts', 'src/vite-env.d.ts', 'src/App.tsx'],
   hints: [
-    '`src/config.ts`: `export const appTitle = import.meta.env.VITE_APP_TITLE ?? "Sinema"`.',
-    '`App.tsx`’te `import { appTitle } from "./config"` ve `<h1>{appTitle}</h1>`.',
-    'Tip hatası alıyorsan `src/vite-env.d.ts` dosyasını dersteki gibi oluşturduğundan emin ol; sonra `pnpm typecheck`.',
+    'Önce verinin yolunu izle: ortam değişkeninden yapılandırmaya, yapılandırmadan ekrandaki başlığa.',
+    'Vite ortam değerlerini `import.meta.env` üzerinden okur. Opsiyonel başlık için `??` ile varsayılan değer belirleyebilirsin.',
+    '`config.ts` içinde `appTitle` değerini export et; `App.tsx` bu değeri başlıkta kullansın. Ortam değerlerinin tiplerini `vite-env.d.ts` içinde tanımla.',
   ],
 })

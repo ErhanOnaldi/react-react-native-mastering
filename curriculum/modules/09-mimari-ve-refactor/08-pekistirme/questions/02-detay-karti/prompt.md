@@ -1,17 +1,18 @@
-Film detayında poster olan ve olmayan veri için iki ayrı kart JSX’i var. İkisi de çalışıyor. Başlık stilini değiştirince ikinci dal eski kalıyor.
+Film detay görünümünde afiş olsun ya da olmasın aynı başlık ve açıklamayı göster; afiş kararını ayrı kullanılabilir bir bileşende sun.
 
-## Önce gözlemle
+## Gereksinimler
 
-Davranış testleri starter’da yeşil. Yapısal test ortak başlık kullanımını, rubric okunurluğu denetler.
+- Başlık `<h2>` ve açıklama `<p>` içinde gösterilsin.
+- `poster_path` doluysa doğru TMDB görsel URL'sine sahip `img` ve film başlığına eşit alt metin gösterilsin.
+- `poster_path` null ise kırık görsel gösterilmesin.
+- Başlık ve açıklama görünümü tek noktada tanımlansın.
 
-## İstenen
+## Örnek
 
-`MovieSummary({ movie })` davranışını koru:
+`poster_path: '/poster.jpg'` için görsel adresi `https://image.tmdb.org/t/p/w185/poster.jpg` olur. `poster_path: null` için başlık ve açıklama kalır, görsel yoktur.
 
-- Her durumda `<h2>` içinde film başlığı ve `<p>` içinde açıklama.
-- `poster_path` varsa `img` göster; `alt` film başlığı olsun.
-- Poster yoksa kırık `img` üretme.
-- Ortak başlık ve açıklama JSX’i yalnız bir kez yazılsın.
-- `MoviePoster.tsx` içinde `MoviePoster({ title, path })` export et. Poster kararını buraya taşı ve `MovieSummary` içinde kullan.
+## Sözleşme
 
-Bu görev API çağrısı yapmaz; görünüm sınırını temizler.
+- `MovieSummary.tsx` → named export `MovieSummary({ movie })`; film alanları `title`, `overview`, `poster_path`.
+- `MoviePoster.tsx` → named export `MoviePoster({ title, path })`; `path` değeri string veya null.
+- Başlık seviyesi 2; görsel accessible name'i film başlığı.

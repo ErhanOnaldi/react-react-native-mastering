@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['form.rhf-controller', 'form.rhf-errors', 'react.controlled-input'],
   files: ['StarReviewForm.tsx'],
   hints: [
-    '`RatingStars` native input değil; `Controller` kullan.',
-    '`field.value` ve `field.onChange` değerlerini yıldız bileşenine aktar.',
-    'En az 1 puan kuralı ekle ve hatayı alert olarak göster.',
+    'Yıldız kontrolü bir DOM input değil; arayüz seçimini ve submit değerini tek kaynakta tut.',
+    'RHF `Controller` ile controlled bileşeni bağlar; native yorum alanı `register` ile kalabilir.',
+    "`defaultValues.rating` için 0 ver, `field.value`/`field.onChange` bağla ve `rules` içinde `min: { value: 1, message: 'Puan seç' }` tanımla.",
   ],
 })

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 245">
+  <title>Trace içinde zaman çizgisinden kanıta ilerleme</title>
+  <defs>
+    <marker id="trace-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path d="M0 0L8 4L0 8Z" class="d-arrowhead-accent" />
+    </marker>
+  </defs>
+  <rect x="28" y="74" width="165" height="82" rx="12" class="d-accent" />
+  <text x="110" y="107" text-anchor="middle" class="d-title">Başarısız adım</text>
+  <text x="110" y="132" text-anchor="middle" class="d-muted">hangi koşul kaldı?</text>
+  <rect x="221" y="74" width="165" height="82" rx="12" class="d-violet" />
+  <text x="303" y="107" text-anchor="middle" class="d-title">Network</text>
+  <text x="303" y="132" text-anchor="middle" class="d-muted">istek ve yanıt</text>
+  <rect x="414" y="74" width="155" height="82" rx="12" class="d-box" />
+  <text x="491" y="107" text-anchor="middle" class="d-title">Console / DOM</text>
+  <text x="491" y="132" text-anchor="middle" class="d-muted">hata ve görünüm</text>
+  <rect x="597" y="74" width="135" height="82" rx="12" class="d-success" />
+  <text x="664" y="107" text-anchor="middle" class="d-title">Neden</text>
+  <text x="664" y="132" text-anchor="middle" class="d-muted">kanıta dayanır</text>
+  <path d="M197 115H211" class="d-line-accent" marker-end="url(#trace-arrow)" />
+  <path d="M390 115H404" class="d-line-accent" marker-end="url(#trace-arrow)" />
+  <path d="M573 115H587" class="d-line-accent" marker-end="url(#trace-arrow)" />
+  <text x="380" y="211" text-anchor="middle" class="d-text">Bekleme süresini değil, eksik kanıtı araştır</text>
+</svg>

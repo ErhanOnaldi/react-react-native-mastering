@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['redux.listener', 'redux.store'],
   files: ['persist.ts'],
   hints: [
-    'Listener’ı store’dan önce oluştur.',
-    '`startListening({ actionCreator: toggle, effect })` kullan.',
-    '`api.getState()` reducer sonrası state’i verir; `JSON.stringify(ids)` yaz.',
+    'Reducer state’i değiştirsin; storage’a güncel değeri action tamamlandıktan sonra yaz.',
+    '`createListenerMiddleware` içindeki `startListening` ile ilgili action creator’a bağlan.',
+    '`effect` içinde `api.getState()`ten ID’leri oku ve `JSON.stringify(ids)` sonucunu storage anahtarına yaz.',
   ],
 })

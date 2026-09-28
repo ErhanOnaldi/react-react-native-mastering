@@ -34,8 +34,9 @@ export default defineQuestion({
     'Kalıcılık tarayıcıya özgü olduğu ve hesaplar arası senkron sağlamadığı kullanıcıya açık mı?',
   ],
   hints: [
-    'Form ve kalıcı kayıt aynı veriyi paylaşırken hangi sınırda hatalı veriyi elemelisin?',
-    'Zod ile kayıt biçimini doğrula; `AppProviders` içinde paylaşılan state’i kur. Formda RHF + `zodResolver` kullan ve kayıtlı eseri `defaultValues` olarak ver.',
-    'Şemada `status === "read"` iken `rating` için 1–5 şartını `superRefine` ile `path: ["rating"]` üzerine yaz; `useWatch` ile Puan alanını koşullu göster.',
+    'Okuma listesi durumunu (`want`, `reading`, `read`), verilen puanı ve notu tek bir paylaşılan istemci deposunda yönet; detay formu ve liste sayfası aynı veriyi okusun.',
+    'Form yönetiminde React Hook Form ve Zod resolver kullan; durum “Okudum” (`read`) seçildiğinde puan alanını koşullu göster ve 1–5 aralığını zorunlu kıl (`refine` veya `superRefine`).',
+    'Kalıcılığı `localStorage` anahtarı `kitaplik:reading-list` üzerinden sağla; depodan okurken veriyi mutlaka Zod şemasıyla doğrula. Bozuk JSON veya şema uyuşmazlığında güvenle boş diziye düş.',
+    'Menüdeki liste sayacını (`Okuma listem (n)`) ayrı bir state olarak tutma; mevcut okuma listesi dizisinin uzunluğundan (`list.length`) türet.',
   ],
 })

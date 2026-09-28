@@ -13,8 +13,8 @@ export default defineQuestion({
   files: ['SearchPage.ts'],
   timeoutMs: 90_000,
   hints: [
-    'Locator’ları constructor’da bir kez kur; metotlar onları kullansın. Asıl zor kısım `search()`’ün **neyi** beklediği: yeni sorguyu yazdığında eski sonuçlar hâlâ ekranda, “Aranıyor…” da debounce bitene kadar görünmüyor.',
-    'Sonuç bölgesi her aramada bir başlık gösterir: `“matrix” için 2 sonuç`. Bu başlık yalnızca **o** sorgunun cevabı geldiğinde görünür; `search()` onu beklesin. `resultTitles()` için `allTextContents()` beklemez, zaten beklemesi gerekmiyor.',
-    "`search`: `fill(query)` + `await expect(region.getByRole('heading', { name: `“${query}” için` })).toBeVisible()`. `openMovie`: bağlantıya `exact: true` ile tıkla, sonra `getByRole('heading', { level: 2, name: title, exact: true })` görünür olsun.",
+    'Sayfa yardımcılarının kullanıcı niyetini taşımasını sağla. Eski sonuçlar bir süre görünür kaldığında, yeni işlemin tamamlandığını hangi görünür metin kanıtlar?',
+    '`Locator` değerlerini sınıf alanı olarak tut; Playwright allTextContents() anlık okuması kendi başına beklemez. Bekleme için web-first expect kullan.',
+    'search(query) alanı doldurup region içindeki sorgu başlığını beklesin. openMovie(title) tam adı eşleşen linke tıklasın ve level 2 aynı adlı heading’i beklesin; resultTitles() link metinlerini diziye çevirsin.',
   ],
 })

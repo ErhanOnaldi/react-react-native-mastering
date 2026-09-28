@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330">
+  <title>401 sonrası tek refresh ve bekleyen istekler</title>
+  <defs>
+    <marker id="ok-token" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-token-danger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">aynı anda gelen 401'ler tek refresh Promise'ını paylaşır</text>
+
+  <rect class="d-warning" x="35" y="65" width="150" height="70" rx="8"/>
+  <text class="d-title" x="110" y="92" text-anchor="middle">İstek A+B</text>
+  <text class="d-code" x="110" y="116" text-anchor="middle">401</text>
+
+  <rect class="d-accent" x="235" y="65" width="170" height="70" rx="8"/>
+  <text class="d-title" x="320" y="92" text-anchor="middle">refreshPromise</text>
+  <text class="d-text" x="320" y="116" text-anchor="middle">tek uçuş</text>
+
+  <rect class="d-violet" x="455" y="65" width="140" height="70" rx="8"/>
+  <text class="d-title" x="525" y="92" text-anchor="middle">/auth/refresh</text>
+  <text class="d-text" x="525" y="116" text-anchor="middle">yeni token</text>
+
+  <rect class="d-success" x="640" y="65" width="90" height="70" rx="8"/>
+  <text class="d-title" x="685" y="92" text-anchor="middle">Retry</text>
+  <text class="d-code" x="685" y="116" text-anchor="middle">1 kez</text>
+
+  <line class="d-line" x1="185" y1="100" x2="231" y2="100" marker-end="url(#ok-token)"/>
+  <line class="d-line" x1="405" y1="100" x2="451" y2="100" marker-end="url(#ok-token)"/>
+  <line class="d-line" x1="595" y1="100" x2="636" y2="100" marker-end="url(#ok-token)"/>
+
+  <rect class="d-danger" x="245" y="215" width="270" height="58" rx="8"/>
+  <text class="d-title" x="380" y="239" text-anchor="middle">refresh 403 / retry 401</text>
+  <text class="d-text" x="380" y="261" text-anchor="middle">oturumu temizle, girişe dön</text>
+  <path class="d-line-danger d-dashed" d="M525 135 C510 175 445 195 405 211" marker-end="url(#ok-token-danger)"/>
+
+  <text class="d-muted" x="380" y="309" text-anchor="middle">Refresh isteği kendi kendini refresh etmez; retry sonsuz döngüye girmez.</text>
+</svg>

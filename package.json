@@ -12,6 +12,7 @@
     "checkpoint": "node packages/cli/src/bin.ts checkpoint",
     "validate:content": "node packages/cli/src/bin.ts validate",
     "setup:projects": "node packages/cli/src/bin.ts setup",
+    "preview:diagram": "node packages/cli/src/bin.ts diagram",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "typecheck": "pnpm -r --parallel typecheck",

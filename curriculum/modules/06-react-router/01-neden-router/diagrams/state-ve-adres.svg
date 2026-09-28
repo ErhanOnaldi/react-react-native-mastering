@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220">
+  <title>Yerel state ile adresin görünümü seçmesi</title>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0,0 L8,4 L0,8 z" />
+    </marker>
+  </defs>
+  <rect class="d-danger" x="30" y="36" width="300" height="145" rx="12" />
+  <text class="d-title" x="180" y="66" text-anchor="middle">Yalnız yerel seçim</text>
+  <text class="d-code" x="180" y="104" text-anchor="middle">selectedId = 550</text>
+  <text class="d-muted" x="180" y="137" text-anchor="middle">URL: /</text>
+  <text class="d-muted" x="180" y="160" text-anchor="middle">Yenilemede seçim kaybolur</text>
+  <rect class="d-success" x="430" y="36" width="300" height="145" rx="12" />
+  <text class="d-title" x="580" y="66" text-anchor="middle">Adresli görünüm</text>
+  <text class="d-code" x="580" y="104" text-anchor="middle">/movie/550</text>
+  <text class="d-muted" x="580" y="137" text-anchor="middle">Router → Film detayı</text>
+  <text class="d-muted" x="580" y="160" text-anchor="middle">Yenileme ve paylaşım çalışır</text>
+  <path class="d-line-accent" d="M335 108 H423" marker-end="url(#arrow)" />
+  <text class="d-text-accent" x="380" y="92" text-anchor="middle">adres</text>
+</svg>

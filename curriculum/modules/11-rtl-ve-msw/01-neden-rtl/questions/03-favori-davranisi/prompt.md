@@ -1,10 +1,19 @@
-## Sorun
-Sinema’da favori butonunun handler’ını doğrudan çağıran test geçiyor; buton disabled olsa bile bunu kaçırıyor.
+Favori kontrolünün kullanıcı tarafından gerçekten çalıştırıldığını ve doğru filmi taşıdığını doğrulayan testler yaz.
 
-## Görev
-`@impl/FavoriteButton` bileşenine kullanıcı odaklı test yaz. Başta "Favorilere ekle" butonunu rol ve adıyla bul, tıkla ve callback’e film id’si 550 gittiğini sına. Favori durumunda "Favorilerden çıkar" adını da doğrula. CSS class’ı sorgulama.
+## Gereksinimler
+- Başlangıçta “Favorilere ekle” adlı düğme görünür.
+- Düğmeye tıklanınca callback `550` ile çağrılır.
+- Favori durumunda düğmenin adı “Favorilerden çıkar” olur.
 
 ## Örnek
-`<FavoriteButton movieId={550} isFavorite={false} onToggle={fn} />` → tıklama sonrası `fn(550)`.
+`movieId=550` olan film → “Favorilere ekle” düğmesine tıkla → callback `550` alır.
 
-Mutant etiketlerini okuyup testlerinin her iki hatayı yakalamasını sağla.
+## Sözleşme
+- `FavoriteButton.test.tsx` dosyasına test yaz.
+- Bileşen: `@impl/FavoriteButton`, props: `movieId`, `isFavorite`, `onToggle`.
+- Callback türü `(movieId: number) => void`.
+- Testler rol/ad/metin üzerinden görünen kontrolü doğrulamalı.
+
+## Kısıtlar
+- CSS class’ı test etme.
+- Verilen mutantların her birini en az bir test yakalamalıdır.

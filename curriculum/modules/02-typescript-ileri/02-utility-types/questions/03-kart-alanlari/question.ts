@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.pick', 'ts.object-types', 'ts.optional-nullable'],
   files: ['task.ts'],
   hints: [
-    'Ayrı bir kart nesnesi tipi kopyalama; Pick kullan.',
-    '`poster_path === null` dalını ayır.',
-    'Poster yoksa `movie.title + " (poster yok)"` döndür.',
+    'Kartın ihtiyaç duyduğu alanları temel nesne tipinden seç; alan kopyası yazma.',
+    '`Pick<Movie, ...>` ile `MovieCardData` tipini türet.',
+    '`poster_path === null` koşulunda ek etiket, diğer durumda başlık dön.',
   ],
 })

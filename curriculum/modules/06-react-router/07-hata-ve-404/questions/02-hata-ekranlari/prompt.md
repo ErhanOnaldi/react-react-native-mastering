@@ -1,10 +1,17 @@
-`/hic-yok` ve yüklenirken hata veren `/broken` aynı boş ekrana düşüyor. Kullanıcıya anlaşılır yol göster.
+Tanınmayan adres ve geçerli sayfa çalışırken oluşan hata kullanıcıya ayrı, anlaşılır ekranlar göstermeli.
 
-## Görev
+## Gereksinimler
 
-`RouteScreens.tsx` iki bileşen export etsin:
+- Bilinmeyen adres için `Sayfa bulunamadı` başlığı ve `/` adresine giden `Ana sayfaya dön` linki göster.
+- Route hatasında ekran `role="alert"` taşısın ve dönüş linki içersin.
+- Router response status'u 404 ise `Sayfa bulunamadı` başlığını göster.
+- Diğer hata türlerinde `Bir şeyler ters gitti` başlığını göster; teknik hata metnini kullanıcıya yazma.
 
-- `NotFoundPage`: `Sayfa bulunamadı` başlığı ve `/` adresine **Ana sayfaya dön** linki.
-- `RouteError`: `useRouteError()` sonucunu `isRouteErrorResponse` ile daralt. Status 404 ise aynı 404 başlığı, diğer hatalarda `Bir şeyler ters gitti` başlığı göster. Ekran `role="alert"` taşısın, dönüş linki içersin.
+## Örnek
 
-Testte `*` route ve `errorElement` bu bileşenlere bağlanır.
+Tanımsız `/hic-yok` → 404 başlığı; hata veren `/broken` → genel hata başlığı ve dönüş linki.
+
+## Sözleşme
+
+- `RouteScreens.tsx` içinden `NotFoundPage` ve `RouteError` named export edilir.
+- Ekranlar sırasıyla wildcard route'un normal içeriği ve route hata ekranı olarak kullanılır.

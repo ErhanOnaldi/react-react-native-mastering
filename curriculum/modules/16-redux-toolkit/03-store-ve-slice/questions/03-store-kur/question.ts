@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['redux.store', 'redux.slice'],
   files: ['store.ts'],
   hints: [
-    'Store’un reducer alanına bak.',
-    '`combineSlices` birden fazla slice alır.',
-    '`combineSlices(favorites, ui)` iki ayrı anahtar üretir.',
+    'Store’un kök state’inde iki özelliğin ayrı anahtarlarda bulunması gerekir.',
+    '`combineSlices` ile birden fazla slice reducer’ını tek kök reducer’da birleştir.',
+    '`combineSlices(favorites, ui)` sonucunu `configureStore` içindeki `reducer` alanına ver.',
   ],
 })

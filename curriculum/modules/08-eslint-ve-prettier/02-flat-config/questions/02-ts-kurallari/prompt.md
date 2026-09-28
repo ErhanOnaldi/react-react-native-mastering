@@ -1,12 +1,23 @@
-# TypeScript dosyalarına kural koy
+# TypeScript kaynaklarını lint et
 
-Bir önceki test kuralı kendi içinde verdi. Şimdi Sinema’nın `.ts` ve `.tsx` dosyalarını kapsayan flat config’i sen yaz.
+Sinema’daki TypeScript yardımcıları ve React bileşenleri için aynı lint config’ini tanımla. Dosyalar hem `.ts` hem `.tsx` uzantılı olabilir.
 
-`lintConfig.ts` içindeki **named export `config`** bir config dizisi olsun:
+## Gereksinimler
 
-- `defineConfig` yardımcısını `eslint/config`’ten kullan.
-- `typescript-eslint` önerilen preset’ini ekle.
-- `@typescript-eslint/no-unused-vars` kuralını `error` yap.
-- Hem `src/movie.ts` hem `src/Header.tsx` kapsamda olsun.
+- Kullanılmayan TypeScript import’u ve kullanılmayan TSX değişkeni hata olarak bildirilmelidir.
+- Kullanılan bir TypeScript değişkeni hata üretmemelidir.
+- TypeScript ve JSX söz dizimi incelenebilmelidir.
 
-Testler gerçek ESLint ile kullanılmayan import/değişkeni lint ediyor; kullanılan bir değişken hata vermemeli.
+## Örnek
+
+`const unused: string = 'Sinema'` → lint unused bildirir. `const title: string = 'Sinema'; export const heading = title` → lint hatası yok.
+
+## Sözleşme
+
+- Dosya: `lintConfig.ts`.
+- `config` adlı named export, ESLint tarafından kullanılabilen config dizisi olmalıdır.
+- Kapsam `src/movie.ts` ve `src/Header.tsx` yollarını içermelidir.
+
+## Kısıtlar
+
+- TypeScript dosyalarında kullanılmayan ad için `@typescript-eslint/no-unused-vars` kuralı `error` seviyesinde olmalıdır.

@@ -1,21 +1,16 @@
-İyi bir projenin ilk kapısı README'dir: yeni gelen bir geliştirici (ya da altı ay sonraki sen) projeyi **sadece README'yi okuyarak** çalıştırabilmeli.
+Sinema'yı yeni devralan biri, projeyi README'yi izleyerek kurup çalıştırabilmeli. Kök README dosyasında projenin amacını, kurulumunu ve günlük kullanım bilgilerini açıkla.
 
-1. `projects/sinema/README.md` dosyasını oluştur. Şunları anlat:
-   - Proje ne? (1-2 cümle)
-   - Kurulum: bağımlılıklar, `.env` ayarı
-   - Komutlar: `dev`, `build`, `preview`, `typecheck` — her biri ne yapar?
-   - Ortam değişkenleri: `VITE_TMDB_TOKEN` (nereden alınır?), `VITE_APP_TITLE`
-2. **AI review prompt'unu kopyala** ile README'ni bir AI aracına inceletip geri bildirimleri uygula.
-3. Bu modülde yaptığın her şeyi commit'le:
+## Gereksinimler
+- Projenin ne yaptığını bir veya iki cümleyle anlat.
+- Bağımlılıkları kurma ve `.env` dosyasını hazırlama adımlarını doğru sırayla açıkla.
+- `dev`, `build`, `preview` ve `typecheck` komutlarının her birinin ne yaptığını belirt.
+- `VITE_TMDB_TOKEN` ile `VITE_APP_TITLE` ortam değişkenlerinin amacını açıkla; token'ın nereden alınacağını belirt.
+- README'ye gerçek token veya başka gizli değer ekleme.
+- Başlıkları, adımları ve komut örneklerini kolay taranır biçimde düzenle.
 
-```bash
-git status
-git add projects/sinema
-git commit -m "docs(sinema): kurulum rehberi ekle"
-```
+## Örnek
+Yeni bir geliştirici README'yi açar, bağımlılıkları kurar, kendi token'ını `.env` dosyasına ekler ve geliştirme sunucusunu başlatır. `build`, `preview` ve `typecheck` açıklamalarından diğer komutları ne zaman kullanacağını anlar.
 
-4. Bitince **Tamamladım**'a bas.
-
-:::warning
-README'ye gerçek token'ını **yazma**. Örnek değer ya da boş bırak.
-:::
+## Sözleşme
+- Proje kökünde `projects/sinema/README.md` dosyasını oluştur veya güncelle.
+- Kurulum ve komut adları, `projects/sinema/package.json` içindeki script'lerle eşleşmeli.

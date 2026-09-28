@@ -11,17 +11,18 @@ export default defineQuestion({
     {
       text: 'react() + @rolldown/plugin-babel + reactCompilerPreset()',
       correct: true,
-      explanation: 'Araştırma notundaki kararlı Babel yolu budur.',
+      explanation:
+        'Vite 8 ve @vitejs/plugin-react 6 ile resmi olarak önerilen kararlı Babel eklentisi yolu budur.',
     },
     {
       text: 'react({ compiler: true }) her ortamda kararlı',
       correct: false,
-      explanation: 'Native Oxc desteği deneysel etiketlidir.',
+      explanation: 'Native Oxc desteği henüz deneysel olarak işaretlidir.',
     },
     {
       text: 'Yalnız tsconfig strict açmak yeterli',
       correct: false,
-      explanation: 'TypeScript tip kontrolü React Compiler dönüşümü yapmaz.',
+      explanation: 'TypeScript tip kontrolü React Compiler derleme dönüşümünü yapmaz.',
     },
   ],
 })

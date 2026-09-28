@@ -14,6 +14,7 @@ export default defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   // .env dosyası repo kökünde (react_mastering/.env): tek bir yerde tutuyoruz
   envDir: '../..',
+  build: { sourcemap: 'hidden' },
   server: { port: 5174 },
   test: {
     environment: 'jsdom',

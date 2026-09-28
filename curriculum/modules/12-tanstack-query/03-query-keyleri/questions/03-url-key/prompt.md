@@ -1,9 +1,17 @@
-Arama URL’si paylaşılabilir ama key `q` ve `page` ile aynı veri kimliğini taşımalı.
+URL arama parametrelerini cache kimliğinde kullanılan temiz metin ve güvenli sayıya dönüştür.
 
-## İstenen
+## Gereksinimler
 
-`searchKey(params)` fonksiyonu `['movies', 'search', query, page]` döndürsün.
-
-- `q` yoksa boş string; varsa baş/son boşluğunu sil.
+- `q` yoksa boş string kullan; varsa baş ve sondaki boşlukları temizle.
 - `page` pozitif tam sayı değilse 1 kullan.
-- URL’deki `q=Dövüş&page=2` için key’in son iki öğesi `'Dövüş'` ve `2` olmalı.
+- Dönüş değeri sırasıyla `movies`, `search`, query ve page öğelerini içersin.
+
+## Örnek
+
+- `q=D%C3%B6v%C3%BC%C5%9F&page=2` → `['movies', 'search', 'Dövüş', 2]`
+- `q=Matrix&page=abc` → `['movies', 'search', 'Matrix', 1]`
+
+## Sözleşme
+
+- `searchKey.ts` dosyasından `searchKey(params: URLSearchParams)` named export edilir.
+- Dönüş tipi literal tuple’dır: `readonly ['movies', 'search', string, number]`.

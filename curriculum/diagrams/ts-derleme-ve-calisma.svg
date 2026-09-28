@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 285">
+  <title>TypeScript derleme ve çalışma zamanı sınırı</title>
+  <defs>
+    <marker id="ok-ts-derleme" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-ts-vurgu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-lane" x="20" y="25" width="720" height="105" rx="10"/>
+  <text class="d-muted" x="380" y="49" text-anchor="middle">derleme zamanı: TypeScript burada konuşur</text>
+
+  <rect class="d-accent" x="45" y="65" width="170" height="48" rx="8"/>
+  <text class="d-title" x="130" y="94" text-anchor="middle">TS kaynak</text>
+  <rect class="d-box" x="295" y="65" width="170" height="48" rx="8"/>
+  <text class="d-title" x="380" y="94" text-anchor="middle">tsc kontrol eder</text>
+  <rect class="d-success" x="545" y="65" width="170" height="48" rx="8"/>
+  <text class="d-title" x="630" y="94" text-anchor="middle">JS çıktısı</text>
+
+  <line class="d-line" x1="215" y1="89" x2="291" y2="89" marker-end="url(#ok-ts-derleme)"/>
+  <line class="d-line" x1="465" y1="89" x2="541" y2="89" marker-end="url(#ok-ts-derleme)"/>
+
+  <rect class="d-lane" x="20" y="160" width="720" height="100" rx="10"/>
+  <text class="d-muted" x="380" y="184" text-anchor="middle">çalışma zamanı: dış veri gerçek değeriyle gelir</text>
+
+  <rect class="d-violet" x="45" y="200" width="170" height="42" rx="8"/>
+  <text class="d-text" x="130" y="225" text-anchor="middle">API JSON: unknown</text>
+  <rect class="d-warning" x="295" y="200" width="170" height="42" rx="8"/>
+  <text class="d-text" x="380" y="225" text-anchor="middle">parse / guard</text>
+  <rect class="d-success" x="545" y="200" width="170" height="42" rx="8"/>
+  <text class="d-text" x="630" y="225" text-anchor="middle">güvenli veri</text>
+
+  <line class="d-line-accent" x1="215" y1="221" x2="291" y2="221" marker-end="url(#ok-ts-vurgu)"/>
+  <line class="d-line-accent" x1="465" y1="221" x2="541" y2="221" marker-end="url(#ok-ts-vurgu)"/>
+
+  <text class="d-text-danger" x="380" y="148" text-anchor="middle">tipler JS içinde kalmaz; sınırda doğrulama gerekir</text>
+</svg>

@@ -27,8 +27,9 @@ export default defineQuestion({
     'Ana sayfa, arama, detay, favoriler, filtre ve sayfalama davranışları taşımadan önceki gibi çalışıyor.',
   ],
   hints: [
-    'Önce ortak format ve görsel yardımcılarını shared/lib altına taşı; her taşıma sonrası importları düzelt.',
-    'Feature kodunu movies, search ve favorites altında topla; shared klasörünü yalnız gerçek ortaklık için kullan.',
-    'tsconfig.app.json içinde "@/*": ["./src/*"]; vite.config.ts içinde resolve.alias ile aynı src/ adresi.',
+    'İlk taşıyacağın dosyada hangi feature’ın sahibi olduğunu, hangisinin gerçek ortak kod olduğunu belirle.',
+    'Feature kodunu kendi alanında, birden çok kullanıcıya ait helper’ları shared altında topla.',
+    'TypeScript 6 için `paths` hedefini `"@/*": ["./src/*"]` yap; Vite `resolve.alias` ile aynı mutlak src kökünü göster.',
+    'Her taşıma grubunda eski importları güncelle ve davranışları tekrar gözden geçir; alias bağımlılık yönünü düzeltmez.',
   ],
 })

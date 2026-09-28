@@ -1,7 +1,21 @@
-Detay sayfası ilk açıldığında birden çok yükleme dalı ve geç gelen GET var. Route düzeyinde veriyi hazırla.
+Sinema detay route’u açılırken film verisi route görünmeden önce hazırlanmalı; geçersiz id istek başlatmamalı.
 
-- `src/pages/MovieDetailsPage.tsx` default export `MovieDetailsPage`: URL’deki `id` için `movieQueries.detail(id)` verisini göster. Geçersiz id açık hata versin.
-- `src/router.tsx` export `routes` içinde `/movie/:id` route’unun `loader`’ı film verisini aynı query key’ine önceden koysun. Geçersiz id’yi reddetsin ve detay GET’i başlatmasın.
-- Bu route’un render ağacına `<Suspense fallback=...>` ve ErrorBoundary yerleştir. İstek 500 olunca kullanıcı hata ekranı görsün; diğer route’lar çalışabilsin.
+## Gereksinimler
 
-`/rated` route’unu koru.
+- `/movie/:id` için URL id’si pozitif tam sayı olmalı; geçersiz değer detay isteği başlatmadan reddedilmeli.
+- Geçerli id’nin film verisi Query cache’inde bulunmalı ve detay sayfası aynı veriyi göstermeli.
+- Loader ve sayfa aynı film query kimliğini kullanmalı; loader’dan sonra aynı film için ikinci GET çıkmamalı.
+- Sayfa beklerken loading fallback’i, ilk veri isteği hata verince anlaşılır hata UI’ı göstermeli.
+- Hata sınırı yalnız detay ağacını etkilemeli; diğer route’lar çalışmaya devam etmeli.
+- `/rated` route’u korunmalı.
+
+## Örnek
+
+`/movie/550` route’u Dövüş Kulübü verisini cache’e hazırlar. `/movie/abc` için film GET’i atılmaz.
+
+## Sözleşme
+
+- `src/pages/MovieDetailsPage.tsx`: default export `MovieDetailsPage`.
+- `src/router.tsx`: export edilen `routes` içindeki `/movie/:id` route’una loader ve sınırlar ekle.
+- Detay verisi için mevcut `movieQueries.detail(id)` tarifi kullanılır.
+- QueryClient `src/shared/api/query-client` içinden `queryClient` adıyla alınır.

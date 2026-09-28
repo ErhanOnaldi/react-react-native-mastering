@@ -27,9 +27,10 @@ export default defineQuestion({
     'src/features/watchlists/schemas.ts',
   ],
   hints: [
-    'Boş puan ve yorumun isteğe dönüşmemesi için doğrulama ile alan hataları nerede birleşmeli?',
-    'Puan için `<FormControl><RadioGroup aria-label="Puan" value={field.value ? String(field.value) : ""} onValueChange={(value) => field.onChange(Number(value))}>…</RadioGroup></FormControl>`. Her öğe `<RadioGroupItem value="3" aria-label="3 yıldız" />`.',
-    '`useForm` + `zodResolver` ile şemayı bağla; Zod 4 `error` parametresi Türkçe mesajları üretir. `<FormControl><Textarea {...field} /></FormControl>` ve `<FormMessage />` kullan; FormControl tek çocuğuna id ve hata ilişkisini aktarır.',
+    'Önce mevcut mutation ve durum mesajlarını koru; puan seçimi ile boş yorumun hangi kontrol olduğunu ayır.',
+    'RHF `Controller` ile Radix `RadioGroup` bağla; radio value string, şema rating number olduğu için dönüşümü tek noktada yap. Zod 4 `error` mesajları kullan.',
+    'Gruba `aria-label="Puan"` ver; her item için `value="3"` ve `aria-label="3 yıldız"` gibi açık değer/ad kullan. `FormControl` tek çocuğuna a11y özelliklerini geçir.',
+    'Boş gönderim, yön tuşu, geçerli submit ve sunucu hata durumlarını sırayla dene; bu proje için gerekli alanları ayrıca kontrol et.',
   ],
   rubric: [
     'ReviewForm kopyalanmış Form/FormField/FormItem/FormLabel/FormControl/FormMessage parçalarını kullanıyor; elle yazılmış id veya aria-describedby kalmamış.',

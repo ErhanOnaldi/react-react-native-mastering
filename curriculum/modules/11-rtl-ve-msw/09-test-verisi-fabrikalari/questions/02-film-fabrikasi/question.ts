@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.factories', 'ts.partial', 'ts.api-types'],
   files: ['makeMovie.ts'],
   hints: [
-    'TmdbListMovie tipini @test-utils içinden import type ile al.',
-    'Varsayılan nesneyi fonksiyonun içinde oluştur.',
-    'Son sıradaki ...overrides değerleri default’u ezsin.',
+    'Testin önemli kıldığı alanları ve factory’nin her zaman sağlaması gereken alanları ayır.',
+    '`Partial<TmdbListMovie>` kullan; tipi `@test-utils` yolundan `import type` ile al.',
+    'Fonksiyon içinde yeni varsayılan nesne ve `genre_ids` dizisi oluştur; en sonda `...overrides` uygula.',
   ],
 })

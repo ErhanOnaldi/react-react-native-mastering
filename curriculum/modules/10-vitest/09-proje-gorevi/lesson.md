@@ -1,35 +1,45 @@
 ---
-title: "Sinema’ya kalıcı testler ekle"
-minutes: 9
+title: "Sinema’da kalıcı test alışkanlığı kur"
+minutes: 7
 kind: project
 ---
 
-# Sinema’ya kalıcı testler ekle
+# Sinema’da kalıcı test alışkanlığı kur
 
 :::pain[Sinema’da ne oldu?]
-Platformdaki alıştırmalar geçti, ama Sinema’nın kendi test komutu yok. Yeni refactor’da arama sayfalaması yine sessizce bozulabilir.
+Platformdaki egzersizler geçiyor ama Sinema’nın kendi test komutu yok. Projedeki bir refactor sonrasında arama davranışı sessizce bozulursa aynı güvenceyi nasıl tekrar çalıştıracaksın?
 :::
 
-## Sorunu nasıl görürsün?
+## Proje içindeki test akışı
 
-Bu derste projeye Vitest ayarı ve `test` script’i ekleyip format, API client ve debounce davranışlarını kendi dosyalarında test edeceksin. Üç sınır farklı araç gerektirir: saf fonksiyon assertion’ı, `fetch` mock’u, fake timer.
+Kalıcı testler uygulamanın yanında yaşar ve geliştirici her değişiklikte yeniden çalıştırabilir. Proje ayarı test ortamını tanımlar; script tek komutla runner’ı başlatır; test dosyaları davranış sözleşmelerini taşır. Bir test kırmızıya döndüğünde geliştirici değişikliğin beklenen davranışı bozduğunu görür.
 
-## Uygulama
+Bu projede farklı sınırlar birlikte çalışır. Saf biçimleme için doğrudan girdi ve çıktı karşılaştırılır. Ağ client’ında dış fetch davranışı kontrol altına alınır. Zamana bağlı hook’ta gerçek bekleme yerine sanal saat ilerletilir. Her sınırın setup ve cleanup’ı olmalıdır; bir testteki fake global diğerini etkilememelidir.
 
-Önce yerel test komutunu çalıştır. Testleri yazdıktan sonra tek bir gereksinimi bilerek bozup kırmızı sonucu gör, ardından düzelt.
+## Değişikliği doğrula
 
-İlk görevde `vite.config.ts` içindeki mevcut plugin, alias ve `envDir` ayarlarının yanına `test` ayarı gelir. `vitest/config` üzerinden gelen `defineConfig`, Vite ayarlarını da kabul eder. `package.json` içindeki `"test": "vitest run"` komutu tek seferlik koşu yapar; geliştirmede istersen `vitest` watch modunu ayrıca kullanabilirsin.
+Önce proje içinde bulunan Vite ayarlarını ve bağımlılık sürümlerini incele. Mevcut alias, plugin ve env ayarlarını koruyarak test ortamını ekle. Runner API’lerini dosyada açıkça import et; test adları Türkçe davranış cümleleri olsun.
 
-İkinci görevde üç ayrı sınırı koru: format helper’larının string çıktısı, `tmdbClient` isteğinin URL ve Bearer başlığı, `useDebounce` zamanlayıcısının temizlenmesi. İlk test dosyası değişken ağ ve zamana ihtiyaç duymaz. Diğer ikisinde `fetch` ve saati testin kontrolüne alıp her test sonunda geri verirsin.
+1. Test komutunu tek seferlik çalıştır.
+2. Beklenen değeri geçici olarak yanlış yapıp kırmızı sonucun geldiğini gör.
+3. Beklentiyi geri al ve yeşil sonucu doğrula.
+4. Ağ ve timer gibi global değişiklikleri testten sonra temizle.
 
-İleride aynı repoda Node ve DOM testlerini ayrı ortamlarda çalıştırmak gerekirse Vitest 5’in `test.projects` ayarı kullanılabilir. Bu projede şimdilik tek `jsdom` ortamı yeterli; sırf seçenek var diye ek yapı kurman gerekmiyor.
+Test dosyasının varlığı tek başına kalite değildir. Yanlış değerle kırmızı sonuç görmek, assertion’ın çalıştığını kanıtlar; önemli davranışları kapsamak ise test tasarımının sorumluluğundadır. Hata raporunda ad ve beklenen/gelen değer geliştirme sırasında hızlı teşhis sağlar.
 
-## Sık hata
-
-:::mistake
-`test` script’inin olması tek başına güvence değildir; test dosyaları davranışı doğrulamalı.
+:::mistake[Script’i güvence sanmak]
+Belirti: pnpm test başarılı ama beklenen davranış hiç ölçülmüyordur. → Neden: Script yalnızca test runner’ı başlatıyor; anlamlı assertion eklenmemiştir. → Düzeltme: Her test için hangi bozuk davranışta kalacağını belirle.
 :::
 
 :::sector
-Bundan sonra yeni davranış eklerken Sinema testleri değişiklikten önce ve sonra çalıştırılabilir bir sözleşme sunar.
+Ekip projelerinde test komutları yerelde ve CI’da aynı biçimde çalışır. Kalıcı testler geçmiş regresyonları korur; yeni davranış ekleyen değişiklikler de aynı sözleşmeye yeni örnekler ekler.
 :::
+
+## Özet
+
+- Proje config’i ortamı, script test komutunu, dosyalar davranış sözleşmesini tanımlar.
+- Saf fonksiyon, ağ sınırı ve zaman davranışı farklı kontrol yöntemleri ister.
+- Setup ve cleanup testleri birbirinden bağımsız kılar.
+- Yanlış beklentiyle geçici kırmızı sonuç, testin gerçekten çalıştığını gösterir.
+
+**Kendini yokla:** Yeni bir testin anlamlı olduğunu ne gösterir? Bilinen yanlış davranışta kalması ve gereksinimi açıkça ölçmesi.

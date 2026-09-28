@@ -6,9 +6,9 @@ export default defineQuestion({
   concepts: ['pattern.compound', 'react.context', 'a11y.basics'],
   files: ['Tabs.tsx'],
   hints: [
-    'Kökte useState(defaultValue) ve Context kur.',
-    'Trigger seçili value ile kendi value değerini karşılaştırsın; Panel de aynı karşılaştırmayla gizlensin.',
-    'Statik alt parçaları Object.assign(TabsRoot,{ List, Trigger, Panel }) ile dışa açabilirsin.',
+    'Seçili sekme ile görünür panelin tek bir kaynaktan güncellenmesini sağla; alt parça kökün dışında kalırsa ne olacağını da belirle.',
+    '`createContext`, `useContext`, `useState` ve statik component alanlarıyla compound API kurmayı düşün.',
+    'Kökte seçimi sakla; her Trigger ve Panel kendi `value` değerini kökteki değerle karşılaştırsın. Provider yoksa hook bir hata fırlatsın.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

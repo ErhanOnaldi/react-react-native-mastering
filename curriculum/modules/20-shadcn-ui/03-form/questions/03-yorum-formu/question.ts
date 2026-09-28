@@ -15,9 +15,10 @@ export default defineQuestion({
   ],
   files: ['form.tsx'],
   hints: [
-    'Önce kimlik: `FormItem` içinde `useId()` ile id üret ve `<FormItemContext value={{ id }}>` ile sar. `useFormField` iki Context’i okuyup `${id}-control` ve `${id}-message` kimliklerini döndürsün.',
-    'Hata için `const { getFieldState } = useFormContext()` ve `const formState = useFormState({ name })`; sonra `getFieldState(name, formState).error`. Label `htmlFor={formItemId}`, mesaj `id={formMessageId}`.',
-    '`FormControl`: `<Slot.Root id={formItemId} aria-invalid={Boolean(error)} aria-describedby={error ? formMessageId : undefined} {...props} />`. `FormMessage`: hata yoksa `null`.',
+    'Önce üç bağlantıyı ayrı düşün: RHF alan adı, her alanın DOM kimliği ve o alana ait hata.',
+    'React `useId`, RHF `useFormContext`/`useFormState` ve Radix `Slot.Root` bu bağlantıları kurmak için gerekli araçlardır.',
+    "FormItem'da id üretip Context'e koy; `useFormField` iki Context'i ve alan hatasını birleştirsin. Label `htmlFor`, mesaj `id` ile bağlansın.",
+    'Kontrol tek çocuk olmalı; `aria-describedby` yalnız hata varsa verilsin ve `FormMessage` hata yokken `null` dönsün.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

@@ -1,20 +1,26 @@
-Şimdi aynı fikri gerçek projede uygula ve **HMR'ı canlı izle**.
+Sinema projesinin ana sayfa arayüzüne standart sayfa başlığı ve alt slogan alanını eklemek istiyoruz.
 
-1. Terminalde Sinema'yı başlat:
+## Gereksinimler
 
-```bash
-cd projects/sinema
-pnpm dev
+- `projects/sinema/src/App.tsx` dosyası içerisindeki `<main>` alanında bir `<header>` elementi oluşturulmalıdır.
+- Başlık elementi bir `<h1>` etiketi olmalı ve `"Sinema"` metnini içermelidir.
+- Alt slogan elementi bir `<p>` etiketi olmalı ve `"Bugün ne izlesek?"` metnini içermelidir.
+- Başlık ve slogan elementleri `<header>` etiketinin doğrudan çocukları olmalıdır.
+
+## Örnek
+
+Beklenen DOM çıktısı:
+```html
+<main>
+  <header>
+    <h1>Sinema</h1>
+    <p>Bugün ne izlesek?</p>
+  </header>
+  ...
+</main>
 ```
 
-2. Tarayıcıda `http://localhost:5174`'ü aç.
-3. `src/App.tsx`'te `<main>` içine bir `<header>` ekle:
-   - `<h1>`: **Sinema**
-   - `<p>`: **Bugün ne izlesek?**
-4. Kaydet ve tarayıcıya bak: sayfa yenilenmeden değişmeli.
+## Sözleşme
 
-İstersen Tailwind ile biraz süsle (`text-4xl font-bold` gibi). Bitince testleri çalıştır.
-
-:::tip
-Önceki sorudaki `AppHeader` bileşenini buraya taşımak cazip gelebilir — bekle! Projeyi bileşenlere bölmeyi ilerleyen modüllerde, ihtiyaç doğduğunda yapacağız. Şimdilik doğrudan `App.tsx`'e yaz.
-:::
+- Proje ve dosya: `projects/sinema/src/App.tsx`
+- Arayüz sözleşmesi: `<header>` kapsayıcısı içinde `<h1>Sinema</h1>` ve `<p>Bugün ne izlesek?</p>`.

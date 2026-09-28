@@ -7,165 +7,69 @@ kind: project
 # Sıfırdan kurulum: araçlar birbirine değdiğinde
 
 :::pain[Problem]
-Sinema’yı hazır bir iskeletle aldın; ESLint’i 8., Vitest’i 10., MSW’yi 11., Playwright’ı 21. modülde **teker teker** ekledin. Her biri tek başına kolaydı.
+Öğrenirken araçları tek tek tanıdın: Vite'ı ayrı bir derste, Vitest'i başka bir modülde, ESLint ve Tailwind'i kendi başlıklarında gördün. Hepsi izole ortamlarda mükemmel çalışıyordu.
 
-Hepsini aynı gün kurduğunda ise araçlar birbirine değer: `pnpm test` bir anda `e2e/smoke.spec.ts`’i de çalıştırmaya kalkar ve *“Playwright Test did not expect test() to be called here”* diye patlar. `@/` takma adı Vite’ta çalışır ama TypeScript kırmızı çizer. ESLint `playwright.config.ts`’te `process` tanımsız der. Kurulum bir kontrol listesi değil; parçaların **birbirine nasıl bağlandığını** bilmek.
+Fakat boş bir klasörde `pnpm create vite` çalıştırıp hepsini aynı anda kurmaya kalktığında araçlar birbirine çarpar: TypeScript `@/` yolunu çözer ama Vite derleyicisi dosyayı bulamaz; `pnpm test` çalıştırdığında Vitest Playwright'ın E2E test dosyalarını çalıştırmaya çalışıp çöker; ESLint Tailwind v4'ün yeni CSS direktiflerine kızar. Araçların **birbirine değdiği yüzeyler** yapılandırılmadığında proje daha başlamadan kilitlenir.
 :::
 
-Bu derste Kitaplık’ın iskeletini, bütün kalite araçlarıyla birlikte sıfırdan kuruyorsun. Sıra önemli: her adım bir öncekinin üstüne oturur ve her adımın sonunda **bir şeyin çalıştığını görürsün**.
+Bu derste modern bir React uygulamasının temel araç zincirini sıfırdan ayağa kaldırıyor; paket yönetimi, derleme, tip kontrolü, lint, biçimlendirme ve iki katmanlı test altyapısını tek bir tutarlı hatta birleştiriyorsun.
 
-## Yol haritası
+## Araç zincirinin katmanları ve zihinsel model
 
-| # | Adım | Bitti sayılır, çünkü… |
-| --- | --- | --- |
-| 1 | Vite + React + TS iskeleti | `pnpm dev` açılıyor, `pnpm typecheck` sessiz |
-| 2 | Tailwind v4 ve `@/` takma adı | Bir `bg-` class’ı ekranda görünüyor, `@/` import’u kırmızı değil |
-| 3 | Router + Query ile uygulama iskeleti | `/` ve 404 sayfası açılıyor |
-| 4 | ESLint + Prettier | `pnpm lint` ve `pnpm format:check` temiz |
-| 5 | Vitest + RTL + MSW | İlk duman testi yeşil |
-| 6 | Playwright | `pnpm test:e2e` gerçek tarayıcıda yeşil |
+Bir frontend projesinde araçlar keyfi seçilmez; her birinin yaşam döngüsünde kesin bir görevi ve sınır çizgisi vardır.
 
-## 1. İskelet ve sürümler
+![Kaynak koddan derleme, test ve yayın aşamalarına geçiş](diagram:build-ve-yayin)
 
-REQUIREMENTS.md’nin bulunduğu klasöre Vite şablonunu kur:
+Bu mimariyi şu temel kurallarla yönetirsin:
 
-```bash
-pnpm create vite projects/kitaplik --template react-ts
-```
+1. **Paket sorumluluğunu ayır:** Tarayıcıya gidecek ve son kullanıcının indireceği JavaScript paketleri (React, Router, TanStack Query, Zod) `dependencies` alanında yaşar. Yalnızca geliştirme, derleme ve test anında Node.js üzerinde çalışan araçlar (Vite, TypeScript, Vitest, Playwright, ESLint) `devDependencies` içinde olmalıdır.
+2. **Derleme ile test ortamını ayır:** `vite.config.ts` tarayıcı paketi üretir; `vitest.config.ts` ise Node/jsdom üzerinde birim test koşturur. Test ayarlarını doğrudan `vite.config.ts` içine gömmek yerine ayrı tutmak hem derleme hızını korur hem de sorumlulukları ayırır.
+3. **Yol takma adını (alias) iki yerde tanımla:** TypeScript'e `@/*` yolunu öğretmek (`tsconfig.app.json`) derleyicinin tip kontrolü yapmasını sağlar ancak Vite paketleyicisinin bu yolu çözebilmesi için `vite.config.ts` içinde `resolve.alias` tanımı da şarttır.
+4. **Test katmanlarını izole et:** Vitest tarayıcı DOM'unu taklit eden jsdom üzerinde birim/entegrasyon testlerini koşturur; gerçek tarayıcı açan Playwright E2E testleri ise ayrı bir dünyadır. Vitest yapılandırmasında `e2e/**` dizini mutlaka hariç tutulmalıdır (`exclude`).
 
-Klasör boş olmadığı için ne yapacağını sorar: **Ignore files and continue** seç (belgelerin kalsın). Kurulumu hemen başlatmayı teklif ederse şimdilik **hayır** de.
+## Araç zincirini adım adım izleyelim
 
-Şablonun `package.json`’ı en son sürümleri yazar. Bu repo bir pnpm workspace’i ve platform testleri kökteki paketleri kullanır; iki farklı React kopyası olursa hook’lar çalışmaz. Bu yüzden sürümleri kökteki `pnpm-workspace.yaml` **catalog**’uyla aynı tut (görev metninde tam komutlar var).
+Kurulumu rastgele dosyalar açarak değil, kontrol edilebilir bir doğrulama sırasıyla yürütürsün:
 
-:::tip[Şablonun lint seçimi]
-Vite’ın güncel `react-ts` şablonu lint için ESLint yerine hızlı bir alternatif olan **oxlint** ile gelebilir. Biz 8. modülde öğrendiğin ESLint + typescript-eslint + react-hooks yığınını kuruyoruz; şablon oxlint getirdiyse config’ini ve paketini kaldır. Bu da küçük bir mimari karar — bir satırlık not olarak ADR’ne ekleyebilirsin.
-:::
+| Sıra | Adım | Üretilen dosya | Doğrulama komutu | Beklenen başarı çıktısı |
+| --- | --- | --- | --- | --- |
+| 1 | Proje iskeleti ve paketler | `package.json` | `pnpm install` | Paketler kilitlenir, node_modules oluşur |
+| 2 | Tip kontrolü ve derleme | `tsconfig*.json`, `vite.config.ts` | `pnpm typecheck` | `tsc -b` sıfır hatayla tamamlanır |
+| 3 | Kod kalitesi ve biçim | `eslint.config.js`, `.prettierrc` | `pnpm lint && pnpm format:check` | Tüm dosyalar standartlara uygundur |
+| 4 | Birim ve entegrasyon testi | `vitest.config.ts`, `src/test/setup.ts` | `pnpm test` | jsdom üzerinde duman testi yeşil döner |
+| 5 | Uçtan uca (E2E) test | `playwright.config.ts`, `e2e/*.spec.ts` | `pnpm test:e2e` | Headless Chromium gerçek sayfayı açar |
 
-## 2. Tailwind v4 ve `@/` takma adı
+## Örnekler: Yanlış ve doğru yapılandırma
 
-Tailwind v4’te `tailwind.config.js` ve `postcss.config.js` **yok**; ayar CSS dosyasının içinde. `@/` takma adı ise iki yere yazılır, çünkü iki farklı araç dosyaları çözer: **TypeScript** (editör ve `tsc`) ve **Vite** (paketleme ve testler).
+### Kırık örnek: Test ayarlarının derleme yapılandırmasına gömülmesi
 
-```ts title="vite.config.ts"
-import { fileURLToPath, URL } from 'node:url'
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
+Aşağıdaki dosya Vitest ve Vite'ı tek bir yerde toplar ancak üretim derlemesinde tip hatalarına ve paketleme karmaşasına yol açar:
+
+```ts
+// TEHLİKE: vite.config.ts içine vitest ayarları kontrolsüz gömülmüş
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  plugins: [react()],
+  // Vite build sırasında test alanı gereksiz yer kaplar ve tipleri kirletir:
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    // HATA: e2e testleri dışlanmamış; pnpm test playwright testlerini koşturmaya çalışıp patlar!
   },
 })
 ```
 
-```jsonc title="tsconfig.app.json (ilgili kısım)"
-{
-  "compilerOptions": {
-    "paths": { "@/*": ["./src/*"] } // TS 6: baseUrl yok, yol "./" ile başlar
-  }
-}
-```
+### Doğru örnek: Temiz ayrılmış yapılandırma
 
-```css title="src/index.css"
-@import 'tailwindcss';
-```
+Üretim derleyicisi ile test koşucusunu iki ayrı dosyada yapılandırıp `mergeConfig` ile bağlayalım:
 
-:::mistake
-Eski bir eğitimi izleyip `npx tailwindcss init -p` çalıştırmak ya da CSS’e `@tailwind base; @tailwind components;` yazmak. Bunlar Tailwind v3’tü; v4’te yerini tek satır `@import 'tailwindcss'` aldı. Aynı tuzak Router’da da var: `react-router-dom` paketi v8’de **kaldırıldı**; her şey `react-router`’dan, `RouterProvider` ise `react-router/dom`’dan gelir.
-:::
-
-## 3. Uygulama iskeleti: iki sözleşme dosyası
-
-Testlerin (platformunkiler de, senin yazacakların da) uygulamanın tamamını bir URL’de render edebilmesi gerekiyor. Bunun için iki export sabit:
-
-```tsx check title="src/app/providers.tsx"
-import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
-import type { ReactNode } from 'react'
-
-interface AppProvidersProps {
-  queryClient: QueryClient
-  children: ReactNode
-}
-
-/** Tüm global provider'lar tek yerde: main.tsx ve testler aynı ağacı kullanır. */
-export function AppProviders({ queryClient, children }: AppProvidersProps) {
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-}
-```
-
-```tsx check title="src/app/routes.tsx (ilk hali)"
-import type { QueryClient } from '@tanstack/react-query'
-import { Outlet, type RouteObject } from 'react-router'
-
-function RootLayout() {
-  return <Outlet />
-}
-
-function HomePage() {
-  return <h1>Kitaplık</h1>
-}
-
-function NotFoundPage() {
-  return <h1>Sayfa bulunamadı</h1>
-}
-
-export function createRoutes(queryClient: QueryClient): RouteObject[] {
-  // queryClient şimdilik kullanılmıyor; 5. derste loader'lar veriyi bununla önceden isteyecek
-  void queryClient
-  return [
-    {
-      path: '/',
-      element: <RootLayout />,
-      children: [
-        { index: true, element: <HomePage /> },
-        { path: '*', element: <NotFoundPage /> },
-      ],
-    },
-  ]
-}
-```
-
-Neden `routes` dizisi değil de **fabrika fonksiyonu**? Çünkü route’lar (loader’lar) bir `QueryClient`’a ihtiyaç duyabilir. `main.tsx` uygulamanın tek istemcisini verir, testler her testte **taze** bir istemci verir; önbellek testten teste taşmaz. Bu, 12. modülde tek bir global `queryClient` import etmenin test tarafındaki bedelini ortadan kaldırır.
-
-```tsx title="src/main.tsx"
-const queryClient = createQueryClient()
-const router = createBrowserRouter(createRoutes(queryClient))
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <AppProviders queryClient={queryClient}>
-      <RouterProvider router={router} />
-    </AppProviders>
-  </StrictMode>,
-)
-```
-
-## 4. ESLint ve Prettier
-
-8. modüldeki flat config’in aynısı; tek fark, React kurallarını sadece `src/`’ye uygulamak (config dosyaları Node’da çalışır):
-
-```js title="eslint.config.js"
-export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'test-results', 'playwright-report']),
-  {
-    files: ['**/*.{js,ts,tsx}'],
-    extends: [js.configs.recommended, tseslint.configs.recommended],
-    languageOptions: { globals: { ...globals.browser, ...globals.node } },
-  },
-  { files: ['src/**/*.{ts,tsx}'], extends: [reactHooks.configs.flat.recommended] },
-  { files: ['src/**/*.tsx'], extends: [reactRefresh.configs.vite] },
-  prettier, // her zaman en sonda: biçim kurallarını kapatır
-])
-```
-
-## 5. Vitest: ayar ayrı dosyada
-
-Sinema’da test ayarları `vite.config.ts`’in `test` alanındaydı. Kitaplık’ta onları **`vitest.config.ts`**’e taşıyoruz ve uygulamanın Vite ayarını genişletiyoruz:
-
-```ts title="vitest.config.ts"
-import { configDefaults, defineConfig, mergeConfig } from 'vitest/config'
-import viteConfig from './vite.config.ts'
+```ts
+// vitest.config.ts — Test ortamı izole edilmiştir
+import { defineConfig, mergeConfig } from 'vitest/config'
+import { configDefaults } from 'vitest/config'
+import viteConfig from './vite.config'
 
 export default mergeConfig(
   viteConfig,
@@ -173,35 +77,47 @@ export default mergeConfig(
     test: {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],
-      exclude: [...configDefaults.exclude, 'e2e/**'], // Playwright senaryoları Vitest'in işi değil
+      // E2E testleri Vitest'in menzilinden çıkarılır:
+      exclude: [...configDefaults.exclude, 'e2e/**'],
     },
   }),
 )
 ```
 
-İki sebebi var. Birincisi **sorumluluk**: `vite.config.ts` uygulamanın nasıl paketleneceğini, `vitest.config.ts` testlerin nasıl çalışacağını anlatır. İkincisi **platform**: proje görevlerini çalıştırırken platform senin `vite.config.ts`’ini okur (takma ad ve eklentiler için) ama kendi test ortamını kurar. Test ayarların orada olursa (özellikle göreli `setupFiles` yolu) platformun testleri yanlış klasörde dosya arar.
+## Sık karşılaşılan kurulum hataları
 
-`exclude` satırını unutursan acıyı hemen görürsün: Vitest varsayılan olarak `*.spec.ts` dosyalarını da test sayar ve Playwright’ın `test()`’ini kendi içinde çağırmaya çalışır.
-
-Setup dosyası 11. modüldeki gibidir: jest-dom eşleştiricileri, RTL temizliği (`globals: false` olduğu için elle) ve **hata modunda** bir MSW sunucusu. Handler listesi şimdilik boş olabilir; 6. derste Open Library’yi taklit eden handler’ları ekleyeceksin.
-
-## 6. Playwright
-
-```ts title="playwright.config.ts"
-export default defineConfig({
-  testDir: 'e2e',
-  use: { baseURL: 'http://localhost:5175' },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: {
-    command: 'pnpm dev --port 5175 --strictPort',
-    url: 'http://localhost:5175',
-    reuseExistingServer: !process.env.CI,
-  },
-})
-```
-
-İlk seferde tarayıcıyı indir: `pnpm exec playwright install chromium`. `playwright.config.ts` ve `e2e/` klasörü uygulama kodu değil, Node’da çalışır; bu yüzden `tsconfig.node.json`’ın `include` listesine ekle ki `tsc -b` onları da denetlesin.
-
-:::sector
-Şirketlerde bu kurulum çoğu zaman bir şablon repodan ya da iç bir CLI’dan tek komutla gelir. Ama o şablonu yazan, bozulduğunda düzelten ve yeni bir aracı içine yerleştiren kişi olmak için kurulumu en az bir kez elle, parçaların neden birbirine bağlandığını anlayarak yapmış olmak gerekir. Bir de trend notu: Rust tabanlı araçlar (oxlint, Biome, Rolldown) hızla yayılıyor; ama sorulacak sorular aynı kalıyor — hangi araç hangi dosyadan sorumlu, kim kimi okuyor?
+:::mistake[Yol takma adının (alias) yalnızca tsconfig'e yazılması]
+**Belirti:** Editörde veya `pnpm typecheck` çalıştırıldığında hiçbir hata görülmez; ancak `pnpm dev` açıldığında tarayıcı konsolunda `Failed to resolve import "@/components/Header"` hatası patlar.  
+**Neden:** `tsconfig.json` sadece statik tip denetimi yapar; çalışma zamanında modülü bulup getiren motor Vite'tır.  
+**Düzeltme:** `vite.config.ts` dosyasına `resolve: { alias: { '@': path.resolve(__dirname, './src') } }` tanımını ekle.
 :::
+
+:::mistake[ESLint flat config sırasında prettier eklentisinin başa konması]
+**Belirti:** Kod biçimlendirildiğinde ESLint kurallarının kodla savaşması ve çakışan girinti hataları fırlatması.  
+**Neden:** `eslint-config-prettier`, ESLint'in stil ve biçim kurallarını devre dışı bırakır. Dizinin başında tanımlanırsa sonraki eklentiler bu kuralları tekrar aktif eder.  
+**Düzeltme:** `eslint.config.js` yapılandırma dizisinde `eslint-config-prettier` kural setini daima **en son eleman** olarak yerleştir.
+:::
+
+:::mistake[Playwright CI ortamında sunucu bekleme hatası]
+**Belirti:** Yerel makinede `pnpm test:e2e` sorunsuz çalışırken GitHub Actions CI hattında `webServer` zaman aşımı verip başarısız olması.  
+**Neden:** Yerel ortamda açık kalan bir Vite dev sunucusu portu işgal ederken CI ortamında taze sunucunun açılması beklenir; `reuseExistingServer` bayrağı CI için `false` yapılmamıştır.  
+**Düzeltme:** `playwright.config.ts` içinde `webServer: { reuseExistingServer: !process.env.CI }` kontrolünü sağla.
+:::
+
+:::sector[Sektörde şablonlar ve temel altyapı]
+Kıdemli mühendislerin en değerli reflekslerinden biri, sıfırdan bir depo açıldığında ekibin geri kalanının rahat çalışabileceği "altın yolu" (Golden Path) kurmaktır. `pnpm typecheck && pnpm lint && pnpm test` zincirini tek bir komutta çalışabilir ve CI'da kırılamaz kılmak, projeyi haftalar sonra ortaya çıkacak uyumsuzluk maliyetlerinden kurtarır.
+:::
+
+## Özet
+
+- Bağımlılıklar `dependencies` (çalışma zamanı) ve `devDependencies` (araçlar) olarak ayrılmalıdır.
+- `tsconfig` tip kontrolü yaparken, `vite.config.ts` modül çözümlemesini üstlenir; takma adlar (alias) her iki tarafta da tanımlanmalıdır.
+- `vitest.config.ts` bağımsız tutulmalı ve `e2e/**` dizini Vitest kapsamı dışında bırakılmalıdır.
+- Temiz bir kurulum, tek bir script çalıştığında (`typecheck`, `lint`, `format:check`, `test`, `test:e2e`) sıfır uyarı ve sıfır hatayla tamamlanmalıdır.
+
+### Kendini yokla
+
+1. **Soru:** Bir React projesinde `react-router` paketi `devDependencies` alanına yazılırsa ne olur?  
+   **Cevap:** Geliştirme ortamında çalışabilir; ancak üretim derlemesi alınıp sunucuya taşındığında veya bağımlılıklar budandığında (`pnpm install --prod`), tarayıcı paketi bağımlılığı bulamayacağı için çalışma zamanında çöker.
+2. **Soru:** Vitest ayarlarında `e2e/**` klasörünü hariç tutmazsak ne yaşanır?  
+   **Cevap:** Vitest, Playwright için yazılmış `*.spec.ts` dosyalarını kendi birim testi sanarak çalıştırmaya kalkar. Playwright'ın `page` fixture'ı jsdom ortamında bulunmadığı için testler anında hata verir.

@@ -1,17 +1,14 @@
-Env değerleri string'dir, eksik olabilir, yanlışlıkla boşluk içerebilir. Uygulamanın her yerinde bunlarla uğraşmamak için tek bir `readConfig` fonksiyonu yazıyoruz.
+Yaz, uygulama ayarlarını başlangıçta tek noktadan okuyan bir yapılandırma işlevi. Eksik zorunlu erişim anahtarı anlaşılır hatayla durmalı; isteğe bağlı başlık ve sayfa boyutu güvenli varsayılanlara sahip olmalı.
 
-`readConfig(env)` bir env nesnesi alır (gerçekte `import.meta.env`; testte sahte bir nesne) ve şunu döndürür:
+## Gereksinimler
+- Erişim anahtarının başındaki ve sonundaki boşlukları temizle.
+- Anahtar eksik ya da yalnızca boşluksa hata fırlat; hata mesajı VITE_TMDB_TOKEN içersin.
+- Başlığın boşluklarını temizle; eksik veya boş başlıkta Sinema kullan.
+- Sayfa boyutunu pozitif tam sayıya dönüştür; geçersiz, sıfır veya negatif değerde 20 kullan.
 
-```ts
-{ tmdbToken: string; appTitle: string; pageSize: number }
-```
+## Örnek
+{ VITE_TMDB_TOKEN: " abc ", VITE_APP_TITLE: " Film Evi ", VITE_PAGE_SIZE: "12" } girdisi { tmdbToken: "abc", appTitle: "Film Evi", pageSize: 12 } üretir.
 
-Kurallar:
-
-| Alan | Kaynak | Kural |
-| --- | --- | --- |
-| `tmdbToken` | `VITE_TMDB_TOKEN` | Baştaki/sondaki boşluklar atılır. Eksik ya da boşsa **hata fırlatılır**; mesaj `VITE_TMDB_TOKEN` içermeli. |
-| `appTitle` | `VITE_APP_TITLE` | Boşluklar atılır; eksik ya da boşsa `"Sinema"`. |
-| `pageSize` | `VITE_PAGE_SIZE` | Sayıya çevrilir; pozitif tam sayı değilse `20`. |
-
-Neden hata fırlatıyoruz? Token yoksa uygulama zaten çalışamaz; bunu ilk saniyede açık bir mesajla söylemek, yarım saat sonra anlamsız bir 401 hatasıyla boğuşmaktan iyidir (**fail fast**).
+## Sözleşme
+- Dosya ve export: config.ts → readConfig(env: Env): AppConfig
+- Env, string ya da eksik değerlerden oluşan env nesnesidir; AppConfig alanları tmdbToken: string, appTitle: string, pageSize: number biçimindedir.

@@ -7,6 +7,7 @@ export default defineQuestion({
   concepts: ['test.matchers', 'fetch.query-params', 'ts.functions'],
   files: ['requirePage.ts'],
   hints: [
+    'Geçerli ve geçersiz girdileri testin istediği sınıflara ayır.',
     'TMDB sayfaları 1’den başlar; 0, negatif, ondalık ve 500’den büyük değerler geçersiz.',
     '`Number.isInteger(page)` ile tam sayı koşulunu denetle, sınır dışını `RangeError` ile bildir.',
     'Geçersizde `throw new RangeError("Sayfa 1 ile 500 arasında olmalı")`; geçerlide gelen sayıyı döndür.',

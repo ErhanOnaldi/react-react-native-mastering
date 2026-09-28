@@ -1,49 +1,153 @@
 ---
-title: "Asenkron iş gerçekten kime ait?"
-minutes: 8
+title: "Paylaşılan async işlemin durumu"
+minutes: 14
 kind: concept
 ---
 
-# Asenkron iş gerçekten kime ait?
+# Paylaşılan async işlemin durumu
 
 :::pain[Sinema’da sorun]
-Bir buton “cihaza dışa aktar” işlemi yapıyor; pending/fulfilled/rejected durumunu paylaşman gerekiyor. TMDB detayını da aynı yolla mı çekmelisin?
+Kullanıcı bir raporu dışa aktarırken düğme “gönderiliyor” göstermeli; tamamlanınca indirme adresi, hata olunca açıklama görünmeli. İşlem birden fazla ekranda izleniyor. Her component kendi `pending` state’ini tutarsa aynı işlem için üç ayrı durum oluşuyor. Öte yandan TMDB film detayını da bir thunk’a taşımak Query cache’ini ikinci kez kurmak demek.
 :::
 
-## Paylaşılan asenkron işlem
+## Async thunk hangi işi anlatır?
 
-Async thunk, bir eylemin bekleme, başarı ve hata aşamalarını action akışına taşıyan araçtır. Özel bir client işleminin sonucunu birkaç yerde takip etmek gerektiğinde yararlı olabilir. Ancak sunucu verisinin cache, tazelik ve tekrar istek yönetimi gerekiyorsa TanStack Query zaten bu işi üstlenir; aynı endpoint'i iki ayrı sistemde yönetmemelisin.
+Async thunk bir uygulama işleminin başla/başarılı/başarısız geçişlerini Redux action’larına dönüştürür. `createAsyncThunk` payload creator’ı çağırır ve otomatik `pending`, `fulfilled`, `rejected` action türleri üretir. Bir slice bu action’ları `extraReducers` içinde dinleyip ortak işlem state’ini güncelleyebilir.
 
-Sinema'da watchlist dışa aktarma bir işlem olarak düşünülebilir. Film detayını okumak ise önceki Query sınırında kalır. Bu karşılaştırma, teknoloji seçimini async sözcüğüne değil verinin yaşam döngüsüne bağlar.
+:::model[Server ve client state sahipliği]
+Sunucu verisinin cache, tazelik ve tekrar çekme sahibi Query’dir; kullanıcıya ait ortak işlem veya tercih Redux’ta tutulabilir. Async olması tek başına veriyi store’a taşımak için gerekçe değildir. Bu derste yeni bağlam, Query’nin yönetmediği uygulama işleminin yaşam döngüsünü action’larla görünür kılmaktır.
+:::
 
-## Sorunu çöz
+![Server state ve client state sahipliğinin ayrımını gösteren diyagram](diagram:state-kategorileri)
 
-`createAsyncThunk` özel bir client işleminin pending/fulfilled/rejected action’larını üretir. `create.asyncThunk` için `buildCreateSlice({ creators: { asyncThunk: asyncThunkCreator } })` gerekir. TMDB detayını Query zaten cache’ler; onu thunk’a taşımak ikinci bir sunucu cache’i yaratır.
+1. **İşlemi başlatan payload creator’dır.** Parametre alır; Promise döndürebilir.
+2. **Pending hemen dispatch edilir.** UI bekleme durumunu ortak store’dan okuyabilir.
+3. **Promise çözülürse fulfilled gelir.** Dönen değer action payload’ı olur.
+4. **Promise reddedilirse rejected gelir.** Hata bilgisi action’da bulunur; kullanıcıya gösterilecek metni kontrollü belirle.
+5. **Reducer yalnız lifecycle state’i günceller.** Ağ çağrısı payload creator’da; state geçişi reducer’da kalır.
+6. **İşlem sonucu server cache değildir.** Bir API kaynağını cache, retry, pagination ve invalidation ile yönetmek gerekiyorsa Query’nin sahipliği korunur.
 
-## Sinema örneği
+`createAsyncThunk` işlemin kendisini başlatır, ama bütün asenkron mimariyi senin yerine çözmez. Aynı işlemin iki kez başlamasını engelleme, iptal, hata mesajı ve eski sonuçları ele alma gereksinimini ayrıca tasarlarsın. `thunkAPI.signal`, payload creator içinde iptal edilebilir `fetch` çağrısına bağlanabilir.
 
-Bir watchlist’i dışa aktarma API’sine gönderen thunk, export işleminin durumunu izler. İstek dönerken `pending`, başarıda `fulfilled`, hatada `rejected` olur.
+## Üç aşamayı zaman içinde izle
 
-## İki ayrı asenkron yol
+Bir masaüstü dış servisine rapor listesi gönderildiğini düşün. `sendReport` pending action’ı oluşturur; Promise sonunda servis kayıt numarası döndürür.
 
-| İş | Araç | Gerekçe |
-| --- | --- | --- |
-| TMDB film detayı | TanStack Query `useQuery` | Cache ve arka plan yenileme |
-| TMDB puan gönderimi | TanStack Query `useMutation` | Sunucu mutation + invalidation |
-| Kullanıcı watchlist’ini dış servise aktar | `createAsyncThunk` olabilir | Uygulamaya özgü işlem durumu |
+| Zaman | Action | Store durumu | UI mesajı |
+| --- | --- | --- | --- |
+| Kullanıcı tıklar | `sendReport.pending` | `status: 'pending'` | “Gönderiliyor…” |
+| Cevap başarılı | `sendReport.fulfilled` | `status: 'fulfilled'`, `receipt: 'R-42'` | “R-42 alındı” |
+| Cevap hatalı | `sendReport.rejected` | `status: 'rejected'`, `error: ...` | “Gönderilemedi” |
 
-```ts title="exportList.ts"
-const exportList = createAsyncThunk('watchlists/export', async (ids: number[]) => {
-  return [...ids]
+Pending state’i aynı action’ı izleyen bütün bileşenler okuyabilir. Başarı sonucu yalnız bir sayfada gösterilecekse global store’a koymak yerine yerel state daha basit olabilir. Paylaşım ihtiyacı işlemin hangi owner’da yaşaması gerektiğini belirler.
+
+## `createAsyncThunk` ile lifecycle
+
+```ts check
+import { configureStore, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+
+type Receipt = { id: string }
+type DeliveryState = { status: 'idle' | 'pending' | 'fulfilled' | 'rejected'; receipt: Receipt | null }
+
+export const sendDigest = createAsyncThunk<Receipt, string>(
+  'delivery/sendDigest',
+  async (message) => {
+    const response = await fetch('/api/digest', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ message }),
+    })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    return (await response.json()) as Receipt
+  },
+)
+
+const deliverySlice = createSlice({
+  name: 'delivery',
+  initialState: { status: 'idle', receipt: null } as DeliveryState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(sendDigest.pending, (state) => { state.status = 'pending' })
+      .addCase(sendDigest.fulfilled, (state, action) => {
+        state.status = 'fulfilled'
+        state.receipt = action.payload
+      })
+      .addCase(sendDigest.rejected, (state) => { state.status = 'rejected' })
+  },
 })
+
+export const store = configureStore({ reducer: { delivery: deliverySlice.reducer } })
 ```
 
-Bu kod görevi ağ çağrısı yapmadan lifecycle’ı ölçer. `pending` hemen, `fulfilled` Promise tamamlanınca gelir. Gerçek dışa aktarma endpoint’i eklenirse payload creator onun isteğini yapar. `create.asyncThunk` biçimi de günceldir ama varsayılan `createSlice` içinde doğrudan kullanılmaz: önce `buildCreateSlice({ creators: { asyncThunk: asyncThunkCreator } })` kurman gerekir.
+HTTP 500 yanıtı `fetch` Promise’ini otomatik reddetmez. `response.ok` kontrolü yapılmazsa thunk fulfilled olabilir ve hata cevabı başarı gibi işlenir. Bu, HTTP modülünde öğrendiğin istek/cevap ayrımının Redux işlemine taşınmasıdır. Dış servis yoksa saf bir async payload creator da Promise ile lifecycle’ı gösterebilir; ama gerçek çağrıda status ve gövdeyi ayrıca ele al.
 
-:::mistake[Sık hata]
-Thunk payload’ına serileştirilemeyen nesneler koyma. Form input’unu RHF’de tut; yalnız onaylanmış veriyle işlemi başlat.
+İkinci bir dispatch aynı anda gelebilir. `createAsyncThunk` her çağrı için `meta.requestId` üretir. Eski isteğin geç gelen cevabının yenisini ezmesini engellemek gerekiyorsa reducer’da aktif request id’yi takip et veya payload creator’daki abort signal’ını kullan. Basit tek işlemde bu mekanizmayı eklemek gereksiz karmaşıklıktır; race ihtiyacını belirtiyle doğrula.
+
+## `createSlice` ile birlikte `create.asyncThunk`
+
+RTK ayrıca thunk lifecycle’ını slice tanımında bir araya getirmek için `buildCreateSlice({ creators: { asyncThunk: asyncThunkCreator } })` API’sini sunar. Bu biçim `createSlice`’ın standart export’unda doğrudan aktif değildir; özel `createAppSlice` kurulumunu gerektirir. `reducers: (create) => ({ ... })` callback’i içinde `create.asyncThunk` ve `pending`/`fulfilled`/`rejected` callback’leri tanımlarsın.
+
+İki biçimin de lifecycle action’ları aynı kavramı taşır. Kod tabanında mevcut standardı izle; sırf daha kısa görünüyor diye iki yaklaşımı aynı özellikte karıştırma. TypeScript’te thunk’ın argüman ve dönüş tiplerini açık yazmak çoğu kez çıkarımı güçlendirir.
+
+### Hata bilgisini bilinçli taşı
+
+Bir payload creator normal `Error` fırlatırsa rejected action’da `action.error` bulunur. Bu alan serileştirilebilir, fakat uygulamanın kullanıcıya göstereceği API hata gövdesinin tamamını taşımayabilir. Bir domain hatasını state’e koyman gerekiyorsa `rejectWithValue` ile kontrollü ve tipli bir payload döndürebilirsin. Reducer’da `action.payload` olup olmadığını ayır; `action.error.message` her zaman kullanıcıya uygun metin değildir.
+
+Örneğin sunucu “ürün artık teslim edilemiyor” gibi beklenen bir iş hatası döndürürse bu, beklenmedik programlama exception’ından farklıdır. Beklenen hata için payload union veya `rejectWithValue` UI’ye anlaşılır mesaj verir. Beklenmedik hata ise loglanabilir ve genel bir hata mesajına çevrilebilir. Ham response nesnesini store’a koyma; Response body tüketilebilir ve JSON dışı değerler serializable değildir.
+
+### Aynı işin iki kez başlaması
+
+Async thunk her dispatch çağrısında yeni bir request id üretir. Kullanıcı aynı düğmeye hızlıca iki kez basarsa iki işlem başlar; bu davranışı `condition` callback’iyle başlamadan engelleyebilir veya component’te pending sırasında düğmeyi devre dışı bırakabilirsin. Hangi katmanın doğru olduğu ürün davranışına bağlıdır: aynı raporun iki kez gönderilmesi tehlikeliyse yalnız UI kilidi yeterli olmayabilir; server idempotency anahtarı gerekebilir.
+
+İptal ve stale cevap da ayrı sorunlardır. Sayfa kapanınca devam etmemesi gereken işte dispatch promise’inin `abort()` metodu ve `thunkAPI.signal` kullanılabilir. Yeni istek eski isteği geçersiz kılıyorsa reducer aktif `requestId` değerini kontrol ederek eski cevabı yoksayabilir. Bu mekanizmaları her thunk’a eklemek yerine kullanıcıya görünen race veya çift gönderim riski varsa uygula.
+
+### İşlem sonucu ile kaynağın sonucu
+
+İşlemin fulfilled olması, uygulamadaki tüm server state’in güncel olduğu anlamına gelmez. Bir dışa aktarma başarılı olabilir ama katalog Query cache’i değişmemiştir. İşlem bir sunucu kaynağını değiştiriyorsa başarılı sonuçtan sonra ilgili Query key’ini invalidate et veya dönen kaynak verisini cache’e yaz. Bu, iki cache kurmadan mutation sonucunu mevcut server state sahibine duyurur.
+
+`createAsyncThunk` ayrıca dispatch edilen thunk’ın promise’ini döndürür. Bu promise genellikle lifecycle action’ı ile tamamlanır; `unwrap()` kullanırsan fulfilled payload’ı alabilir veya rejected hatayı throw olarak yakalayabilirsin. UI event handler içinde bu davranışla işlem sonrası gezinme ya da toast göstermek mümkündür. Aynı sonucu store’da da tutuyorsan tek kullanım yerini seç; aksi halde component state’i ile Redux state’i tekrar ayrışabilir.
+
+## Sınır durumları
+
+:::mistake[Belirti → HTTP hata cevabı başarılı görünüyor]
+Belirti → Sunucu 500 döndürdü ama store `fulfilled` oldu.  
+Neden → `fetch` yalnız ağ hatalarında reject olur; 4xx/5xx status’u kontrol edilmedi.  
+Düzeltme → `response.ok` kontrol et ve uygun hata yolu için throw et veya açık bir result union döndür.
 :::
 
-:::sector[Sektörde]
-RTK Query seçilse bile aynı endpoint için TanStack Query ve RTK Query’yi birlikte kullanma.
+:::mistake[Belirti → TMDB verisi iki yerde farklı]
+Belirti → Query yenilenmiş ama thunk reducer’ındaki film listesi eski.  
+Neden → Server state iki bağımsız cache’te tutuluyor.  
+Düzeltme → TMDB sorgu/cache yaşam döngüsünü Query’de bırak; thunk’ı Query’nin yönetmediği uygulama işlemi için kullan.
 :::
+
+:::mistake[Belirti → Hata durumunda önceki başarı bilgisi yanlış gösteriliyor]
+Belirti → Yeni istek reddedildi ama eski makbuz “güncel” gibi duruyor.  
+Neden → Rejected geçişi `status` veya ilgili sonucu temizlememiş.  
+Düzeltme → Lifecycle state’inin her geçişte hangi alanları koruyup hangilerini sıfırladığını açıkça tanımla.
+:::
+
+:::mistake[Belirti → Ekran kapansa da istek sürüyor]
+Belirti → Kullanıcı başka sayfaya geçti, eski işlem hâlâ çalışıyor.  
+Neden → İptal edilebilir işte thunk signal’ı isteğe aktarılmamış.  
+Düzeltme → İptal gereksinimi varsa `thunkAPI.signal` ile `fetch` çağrısını bağla; her işlemde iptal desteği varsayma.
+:::
+
+:::sector
+Async thunk; rapor gönderme, dışa aktarma veya birden fazla ekranda görülen kullanıcı işlemi gibi Redux action akışında izlenmesi gereken işlerde değerlidir. Server state’i Query ile yönetiyorsan thunk’ı endpoint cache’ine dönüştürme. Ekipler işlem state’ini `idle/pending/fulfilled/rejected` gibi açık bir union’la tutup loading ve hata görünümünü bu geçişlere bağlar.
+:::
+
+## Özet
+
+- `createAsyncThunk` payload creator çalıştırır, pending/fulfilled/rejected action’ları üretir.
+- Slice bu lifecycle’ı `extraReducers` ile ortak state’e yansıtır.
+- `fetch` 4xx/5xx’te reject olmaz; `response.ok` kontrolü gerekir.
+- Sunucu cache ihtiyacı Query’ye, paylaşılan uygulama işlemi lifecycle’ı Redux’a ait olabilir.
+- RTK’nin `create.asyncThunk` kullanımı `buildCreateSlice` ile özel kurulum gerektirir.
+
+**Kendini yokla:** Bir thunk Promise’i çözüldüğünde dönüş değeri hangi action’a gider?  
+*Cevap:* `fulfilled` action’ın payload’ına.
+
+**Kendini yokla:** Bir endpoint’in cevabını sırf async olduğu için Redux’a taşır mısın?  
+*Cevap:* Hayır; cache ve yenileme yaşam döngüsünü hangi aracın yönettiğine göre karar verirsin.

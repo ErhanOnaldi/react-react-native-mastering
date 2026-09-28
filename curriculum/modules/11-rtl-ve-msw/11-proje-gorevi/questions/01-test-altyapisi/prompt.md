@@ -1,18 +1,21 @@
-## Sorun
-Sinema testleri her defasında fetch’i elle değiştiriyor. Arama ve detay testi aynı 20 satırlık hazırlığı kopyalıyor.
+Sinema projesinin bileşen testleri için ortak ağ ve router altyapısını kur.
 
-## Görev
-Projede tam bu yolları oluştur:
-
-| Yol | Sözleşme |
-| --- | --- |
-| `src/test/msw/handlers.ts` | `handlers` adlı MSW 2 handler dizisini export et. `/search/movie` ve `/movie/:id` için en az birer `http.get`; Bearer yetkisini kontrol et. 550 için Dövüş Kulübü, 404 için TMDB biçimli hata döndür. |
-| `src/test/setup.ts` | `@testing-library/jest-dom/vitest` import et. `setupServer(...handlers)` kur; `beforeAll` listen (`onUnhandledRequest: 'error'`), `afterEach` cleanup ve resetHandlers, `afterAll` close. `server` export et. |
-| `src/test/render.tsx` | `renderWithRouter(ui | routes, { route })` export et. `ui` JSX/ReactNode ya da `RouteObject[]` kabul et. Dizi verilirse onu route tablosu olarak kullan; tek UI verilirse `{ path: "*", element: ui }` route’unu oluştur. Parametreli sayfa testlerinde `RouteObject[]` ver. `createMemoryRouter` + `RouterProvider` (`react-router/dom`) ile render et ve router’ı döndür. |
-
-`vite.config.ts` test ayarına `setupFiles: ['./src/test/setup.ts']` ekle. Projede jest-dom, MSW ve RTL bağımlılıklarını kök catalog sürümleriyle kullan. Mevcut Router ve Vite ayarlarını koru.
+## Gereksinimler
+- `src/test/msw/handlers.ts` içinde arama ve film detay endpoint’leri için varsayılan handler’lar bulunmalı; Authorization zorunlu olmalı, 550 için Dövüş Kulübü, bilinmeyen film için TMDB biçimli 404 dönmeli.
+- `src/test/setup.ts` test başlangıcında MSW’yi başlatmalı, testten sonra DOM ve handler değişikliklerini temizlemeli, test paketi bitince server’ı kapatmalı.
+- Bilinmeyen istekler testte açıkça hata vermeli; gerçek ağa çıkılmamalı.
+- `src/test/render.tsx` URL başlangıç değeriyle component veya route tablosu render etmeli ve router nesnesini döndürmeli.
+- Tek component için wildcard route kullan; route tablosu verildiğinde parametreli route’u olduğu gibi kullan.
+- `vite.config.ts` test ayarında setup dosyasını kaydet; mevcut Router ve Vite ayarlarını koru.
 
 ## Örnek
-`renderWithRouter([{ path: '/movie/:id', element: <MovieId /> }], { route: '/movie/550' })` → id 550.
+`/movie/:id` route’u `/movie/550` başlangıç adresinde açılır → component `id=550` görür.
 
-Sinema’da `pnpm test` çalıştır. Elindeki biçim testleri de geçmeye devam etmeli.
+## Sözleşme
+- `src/test/msw/handlers.ts` → `handlers` export’u.
+- `src/test/setup.ts` → `server` export’u.
+- `src/test/render.tsx` → `renderWithRouter(ui | routes, { route })` export’u.
+- Proje: `sinema`; mevcut test bağımlılıklarının kök catalog sürümlerini kullan.
+
+## Kısıtlar
+- `src/test/setup.ts`, `src/test/msw/handlers.ts`, `src/test/render.tsx` ve `vite.config.ts` dışındaki dosyaları değiştirme.

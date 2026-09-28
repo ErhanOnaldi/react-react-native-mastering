@@ -8,8 +8,8 @@ export default defineQuestion({
   files: ['locators.ts'],
   timeoutMs: 90_000,
   hints: [
-    'Class’lara ve sıraya değil, role ve ada yaslan. Listenin bir erişilebilir adı var (`aria-label="Filmler"`); kartlar `listitem`, başlıkları `heading`.',
-    "Kartı bulmak için listitem’ları, içinde **tam** o başlığı taşıyana göre süz: `filter({ has: page.getByRole('heading', { name, exact: true }) })`. Butonu kartın içinde ara.",
-    "Butonun adı tıklayınca değişiyor; ad için düzenli ifade kullan: `movieCard(page, title).getByRole('button', { name: /^Favori/ })`. Başlıklar: `page.getByRole('list', { name: 'Filmler' }).getByRole('heading')`.",
+    'Her film kartının tasarım sınıfları değişse bile hangi erişilebilir yapı sabit kalıyor? Locator’ları o kullanıcıya görünen sözleşmeden başlat.',
+    'Playwright `getByRole` ile role/ad bulur; `filter({ has: locator })` içeriğiyle bir kartı daraltır ve `exact: true` tam başlık eşleşmesi sağlar.',
+    "Başlıklar için `page.getByRole('list', { name: 'Filmler' }).getByRole('heading')`. Kart için `getByRole('listitem').filter({ has: page.getByRole('heading', { name: title, exact: true }) })`; buton o kart içinde `button` rolüyle aranır.",
   ],
 })

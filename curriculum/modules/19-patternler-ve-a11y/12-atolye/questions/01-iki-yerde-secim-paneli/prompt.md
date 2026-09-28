@@ -1,7 +1,19 @@
-Ana Sayfa'daki tür seçim paneli çalışıyor: ok tuşlarıyla gezilebiliyor, seçili öğe belli. Aynı seçim davranışı artık Detay sayfasında da gerekiyor — orada farklı bir seçenek listesi (sıralama ölçütü) için, ama klavye ve odak (focus) davranışı birebir aynı kalmalı. İki sayfa kendi seçimini ayrı ayrı hatırlamalı: birinde seçtiğin diğerini değiştirmemeli.
+Ana Sayfa'daki seçim kontrolü çalışıyor. Detay sayfasında farklı seçeneklerle de aynı klavye ve focus davranışı gerekiyor; iki sayfanın seçimi birbirinden bağımsız kalmalı.
 
-Testler `SelectionPages.tsx` içindeki `SelectionPages` bileşenini açar.
+## Gereksinimler
 
-## Arayüz sözleşmesi
+- Ana Sayfa seçenekleri `Aksiyon` ve `Komedi`; Detay sayfası seçenekleri `Puan` ve `Tarih` olsun.
+- Her iki yerde de yalnız seçili seçenek Tab sırasına girsin; ok tuşları, Home ve End seçim ile focus'u doğru taşısın.
+- Seçenek grupları adlandırılmış ve erişilebilir button kontrolleri olsun.
+- Sayfa değiştirip geri dönünce o sayfanın önceki seçimi korunsun.
+- Bir sayfadaki seçim diğer sayfanın seçimini değiştirmesin.
 
-- Detay sayfasındaki seçenek listesi en azından `Puan` ve, sağ ok ile ondan hemen sonra ulaşılan, `Tarih` seçeneklerini içersin.
+## Örnek
+
+Ana Sayfa'da Belgesel seçip Detay'a geç. Puan'ı seçip Ana Sayfa'ya dönünce Belgesel seçimi korunur; Detay'a tekrar geçince Puan seçimi durur.
+
+## Sözleşme
+
+- `SelectionPages.tsx` içinden named export `SelectionPages`.
+- Detay sayfasında `Puan` ve sağ okla ulaşılan `Tarih` seçenekleri bulunur.
+- Seçenekler `radio` rolü, erişilebilir ad ve doğru `aria-checked` durumuyla bulunur.

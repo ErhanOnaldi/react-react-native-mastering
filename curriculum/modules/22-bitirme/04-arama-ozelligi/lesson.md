@@ -1,137 +1,159 @@
 ---
 title: "Arama: URL, önbellek ve kirli veri bir arada"
-minutes: 10
+minutes: 12
 kind: project
 ---
 
 # Arama: URL, önbellek ve kirli veri bir arada
 
 :::pain[Problem]
-Sinema’da arama her tuşta (debounce ile) TMDB’ye gidiyordu; TMDB’nin kotası boldu, cevabı 100 ms’de geliyordu. Open Library farklı: gönüllülerin işlettiği ücretsiz bir servis, cevap 1–3 saniye sürebiliyor ve `total_pages` yok, sadece `numFound: 48232` var.
+Kullanıcı arama kutusuna bir kelime yazıp enter'a bastığında liste gelir. Ancak sayfayı yenilediğinde arama kutusu ve sonuçlar sıfırlanır; tarayıcının geri butonuna bastığında hiçbir şey değişmez; 2. sayfaya geçtiğinde ekran anlık beyazlaşıp göz kırpar (flicker). Daha da kötüsü: API'den gelen bazı kayıtlarda görsel adresi boş olduğu için sayfada onlarca kırık resim ikonu patlar.
 
-İlk içgüdün 7. modüldeki gibi `useEffect` + `fetch` yazmak olabilir. Aynı acıları hatırla: sayfa değişince liste boşalıp zıplıyordu, aramaya geri dönünce aynı istek yeniden gidiyordu, `?page=abc` sayfayı bozuyordu. Bu sefer çözümleri biliyorsun; mesele onları **tek bir temiz akışta** birleştirmek.
+Bu arızaların nedeni arama mantığının eksikliği değil, **üç bağımsız katmanın** (URL rotası, asenkron önbellek ve veri sınır doğrulaması) birbirine uyumsuz bağlanmasıdır.
 :::
 
-Bu dersteki her parça daha önce gördüğün bir kavram, ama her biri yeni bir kıvrımla geliyor.
+Bu derste arama özelliğini rastgele bir `useState` içine hapsetmek yerine, URL'i tek gerçek kaynak kabul eden, TanStack Query ile akıcı sayfalama sunan ve Zod ile kirli dış API verisini filtreleyen profesyonel bir arama mimarisi kuruyorsun.
 
-| Kavram | Nerede gördün | Kitaplık’taki yeni kıvrım |
-| --- | --- | --- |
-| URL state | 6. modül | Arama **form gönderilince** URL’ye yazılır; yazarken değil |
-| `queryOptions` + key | 12. modül | Key’de `q` **ve** `page`; boş sorguda sorgu kapalı |
-| `keepPreviousData` | 12. modül | Yavaş API’de sayfa geçişi zıplamasın |
-| Zod ile API doğrulama | 15. modül | Doğrularken **dönüştür**: snake_case → uygulamanın kendi modeli |
-| `key` ile sıfırlama | 5. modül | Kontrolsüz input’u URL’yle senkron tutmak |
+## URL, Önbellek ve Sınır Doğrulaması Zihinsel Modeli
 
-## Form mu, debounce mu?
+Arama özelliği üç temel zihinsel modelin kesişim noktasında durur:
 
-| | Her tuşta (debounce) | Form gönderilince |
-| --- | --- | --- |
-| İstek sayısı | Yazdıkça, duraksadıkça | Kullanıcı istediğinde bir kez |
-| Tarayıcı geçmişi | Her ara adım bir kayıt olabilir | Her arama bir kayıt |
-| Uygun olduğu API | Hızlı, bol kotalı (TMDB) | Yavaş, paylaşımlı, ücretsiz (Open Library) |
+:::model[URL state]
+Adres çubuğu (`/search?q=terim&page=2`) arama ekranının tek doğruluk kaynağıdır. Bileşen arama durumunu kendi içinde saklamaz; URL'den okur ve URL'e yazar. Bu sayede bağlantı paylaşımı ve tarayıcı geçmişi kendiliğinden kusursuz çalışır.
+:::
 
-Gereksinimler (K-1) kararı zaten vermiş: form gönderilince. Böylece “arama kutusundaki taslak” ile “URL’deki kararlı sorgu” da ayrılıyor. Taslak DOM’da yaşar (kontrolsüz input), kararlı sorgu URL’de.
+:::model[Zod sınır doğrulaması]
+Dış dünyadan gelen her veri (`fetch` yanıtı veya URL parametresi) TypeScript açısından `unknown` kabul edilmelidir. Veri uygulamanın güvenli sınırlarına girmeden önce doğrulanmalı, eksik alanlar (örneğin kayıp kapak görseli veya tanımsız yazar) güvenli varsayılanlara dönüştürülmelidir.
+:::
 
-## URL’yi tek doğruluk kaynağı yap
+![Zod sınır doğrulaması ile ham veriden güvenli modele geçiş](diagram:zod-sinir)
 
-URL’den gelen her değer kullanıcı girdisidir: `?page=abc`, `?page=-3`, `?q=%20%20`. Okurken **bir kez** temizle, uygulamanın geri kalanı temiz değerle çalışsın:
+Bu mimariyi şu temel kurallarla yönetirsin:
 
-```ts check
-/** URL → arama durumu. Bozuk page değeri 1'e düşer. */
-export function readSearchParams(searchParams: URLSearchParams) {
-  const q = searchParams.get('q')?.trim() ?? ''
-  const page = Number.parseInt(searchParams.get('page') ?? '1', 10)
-  return { q, page: Number.isInteger(page) && page > 0 ? page : 1 }
-}
+1. **Sorgu ve sayfayı adres çubuğundan oku:** `q` ve `page` parametreleri doğrudan URL'den çözülür. Bileşen içinde `const [page, setPage] = useState(1)` açmak iki başlılık yaratır.
+2. **Parametreleri query key içine göm:** Önbellek motoru her aramayı ve her sayfayı bağımsız bir anahtarla (`['search', query, pageNumber]`) saklamalıdır. Böylece kullanıcı 2. sayfadan 1. sayfaya geri döndüğünde yeni bir ağ isteği beklemeden sonuçları anında görür.
+3. **Sayfa geçişinde eski veriyi ekranda tut:** Yeni sayfa yüklenirken arayüzü sıfırlayıp spinner göstermek yerine, `placeholderData: keepPreviousData` ile önceki sayfanın verisi ekranda tutulmalı, kullanıcıya kesintisiz bir deneyim sunulmalıdır.
+4. **Bozuk URL parametrelerini normalize et:** Kullanıcı URL'e `?page=abc` veya `?page=-5` yazabilir. Sınırda bu değer yakalanmalı, `Math.max(1, Number(page) || 1)` mantığıyla güvenli bir tamsayıya çevrilmelidir.
 
-readSearchParams(new URLSearchParams('q=%20dune%20&page=abc')) // { q: 'dune', page: 1 }
-```
+## Arama ve sayfalama veri akışını izleyelim
 
-Arama kutusu ise URL’den **beslenir** ama her tuşta URL’ye yazmaz. Kontrolsüz bir input ile `key={q}` bunu tek satırda çözer: URL’deki sorgu değiştiğinde (geri tuşu, paylaşılan link) React input’u yeni `defaultValue` ile baştan kurar.
+Bir makale arama senaryosunda kullanıcının etkileşimini adım adım izleyelim:
+
+| Zaman | Kullanıcı eylemi | URL durumu | Query Key | Ağ durumu | Ekranda görünen |
+| --- | --- | --- | --- | --- | --- |
+| 0 sn | `/articles` açılır | `?q=&page=1` | Pasif (`enabled: false`) | İstek atılmaz | "Aramak için bir konu yazın" mesajı |
+| 2 sn | "React" yazıp "Ara" basar | `?q=react&page=1` | `['articles', 'react', 1]` | `GET /api?q=react&page=1` | Yükleniyor durumu ardından 10 makale |
+| 15 sn | "Sonraki sayfa" tıklar | `?q=react&page=2` | `['articles', 'react', 2]` | `GET /api?q=react&page=2` | 1. sayfa sonuçları ekranda kalır, arka planda 2. sayfa yüklenir |
+| 16 sn | 2. sayfa cevabı döner | `?q=react&page=2` | Aktif | Tamamlandı | 2. sayfa sonuçları görünür, "Sayfa 2 / 4" güncellenir |
+| 20 sn | Tarayıcı "Geri" butonuna basar | `?q=react&page=1` | `['articles', 'react', 1]` | **İstek yok! (Cache)** | 1. sayfa sonuçları sıfır gecikmeyle ekranda belirir |
+
+## Kod örnekleri: Yanlış ve doğru veri akışı
+
+### Kırık örnek: URL'i bypass edip ham veriyi doğrudan basmak
+
+Aşağıdaki kod API'den gelen veriye körü körüne güvenir ve sayfalama durumunu yerel state'te kaybeder:
 
 ```tsx
-<input key={q} name="q" type="search" defaultValue={q} aria-label="Kitap ara" />
+// TEHLİKE: API verisi doğrulanmamış, sayfa URL'e yansıtılmamış
+import { useState, useEffect } from 'react'
+
+export function FragileArticleSearch() {
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1) // HATA: Yenileyince 1'e döner!
+  const [results, setResults] = useState<any[]>([])
+
+  useEffect(() => {
+    if (!query) return
+    fetch(`https://api.example.com/items?search=${query}&p=${page}`)
+      .then((res) => res.json())
+      .then((data) => setResults(data.docs)) // HATA: docs boşsa veya alanlar eksikse çöküş!
+  }, [query, page])
+
+  return (
+    <div>
+      {results.map((item) => (
+        <div key={item.id}>
+          {/* HATA: item.image null ise kırık resim patlar! */}
+          <img src={item.image} alt={item.title} />
+          <h3>{item.title}</h3>
+        </div>
+      ))}
+    </div>
+  )
+}
 ```
 
-Gönderimde değeri `FormData` ile al, **boşlukları at**, boşsa hiçbir şey yapma; doluysa `navigate('/search?q=…')`. Yeni arama `page`’i URL’ye hiç yazmaz, yani kendiliğinden 1. sayfaya döner.
+### Doğru örnek: Zod şeması ve güvenli model dönüşümü
 
-## Veriyi kapıda dönüştür
-
-Open Library’nin alan adları (`author_name`, `first_publish_year`, `cover_i`) ve eksik alanları uygulamanın her köşesine yayılmasın. Zod şeması hem **doğrular** hem de uygulamanın kendi modeline **dönüştürür**:
+API'den gelen kirli veriyi Zod ile karşılayıp temiz bir iç modele dönüştürelim:
 
 ```ts check
 import { z } from 'zod'
 
-const searchDocSchema = z
-  .object({
-    key: z.string(), // "/works/OL893414W"
-    title: z.string(),
-    author_name: z.array(z.string()).optional(),
-    first_publish_year: z.number().optional(),
-    cover_i: z.number().optional(),
-  })
-  .transform((doc) => ({
-    id: doc.key.split('/').at(-1) ?? doc.key,
-    title: doc.title,
-    authors: doc.author_name ?? [],
-    firstPublishYear: doc.first_publish_year ?? null,
-    coverId: doc.cover_i ?? null,
-  }))
+// 1. Dış API'nin kirli ve eksik olabilecek ham şeması
+export const RawApiArticleSchema = z.object({
+  id: z.string(),
+  headline: z.string().default('Başlıksız Makale'),
+  authors: z.array(z.string()).nullish().transform((val) => val ?? []),
+  thumbnail_id: z.number().nullish().transform((val) => (val && val > 0 ? val : null)),
+  year: z.number().nullish(),
+})
 
-export const searchResponseSchema = z
-  .object({ numFound: z.number(), docs: z.array(searchDocSchema) })
-  .transform((r) => ({ total: r.numFound, books: r.docs }))
-
-export type BookSummary = z.output<typeof searchDocSchema>
-// { id: string; title: string; authors: string[]; firstPublishYear: number | null; coverId: number | null }
-```
-
-Artık bileşenler `book.coverId === null` diye tek bir şeyi kontrol eder; “alan yok mu, `undefined` mı, `0` mı?” sorusu kapıda cevaplandı. Bu, 9. modüldeki tipli API client’ın bir adım ötesi: tipler artık **çalışma zamanında da** doğru.
-
-## Sorgu: key’de ne varsa ekranda o var
-
-```tsx check
-import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query'
-
-interface SearchParams {
-  q: string
-  page: number
+// 2. Uygulamanın güvenle tüketebileceği tipli model
+export type ValidatedArticle = {
+  id: string
+  title: string
+  authorsText: string
+  imageUrl: string | null
 }
 
-async function searchBooks({ q, page }: SearchParams, signal: AbortSignal) {
-  const url = new URL('https://openlibrary.org/search.json')
-  url.search = new URLSearchParams({ q, page: String(page), limit: '10' }).toString()
-  const response = await fetch(url, { signal })
-  if (!response.ok) throw new Error(`Open Library ${response.status}`)
-  return (await response.json()) as { numFound: number }
-}
+export function parseAndNormalizeArticle(rawInput: unknown): ValidatedArticle {
+  const parsed = RawApiArticleSchema.parse(rawInput)
 
-export const bookQueries = {
-  search: (params: SearchParams) =>
-    queryOptions({
-      queryKey: ['books', 'search', params] as const,
-      queryFn: ({ signal }) => searchBooks(params, signal),
-      staleTime: 5 * 60_000, // aynı arama 5 dk içinde tekrar istenmez (API nezaketi)
-    }),
-}
-
-export function useBookSearch(params: SearchParams) {
-  return useQuery({
-    ...bookQueries.search(params),
-    enabled: params.q.length > 0, // boş sorguda istek yok
-    placeholderData: keepPreviousData, // sayfa değişirken eski liste ekranda kalır
-  })
+  return {
+    id: parsed.id,
+    title: parsed.headline,
+    authorsText: parsed.authors.length > 0 ? parsed.authors.join(', ') : 'Yazar belirtilmemiş',
+    imageUrl: parsed.thumbnail_id
+      ? `https://cdn.example.com/covers/${parsed.thumbnail_id}.jpg`
+      : null,
+  }
 }
 ```
 
-Toplam sayfa sayısını sen hesaplıyorsun: `Math.ceil(total / 10)`. 48.232 sonuç Türkçe biçimde `total.toLocaleString('tr-TR')` ile “48.232” olur.
+Bu yaklaşımla:
+- Görsel kimliği eksikse veya negatifse (`-1`), uygulama içinde kırık URL üretilmez; `null` dönerek yerel yer tutucuya düşer.
+- Yazar dizisi boş veya tanımsız geldiğinde arayüz "Yazar belirtilmemiş" güvenli metnini gösterir.
+- Bileşen katmanı ham API alan adlarından (`thumbnail_id`, `headline`) tamamen izole edilir.
 
-Sayfalamayı **link** olarak yap (`<Link to="/search?q=dune&page=2">`): yeni sekmede açılabilir, kopyalanabilir. Pasif olan kontrolü ya hiç gösterme ya da `aria-disabled="true"` ile işaretle.
+## Sık karşılaşılan hatalar
 
-:::mistake
-Sayfa numarasını `useState`’te tutup sadece “Sonraki”ye basınca artırmak. Link paylaşılınca 1. sayfa açılır, geri tuşu sayfayı değil başka bir aramayı geri getirir. Bir de tersi: `page`’i URL’ye yazıp **query key’e koymamak** — ekranda 1. sayfanın verisiyle “Sayfa 2” yazar.
+:::mistake[Arama kutusuna her harf yazıldığında API'ye istek atmak]
+**Belirti:** Hızlı yazı yazarken Network sekmesinin onlarca istekle dolması ve ücretsiz/gönüllü API sunucusunun `429 Too Many Requests` hatasıyla istemciyi engellemesi.  
+**Neden:** Arama tetiklemesi `onChange` olayına bağlanmıştır ve debouncing veya form submit kuralı konmamıştır.  
+**Düzeltme:** Kitaplık gibi kamuya açık API projelerinde aramayı yalnızca form gönderildiğinde (`onSubmit`, Enter veya "Ara" butonu) tetikle; boş sorgularda istek atma.
 :::
 
-:::sector
-Herkese açık bir API’yi kullanmak, kurallarını okumayı da içerir: istek sınırları, önerilen parametreler (Open Library’de `fields` ile sadece gereken alanları istemek), önbellek beklentileri. Gerçek projelerde bu kurallar bir “API kullanım” ADR’sine ya da README’ye yazılır; ihlal eden bir istemci engellenebilir.
+:::mistake[Sayfa değişirken önceki veriyi sıfırlayıp tüm ekranı beyazlatmak]
+**Belirti:** Kullanıcı "Sonraki" butonuna her bastığında mevcut kitap listesinin kaybolması, ekranın zıplaması ve sayfa başına dönülmesi.  
+**Neden:** Yeni sayfanın `isLoading` durumu başladığında liste DOM'dan tamamen kaldırılmıştır.  
+**Düzeltme:** TanStack Query sorgusunda `placeholderData: keepPreviousData` seçeneğini aktif et; yeni veriler gelene kadar mevcut liste ekranda kalsın.
 :::
+
+:::sector[Sektörde arama ve dayanıklı API sınırları]
+Profesyonel arama arayüzlerinde (örneğin GitHub, Amazon veya sahibinden.com) URL'deki parametreler kutsaldır. Bir mühendis sayfayı yenilediğinde filtrelerin kaybolması kabul edilemez bir kusurdur. Benzer şekilde, üçüncü parti bir servisten gelen verinin eksik alanları yüzünden tüm sayfanın beyaz ekrana düşmesi (*Uncaught TypeError: Cannot read properties of undefined*) kabul edilemez. Bu yüzden sektörde Zod sınır doğrulaması mimarinin en kritik savunma hattıdır.
+:::
+
+## Özet
+
+- Arama sorgusu ve sayfa numarası URL üzerinde tutulur; yerel state'e kopyalanmaz.
+- Sayfa parametresi normalize edilmeli, geçersiz değerler 1 kabul edilmelidir.
+- TanStack Query ile sayfalama yapılırken `placeholderData: keepPreviousData` kullanılarak arayüz sıçramaları önlenir.
+- Zod şeması API sınırında çalışarak eksik kapak veya yazar gibi kirli verileri UI'a ulaşmadan güvenli varsayılanlara çevirir.
+
+### Kendini yokla
+
+1. **Soru:** Bir kullanıcı `/search?q=dune&page=2` linkini kopyalayıp başka bir tarayıcıda açtığında ne olmalıdır?  
+   **Cevap:** Uygulama URL'den `q=dune` ve `page=2` parametrelerini okumalı, arama kutusuna "dune" yazmalı ve doğrudan 2. sayfa sonuçlarını getirip "Sayfa 2 / X" durumunu göstermelidir.
+2. **Soru:** Neden dış API'den gelen `author_name` alanını doğrudan `<p>{book.author_name[0]}</p>` şeklinde basmak tehlikelidir?  
+   **Cevap:** Çünkü API bazı kitaplar için `author_name` alanını hiç göndermeyebilir ya da boş bir dizi dönebilir. Bu durumda `undefined[0]` ifadesi çalışma zamanında tüm React ağacını çökertir.

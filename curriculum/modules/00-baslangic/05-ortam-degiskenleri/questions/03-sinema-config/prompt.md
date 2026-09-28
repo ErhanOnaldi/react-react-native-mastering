@@ -1,9 +1,16 @@
-Sinema'nın başlığını koddan çıkarıp ortam değişkenine taşıyoruz.
+Sinema'nın başlığı şu anda uygulamanın içinde sabit duruyor. Başlığı proje ayarından okuyup uygulamada göster; ayar verilmediğinde anlaşılır bir varsayılan kullan.
 
-1. **`src/vite-env.d.ts`** oluştur ve iki değişkeni tiple: `VITE_TMDB_TOKEN` (zorunlu) ve `VITE_APP_TITLE` (opsiyonel).
-2. **`src/config.ts`** oluştur ve `appTitle` adında bir sabit export et: `VITE_APP_TITLE` yoksa `"Sinema"`.
-3. **`App.tsx`**'teki `<h1>`, sabit yazı yerine `appTitle`'ı göstersin.
-4. Kök dizindeki `.env` dosyana `VITE_APP_TITLE=🎬 Sinema` satırını ekle, dev sunucusunu **yeniden başlat** ve başlığın değiştiğini gör.
-5. `pnpm typecheck` hatasız bitmeli.
+## Gereksinimler
+- Başlık, `VITE_APP_TITLE` ortam değişkeni ayarlıysa onun değerinden gelsin.
+- Değişken tanımlı değilse başlık `Sinema` olsun.
+- Uygulamanın ana başlığı bu değeri göstersin.
+- `Bugün ne izlesek?` alt yazısı görünmeye devam etsin.
+- `VITE_TMDB_TOKEN` zorunlu, `VITE_APP_TITLE` isteğe bağlı ortam değişkeni olarak tiplensin.
 
-Testler başlığı farklı env değerleriyle deneyecek. Tip kontrolü de testin parçası: `vite-env.d.ts` olmadan `import.meta.env.VITE_APP_TITLE` tip hatası verir mi, kendin gör.
+## Örnek
+`VITE_APP_TITLE=Film Evi` ayarında ana başlık `Film Evi` görünür. Başlık ayarı yoksa `Sinema` görünür; alt yazı her iki durumda da `Bugün ne izlesek?` olarak kalır.
+
+## Sözleşme
+- `projects/sinema/src/vite-env.d.ts` içinde iki ortam değişkeninin tiplerini tanımla: `VITE_TMDB_TOKEN` zorunlu, `VITE_APP_TITLE` isteğe bağlı.
+- `projects/sinema/src/config.ts` dosyasından `appTitle` adlı sabiti export et.
+- `projects/sinema/src/App.tsx` içindeki birinci seviye başlık `appTitle` değerini kullansın.

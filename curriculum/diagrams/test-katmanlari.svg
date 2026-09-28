@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 335">
+  <title>Test katmanları piramidi</title>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">Davranışı en ucuz doğru katmanda koru</text>
+
+  <rect class="d-success" x="140" y="235" width="480" height="60" rx="8"/>
+  <text class="d-title" x="380" y="259" text-anchor="middle">Birim</text>
+  <text class="d-text" x="380" y="281" text-anchor="middle">saf fonksiyon, reducer, küçük yardımcı</text>
+
+  <rect class="d-accent" x="205" y="155" width="350" height="60" rx="8"/>
+  <text class="d-title" x="380" y="179" text-anchor="middle">Entegrasyon</text>
+  <text class="d-text" x="380" y="201" text-anchor="middle">component + router + MSW sınırı</text>
+
+  <rect class="d-violet" x="280" y="75" width="200" height="60" rx="8"/>
+  <text class="d-title" x="380" y="99" text-anchor="middle">Uçtan uca</text>
+  <text class="d-text" x="380" y="121" text-anchor="middle">gerçek kullanıcı akışı</text>
+
+  <text class="d-muted" x="105" y="267" text-anchor="middle">çok</text>
+  <text class="d-muted" x="120" y="105" text-anchor="middle">az</text>
+  <text class="d-muted" x="650" y="267" text-anchor="middle">hızlı</text>
+  <text class="d-muted" x="648" y="105" text-anchor="middle">pahalı</text>
+</svg>

@@ -10,11 +10,13 @@ export default defineQuestion({
     'fetch.headers-auth',
     'fetch.error-handling',
     'ts.generics',
+    'web.http-anatomy',
   ],
   files: ['tmdbClient.ts'],
   hints: [
-    '`fetch` 404 cevabında reject olmaz; `response.ok` kontrol et.',
-    'URL.searchParams ile `language` ve ek parametreleri kur; Bearer başlığını ekle.',
-    'Hata JSON’undaki `status_code` ve `status_message` alanlarını oku; `ApiError` örneğinde HTTP status’u da sakla.',
+    'Ağ bağlantısı hatasıyla sunucudan gelen HTTP hata cevabının farkını düşün.',
+    '`URLSearchParams`, `response.ok` ve `HeadersInit` API’lerini kullan.',
+    'Başlık ve query’yi kur; başarısız cevabın gövdesini güvenli oku ve özel hata nesnesinde HTTP/TMDB alanlarını taşı.',
+    'JSON hata gövdesi boş ya da bozuk olabilir; anlamlı varsayılan mesaj bırak.',
   ],
 })

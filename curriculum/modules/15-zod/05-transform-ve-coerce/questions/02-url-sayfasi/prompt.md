@@ -1,6 +1,16 @@
-Arama URL'sinden `page` ve `archived` oku. `readFilters(search: string)` export et.
+Arama URL'sinden sayfa numarasını ve arşiv filtresini uygulamada kullanılacak değerlere dönüştür.
 
-- `?page=2&archived=false` → `{ page: 2, archived: false }`.
-- Sayfa yoksa `1`; geçersiz, kesirli veya sıfırsa güvenli varsayılan `1`.
-- `archived` yoksa false; `true`, `false`, `1`, `0` gibi metinleri Zod 4 `z.stringbool()` ile oku. Geçersiz metinde false kullan.
-- `page` için `z.coerce.number().int().min(1)` kullan.
+## Gereksinimler
+- page pozitif tam sayı olur; eksik, geçersiz, kesirli veya sıfır değerinde 1 kullanılır.
+- archived true/false ve 1/0 metinlerini yorumlar; yoksa veya geçersizse false kullanılır.
+- Sonuç nesnesi yalnızca page ve archived alanlarını içerir.
+
+## Örnek
+?page=2&archived=false → { page: 2, archived: false }. Boş arama metni → { page: 1, archived: false }.
+
+## Sözleşme
+- filters.ts dosyasında readFilters(search: string): { page: number; archived: boolean } named export'unu tanımla.
+
+## Kısıtlar
+- Sayfa değeri tam sayıya ve en az 1'e uymalıdır.
+- Flag true/false ve 1/0 metinlerini tanımalıdır.

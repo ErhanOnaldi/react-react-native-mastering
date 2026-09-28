@@ -1,3 +1,20 @@
-Gerçek DummyJSON `/users`, `/posts` ve `/comments` verileriyle bir kullanıcı akışı ekranı kur: kullanıcı listesinden birini seç, gönderilerini gör, bir gönderiyi açıp yorumlarını gör. Gönderisi ya da yorumu olmayan bir kullanıcı/gönderi için anlaşılır bir boş durum göster; API hatasında da okunabilir bir mesaj olsun.
+Kullanıcı, gönderi ve yorumları birbirine bağlayan bir akış ekranı kur. Kullanıcı ve gönderi seçimi bağlantı olarak açılabilmeli; boş veya hatalı kaynakta ekran anlaşılır kalmalı.
 
-Çalışmanı `projects/atolye/src/kullanicinin-akisi/` altında kur ve uygulamadan açılabilir yap. URL üzerinden bir kullanıcıya ve bir gönderiye doğrudan gidilebildiğini doğrula; sonra görev sayfasındaki **"AI review prompt'unu kopyala"** düğmesiyle incelet.
+## Gereksinimler
+
+- DummyJSON kullanıcıları listelenir; seçilen kullanıcının gönderileri gösterilir.
+- Bir gönderi seçildiğinde o gönderinin yorumları gösterilir.
+- Gönderisiz kullanıcı ve yorumsuz gönderi için anlamlı boş durum görünür.
+- Her kaynak için yükleme ve hata durumları okunabilir olmalıdır.
+- Kullanıcı ve gönderi URL’den doğrudan açılabilir.
+- Uygulama içinde kullanıcı akışı ekranına gidilebilmelidir.
+
+## Örnek
+
+Bir kullanıcıyı seç → gönderileri gör → bir gönderiyi aç → yorumları gör. Aynı URL doğrudan açıldığında aynı kullanıcı ve gönderi görünmelidir.
+
+## Sözleşme
+
+- Proje dosyaları: `projects/atolye/src/kullanicinin-akisi/`
+- Uygulama ekranı kullanıcı ve gönderi adreslerini doğrudan yükler.
+- Veri kaynakları DummyJSON `/users`, `/posts` ve `/comments`’tır.

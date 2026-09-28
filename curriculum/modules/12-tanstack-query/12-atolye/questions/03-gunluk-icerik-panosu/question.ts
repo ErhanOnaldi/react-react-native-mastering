@@ -8,9 +8,9 @@ export default defineQuestion({
   concepts: ['arch.feature-folders', 'arch.api-client', 'query.useQuery'],
   reviewFiles: ['src/gunluk-icerik-panosu/**'],
   hints: [
-    'Gönderi ve yazar farklı kaynaklar; ekranın hangi veriye ne zaman ihtiyaç duyduğunu belirle.',
-    'Kimlikleriyle eşleştir; dönüşte aynı veriyi gereksiz yere yeniden istememeyi düşün.',
-    'DummyJSON /posts ve /users verilerini ayrı isteklerle al; detayda gönderinin userId değeriyle yazar bilgisini bağla.',
+    'Önce gönderi, arama, detay ve yazar görünümü için gereken veri akışını çiz.',
+    'DummyJSON `/posts` ile `/users` kaynaklarını ayrı `useQuery` okumaları ve anlaşılır durum dallarıyla al.',
+    'Detayda `post.userId` ile yazarı bul; dönüşte aynı arama key’ini kullan.',
   ],
   rubric: [
     'Gerçek DummyJSON gönderileri listelenir ve arama sonuçları güncellenir.',

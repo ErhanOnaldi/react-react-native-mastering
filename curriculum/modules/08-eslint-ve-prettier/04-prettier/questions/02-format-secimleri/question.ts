@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['tooling.prettier'],
   files: ['formatOptions.ts'],
   hints: [
-    'Beklenen tırnak ve `;` farkını `prettier.format` çıktısında gör.',
-    '`singleQuote` ve `semi` seçeneklerini ekle.',
-    '`printWidth: 80` değerini de ayarla.',
+    'Dört kararı ayır: parser, string tırnağı, satır sonu ve hedef genişlik.',
+    '`prettier.format` seçeneklerinde `singleQuote`, `semi` ve `printWidth` alanlarını kullan.',
+    "`formatOptions: Options` nesnesine `{ parser: 'typescript', singleQuote: true, semi: false, printWidth: 80 }` değerlerini koy.",
   ],
 })

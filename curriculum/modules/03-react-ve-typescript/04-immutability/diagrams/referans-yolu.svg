@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300">
+  <title>State güncellemesinde değişen referans yolunu yenile</title>
+  <defs>
+    <marker id="referans-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-title" x="190" y="32" text-anchor="middle">Mutasyon: aynı kimlik</text>
+  <rect class="d-box" x="30" y="52" width="190" height="62" rx="8"/>
+  <text class="d-code" x="125" y="78" text-anchor="middle">books → [book]</text>
+  <text class="d-muted" x="125" y="100" text-anchor="middle">read: false</text>
+  <rect class="d-danger" x="270" y="52" width="190" height="62" rx="8"/>
+  <text class="d-code" x="365" y="78" text-anchor="middle">book.read = true</text>
+  <text class="d-muted" x="365" y="100" text-anchor="middle">eski nesne değişir</text>
+  <rect class="d-danger" x="510" y="52" width="220" height="62" rx="8"/>
+  <text class="d-title" x="620" y="78" text-anchor="middle">aynı referans</text>
+  <text class="d-muted" x="620" y="100" text-anchor="middle">önceki state bozulur</text>
+
+  <line class="d-line-danger" x1="220" y1="83" x2="266" y2="83"/>
+  <line class="d-line-danger" x1="460" y1="83" x2="506" y2="83"/>
+
+  <text class="d-title" x="190" y="162" text-anchor="middle">Immutable update: yeni yol</text>
+  <rect class="d-box" x="30" y="180" width="190" height="62" rx="8"/>
+  <text class="d-code" x="125" y="206" text-anchor="middle">books → [book]</text>
+  <text class="d-muted" x="125" y="228" text-anchor="middle">read: false</text>
+  <rect class="d-accent" x="270" y="180" width="190" height="62" rx="8"/>
+  <text class="d-code" x="365" y="206" text-anchor="middle">new Book</text>
+  <text class="d-muted" x="365" y="228" text-anchor="middle">read: true</text>
+  <rect class="d-success" x="510" y="180" width="220" height="62" rx="8"/>
+  <text class="d-title" x="620" y="206" text-anchor="middle">new Array + Book</text>
+  <text class="d-muted" x="620" y="228" text-anchor="middle">eski state korunur</text>
+
+  <line class="d-line-accent" x1="220" y1="211" x2="266" y2="211" marker-end="url(#referans-ok)"/>
+  <line class="d-line-accent" x1="460" y1="211" x2="506" y2="211" marker-end="url(#referans-ok)"/>
+  <text class="d-muted" x="380" y="278" text-anchor="middle">Yalnız değişen değere giden referansları yenile.</text>
+</svg>

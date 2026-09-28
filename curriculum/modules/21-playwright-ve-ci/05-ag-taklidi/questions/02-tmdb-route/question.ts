@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.playwright-network', 'test.msw-overrides', 'test.playwright-locators'],
   files: ['mockSearch.ts'],
   hints: [
-    'Route’u `page.route` ile kur; callback içinde `route.request().url()` adresini URL olarak çöz.',
-    '`query` parametresini kontrol et; sonuçları TMDB’nin `{ page, results, total_pages, total_results }` zarfında döndür.',
-    'İstekte Bearer başlığı yoksa önce `status: 401` ile `status_code: 7` döndür; doğru başlıkta “dövüş” için 550, başka sorguda boş liste ver.',
+    'Uygulamanın dışarı gönderdiği isteği ve servis cevabını ayrı düşün. Hangi koşulda isteğin kimliği geçerli sayılmalı?',
+    'Playwright `page.route` ile browser isteğini yakalar; callback’te URL query’sini ve Authorization başlığını okuyup uygun HTTP yanıtı verebilirsin.',
+    'GET arama isteği için URL’yi `new URL(route.request().url())` ile çöz. Bearer yoksa `{ status_code: 7 }` ile 401; dövüş ise 550/Dövüş Kulübü, diğer sorguda boş `results` ver. Liste zarfını page=1, total_pages=1 ve sonuç sayısıyla tamamla.',
   ],
 })

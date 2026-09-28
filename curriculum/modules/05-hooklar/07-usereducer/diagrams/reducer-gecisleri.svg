@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330">
+  <title>Reducer geçiş akışı</title>
+  <defs>
+    <marker id="reducer-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-box" x="40" y="55" width="160" height="80" rx="8"/>
+  <text class="d-title" x="120" y="87" text-anchor="middle">Önceki state</text>
+  <text class="d-code" x="120" y="112" text-anchor="middle">loading: true</text>
+
+  <rect class="d-accent" x="300" y="55" width="160" height="80" rx="8"/>
+  <text class="d-title" x="380" y="87" text-anchor="middle">Action</text>
+  <text class="d-code" x="380" y="112" text-anchor="middle">{ type: success }</text>
+
+  <rect class="d-violet" x="560" y="55" width="160" height="80" rx="8"/>
+  <text class="d-title" x="640" y="87" text-anchor="middle">Reducer</text>
+  <text class="d-muted" x="640" y="112" text-anchor="middle">saf hesaplama</text>
+
+  <rect class="d-success" x="300" y="210" width="160" height="80" rx="8"/>
+  <text class="d-title" x="380" y="242" text-anchor="middle">Yeni state</text>
+  <text class="d-code" x="380" y="267" text-anchor="middle">success + results</text>
+
+  <line class="d-line-accent" x1="200" y1="95" x2="296" y2="95" marker-end="url(#reducer-ok)"/>
+  <line class="d-line-accent" x1="460" y1="95" x2="556" y2="95" marker-end="url(#reducer-ok)"/>
+  <path class="d-line-accent" d="M640 135 V250 H464" marker-end="url(#reducer-ok)"/>
+
+  <text class="d-text-accent" x="380" y="175" text-anchor="middle">Dış etki yok: fetch, timer, localStorage reducer dışında kalır</text>
+</svg>

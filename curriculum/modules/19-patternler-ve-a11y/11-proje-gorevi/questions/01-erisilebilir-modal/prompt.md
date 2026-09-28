@@ -1,34 +1,23 @@
-Kod alıştırmasındaki fragman penceresini yeniden kullanılabilir bir `Modal` bileşenine dönüştürüp Sinema'nın detay sayfasına bağlıyorsun.
+Sinema'nın film detayında fragman açılınca kullanıcı klavyeden pencerede dolaşabilmeli ve kapandığında kaldığı yere dönebilmelidir. Tekrar kullanılabilir modal parçalarını ve detay sayfasındaki fragman akışını tamamla.
 
-## Dosya ve export sözleşmesi
-- `src/shared/ui/modal/useDisclosure.ts` → named export `useDisclosure(initial = false)` → `{ isOpen, open, close, toggle }`. Fonksiyonların referansı render'lar arasında sabit kalsın.
-- `src/shared/ui/modal/Modal.tsx` → named export `Modal` (compound):
+## Gereksinimler
 
-```tsx
-<Modal>
-  <Modal.Trigger>Fragmanı aç</Modal.Trigger>
-  <Modal.Content title="Dövüş Kulübü fragmanı">
-    …
-    <Modal.Close>Kapat</Modal.Close>
-  </Modal.Content>
-</Modal>
-```
+- Modal kapalıyken içeriği DOM'da bulunmasın; tetikleyici click, Enter ve Space ile açsın.
+- Açık içerik body altında bulunsun; `dialog` rolü, modal durumu ve görünür başlıktan gelen erişilebilir adı olsun.
+- Açılışta ilk focus alabilen kontrol focus alsın. Tab ve Shift+Tab içeride dönsün; `disabled` öğeler atlanıp güncel içerik dikkate alınsın.
+- Escape ve kapatma düğmesi kapatsın; focus açan öğeye dönsün. Açan öğe artık DOM'da değilse hata oluşmasın.
+- Tetikleyici mevcut bir elementle kullanıldığında tek DOM öğesi üretsin; child click ve ref korunmalı.
+- Film videosu varsa fragman düğmesi gösterilsin; önce `Trailer` seçilsin. Video yoksa düğme çıkmasın.
+- Dialogda video adı, yeni sekmede açılan güvenli YouTube bağlantısı ve Kapat düğmesi bulunsun.
+- Mevcut sayfa export'u, Suspense/Query akışı ve diğer bölümler korunsun.
 
-- Modal parçaları aynı açık/kapalı durumunu paylaşsın.
-- `Modal.Trigger` varsayılan olarak `<button type="button">` render etsin. `asChild` verilirse **tek** child elementini kullansın: iç içe düğme yok; child'ın `onClick`'i ve `ref`'i korunsun.
-- `Modal.Close` `<button type="button">` render edip modalı kapatsın.
+## Örnek
 
-## Modal davranışı
-1. Kapalıyken içerik DOM'da yok. Trigger (tık, Enter, Space) açar.
-2. İçerik `document.body` altında; `role="dialog"`, `aria-modal="true"`, adı `title` prop'undan gelen **görünür** başlıkla ilişkili olsun. Sayfada birden fazla modal varsa kimlikleri çakışmasın.
-3. Açılışta içerideki ilk focus alabilen kontrol focus alır.
-4. Tab / Shift+Tab içeride döner. Focus alabilen kontrolleri her tuşta yeniden bul; `disabled` olanları atla.
-5. Escape ve `Modal.Close` kapatır; kapanınca focus açan öğeye döner (öğe sayfadan kalktıysa hata vermez).
+550 numaralı filmde **Fragmanı aç** dialogu `Dövüş Kulübü fragmanı` adıyla açar ve `Fight Club Trailer HD` başlığını gösterir. Dialog kapanınca focus Fragmanı aç düğmesine döner.
 
-## Detay sayfası (`src/pages/MovieDetailsPage.tsx`)
-- Mevcut export'u, Suspense/Query akışını ve diğer bölümleri koru.
-- Filmin `videos.results` içinde YouTube videosu varsa (önce `type === 'Trailer'` olanı seç), favori düğmesinin yanında **Fragmanı aç** düğmesi göster. Video yoksa düğme hiç olmasın.
-- Dialog adı: **`{film başlığı} fragmanı`** (550 → "Dövüş Kulübü fragmanı").
-- Dialog içeriği: videonun adı (550 → "Fight Club Trailer HD"), `https://www.youtube.com/watch?v={key}` adresine giden **YouTube'da izle** linki (yeni sekmede, `rel="noreferrer"`) ve **Kapat** (`Modal.Close`).
+## Sözleşme
 
-Testler geçince Sinema'da yalnızca klavyeyle: Tab → Fragmanı aç → Enter → Tab'la dolaş → Escape.
+- `src/shared/ui/modal/useDisclosure.ts` → named export `useDisclosure(initial = false)`, dönüşü `{ isOpen, open, close, toggle }`; eylem referansları kararlı.
+- `src/shared/ui/modal/Modal.tsx` → named export `Modal`; API: `Modal.Trigger`, `Modal.Content({ title })`, `Modal.Close`.
+- `src/pages/MovieDetailsPage.tsx` içindeki mevcut named export korunur.
+- Dialog rolü `dialog`; video bağlantısının adı `YouTube'da izle`; tetikleyici adı `Fragmanı aç`.

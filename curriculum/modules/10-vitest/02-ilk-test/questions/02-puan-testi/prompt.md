@@ -1,12 +1,20 @@
-Sinema kartındaki puan helper’ı refactor sonrasında `8.0` yerine `8` gösteriyor olabilir. `impl/formatVote.ts` doğru sürüm; onu değiştiremezsin. `formatVote.test.ts` içine davranış testleri yaz.
+Yapılandırılmış testlerle puan etiketinin iki temel sonucunu güvenceye al: tam sayı puanının biçimi ve henüz oy verilmemiş filmin etiketi.
 
-- Tam sayı puanın tek ondalıklı görünümünü kontrol et.
-- Henüz oylanmamış filmde `0` değerinin anlamını kontrol et.
-- Her testte Arrange → Act → Assert sırasını ve Türkçe davranış adını kullan.
+## Gereksinimler
 
-| Girdi | Beklenen |
+- Tam sayı puanında bir ondalık basamak görünmeli.
+- Sıfır puan, puan verilmemiş anlamına gelmeli.
+- Her senaryonun testi Arrange → Act → Assert sırasını izlemeli ve Türkçe davranış adı taşımalı.
+
+## Örnek
+
+| Girdi | Beklenen sonuç |
 | --- | --- |
-| `8` | `"8.0"` |
-| `0` | `"Henüz oy yok"` |
+| 8 | 8.0 |
+| 0 | Henüz oy yok |
 
-Testlerin doğru sürümde geçmeli; iki hatalı sürümün ikisini de yakalamalı.
+## Sözleşme
+
+- Yazılacak dosya: formatVote.test.ts
+- Test edilecek modül: @impl/formatVote
+- Fonksiyon: formatVote(voteAverage: number): string

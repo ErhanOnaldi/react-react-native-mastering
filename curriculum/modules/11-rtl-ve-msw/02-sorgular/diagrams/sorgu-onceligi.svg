@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300">
+  <title>Erişilebilirlik temelli sorgu önceliği</title>
+  <defs>
+    <marker id="arrow-query" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="27" text-anchor="middle">Öğenin kullanıcıya sunulma biçimine göre ara</text>
+
+  <rect class="d-success" x="205" y="45" width="350" height="58" rx="8"/>
+  <text class="d-title" x="380" y="70" text-anchor="middle">1 · Rol + erişilebilir ad</text>
+  <text class="d-muted" x="380" y="91" text-anchor="middle">button · “Kaydet”</text>
+
+  <line class="d-line" x1="380" y1="105" x2="380" y2="126" marker-end="url(#arrow-query)"/>
+
+  <rect class="d-accent" x="205" y="132" width="350" height="58" rx="8"/>
+  <text class="d-title" x="380" y="157" text-anchor="middle">2 · Label veya görünür metin</text>
+  <text class="d-muted" x="380" y="178" text-anchor="middle">Anlamlı bir rol yoksa</text>
+
+  <line class="d-line" x1="380" y1="192" x2="380" y2="213" marker-end="url(#arrow-query)"/>
+
+  <rect class="d-box" x="205" y="219" width="350" height="58" rx="8"/>
+  <text class="d-title" x="380" y="244" text-anchor="middle">3 · Test id</text>
+  <text class="d-muted" x="380" y="265" text-anchor="middle">Erişilebilir hedef yoksa</text>
+</svg>

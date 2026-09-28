@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 190">
+  <title>Git değişikliklerinin çalışma klasöründen commit geçmişine akışı</title>
+  <defs>
+    <marker id="git-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L8 4L0 8z" />
+    </marker>
+  </defs>
+  <rect class="d-box" x="35" y="45" width="190" height="95" rx="10" />
+  <text class="d-title" x="130" y="78" text-anchor="middle">Çalışma klasörü</text>
+  <text class="d-muted" x="130" y="105" text-anchor="middle">dosyaları düzenle</text>
+  <text class="d-code" x="130" y="127" text-anchor="middle">git diff</text>
+  <rect class="d-accent" x="285" y="45" width="190" height="95" rx="10" />
+  <text class="d-title" x="380" y="78" text-anchor="middle">Staging alanı</text>
+  <text class="d-muted" x="380" y="105" text-anchor="middle">commit için seç</text>
+  <text class="d-code" x="380" y="127" text-anchor="middle">git add</text>
+  <rect class="d-success" x="535" y="45" width="190" height="95" rx="10" />
+  <text class="d-title" x="630" y="78" text-anchor="middle">Commit geçmişi</text>
+  <text class="d-muted" x="630" y="105" text-anchor="middle">kayıt noktası</text>
+  <text class="d-code" x="630" y="127" text-anchor="middle">git commit</text>
+  <path class="d-line-accent" d="M226 93H278" marker-end="url(#git-arrow)" />
+  <path class="d-line-accent" d="M476 93H528" marker-end="url(#git-arrow)" />
+</svg>

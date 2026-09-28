@@ -7,7 +7,8 @@ export default defineQuestion({
   files: ['PopularTitles.tsx'],
   hints: [
     'Liste de bir dış sistemden geliyor.',
-    'Mount sonrası effect kullan; `results` dizisini oku.',
-    '`useEffect(..., [])` ve Bearer başlığı ile çek, ilk başlığı state’e yaz.',
+    'Bileşen açıldıktan sonra tek seferlik senkronizasyon için effect kullan.',
+    '`/movie/popular` cevabında `results` dizisi var; ilk elemanın `title` alanını state’e yaz.',
+    '`useEffect(() => { fetch(...).then(...) }, [])` yeterli; istek seçeneklerinde Bearer başlığı olmalı.',
   ],
 })

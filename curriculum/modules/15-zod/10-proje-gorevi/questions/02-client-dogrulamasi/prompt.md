@@ -1,6 +1,15 @@
-9. modüldeki generic `tmdbClient.get<T>(path, params?)` gerçek JSON'u denetlemiyordu. API sınırını düzelt.
+Sinema'nın TMDB istemcisi HTTP cevabını ve film detayının alanlarını kullanan ekranlara ulaşmadan önce denetlesin.
 
-- `src/shared/api/tmdb-client.ts`: `tmdbClient.get(path, schema, params?)` imzası olsun. `schema` bir Zod şeması; dönüş tipi şemanın `z.output` tipinden çıksın. Var olan `language=tr-TR`, Bearer token ve HTTP `ApiError` davranışını koru.
-- HTTP başarılı olsa bile JSON verilen şemaya uymuyorsa anlaşılır bir hata fırlatsın. Hata mümkünse bozuk alanı gösterebilsin.
-- `src/features/movies/api/movies-api.ts` çağrılarında trend, keşfet ve arama `movieListSchema`; detay `movieDetailsSchema` ile doğrulansın. Tür listesi de doğrulansın.
-- Testte `server.use` 550 için `{ id: 550, title: null }` döndürür: istek 200 olsa da promise reddedilmeli.
+## Gereksinimler
+- TMDB isteği mevcut yetkilendirme başlığını kullanmalı.
+- Başarılı detay yanıtı film detay sözleşmesine uymalı.
+- HTTP 200 içindeki title=null reddedilmeli.
+- HTTP 404 reddedilmeli ve veri doğrulama başarısı gibi dönmemeli.
+
+## Örnek
+Geçerli Dövüş Kulübü detayı title alanını taşır. Aynı endpoint null başlık döndürürse istemci Promise'i reddeder.
+
+## Sözleşme
+- src/shared/api/tmdb-client.ts içinden tmdbClient nesnesini named export et.
+- tmdbClient.get(path, schema, params?) çağrısı doğrulanmış cevabı döndürmelidir.
+

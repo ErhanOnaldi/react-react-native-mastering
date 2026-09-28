@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['query.invalidation', 'query.keys', 'query.useMutation'],
   files: ['useRate.ts'],
   hints: [
-    '`useQueryClient()` ile mevcut cache’e eriş.',
-    '`onSuccess` içinde invalidateQueries({ queryKey: ["ratings", sessionId] }) çağır.',
-    'Callback’te Promise’i return et; `void` ile atma.',
+    'Yazma sonrası hangi okumanın eski kaldığını ve hangi session’a ait olduğunu belirle.',
+    '`useQueryClient` ve `invalidateQueries` ile key ailesini hedefle.',
+    '`onSuccess` içinde `return client.invalidateQueries({ queryKey: ["ratings", sessionId] })` kullan.',
+    'Promise’i `void` ile atarsan mutation’ın pending süresi refetch’i beklemez.',
   ],
 })

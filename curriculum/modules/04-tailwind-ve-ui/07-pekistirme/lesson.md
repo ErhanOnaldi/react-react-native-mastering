@@ -1,38 +1,49 @@
 ---
-title: Kartın geri kalan UI parçaları
-minutes: 9
+title: "Kart parçalarını birleştir"
+minutes: 6
 kind: practice
 ---
 
-# Kartın geri kalan UI parçaları
+# Kart parçalarını birleştir
 
-:::pain[Problem]
-Button tamam ama puan etiketi, kart çerçevesi ve yüklenme yeri her sayfada yeniden yazılıyor. Skeleton alan tutmazsa yükleme bitince ızgara sıçrıyor.
+:::pain[Her sayfa kendi kartını çiziyor]
+Arama sonuçları ve kaydedilen filmler aynı puan etiketini farklı renk ve boşluklarla gösteriyor. Yükleme sırasında kart boyu da değiştiği için poster listesi aşağı yukarı sıçrıyor.
 :::
 
-## Farklı bileşenler, aynı ilkeler
+## Küçük parçalarla ortak görünüm
 
-`Badge` kısa bilgiyi (`8.4`, `Dram`) gösterir; `Card` içeriği görsel bir sınırda toplar; `Skeleton` yüklenirken yaklaşık aynı alanı tutar. Bunlar ayrı sorumluluklar olduğu için hepsini bir Button varyantına sıkıştırma. Her biri `className` ve `data-*` props'larını doğal HTML öğesine iletebilir.
+Bir UI parçası tek bir sorumluluğu üstlenir: `Badge` kısa puan veya tür bilgisini taşır, `Card` içeriği çerçeveler, `Skeleton` yüklenirken yaklaşık alanı tutar, `Input` kullanıcı girdisini alır. Her parçanın doğal HTML öğesi ve props'ları, farklı kullanım yerlerine uyum sağlar.
 
-```tsx check
-function Badge({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-full bg-sky-100 px-2 py-1 text-xs text-sky-900">{children}</span>
-}
-export function MovieSummary() {
-  return <article className="rounded-xl border p-4"><h2>Dövüş Kulübü</h2><Badge>8.4</Badge></article>
-}
-```
+Bu alıştırmalarda composition, native props ve class override kararlarını farklı içeriklerde birleştir. Çocuk içeriğini component dışında bırak; kartın içinde başlık, `Badge` ve eylem olabilir. Input'un label'ı kullanım yerine aittir çünkü aynı primitive farklı formlarda kullanılır.
 
-Skeleton yalnızca görsel yükleme işaretidir: `aria-hidden="true"` ile ekran okuyucudan gizlenebilir, kapsayıcıda bir "Yükleniyor" metni bulunabilir. Sonraki modülde gerçek veri yükleme state'i ne zaman Skeleton gösterileceğini belirleyecek.
+:::model[UI primitive görünümü paylaşır, state'i sahiplenmez]
+Doğal öğenin props'larını aktar, className override'ını ortak class birleştiricisinden geçir, görsel Skeleton'ı erişilebilirlik ağacından gizle. Arama değeri veya favori state'i gibi ürün verisini primitive içine taşıma.
+:::
 
-`Card` ve `Badge` `children` ile composition kullanır. `Input` doğal input props'larını iletir; kullanım yerinde görünen `<label>` veya `aria-label` ver. `className="p-4"` temel `p-2` ile çakışırsa `cn` override'ı korur. Testte `toHaveClass`, rol/ad ve `data-*` niteliği sözleşmeyi anlatır.
+## Çalışma sırası
 
-## Yükleme ve arama yeni bağlamlar
+Önce bir `article` tabanlı kart içinde başlık ve puanı composition ile yerleştir. Sonra temel class'ların yanına dışarıdan gelen `className` değerini ekleyip padding'in değiştiğini gözle. Skeleton için `aria-hidden="true"` ve ölçüyü koruyan class'lar kullan. Input'a erişilebilir adını çevredeki label veya `aria-label` ile ver.
 
-Kart henüz veri beklerken `Skeleton className="h-64 w-full"` görsel alanı korur. `aria-hidden="true"` dekoratif şekli gizler; kullanıcıya haber vermek için çevrede ayrı bir `Yükleniyor` metni bulunabilir. Skeleton'a yalnız `animate-pulse` ekleyip yükseklik vermemek, içerik gelince düzenin sıçramasını engellemez.
+İkinci görevde yükleme yer tutucusunu arama alanıyla yan yana düşün. Görsel öğe ve etkileşimli öğenin props ihtiyaçları farklıdır; ikisini aynı HTML tag'ine zorlamak yerine kendi native element props tiplerini kullan. Input `value` ve `onChange` ile controlled kalır; primitive state saklamaz.
 
-Arama alanında `Input` controlled kalır: `value` ve `onChange` üst bileşenden gelir. Bu, önceki React modülündeki lifting state fikrinin yeni bileşen bağlamıdır. UI kit state'i sahiplenmez; doğal input props'larını aktarır. Formda `aria-label="Film ara"` veya görünen bir label olmazsa placeholder tek başına güvenilir erişilebilir ad değildir.
+### İlerlerken kendine sor
+
+- Dışarıdan gelen `p-8` temel `p-4` class'ını gerçekten değiştirebiliyor mu?
+- İçeriği component içine sabitlemek yerine `children` ile vermek neden tekrar kullanımı kolaylaştırıyor?
+- Skeleton'ın kendisi mi yükleniyor bilgisini vermeli, yoksa çevresindeki arayüz mü?
+
+Her cevabı kod üzerinde doğrula. Bir primitive farklı içerikle çalışıyor ve native `data-*`, `aria-*`, event props'larını koruyorsa arayüzü esnek kalır. Yükleme state'i, arama metni ve kart seçimi ürün bileşeninde veya üst state sahibinde durmalıdır.
 
 :::sector
-Küçük UI parçaları arama, detay ve favori ekranında tekrar kullanılır. Görünüm değişirken erişilebilir HTML props'larını korumak kalıcı bir sözleşmedir.
+Ürün ekipleri UI primitive'lerini farklı sayfalarda aynı HTML ve görünüm sözleşmesini korumak için kullanır. Paylaşılan bileşen çok genel hale gelirse tasarım kararları props yığınına dönüşür; ortak kalan kısımları çıkar, içerik ve state'i kullanım yerinde bırak.
 :::
+
+## Özet
+
+- `Card`, `Badge`, `Skeleton` ve `Input` ayrı sorumlulukları olan primitive'lerdir.
+- `children` içerik bileşimini kullanım yerine bırakır.
+- Native props ve `className` primitive'in gerçek HTML davranışını korur.
+- Görsel Skeleton yükleme alanını tutar; yükleme mesajını çevreleyen arayüz verir.
+- Controlled Input değeri kendi içinde saklamaz.
+
+**Kendini yokla:** UI primitive'i arama değerini kendi state'inde tutmalı mı? Hayır, kullanım yeri controlled props verir.

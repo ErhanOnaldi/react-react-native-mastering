@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270">
+  <title>İlk cevaptan gelen kimlikle ikinci sorguyu başlat</title>
+  <defs>
+    <marker id="dependent-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+  <rect class="d-violet" x="45" y="65" width="190" height="82" rx="8"/>
+  <text class="d-title" x="140" y="94" text-anchor="middle">Kullanıcı isteği</text>
+  <text class="d-code" x="140" y="120" text-anchor="middle">accountId yok</text>
+  <rect class="d-warning" x="285" y="65" width="190" height="82" rx="8"/>
+  <text class="d-title" x="380" y="94" text-anchor="middle">Sorgu bekler</text>
+  <text class="d-code" x="380" y="120" text-anchor="middle">fetchStatus: idle</text>
+  <rect class="d-success" x="525" y="65" width="190" height="82" rx="8"/>
+  <text class="d-title" x="620" y="94" text-anchor="middle">accountId gelir</text>
+  <text class="d-code" x="620" y="120" text-anchor="middle">accountId = 42</text>
+  <line class="d-line" x1="237" y1="106" x2="280" y2="106" marker-end="url(#dependent-arrow)"/>
+  <line class="d-line-accent" x1="477" y1="106" x2="520" y2="106" marker-end="url(#dependent-arrow)"/>
+  <path class="d-line-accent d-dashed" d="M620 152 V204 H140 V152" marker-end="url(#dependent-arrow)"/>
+  <text class="d-text-accent" x="380" y="238" text-anchor="middle">id hazır: aynı hook yeni key ile isteği başlatır</text>
+</svg>

@@ -1,16 +1,28 @@
-Sinema’nın eski login butonu yalnız bir boolean değiştiriyordu; yanlış parola bile başarılı görünüyordu.
+Kullanıcı giriş yaptığında sunucu kimlik doğrulaması gerçekleştirir ve oturum belirteçlerini teslim eder. İstemcinin bu belirteçleri güvenle alması ve son kullanma tarihini arayüzde takip edebilmek için belirteç gövdesini ayrıştırması gerekir.
 
-## Görev
+## Gereksinimler
 
-`login.ts` içinde iki fonksiyonu tamamla:
+- `login` fonksiyonu kullanıcı adı ve parolayı kimlik sunucusuna ileterek oturum açmalıdır.
+- Başarılı yanıttan erişim ve yenileme belirteçlerini içeren nesne döndürülmelidir.
+- Hatalı kimlik bilgisi veya sunucu reddi durumunda, sunucunun döndürdüğü hata mesajını taşıyan bir hata fırlatılmalıdır.
+- `decodeJwtPayload` fonksiyonu verilen belirtecin gövde bölümünü çözümleyerek kullanıcı adı ve süre bilgilerini nesne olarak döndürmelidir.
+- Belirteç bozuk biçimdeyse, gerekli alanları içermiyorsa veya çözümleme başarısız olursa `null` döndürülmeli, hata fırlatılmamalıdır.
 
-- `login(username, password)` DummyJSON `POST /auth/login` adresine JSON gönderir. Başarılı yanıttan `accessToken` ve `refreshToken` döndürür; başarısız yanıttaki `message` ile `Error` fırlatır.
-- `decodeJwtPayload(token)` JWT’nin ikinci parçasını base64url olarak çözer. `{ username, exp }` alanlarını döndürür. Bozuk biçim veya bu alanlar yoksa `null` döndürür. Decode işlemi **imza doğrulaması değildir**.
+## Örnek
 
-| Girdi | Beklenen |
+| Çağrı | Beklenen Sonuç |
 | --- | --- |
-| `emilys`, `emilyspass` | İki token gelir; access payload’ında `username: 'emilys'` vardır. |
-| Yanlış parola | `Invalid credentials` hatası |
-| `bozuk-token` | `null` |
+| `login('emilys', 'emilyspass')` | `{ accessToken: "...", refreshToken: "..." }` |
+| `login('emilys', 'hatali')` | Hata fırlatılır: `"Invalid credentials"` |
+| `decodeJwtPayload(gecerliToken)` | `{ username: "emilys", exp: 1727485200 }` |
+| `decodeJwtPayload('bozuk-token')` | `null` |
+| `decodeJwtPayload('a.e30.b')` | `null` |
 
-`exp` Unix saniyesidir; tarayıcı saati milisaniye kullanır.
+## Sözleşme
+
+- `login.ts` dosyasından şu fonksiyonları named export et:
+  - `login(username: string, password: string): Promise<Tokens>`
+  - `decodeJwtPayload(token: string): JwtPayload | null`
+- Tipler:
+  - `Tokens`: `{ accessToken: string; refreshToken: string }`
+  - `JwtPayload`: `{ username: string; exp: number }`

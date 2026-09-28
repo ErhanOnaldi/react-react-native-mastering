@@ -1,3 +1,19 @@
-Formu Enter ile göndermek istiyoruz, sayfanın yenilenmesini değil. `SearchForm({ onSearch })` yaz. Controlled input’un etiketi “Film ara”, submit düğmesi “Ara” olsun. Submit’te `preventDefault()` çağırıp kırpılmış sorguyu `onSearch` ile bildir; boş/yalnız boşluk sorguda çağırma. Handler için `FormEvent<HTMLFormElement>` kullan.
+Seans aramasında Enter veya düğmeyle gönderilen sorgu üst bileşene iletilmeli; sayfa yenilenmemelidir.
 
-**Örnek:** `"  Matrix  "` yazıp Enter’a bas → `onSearch("Matrix")`; yalnız boşluk → çağrı yok.
+## Gereksinimler
+
+- “Film ara” adıyla bir textbox bulunmalıdır.
+- “Ara” adlı submit düğmesi bulunmalıdır.
+- Gönderilen sorgunun başındaki ve sonundaki boşluklar kaldırılmalıdır.
+- Boş veya yalnız boşluktan oluşan sorgu için callback çağrılmamalıdır.
+- Enter ile gönderim desteklenmelidir.
+
+## Örnek
+
+`"  Matrix  "` yazıp Enter → callback `"Matrix"` ile çağrılır. Yalnız boşluk gönderimi → callback çağrılmaz.
+
+## Sözleşme
+
+- Dosya ve export: `SearchForm.tsx` → named export `SearchForm`
+- Props: `{ onSearch: (query: string) => void }`
+- Arayüz: “Film ara” textbox'ı ve “Ara” adlı submit button.

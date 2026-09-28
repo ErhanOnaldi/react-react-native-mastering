@@ -10,7 +10,7 @@ export default defineQuestion({
   hints: [
     'HTTP başarısı ile gelen JSON’un geçerliliğini ayrı sınırlar olarak düşün.',
     '`response.json()` sonucunu `unknown` alıp şemayla parse et; dönüş tipi için `z.output` kullan.',
-    'Bozuk alanda `z.prettifyError` anlaşılır mesaj üretebilir; genre yanıtı için küçük bir şema ekle.',
+    'HTTP hatasının mevcut uygulama davranışını koru; başarılı JSON’u da istemcide güvenli veriye dönüştür.',
   ],
   rubric: [
     'Tek kaynaklı ve okunur şema tanımları',

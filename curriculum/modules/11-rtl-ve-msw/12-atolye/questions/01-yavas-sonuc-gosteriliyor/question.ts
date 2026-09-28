@@ -8,8 +8,8 @@ export default defineQuestion({
   files: ['MovieSearch.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Boş alanın hangi sonuç ve istek davranışını gerektirdiğini ayır.',
-    'Devam eden isteğin cevabı artık güncel ekran için geçerli olmayabilir.',
-    'Her arama değişiminde eski isteği geçersiz kıl; boş metinde listeyi temizle ve yeni istek başlatma.',
+    'Boş aramada görünür sonuçla ağ davranışının ikisini de düşün; daha önce başlayan istek ayrı bir sorun çıkarabilir.',
+    'Bir `useEffect` cleanup’ı ile eski işi geçersiz kılabilir veya `AbortController` ile iptal edebilirsin.',
+    'Query boşsa listeyi temizle ve fetch yapma; cleanup’ta yerel `active` bayrağını kapat, cevapta yalnız `active` iken state güncelle.',
   ],
 })

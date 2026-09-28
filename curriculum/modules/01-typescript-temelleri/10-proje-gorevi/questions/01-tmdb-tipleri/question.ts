@@ -14,8 +14,9 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['src/types/tmdb.ts'],
   hints: [
-    'TMDB fixture’ındaki liste öğesi ile detay cevabını karıştırma; `genre_ids` liste öğesindedir.',
-    '`poster_path` ve `backdrop_path` için `string | null` yaz; boş `release_date` yine string’dir.',
-    '`MovieListResponse.results` alanını `Movie[]` olarak yaz, sayfa alanlarını number yap.',
+    'TMDB liste öğesi ile detay cevabını karıştırma; `genre_ids` liste öğesindedir.',
+    '`poster_path` ve `backdrop_path` alanlarını `string | null` olarak modelle; boş gelen `release_date` yine `string` türündedir.',
+    'İskelet: `export interface Movie { id: number; title: string; ... } export interface MovieListResponse { page: number; results: Movie[]; total_pages: number; total_results: number; }`',
+    '`movie-550.json` dosyasındaki detay yapısını baz alma; orada `genres` nesne dizisi bulunurken liste öğesinde `genre_ids: number[]` bulunur.',
   ],
 })

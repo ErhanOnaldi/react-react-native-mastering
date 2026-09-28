@@ -7,7 +7,8 @@ export default defineQuestion({
   concepts: ['router.params', 'ts.narrowing', 'js.array-methods'],
   files: ['MovieDetails.tsx'],
   hints: [
-    'URL parametresi metin ve eksik olabilir.',
-    'Biçimi denetle, Number ile çevir, `movies.find` sonucunu ayrı kontrol et.',
+    'Adres parametresinin eksik/bozuk olmasını, geçerli ama kaydı olmayan kimlikten ayrı düşün.',
+    '`useParams` ile route değerini al; metin biçimini denetlemeden sayıya çevirme.',
+    'Önce pozitif tam sayı kontrolü, sonra `Number`, sonra `movies.find`; her başarısız dal için istenen metni render et.',
   ],
 })

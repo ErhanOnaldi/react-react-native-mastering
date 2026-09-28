@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.custom-render', 'router.params', 'router.navigation'],
   files: ['MovieRoute.tsx'],
   hints: [
-    'useParams içinden id değerini al.',
-    'Link bileşenini react-router’dan import et.',
-    'id yoksa ayrı bir görünüm döndür.',
+    'Bileşenin URL’den hangi bilgiyi okuyacağını ve kullanıcıyı nereye götüreceğini ayır.',
+    '`useParams` ile route parametresini, `Link` ile istemci tarafı navigasyonu kullan.',
+    'Id varsa `Film #${id}` heading ve `/search` linki döndür; yoksa `Film seçilmedi` metnini göster.',
   ],
 })

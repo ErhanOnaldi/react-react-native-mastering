@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['pattern.slot', 'tailwind.cva', 'tailwind.cn', 'shadcn.components', 'react.props'],
   files: ['MovieAction.tsx'],
   hints: [
-    '`asChild` için ek bir button üretmeden tek çocuğun elementini kullan.',
-    '`Slot.Root` ile `button` arasında bileşen seç; variant sınıflarını `cva` ile üret.',
-    '`const Comp = asChild ? Slot.Root : "button"` sonrası `cn(styles({ variant }), className)` değerini geçir.',
+    'Önce DOM sonucunu düşün: link kullanımında hangi element rolü ve kaç element kalmalı?',
+    'Çocuğa props aktaran `Slot.Root`, `cva` ve `cn` araçlarını birlikte kullanabilirsin.',
+    '`const Element = asChild ? Slot.Root : "button"` seç; class listesini `cn(styles({ variant }), className)` ile kur ve kalan button props\'larını `Element`\'e geçir.',
+    'Tek çocuk şartını koru; Slot birden çok kardeş öğeyi tek linke dönüştürmez.',
   ],
 })

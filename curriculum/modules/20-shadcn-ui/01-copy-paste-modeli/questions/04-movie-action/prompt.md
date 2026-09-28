@@ -1,12 +1,16 @@
-Sinema film kartındaki “Detay” eylemi bazen sayfa linki, bazen form düğmesi. Her yerde ikinci bir `<button>` üretirsen linkin içinde button olur ve klavye davranışı bozulur.
+Film kartındaki Detay eylemi bazen düğme, bazen bağlantı olmalı. Her kullanımda aynı görsel dili koru ve bağlantının içinde fazladan bir düğme üretme.
 
-## Görev
+## Gereksinimler
+- Varsayılan durumda erişilebilir adı çocuk metni olan gerçek `button` üret.
+- Button props'ları (`type`, `disabled`, `onClick`) çalışmaya devam etsin.
+- `asChild` ile verilen tek `<a>` çocuk DOM'da tek link olarak kalsın; iç içe button oluşmasın.
+- `primary` görünümünde `bg-primary text-primary-foreground`, `outline` görünümünde `border border-input` sınıfları bulunsun.
+- Dışarıdan gelen `className` varsayılan sınıflarla birleştirilsin.
 
-`MovieAction.tsx` içindeki named export `MovieAction` bileşenini tamamla.
+## Örnek
+`<MovieAction asChild><a href="/movie/550">Dövüş Kulübü</a></MovieAction>` DOM'da bir `Dövüş Kulübü` adlı link gösterir.
 
-- Varsayılan durumda gerçek `<button>` render etsin; `type`, `disabled`, `onClick` gibi button props'larını korusun.
-- `asChild` olduğunda `Slot.Root` kullansın. Tek çocuk `<a>` ise DOM'da **yalnız link** kalsın.
-- `variant="primary"` için `bg-primary text-primary-foreground`, `variant="outline"` için `border border-input` sınıflarını `cva` ile seçsin.
-- Dışarıdan gelen `className` değerini `cn` ile birleştirsin.
-
-Örnek: `<MovieAction asChild><a href="/movie/550">Dövüş Kulübü</a></MovieAction>` tek bir link üretir.
+## Sözleşme
+- `MovieAction.tsx` → `MovieAction` named export'u.
+- Bileşen `children`, `asChild`, `variant` (`primary` veya `outline`), `className` ve standart button props'larını kabul eder.
+- Varsayılan `variant`: `primary`.

@@ -1,14 +1,18 @@
-## Bağlam
+Temiz bir CI makinesinde E2E çalışmadan önce bağımlılıklar, hızlı kalite kontrolleri ve browser hazır olmalı. Komut listesini doğru sırada üret.
 
-Sinema’nın router hatasını yakalayan E2E testi var. Şimdi temiz CI makinesinin komutlarını sırala; aksi halde tarayıcı binary’si bulunmaz veya yavaş E2E, basit bir tip hatasından önce koşar.
+## Gereksinimler
 
-## Görev
+- Kilit dosyasına bağlı kurulumla başla.
+- Lint, typecheck ve Vitest kontrollerini E2E’den önce sırala.
+- Chromium’u sistem bağımlılıklarıyla yükle.
+- En son Playwright E2E komutunu çalıştır.
+- Her adımı ayrı string olarak döndür.
 
-`ciSteps(): string[]` fonksiyonu çalıştırılacak komutları sırayla döndürsün:
+## Örnek
 
-1. Kilit dosyasına sadık kurulum.
-2. Lint, typecheck ve Vitest.
-3. Chromium ile sistem bağımlılıklarını yükleme.
-4. Playwright E2E testleri.
+Kurulum → lint → typecheck → Vitest → Chromium kurulumu → E2E.
 
-Her adımı ayrı string olarak döndür. Bu görevde yalnızca komut sırasını kuruyorsun; son dersin proje görevinde gerçek `.github/workflows/sinema-ci.yml` yazacaksın.
+## Sözleşme
+
+- Dosya ve export: ciSteps.ts içinden ciSteps(): string[] fonksiyonunu export et.
+- Beklenen komutlar: pnpm install --frozen-lockfile, pnpm lint, pnpm typecheck, pnpm test, npx playwright install --with-deps chromium ve npx playwright test.

@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.msw', 'fetch.headers-auth'],
   files: ['filmHandler.ts'],
   hints: [
-    'MSW 2 için http.get ve HttpResponse.json kullan.',
-    'request.headers.get("Authorization") ile başlığı oku; params.id string’dir.',
-    'Önce auth’u, sonra id’yi kontrol et.',
+    'Her istek için önce erişim iznini, sonra hangi kaydın istendiğini değerlendir.',
+    'MSW 2’de `http.get`, `HttpResponse.json`, `request.headers` ve `params` kullan.',
+    'Authorization değerini `Bearer ` öneki ve boş olmayan token için kontrol et; ardından `params.id` değerini `550` ile karşılaştır.',
   ],
 })

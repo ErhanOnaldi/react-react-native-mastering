@@ -2,13 +2,14 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'code',
-  title: 'Çıkarımla film etiketi',
+  title: 'Film kartı rozeti',
   difficulty: 'kolay',
-  concepts: ['ts.inference', 'js.string-formatting'],
+  concepts: ['ts.primitives', 'js.string-formatting'],
   files: ['movieBadge.ts'],
   hints: [
-    '`adult` boolean değerine göre iki kısa metinden birini seç.',
-    'Puanı `.toFixed(1)` ile metne çevir.',
-    'Şablon metinde `audience` ve biçimlenmiş puanı birleştir.',
+    'Kitle metnini boolean değere göre belirleyip puanı tek ondalık basamakla metne çevirmeyi düşün.',
+    '`adult ? "18+" : "Genel"` ifadesini ve sayıları tek basamağa sabitleyen `.toFixed(1)` metodunu kullanabilirsin.',
+    'İskelet: `const tag = adult ? "18+" : "Genel"; return `${tag} · ${vote.toFixed(1)}`;`',
+    'Tam sayılarda `.toFixed(1)` sondaki `.0` ekini korur; `Math.round` kullanmak tam sayılarda ondalık biçimini kaybettirir.',
   ],
 })

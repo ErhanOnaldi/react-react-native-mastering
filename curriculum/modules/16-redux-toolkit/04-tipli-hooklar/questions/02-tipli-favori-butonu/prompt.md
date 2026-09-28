@@ -1,9 +1,21 @@
-# Tipli favori butonu
+Bir kayıt düğmesi store’daki seçime göre etiketini göstermeli ve tıklanınca seçimi değiştirmeli.
 
-`FavoriteButton` store’daki ID’ye göre “Favorilere ekle” / “Favoriden çıkar” yazsın. Tıklama gerçek store’u değiştirsin. Önizlemede 550’ye basıp etiketi izle.
+## Gereksinimler
 
-## İstenen davranış
+- Başlangıçta kimlik seçiliyse düğme `Favoriden çıkar`, değilse `Favorilere ekle` adını taşır.
+- Tıklama gerçek store state’ini değiştirir ve düğme etiketi güncellenir.
+- Diğer bir görünüm tercihini izleyen tüketicinin render sayacı, yalnızca kayıt seçimi değiştiğinde artmaz.
 
-Testlerdeki Türkçe adları gereksinim listesi olarak oku. Starter derlenir; davranışı tamamlaman gerekiyor.
+## Örnek
 
-Önizlemedeki **Tema render sayacı** değerini kaydet, favori düğmesine bas, tekrar bak. Tema selector sonucu değişmediyse sayaç artmamalı. Test de başlangıç değerine göre bu farkı ölçer; StrictMode için sabit bir sayı dayatmaz.
+Boş seçimle düğme `Favorilere ekle` görünür. Tıklama sonrası store’da `550` bulunur ve düğme `Favoriden çıkar` olur. Tema render sayacındaki tıklama öncesi/sonrası farkı `0` kalır.
+
+## Sözleşme
+
+- Dosya ve export: `FavoriteButton.tsx` → `FavoriteButton({ id }: { id: number })`
+- Bileşen Provider altındaki store’u kullanır.
+- Düğme metni erişilebilir adı olarak kullanılır; önizlemede `ThemeProbe` sayacı gösterilir.
+
+## Kısıtlar
+
+- Render sayacının mutlak başlangıç değerini sabitleme; yalnızca etkileşim öncesi ve sonrası farkı karşılaştır.

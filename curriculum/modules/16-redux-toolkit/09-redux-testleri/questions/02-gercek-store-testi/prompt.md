@@ -1,7 +1,18 @@
-# Bileşeni gerçek store ile bağla
+Seçili kayıt sayısını ve yeni kayıt ekleme etkileşimini tek bir arayüzde sun.
 
-`WatchCounter` seçili film sayısını `<output>` içinde göstersin. “550 ekle” butonu gerçek store’a action göndersin. Başlangıç `[550,603]` ise `2 film`; boş başlangıçta iki tıklama sonrası `1 film`.
+## Gereksinimler
 
-## İstenen davranış
+- Başlangıçta `[550, 603]` varsa `<output>` içinde `2 film` görünür.
+- “550 ekle” düğmesi seçili kayıt kimliğini store’a ekler.
+- Boş başlangıçta düğmeye iki kez basınca kimlik yalnız bir kez bulunur ve çıktı `1 film` olur.
+- Arayüz güncel store state’ini göstermelidir.
 
-Testlerdeki Türkçe adları gereksinim listesi olarak oku. Starter derlenir; davranışı tamamlaman gerekiyor.
+## Örnek
+
+Başlangıç boş → ilk tıklama: `1 film` → ikinci tıklama: hâlâ `1 film`.
+
+## Sözleşme
+
+- Dosya ve export: `WatchCounter.tsx` → `WatchCounter`
+- Çıktı HTML `<output>` öğesinde; düğmenin erişilebilir adı `550 ekle`.
+- Bileşen Provider altındaki store’u kullanır.

@@ -1,10 +1,26 @@
-Sinema v1’de MovieCard, sayfalar ve yardımcılar farklı kök dizinlerde. Bir filmi ararken dört klasör geziyorsun; göreli importlar taşımada kırılıyor.
+Sinema v1 dosyalarını özelliğine göre düzenle; ortak yardımcılar tek yerden kullanılsın ve mevcut ekran davranışları sürsün.
 
-## İstenen
+## Gereksinimler
 
-- `src/features/movies/{api,components,hooks}`, `src/features/search/`, `src/features/favorites/` ve `src/shared/{ui,lib,api,config}` sınırlarını kur. Önceki dosyaları uygun yerlere taşı; boş dizinler Git’te tutulmadığı için ihtiyaç duydukça dosya ekle.
-- `src/shared/lib/format.ts` içinden `formatVote`, `releaseYear`, `formatDate`; `src/shared/lib/tmdb-image.ts` içinden `posterUrl` exportları eski davranışlarıyla çalışsın. Ortak UI kitini `src/shared/ui/` altına taşı.
-- `tsconfig.app.json` içindeki `compilerOptions.paths` değerine `"@/*": ["./src/*"]` ekle. TypeScript 6 için `baseUrl` ekleme. `vite.config.ts` içinde `resolve.alias` ile `@` işaretini `src/` mutlak yoluna bağla.
-- Taşınan dosyaların importlarını `@/` ile güncelle. Ana sayfa, arama, detay ve favoriler ile `?q=`, `?page=`, `?genre=` davranışlarını koru.
+- Film, arama ve favori kodları özelliklerine göre gruplanmış olsun; gerçekten ortak kullanılan kod ortak alanda dursun.
+- Ana sayfa, arama, detay, favori, tür filtresi ve sayfalama akışları aynı sonucu versin.
+- Paylaşılabilir `q`, `page` ve `genre` seçimleri adresle ve ekrandaki içerikle eşleşsin.
+- TypeScript ve Vite aynı kaynak kökü için `@/` importlarını çözsün.
+- Ortak puan, yıl, tarih ve afiş yardımcıları aşağıdaki sözleşmedeki yollarla kullanılsın.
 
-Her küçük taşımadan sonra Sinema içinde `pnpm typecheck` ve `pnpm lint` çalıştır. Bu görev testleri yeni ortak yolların **davranışını** denetler; klasör sahipliği ve alias kullanımı rubric ile incelenir.
+## Örnek
+
+Favorilerde ve aramada aynı afiş adresi üreticisi kullanılır. Arama sonucu `?q=Matrix&page=2` bağlantısı açıldığında sorgu ve sayfa ekranda aynı kalır.
+
+## Sözleşme
+
+- `src/shared/lib/format.ts` → `formatVote`, `releaseYear`, `formatDate` named exportları.
+- `src/shared/lib/tmdb-image.ts` → `posterUrl` named export'u.
+- `tsconfig.app.json` paths: `"@/*": ["./src/*"]`; `vite.config.ts` içindeki `@` eşlemesi `src/` mutlak yoluna karşılık gelir.
+- Ortak helper davranışı mevcut giriş/çıktı sözleşmesiyle aynı kalır.
+
+Örnekler: `formatVote(0)` → `Henüz oy yok`; `releaseYear('')` → boş string; `formatDate('')` → `Tarih yok`; `posterUrl(null)` → `undefined`; `posterUrl('/afis.jpg', 'w185')` → `https://image.tmdb.org/t/p/w185/afis.jpg`.
+
+## Kısıtlar
+
+- `@/` kullanımı feature sahipliğini değiştirmez; feature'lar ortak katmana, ortak katman feature'lardan bağımsız kalır.

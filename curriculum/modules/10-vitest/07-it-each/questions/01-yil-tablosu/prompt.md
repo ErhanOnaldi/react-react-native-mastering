@@ -1,9 +1,22 @@
-TMDB’de `release_date` kimi filmde boş; bazısında tam tarih. `@impl/releaseYear` fonksiyonu bu farkı karta uygun string’e çeviriyor. Tekrarlı test gövdeleri yerine **tek `it.each` tablosu** yaz.
+Film çıkış tarihi boş veya dolu olabilir. Her girdi için yıl çıkarma davranışını ayrı raporlanan örneklerle güvenceye al.
 
-| `release_date` | Beklenen |
+## Gereksinimler
+
+- Boş tarih boş string üretmeli.
+- Dolu tarihte ilk dört karakter yıl olarak dönmeli.
+- Test başlığı o satırın tarih girdisini göstermeli.
+- Doğru uygulama geçmeli, verilen hatalı sürümlerden en az biri kalmalı.
+
+## Örnek
+
+| Tarih | Beklenen |
 | --- | --- |
-| `""` | `""` |
-| `"1999-10-15"` | `"1999"` |
-| `"2024-01-01"` | `"2024"` |
+| boş string | boş string |
+| 1999-10-15 | 1999 |
+| 2024-01-01 | 2024 |
 
-Başlık her satırın girdisini içersin. Doğru sürümde bütün satırlar geçmeli; iki hatalı sürümden en az bir satır kırılmalı.
+## Sözleşme
+
+- Yazılacak dosya: releaseYear.test.ts
+- Test edilecek modül: @impl/releaseYear
+- Fonksiyon: releaseYear(date: string): string

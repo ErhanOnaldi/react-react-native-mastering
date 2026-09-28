@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250">
+  <title>Veri tablosundaki her satır aynı kurala girer</title>
+  <defs>
+    <marker id="each-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" class="d-arrowhead" />
+    </marker>
+  </defs>
+  <rect x="24" y="28" width="165" height="58" rx="10" class="d-box" />
+  <text x="106" y="53" text-anchor="middle" class="d-title">Girdi 1</text>
+  <text x="106" y="74" text-anchor="middle" class="d-muted">boş değer</text>
+  <rect x="24" y="96" width="165" height="58" rx="10" class="d-box" />
+  <text x="106" y="121" text-anchor="middle" class="d-title">Girdi 2</text>
+  <text x="106" y="142" text-anchor="middle" class="d-muted">normal değer</text>
+  <rect x="24" y="164" width="165" height="58" rx="10" class="d-box" />
+  <text x="106" y="189" text-anchor="middle" class="d-title">Girdi 3</text>
+  <text x="106" y="210" text-anchor="middle" class="d-muted">sınır değeri</text>
+
+  <rect x="279" y="74" width="195" height="100" rx="12" class="d-accent" />
+  <text x="376" y="109" text-anchor="middle" class="d-title">Aynı kural</text>
+  <text x="376" y="137" text-anchor="middle" class="d-code">it.each callback’i</text>
+  <text x="376" y="159" text-anchor="middle" class="d-muted">Arrange → Act</text>
+
+  <rect x="570" y="28" width="165" height="58" rx="10" class="d-success" />
+  <text x="652" y="53" text-anchor="middle" class="d-title">Beklenen 1</text>
+  <text x="652" y="74" text-anchor="middle" class="d-muted">Assertion 1</text>
+  <rect x="570" y="96" width="165" height="58" rx="10" class="d-success" />
+  <text x="652" y="121" text-anchor="middle" class="d-title">Beklenen 2</text>
+  <text x="652" y="142" text-anchor="middle" class="d-muted">Assertion 2</text>
+  <rect x="570" y="164" width="165" height="58" rx="10" class="d-success" />
+  <text x="652" y="189" text-anchor="middle" class="d-title">Beklenen 3</text>
+  <text x="652" y="210" text-anchor="middle" class="d-muted">Assertion 3</text>
+
+  <path d="M189 57 L270 102" class="d-line-accent" marker-end="url(#each-arrow)" />
+  <path d="M189 125 L270 125" class="d-line-accent" marker-end="url(#each-arrow)" />
+  <path d="M189 193 L270 147" class="d-line-accent" marker-end="url(#each-arrow)" />
+  <path d="M474 103 L561 57" class="d-line" marker-end="url(#each-arrow)" />
+  <path d="M474 124 L561 125" class="d-line" marker-end="url(#each-arrow)" />
+  <path d="M474 145 L561 193" class="d-line" marker-end="url(#each-arrow)" />
+</svg>

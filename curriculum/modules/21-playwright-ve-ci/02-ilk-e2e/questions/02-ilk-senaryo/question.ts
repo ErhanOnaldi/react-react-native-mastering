@@ -14,8 +14,8 @@ export default defineQuestion({
   files: ['homeScenario.ts'],
   timeoutMs: 90_000,
   hints: [
-    'Üç şeyi doğrulaman gerekiyor: sayfa açıldı, başlıklar doğru, film listesi gerçekten geldi. Sadece başlıkları kontrol eden senaryo, 401 alan sürümü yakalayamaz.',
-    "Önce `await page.goto('/')`. Sonra her kontrol için `await expect(locator).toBeVisible()`; locator olarak `page.getByRole('heading', { name: … })` kullan.",
-    "Kart başlıkları `<h3>`: `await expect(page.getByRole('heading', { name: 'Dövüş Kulübü' })).toBeVisible()`. h1 için `{ level: 1, name: 'Sinema' }` ver.",
+    'Yalnızca sayfanın açıldığını değil, kullanıcının gördüğü program sonucunu da doğrula. Hangi görünür içerik yüklenmediğinde akış başarısız sayılmalı?',
+    'Playwright web-first assertion’ı `expect(locator).toBeVisible()` biçiminde kullan; locator’ı erişilebilir heading veya link rolüyle bul.',
+    "Göreli olarak `/` adresine git; ardından `getByRole('heading', { level: 1, name: 'Sinema' })`, bölüm başlığı ve Dövüş Kulübü başlığının görünmesini ayrı ayrı bekle.",
   ],
 })

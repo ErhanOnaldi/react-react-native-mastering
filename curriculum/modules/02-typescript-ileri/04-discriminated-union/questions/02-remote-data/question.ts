@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.discriminated-union', 'ts.generics', 'ts.narrowing'],
   files: ['task.ts'],
   hints: [
-    'Her durum için ayrı nesne tipiyle union kur.',
-    'isSuccess, status alanını karşılaştırır.',
-    'message için switch ile dört dalı ele al.',
+    'Bir isteğin olası sonuçlarını ve her sonuçta bulunması gereken alanları listele.',
+    '`status` literal alanlı ayrı nesne unionı kur; guard için status karşılaştırması kullan.',
+    '`message` fonksiyonunda dört durumu `switch` ile ayrı işle.',
   ],
 })

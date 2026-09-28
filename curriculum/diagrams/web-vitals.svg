@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 375">
+  <title>Web Vitals: sayfa ömründe LCP, INP ve CLS</title>
+  <defs>
+    <marker id="ok-vitals" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">Üç ölçüm aynı sayfa ömrünün farklı yönlerini anlatır.</text>
+
+  <rect class="d-box" x="55" y="55" width="115" height="90" rx="8"/>
+  <text class="d-title" x="112" y="91" text-anchor="middle">Açılış</text>
+  <text class="d-muted" x="112" y="116" text-anchor="middle">navigate</text>
+
+  <rect class="d-success" x="220" y="55" width="190" height="90" rx="8"/>
+  <text class="d-title" x="315" y="82" text-anchor="middle">LCP · yükleme</text>
+  <text class="d-text" x="315" y="105" text-anchor="middle">en büyük içerik boyanır</text>
+  <text class="d-muted" x="315" y="129" text-anchor="middle">≤ 2,5 sn iyi</text>
+
+  <rect class="d-accent" x="465" y="55" width="215" height="90" rx="8"/>
+  <text class="d-title" x="572" y="82" text-anchor="middle">INP · etkileşimler</text>
+  <text class="d-text" x="572" y="105" text-anchor="middle">etkileşim → sonraki boyama</text>
+  <text class="d-muted" x="572" y="129" text-anchor="middle">≤ 200 ms iyi</text>
+
+  <line class="d-line" x1="55" y1="180" x2="705" y2="180" marker-end="url(#ok-vitals)"/>
+  <text class="d-muted" x="112" y="210" text-anchor="middle">başlangıç</text>
+  <text class="d-muted" x="647" y="210" text-anchor="middle">sayfa ömrü →</text>
+
+  <rect class="d-warning" x="55" y="235" width="650" height="83" rx="8"/>
+  <text class="d-title" x="380" y="260" text-anchor="middle">CLS · sayfa ömrü boyunca</text>
+  <text class="d-text" x="380" y="283" text-anchor="middle">beklenmeyen yerleşim kaymalarının toplamı</text>
+  <text class="d-muted" x="380" y="306" text-anchor="middle">≤ 0,1 iyi</text>
+
+  <text class="d-muted" x="380" y="353" text-anchor="middle">Field data 75. yüzdeliği gösterir; lab ölçümü tanı koymaya yardım eder.</text>
+</svg>

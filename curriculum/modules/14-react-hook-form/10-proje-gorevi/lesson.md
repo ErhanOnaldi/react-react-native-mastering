@@ -1,25 +1,42 @@
 ---
-title: "Sinema: izleme listesi ve yorum"
+title: "Sinema'da liste ve yorum formları"
 minutes: 6
 kind: project
 ---
 
-# Sinema: izleme listesi ve yorum
+# Sinema'da liste ve yorum formları
 
-:::pain[Problem]
-Sinema'da izleme listesi hâlâ tek ekranlık state'te duruyor; sayfayı yenileyince kayboluyor. Yorum formundaki özel yıldız girişi de `register` ile bağlanamıyor. Şimdi iki akışı gerçek projeye taşı.
+:::pain[İki form, iki ayrı kayıt hedefi]
+Sinema'da izleme listesi tarayıcıda saklanmalı; yorum ise ağ üzerinden gönderilmeli. Bir form localStorage'a yazar, diğeri bekleyen isteği ve sunucu reddini yönetir. Aynı alan arayüzü, farklı kayıt sözleşmelerine sahip.
 :::
 
-## İki ayrı veri yolu
+## Önce verinin sahibini bul
 
-İzleme listesi tarayıcıdaki `localStorage`'a yazılır: ad, açıklama, görünürlük ve dinamik etiketler. `WatchlistForm`, RHF'nin `register`, `handleSubmit`, `useFieldArray` araçlarını kullanır. `useWatchlists` ekleme ve okuma işini kapsüller. Domain tipinden `Omit<Watchlist, 'id' | 'createdAt'>` ile form değerini türet.
+:::model[Form deposu ve abonelik]
+Form değerleri ve alan hataları RHF deposunda, ağ pending/success/error durumu mutation'dadır. İzleme listesi formu kalıcı tarayıcı depoya, yorum formu uzak API'ye yazar; yeni bağlamda değişen, submit sonrası hangi kaynağın güncelleneceğidir.
+:::
 
-Yorum, DummyJSON'a `POST /comments/add` ile gönderilir. `ReviewForm` metin alanını `register`, özel puan girişini `Controller` ile bağlar. `useMutation` gönderim durumunu gösterir. Yorum endpoint'i yalnızca `body`, `postId`, `userId` kabul eder; puanı aynı isteğin gövdesine zorla katma.
+İzleme listesi akışında tam domain kaydı `id` ve `createdAt` gibi formun üretmediği alanları da taşır. Form girdisini bu iki alan olmadan türet; saklama katmanı yeni kimlik/zaman üretir ve listeleri tekrar okunabilir kılar. Etiketler değişken sayıda satırdır, dolayısıyla silme sonrası hem sıralama hem değer eşleşmesi korunmalıdır.
 
-## Bir sonraki ihtiyaç
+Yorum akışında yıldız seçimi özel controlled arayüzdür, yorum metni native textarea'dır. İkisini aynı RHF form değerinde topla; fakat DummyJSON yorum sözleşmesinde yalnız metin, post kimliği ve kullanıcı kimliği vardır. UI'deki puanı gönderilecek gövdeye ekleme. Sunucu cevabını, hata mesajını ve alan hatalarını ayrı tut.
 
-Yerleşik RHF kuralları burada yeterli. Ancak kurallar ile TypeScript tipleri iki ayrı yerde kaldı. Modül 15'te Zod şeması bu senkron sorununa çözüm olacak.
+## Çalışırken izleyeceğin sorular
+
+- Alan label'ı ve hata mesajı programatik olarak bağlı mı?
+- Kayıt nesnesi formdan mı türetiliyor, yoksa sunucuya ait kimlikler yanlışlıkla form girdisine mi eklenmiş?
+- Satır silince kalan etiketler beklenen sırada mı?
+- Bekleyen ağ isteğinde çift gönderim engelleniyor mu?
+- Hata sonrasında kullanıcı metni ve seçimi korunuyor mu?
+- Başarı sonrası sıfırlama veya yerel güncelleme yalnızca kayıt tamamlanınca mı çalışıyor?
 
 :::sector
-Dosya yolları ve export adları görev metinlerinde açık. Testler kullanılabilir davranışı ölçer; görünüm sınıflarını serbestçe seçebilirsin.
+Takımda form, domain ve transport tiplerini ayrı düşün; her veri hedefine yalnız kabul ettiği alanları gönder. Bir formun localStorage'a yazması onu güvenilir sunucu verisi yapmaz; tarayıcı deposunu bozuk/eski veri açısından yine ele al.
 :::
+
+## Özet ve kendini yokla
+
+- İzleme listesi yerel kalıcı kayıt, yorum ise asenkron HTTP mutation'ıdır.
+- Özel yıldız seçimi form deposuna bağlanır; transport gövdesi UI alanlarından farklı olabilir.
+- Hata halinde veriyi koru, başarı halinde geri bildirim ver.
+
+**Kendini yokla:** Yıldız puanı neden yorum isteğinin JSON'una eklenmez? Endpoint sözleşmesinde yoktur. API isteği hata verince formu ne zaman temizlemelisin? Başarılı cevap geldikten sonra.

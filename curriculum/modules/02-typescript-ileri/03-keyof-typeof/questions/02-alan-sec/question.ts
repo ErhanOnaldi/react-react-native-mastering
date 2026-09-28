@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.keyof-typeof', 'ts.indexed-access', 'ts.generics'],
   files: ['task.ts'],
   hints: [
-    'K, T’nin anahtarlarıyla sınırlanmalı.',
-    'Dönüş tipinde indeksli erişim `T[K]` kullan.',
-    'Gövde yalnız `value[key]` döndürür.',
+    'Seçilen anahtarın yalnızca nesnede gerçekten bulunmasını nasıl sağlayacağını düşün.',
+    '`K extends keyof T` ile anahtarı sınırla; dönüşü `T[K]` yap.',
+    'Fonksiyon gövdesi yalnızca `value[key]` değerini döndürür.',
   ],
 })

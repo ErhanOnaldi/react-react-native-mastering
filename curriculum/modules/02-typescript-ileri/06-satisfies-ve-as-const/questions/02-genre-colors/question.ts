@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.satisfies', 'ts.as-const', 'ts.record'],
   files: ['task.ts'],
   hints: [
-    'GenreId için `(typeof GENRE_IDS)[number]` kullan.',
-    'as const değerleri korur; satisfies eksik anahtarı yakalar.',
-    'colorFor içinde renk tablosunu, routeFor içinde ROUTES tablosunu anahtarla indeksle.',
+    'Tür kimliği listesini tek kaynak yap; tipi ikinci kez elle yazma.',
+    '`as const` ile tuple elemanlarını koru, `satisfies Record<...>` ile tabloları denetle.',
+    'Fonksiyonlar seçilen anahtarla tabloyu indeksleyip ilgili literal değeri döndürebilir.',
   ],
 })

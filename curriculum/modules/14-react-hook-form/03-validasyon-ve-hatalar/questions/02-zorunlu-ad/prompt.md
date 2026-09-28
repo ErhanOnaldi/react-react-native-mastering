@@ -1,8 +1,18 @@
-Boş veya iki harfli adla liste oluşturulmasın.
+Liste başlığını boş veya iki karakter bırakılabilecek durumda kaydetme; kullanıcıya hangi sınırın ihlal edildiğini göster.
 
-- Boş ad: “Ad gerekli”.
-- Üç karakterden kısa ad: “En az 3 karakter”.
-- Geçersiz formda `onSave` çağrılmasın; geçerli adla çağrılsın.
-- Mesaj `role="alert"` ile görünür olsun.
+## Gereksinimler
 
-Örnek: `AB` → hata; `Film` → `{ name: 'Film' }`.
+- “Liste adı” adlı metin alanı ve “Kaydet” düğmesi göster.
+- Boş değer için “Ad gerekli”, bir veya iki karakter için “En az 3 karakter” mesajını `role="alert"` içinde göster.
+- Üç veya daha fazla karakter geçerlidir ve callback'e `{ name }` biçiminde gider.
+- Geçersiz gönderimde callback çağrılmasın.
+
+## Örnek
+
+Boş → “Ad gerekli”; `AB` → “En az 3 karakter”; `Film` → `{ name: 'Film' }`.
+
+## Sözleşme
+
+- Dosya ve export: `RequiredNameForm.tsx` → named export `RequiredNameForm`.
+- Prop: `onSave(values: { name: string }): void`.
+- Arayüz: label “Liste adı”, düğme “Kaydet”, hata `role="alert"` ile bulunabilir olsun.

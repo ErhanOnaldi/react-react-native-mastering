@@ -1,0 +1,3 @@
+- Kırık koddaki ilk hata, indirim tutarının (`(pricePerTicket * discountPercent) / 100`) tek bir bilet üzerinden hesaplanıp toplam tutardan düşülmesiydi. İki veya daha fazla bilet alındığında yalnızca ilk bilet indirimli oluyordu.
+- İkinci hata ise `ticketCount <= 0` sınır durumunun denetlenmemesiydi; bu durum sıfır bilette bile indirim tutarı çıkarılarak negatif sayılar üretilmesine yol açıyordu.
+- Sources panelinde `calculateBookingTotal` içine konulan bir breakpoint, `subtotal` ve indirim değişkenlerinin Scope panelindeki değerlerini canlı göstererek bu mantık hatasını saniyeler içinde kanıtlar.

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280">
+  <title>Vite istek dönüşümü ve HMR döngüsü</title>
+  <defs>
+    <marker id="vite-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <!-- Üst Sıra: İstekten Ekrana İlk Yükleme -->
+  <rect class="d-box" x="25" y="30" width="150" height="98" rx="8"/>
+  <text class="d-title" x="100" y="60" text-anchor="middle">Tarayıcı</text>
+  <text class="d-text" x="100" y="86" text-anchor="middle">GET /</text>
+  <text class="d-muted" x="100" y="110" text-anchor="middle">Sayfa açılır</text>
+
+  <rect class="d-accent" x="210" y="30" width="150" height="98" rx="8"/>
+  <text class="d-title" x="285" y="60" text-anchor="middle">index.html</text>
+  <text class="d-code" x="285" y="86" text-anchor="middle">&lt;div id="root"&gt;</text>
+  <text class="d-muted" x="285" y="110" text-anchor="middle">main.tsx'i ister</text>
+
+  <rect class="d-violet" x="395" y="30" width="160" height="98" rx="8"/>
+  <text class="d-title" x="475" y="60" text-anchor="middle">Vite Dev Server</text>
+  <text class="d-text" x="475" y="86" text-anchor="middle">Anlık TSX → JS</text>
+  <text class="d-muted" x="475" y="110" text-anchor="middle">Paketleme yok</text>
+
+  <rect class="d-success" x="590" y="30" width="145" height="98" rx="8"/>
+  <text class="d-title" x="662" y="60" text-anchor="middle">React DOM</text>
+  <text class="d-code" x="662" y="86" text-anchor="middle">createRoot()</text>
+  <text class="d-muted" x="662" y="110" text-anchor="middle">Ekrana basılır</text>
+
+  <!-- Üst Sıra Bağlantı Okları -->
+  <line class="d-line" x1="175" y1="79" x2="206" y2="79" marker-end="url(#vite-ok)"/>
+  <line class="d-line" x1="360" y1="79" x2="391" y2="79" marker-end="url(#vite-ok)"/>
+  <line class="d-line" x1="555" y1="79" x2="586" y2="79" marker-end="url(#vite-ok)"/>
+
+  <!-- Alt Sıra: HMR Alanı -->
+  <rect class="d-lane" x="25" y="155" width="710" height="105" rx="10"/>
+
+  <rect class="d-box" x="45" y="175" width="180" height="65" rx="8"/>
+  <text class="d-title" x="135" y="200" text-anchor="middle">Kod Değişikliği</text>
+  <text class="d-muted" x="135" y="224" text-anchor="middle">Dosyayı kaydedersin</text>
+
+  <rect class="d-accent" x="280" y="175" width="200" height="65" rx="8"/>
+  <text class="d-title" x="380" y="200" text-anchor="middle">WebSocket Bildirimi</text>
+  <text class="d-muted" x="380" y="224" text-anchor="middle">Yalnızca değişen modül</text>
+
+  <rect class="d-success" x="535" y="175" width="180" height="65" rx="8"/>
+  <text class="d-title" x="625" y="200" text-anchor="middle">Fast Refresh</text>
+  <text class="d-text" x="625" y="224" text-anchor="middle">State korunarak çizilir</text>
+
+  <!-- Alt Sıra Bağlantı Okları -->
+  <line class="d-line" x1="225" y1="207" x2="276" y2="207" marker-end="url(#vite-ok)"/>
+  <line class="d-line" x1="480" y1="207" x2="531" y2="207" marker-end="url(#vite-ok)"/>
+</svg>

@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['query.dependent', 'ts.narrowing', 'react.custom-hooks'],
   files: ['useOptionalMovie.ts'],
   hints: [
-    'Hook her render’da çağrılmalı; koşulu `queryFn` içine taşı.',
-    '`id === undefined ? skipToken : async () => ...` kullan.',
-    'İstek dalında Bearer başlığı, `response.ok` kontrolü ve JSON dönüşü ekle.',
+    'Id undefined iken geçersiz URL üretmeden query’nin beklemesini sağla.',
+    '`skipToken` ile geçerli `queryFn` dalını koşullu seç; hook’u koşullu çağırma.',
+    '`id === undefined ? skipToken : () => getMovie(id)` ve fetch içinde Bearer/HTTP kontrolü kullan.',
   ],
 })

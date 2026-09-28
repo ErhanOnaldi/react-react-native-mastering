@@ -1,7 +1,18 @@
-Puanlama POST’u 201 döndü fakat önceden açılmış Puanladıklarım listesi boş. `useRate(rate, sessionId)` hook’unu yaz.
+Puan POST’u başarılı oldu ama açık Puanladıklarım listesi boş kaldı. Yazma sonrası ilgili liste sunucuyla yeniden uzlaşsın.
 
-- `rate` async mutation fonksiyonudur; `{ movieId, value }` alır.
-- Başarılı yazmadan sonra yalnızca `['ratings', sessionId]` query ailesini invalidate et.
-- `onSuccess` Promise döndürsün: aktif liste GET’i tamamlanana dek mutation pending kalsın.
+## Gereksinimler
 
-`useRate` dönüşü `useMutation` sonucudur; test bileşeni `mutate` kullanacak.
+- Verilen `rate` asenkron fonksiyonu mutation olarak çalıştırılsın.
+- Başarılı yazma yalnızca `['ratings', sessionId]` key’iyle başlayan query’leri geçersiz kılsın.
+- `onSuccess` callback’i yenileme Promise’ini döndürsün; aktif listenin GET’i bitene kadar mutation pending kalsın.
+- Mutation hatasında bu başarılı yazma davranışı çalışmasın.
+
+## Örnek
+
+Session `guest-1` için puan POST’u tamamlanınca `['ratings', 'guest-1']` stale olur; `guest-2` listesi etkilenmez.
+
+## Sözleşme
+
+- `useRate.ts` dosyasından `useRate(rate, sessionId)` named export et.
+- `rate(input: { movieId: number; value: number }): Promise<void>`.
+- Hook sonucu mutation sonucu olsun ve `mutate` içersin.

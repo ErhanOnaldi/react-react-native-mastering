@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210">
+  <title>Sabit tablo sözleşmeye göre kontrol edilirken literal çıkarımını korur</title>
+  <defs>
+    <marker id="satisfies-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path class="d-arrowhead-accent" d="M0 0 L8 4 L0 8 Z" />
+    </marker>
+  </defs>
+  <rect class="d-box" x="22" y="62" width="205" height="108" rx="12" />
+  <text class="d-title" x="124.5" y="95" text-anchor="middle">Sabit tablo</text>
+  <text class="d-code" x="124.5" y="125" text-anchor="middle">{ home: '/' }</text>
+  <text class="d-muted" x="124.5" y="148" text-anchor="middle">kaynakta görünen değer</text>
+  <path class="d-line-accent" d="M236 116 H270" marker-end="url(#satisfies-arrow)" />
+  <rect class="d-warning" x="279" y="62" width="205" height="108" rx="12" />
+  <text class="d-title" x="381.5" y="95" text-anchor="middle">Sözleşme denetimi</text>
+  <text class="d-code" x="381.5" y="125" text-anchor="middle">satisfies Record&lt;K, V&gt;</text>
+  <text class="d-muted" x="381.5" y="148" text-anchor="middle">anahtar ve değerleri kontrol et</text>
+  <path class="d-line-accent" d="M493 116 H527" marker-end="url(#satisfies-arrow)" />
+  <rect class="d-success" x="536" y="62" width="202" height="108" rx="12" />
+  <text class="d-title" x="637" y="95" text-anchor="middle">Tip çıkarımı korunur</text>
+  <text class="d-code" x="637" y="125" text-anchor="middle">'/' literal tipi</text>
+  <text class="d-muted" x="637" y="148" text-anchor="middle">as const ile readonly</text>
+</svg>

@@ -23,8 +23,9 @@ export default defineQuestion({
     '404 ile geçici sunucu/ağ hatası ayrılıyor; yeniden deneme sorguyu tekrar çalıştırıyor mu?',
   ],
   hints: [
-    'URL’deki eser kimliği değişince eski eserin görünmemesi için veriyi neye göre ayırmalısın?',
-    'Yazar anahtarını eser cevabından çıkar. Ayrı query için `enabled: Boolean(authorId)` kullanabilir veya eser sorgusundan sonra hatayı yerel olarak yakalayabilirsin.',
-    'Eser cevabını kapıda Zod ile doğrula; 404’ü ayrı göster, geçici hatada `query.refetch()` kullan. Kapak için `id > 0` kontrolü yap.',
+    'Eser detayı ve yazar bilgisi Open Library’de iki ayrı API kaynağıdır; yazar isteğini eserin getirdiği anahtara bağla.',
+    'URL’deki `workId` parametresini hem rota hem de query key için kullan. Bağımlı sorgu için `enabled: Boolean(authorKey)` tanımla veya yazar isteğini güvenli bir yardımcı fonksiyonla tamamla.',
+    'Eser cevabında `description` alanını kontrol et: hem düz string hem `{ type, value }` nesnesi gelebilir; ikisini de tek bir string’e dönüştür. Kapak görseli için `covers?.[0] > 0` kontrolü yap.',
+    'Yazar isteği 404 dönerse veya başarısız olursa tüm ekranı çökertme; eser detayını göstermeye devam et ve yazar alanında “Yazar bilinmiyor” yaz. Eserin kendisi 404 ise “Kitap bulunamadı” mesajı göster.',
   ],
 })

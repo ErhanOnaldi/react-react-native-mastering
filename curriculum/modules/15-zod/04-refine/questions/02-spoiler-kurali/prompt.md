@@ -1,5 +1,14 @@
-Yorum formunda spoiler işaretlendiyse metin en az 10 karakter olmalı. `reviewSchema` export et.
+Yorumda spoiler seçilmişse kısa açıklama gönderilmesin; spoiler olmayan taslak boş kalabilsin.
 
-- `body`: string, `hasSpoiler`: boolean.
-- Spoiler yoksa boş metne izin ver (taslak olabilir).
-- Spoiler varsa trimlenmiş metin 10 karakterden kısa olduğunda hata yolu `body`, mesaj `Spoiler açıklaması çok kısa` olsun.
+## Gereksinimler
+- body string, hasSpoiler boolean olmalı.
+- hasSpoiler false iken boş body kabul edilmeli.
+- hasSpoiler true iken trimlenmiş body en az 10 karakter olmalı.
+- İlişki kuralının hatası body alanına bağlanmalı ve mesajı Spoiler açıklaması çok kısa olmalı.
+
+## Örnek
+{ body: "", hasSpoiler: false } kabul edilir. { body: "  kısa  ", hasSpoiler: true } reddedilir.
+
+## Sözleşme
+- review.ts dosyasında reviewSchema named export'unu tanımla.
+

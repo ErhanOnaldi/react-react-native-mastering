@@ -1,0 +1,4 @@
+- Test dosyasındaki `it` başlıkları gereksinim haritasıdır: `0` ve negatif değerler, 1 saatin altı, tam saatler ve karma süreler.
+- `Math.floor(minutes / 60)` saat bileşenini, `minutes % 60` ise kalan dakikayı ayıklar.
+- Erken dönüşler (`early return`) kodun dallanmasını ve iç içe `if-else` karmaşasını önler.
+- Sektörde kullanıcı arayüzü fonksiyonları yazarken gereksinimleri tahmin etmek yerine test dosyalarını referans almak en güvenli çalışma yöntemidir.

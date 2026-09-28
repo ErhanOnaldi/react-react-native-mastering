@@ -1,12 +1,15 @@
-Kayıt düzenleme ekranındaki onay penceresi doğru çalışıyor: Esc ile kapanıyor, kapanınca odak onu açan `İptal` düğmesine dönüyor. Aynı davranışı ikinci ekrandaki silme akışında da istiyoruz; şu an oradaki onay penceresi öyle davranmıyor.
+Silme ekranındaki onay penceresi, düzenleme ekranındakiyle aynı kapatma ve odak davranışını göstermeli. İki akışta da onay penceresi tutarlı çalışsın.
 
-## Giriş ve davranış
+## Gereksinimler
+- Üstteki `Düzenleme` ve `Silme` düğmeleri ilgili ekranı açsın.
+- Düzenleme ekranındaki `İptal` düğmesiyle açılan pencere Escape ile kapansın ve focus `İptal` düğmesine dönsün.
+- Silme ekranındaki her `Sil` düğmesi aynı görünüm ve davranışta pencere açsın.
+- Silme penceresinde Escape ile kapanınca focus onu açan `Sil` düğmesine dönsün; kayıt ekranda kalsın.
+- `Evet, sil` seçilince pencere kapansın ve ilgili kayıt listeden kaldırılsın.
 
-Testler `DialogPages.tsx` içindeki `DialogPages` bileşenini açar.
+## Örnek
+Silme ekranında ilk kaydın `Sil` düğmesine bas → pencere açılır → Escape → pencere kapanır, focus aynı düğmeye döner ve iki kayıt görünür.
 
-- Üstteki `Düzenleme` ve `Silme` düğmeleri ekran değiştirir.
-- Düzenleme ekranındaki `İptal` düğmesi bir onay penceresi açar (bu davranış zaten doğru, bozulmamalı).
-- Silme ekranındaki her kayıt için `Sil` düğmesi de aynı kapatma ve odak davranışına sahip bir onay penceresi açmalı: onaylanırsa kayıt silinir, vazgeçilirse kayıt kalır.
-- İki ekranın onay penceresi aynı görünüme ve davranışa sahip olmalı.
-
-Örnek: Silme ekranında bir kayda `Sil` bas → onay penceresi açılır → Esc'e bas → pencere kapanır, odak yine `Sil` düğmesinde olur.
+## Sözleşme
+- `DialogPages.tsx` → named export `DialogPages`.
+- Düzenleme ve silme ekranı ile kontrollerin erişilebilir adları `Düzenleme`, `Silme`, `İptal`, `Sil` ve `Evet, sil` olarak kalır.

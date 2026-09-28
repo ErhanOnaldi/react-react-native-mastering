@@ -1,0 +1,4 @@
+- Görev metninde açıkça listelenmeyen gereksinimler (örneğin kesilen parçanın sonundaki boşlukların silinmesi veya zaten `"..."` ile biten metinlere tekrar üç nokta eklenmemesi) doğrudan test dosyası okunarak keşfedilir.
+- `trimEnd()` ile kesilen metnin sağındaki boşlukları temizlemek, `"kelime ... "` gibi çirkin ara boşlukları engeller.
+- `endsWith('...')` kontrolü, metnin zaten üç noktayla bitmesi durumunda çift üç nokta oluşmasını önler.
+- Sektörde test dosyaları, analistlerin ve tasarımcıların unuttuğu detayları yakalayan en güvenilir kaynak olarak kullanılır.

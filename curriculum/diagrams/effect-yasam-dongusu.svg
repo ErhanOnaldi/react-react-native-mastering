@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250">
+  <title>Effect yaşam döngüsü: setup ve cleanup</title>
+  <defs>
+    <marker id="ok-effect-life" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <line class="d-line" x1="50" y1="200" x2="710" y2="200" marker-end="url(#ok-effect-life)"/>
+  <text class="d-muted" x="380" y="32" text-anchor="middle">dependency değiştikçe eski senkronizasyon kapanır, yenisi kurulur</text>
+
+  <rect class="d-success" x="55" y="70" width="130" height="72" rx="8"/>
+  <text class="d-title" x="120" y="98" text-anchor="middle">setup</text>
+  <text class="d-code" x="120" y="122" text-anchor="middle">deps=A</text>
+
+  <rect class="d-warning" x="240" y="70" width="130" height="72" rx="8"/>
+  <text class="d-title" x="305" y="98" text-anchor="middle">cleanup</text>
+  <text class="d-code" x="305" y="122" text-anchor="middle">A biter</text>
+
+  <rect class="d-success" x="425" y="70" width="130" height="72" rx="8"/>
+  <text class="d-title" x="490" y="98" text-anchor="middle">setup</text>
+  <text class="d-code" x="490" y="122" text-anchor="middle">deps=B</text>
+
+  <rect class="d-warning" x="610" y="70" width="130" height="72" rx="8"/>
+  <text class="d-title" x="675" y="98" text-anchor="middle">cleanup</text>
+  <text class="d-code" x="675" y="122" text-anchor="middle">unmount</text>
+
+  <text class="d-muted" x="120" y="180" text-anchor="middle">commit sonrası</text>
+  <text class="d-muted" x="305" y="180" text-anchor="middle">deps değişti</text>
+  <text class="d-muted" x="490" y="180" text-anchor="middle">yeniden eşleş</text>
+  <text class="d-muted" x="675" y="180" text-anchor="middle">ekrandan kalktı</text>
+  <text class="d-text" x="380" y="225" text-anchor="middle">Timer, abonelik ve fetch için aynı ömür kuralı geçerlidir.</text>
+</svg>

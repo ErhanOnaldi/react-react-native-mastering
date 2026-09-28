@@ -8,8 +8,9 @@ export default defineQuestion({
   files: ['BookDetail.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Eser değişince neyin yeniden hesaplanması gerektiğini düşün: yazar hangi esere bağlı?',
-    'Yazar bilgisini ayrı bir sorguyla getiriyorsan, o sorgunun kimliği de değişen esere bağlı olmalı.',
-    'İkinci sorgunun query key’ine eser kimliğini (ya da yazarın anahtarını) ekle; aksi halde önbellek eskisini döner.',
+    'Eser ve yazar bilgisi iki ayrı sorgudur; yazar bilgisini çekerken sorgu kimliğini aktif esere ve yazar referansına bağla.',
+    "İkinci sorguda `queryKey: ['author', authorKey]` (veya eser kimliğine bağlı anahtar) kullan; `enabled: Boolean(authorKey)` koşuluyla yazar anahtarı gelmeden sorguyu başlatma.",
+    'Eser değiştiğinde `useParams` üzerinden gelen `workId` değişir. Yazar verisini `workData?.authors?.[0]?.author?.key` üzerinden alıp ayrı bir sorguyla çağır.',
+    'Yazar sorgusunun anahtarına (`queryKey`) yazar kimliğini veya `workId`’yi koymayı unutursan, önbellek ilk çağrılan eserin yazarını dönmeye devam eder.',
   ],
 })

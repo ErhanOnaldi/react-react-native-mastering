@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250">
+  <title>Eşleşmeyen adres ve çalışan route hatası ayrımı</title>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0,0 L8,4 L0,8 z" />
+    </marker>
+  </defs>
+  <rect class="d-violet" x="260" y="28" width="240" height="66" rx="12" />
+  <text class="d-title" x="380" y="55" text-anchor="middle">Gelen adres</text>
+  <text class="d-code" x="380" y="78" text-anchor="middle">route ağacında çöz</text>
+  <rect class="d-danger" x="35" y="155" width="300" height="70" rx="12" />
+  <text class="d-title" x="185" y="184" text-anchor="middle">Eşleşme yok</text>
+  <text class="d-code" x="185" y="208" text-anchor="middle">path: * → 404</text>
+  <rect class="d-warning" x="425" y="155" width="300" height="70" rx="12" />
+  <text class="d-title" x="575" y="184" text-anchor="middle">Route çalıştı, hata verdi</text>
+  <text class="d-code" x="575" y="208" text-anchor="middle">errorElement</text>
+  <path class="d-line-danger" d="M330 100 L205 147" marker-end="url(#arrow)" />
+  <path class="d-line-accent" d="M430 100 L555 147" marker-end="url(#arrow)" />
+</svg>

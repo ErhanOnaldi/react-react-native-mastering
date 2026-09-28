@@ -8,8 +8,9 @@ export default defineQuestion({
   files: ['ProfiledMovies.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Önce yalnız liste ağacını hangi React bileşeniyle ölçebileceğini düşün.',
-    '`Profiler` bileşeni `id` ve `onRender` alır.',
+    'Ekrandaki belirli bir alt ağacın commit aşamalarını React düzeyinde dinleyebilecek yerleşik sarmalayıcıyı düşün.',
+    '`Profiler` bileşeni (`id` ve `onRender` propları ile) belirli bir ağacın mount ve update commit’lerini yakalar.',
     '`<Profiler id="movie-list" onRender={onCommit}>` içine mevcut `ul` öğesini yerleştir.',
+    'Ölçüm callback’i içinde doğrudan aynı bileşenin state’ini güncellemek sonsuz render döngüsüne yol açabilir; callback doğrudan gelen `onCommit` fonksiyonuna bağlanmalıdır.',
   ],
 })

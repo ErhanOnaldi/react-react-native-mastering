@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300">
+  <title>Test anatomisi: hazırla, çalıştır, doğrula</title>
+  <defs>
+    <marker id="ok-test" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-test-kirmizi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-box" x="35" y="55" width="150" height="82" rx="8"/>
+  <text class="d-title" x="110" y="84" text-anchor="middle">1 · Hazırla</text>
+  <text class="d-text" x="110" y="110" text-anchor="middle">girdi ve ortam</text>
+
+  <rect class="d-accent" x="220" y="55" width="150" height="82" rx="8"/>
+  <text class="d-title" x="295" y="84" text-anchor="middle">2 · Çalıştır</text>
+  <text class="d-code" x="295" y="110" text-anchor="middle">formatVote(8)</text>
+
+  <rect class="d-success" x="405" y="55" width="150" height="82" rx="8"/>
+  <text class="d-title" x="480" y="84" text-anchor="middle">3 · Doğrula</text>
+  <text class="d-code" x="480" y="110" text-anchor="middle">expect(...)</text>
+
+  <rect class="d-violet" x="590" y="55" width="135" height="82" rx="8"/>
+  <text class="d-title" x="658" y="84" text-anchor="middle">Gereksinim</text>
+  <text class="d-text" x="658" y="110" text-anchor="middle">çalıştırılır</text>
+
+  <line class="d-line" x1="185" y1="96" x2="216" y2="96" marker-end="url(#ok-test)"/>
+  <line class="d-line" x1="370" y1="96" x2="401" y2="96" marker-end="url(#ok-test)"/>
+  <line class="d-line" x1="555" y1="96" x2="586" y2="96" marker-end="url(#ok-test)"/>
+
+  <rect class="d-lane" x="65" y="188" width="630" height="70" rx="10"/>
+  <text class="d-title" x="260" y="216" text-anchor="middle">Mutant</text>
+  <text class="d-code" x="260" y="240" text-anchor="middle">"8" döndürür</text>
+  <path class="d-line-danger d-dashed" d="M330 226 H430" marker-end="url(#ok-test-kirmizi)"/>
+  <text class="d-title" x="520" y="216" text-anchor="middle">Test kırılır</text>
+  <text class="d-code" x="520" y="240" text-anchor="middle">beklenen: "8.0"</text>
+</svg>

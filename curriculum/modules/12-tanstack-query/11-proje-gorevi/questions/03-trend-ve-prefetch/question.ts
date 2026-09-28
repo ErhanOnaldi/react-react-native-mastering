@@ -12,9 +12,9 @@ export default defineQuestion({
     'src/features/movies/api/movie-queries.ts',
   ],
   hints: [
-    'Trend için tek sayfa `useQuery` yerine `useInfiniteQuery` kullan.',
-    '`initialPageParam: 1` ve `getNextPageParam` içinde `last.page < last.total_pages` kontrolü kullan; `data.pages.flatMap` ile listele, gerekirse `maxPages` seç.',
-    'Kartın hover olayında `queryClient.prefetchQuery(movieQueries.detail(id))`; detay sayfasında aynı key.',
+    'Önce trend ekranında değişen tek sayfa ile biriken sayfaların beklenen farkını belirle.',
+    '`useInfiniteQuery` için başlangıç parametresi, son sayfa hesabı ve üç sayfalık bellek sınırı ekle.',
+    '`data.pages.flatMap` ile birleştir; kart etkileşiminde `prefetchQuery(movieQueries.detail(id))` çağır.',
   ],
   rubric: [
     'Trendde sayfalar birikir ve son sayfada istek durur.',

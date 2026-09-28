@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.type-guards', 'ts.unknown-any', 'ts.narrowing'],
   files: ['task.ts'],
   hints: [
-    'Önce nesne mi ve null değil mi kontrol et.',
-    '`in` ile alanları daralt, sonra typeof uygula.',
-    'poster_path için string veya null kabul et.',
+    'Dış değeri kullanmadan önce hangi yapısal kontrollerin sırayla gerektiğini belirle.',
+    'Nesne, null değil ve dizi değil koşullarından sonra `in` ve `typeof` kontrolleri yap.',
+    'Kapak alanı için string ve null iki kabul edilen değerdir.',
   ],
 })

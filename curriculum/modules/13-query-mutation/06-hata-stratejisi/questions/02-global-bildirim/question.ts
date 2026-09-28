@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['query.useMutation', 'fetch.error-handling'],
   files: ['makeClient.ts'],
   hints: [
-    'MutationCache’i QueryClient kurulumuna ver.',
-    'onError callback’i notify fonksiyonunu çağırır.',
-    'defaultOptions içindeki mutations.retry false olsun.',
+    'Bileşenler route değiştirince de erişilecek bildirim callback’inin sahibi kim olmalı?',
+    '`MutationCache` global `onError` seçeneğini ve QueryClient `defaultOptions` değerlerini kullan.',
+    '`new QueryClient({ mutationCache: new MutationCache({ onError: () => notify(...) }), defaultOptions: ... })` kur.',
+    'Global callback yalnız bir kez tetiklenmeli; retry değerlerini query ve mutation için kapat.',
   ],
 })

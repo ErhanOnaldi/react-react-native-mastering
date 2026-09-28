@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 310">
+  <title>Closure bayat render değerini okur</title>
+  <defs>
+    <marker id="ok-closure" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-closure-kirmizi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-accent" x="55" y="52" width="210" height="105" rx="8"/>
+  <text class="d-title" x="160" y="82" text-anchor="middle">Render 1</text>
+  <text class="d-code" x="160" y="108" text-anchor="middle">count = 0</text>
+  <text class="d-text" x="160" y="132" text-anchor="middle">handler oluşur</text>
+
+  <rect class="d-success" x="495" y="52" width="210" height="105" rx="8"/>
+  <text class="d-title" x="600" y="82" text-anchor="middle">Render 2</text>
+  <text class="d-code" x="600" y="108" text-anchor="middle">count = 1</text>
+  <text class="d-text" x="600" y="132" text-anchor="middle">ekran güncel</text>
+
+  <line class="d-line" x1="265" y1="105" x2="491" y2="105" marker-end="url(#ok-closure)"/>
+  <text class="d-muted" x="380" y="88" text-anchor="middle">setState → yeni render</text>
+
+  <rect class="d-violet" x="255" y="205" width="250" height="58" rx="8"/>
+  <text class="d-title" x="380" y="228" text-anchor="middle">Timer / callback</text>
+  <text class="d-code" x="380" y="250" text-anchor="middle">Render 1 closure'ı</text>
+
+  <path class="d-line-danger d-dashed" d="M380 205 C330 165 240 150 170 157" marker-end="url(#ok-closure-kirmizi)"/>
+  <text class="d-text-danger" x="250" y="190" text-anchor="middle">okuduğu değer: 0</text>
+
+  <text class="d-muted" x="380" y="294" text-anchor="middle">Callback oluştuğu render'ın props/state fotoğrafını yakalar.</text>
+</svg>

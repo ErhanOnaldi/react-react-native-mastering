@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['react.context', 'react.immutability', 'react.state'],
   files: ['FavoriteToggle.tsx'],
   hints: [
-    '`setIds(old => ...)` ile önceki state’i kullan.',
+    'İki düğme aynı kaynağı okuduğunda biri değişince diğeri de yeni değeri görür.',
+    'Provider içinde id listesini state’te tut; `setIds(old => ...)` ile önceki state’i kullan.',
     'Varsa `filter` ile çıkar; yoksa spread ile ekle.',
-    'Her tüketici Context değerini okuyup düğme metnini hesaplar.',
+    'Her tüketici Context değerini okuyup düğme metnini `ids.includes(id)` üzerinden hesaplar.',
   ],
 })

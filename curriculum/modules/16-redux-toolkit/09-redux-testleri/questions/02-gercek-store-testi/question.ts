@@ -6,9 +6,9 @@ export default defineQuestion({
   concepts: ['redux.testing', 'test.rtl-queries', 'test.user-event'],
   files: ['WatchCounter.tsx'],
   hints: [
-    'Bileşen içinde tipli selector ve dispatch hazır.',
-    '`ids.length` oku; click’te `slice.actions.add(550)` dispatch et.',
-    '`<output>{count} film</output>` ve `onClick` bağla.',
+    'Arayüz hem store’daki liste boyunu göstermeli hem de kullanıcı etkileşimiyle listeyi güncellemelidir.',
+    'Hazır tipli selector/dispatch hook’larıyla `ids.length` değerini oku ve `add(550)` action’ını gönder.',
+    '`<output>{count} film</output>` üret; düğmenin `onClick` olayında dispatch yap.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

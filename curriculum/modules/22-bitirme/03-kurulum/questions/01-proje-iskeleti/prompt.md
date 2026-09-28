@@ -1,79 +1,55 @@
-Kitaplık’ın iskeletini bütün araçlarıyla kur. Özellik yok; sadece **her şeyin çalıştığını kanıtlayan** bir temel.
+Kitaplık uygulamasının temel araç zincirini (Vite, TypeScript, Tailwind, ESLint, Prettier, Vitest ve Playwright) sıfırdan kurup yapılandırman ve tüm kontrol komutlarının başarıyla çalıştığını kanıtlayan temiz bir uygulama iskeleti oluşturman gerekiyor.
 
-## Kurulum komutları
+## Gereksinimler
 
-```bash
-pnpm create vite projects/kitaplik --template react-ts   # "Ignore files and continue"
-cd projects/kitaplik
+`projects/kitaplik/` dizininde şu yapılandırmaları ve iskeleti eksiksiz kur:
 
-# Tarayıcıya giden kod
-pnpm add react@^19.3.0 react-dom@^19.3.0 react-router@^8.4.0 @tanstack/react-query@^5.103.2 \
-  react-hook-form@^7.88.0 @hookform/resolvers@^5.9.1 zod@^4.6.5
+- **Paketler ve Script'ler (`package.json`):**
+  - `"type": "module"` ve `"private": true` alanları.
+  - Script'ler: `dev`, `build` (`tsc -b && vite build`), `preview`, `typecheck` (`tsc -b`), `lint` (`eslint .`), `format` (`prettier --write .`), `format:check` (`prettier --check .`), `test` (`vitest run`), `test:e2e` (`playwright test`).
+  - Çalışma zamanı paketleri `dependencies` grubunda, geliştirme ve test araçları `devDependencies` grubunda yer almalıdır.
+- **TypeScript ve Vite Yapılandırması:**
+  - `tsconfig.json` ve ilgili referans dosyaları strict modda, `jsx: react-jsx`, `@/*` → `./src/*` yol takma adıyla derlenmelidir (`tsc -b` hatasız olmalıdır).
+  - `vite.config.ts`: React ve Tailwind eklentileri devrede olmalı, `@` takma adı çözülmelidir. Test yapılandırması bu dosyaya gömülmemelidir.
+- **Biçimlendirme ve Kod Standartları:**
+  - `eslint.config.js`: Proje kökünde flat config; TypeScript, React Hooks ve React Refresh kuralları açık olmalı; `eslint-config-prettier` en sonda yer almalıdır.
+  - Prettier ayarları: Proje kökünde biçimlendirici yapılandırması bulunmalı; `src` dosyaları hatasız taranmalıdır.
+- **Stil Altyapısı:**
+  - `index.html` içinde `<html lang="tr">` ve `<title>Kitaplık</title>` tanımları bulunmalıdır.
+  - Global CSS içinde `@import 'tailwindcss'` direktifi kullanılmalıdır (Tailwind v4 standardı; eski `@tailwind` direktifleri veya `tailwind.config.js` dosyası bulunmamalıdır).
+- **Test Altyapısı:**
+  - `vitest.config.ts`: `environment: 'jsdom'`, test setup dosyası referansı içermeli; `e2e/**` dizinini hariç tutmalıdır.
+  - `src/test/setup.ts`: RTL `cleanup()`, `@testing-library/jest-dom/vitest` ve MSW sunucusunu dinleyen (`onUnhandledRequest: 'error'`) temizlik kancaları içermelidir.
+  - `playwright.config.ts`: `testDir: 'e2e'`, `webServer` yapılandırması içermelidir.
+  - En az bir Vitest duman testi (`src/**/*.test.tsx`) ve en az bir Playwright duman testi (`e2e/**/*.spec.ts`) yeşil çalışmalıdır.
+- **Uygulama İskeleti:**
+  - `src/app/routes.tsx`: `export function createRoutes(queryClient: QueryClient): RouteObject[]` export'u. Rota ağacında `/` ana sayfası (`h1` "Kitaplık") ve tanımsız rotalar için "Sayfa bulunamadı" çıktısı bulunmalıdır.
+  - `src/app/providers.tsx`: `export function AppProviders({ queryClient, children }: ...)` export'u.
+  - Şablon artığı dosyalar (`App.css`, demo sayaç kodu, logolar) temizlenmiş olmalıdır.
 
-# Derleme ve stil
-pnpm add -D typescript@~6.0.3 vite@^8.3.1 @vitejs/plugin-react@^6.1.1 tailwindcss@^4.3.3 \
-  @tailwindcss/vite@^4.3.3 @types/react@^19.3.0 @types/react-dom@^19.3.0 @types/node@^24.13.3
+## Örnek
 
-# Lint ve biçim
-pnpm add -D eslint@^10.11.0 @eslint/js@^10.0.1 typescript-eslint@^8.70.1 eslint-plugin-react-hooks@^7.1.1 \
-  eslint-plugin-react-refresh@^0.5.7 eslint-config-prettier@^10.1.8 globals@^17.12.0 \
-  prettier@^3.9.9 prettier-plugin-tailwindcss@^0.8.1
+Bir duman testi senaryosu:
 
-# Test
-pnpm add -D vitest@^5.0.2 jsdom@^30.1.1 @testing-library/react@^16.3.3 @testing-library/dom@^10.4.2 \
-  @testing-library/jest-dom@^7.0.1 @testing-library/user-event@^14.6.7 msw@^2.15.0 @playwright/test@^1.63.0
-pnpm exec playwright install chromium
-```
-
-Sürümler kökteki `pnpm-workspace.yaml` catalog’undan: platform testleri aynı React kopyasını kullanmalı.
-
-## Sözleşme
-
-Testler aşağıdakileri kontrol eder. Dosyaların **içini nasıl düzenleyeceğin** sana kalmış.
-
-| Dosya | Beklenen |
-| --- | --- |
-| `package.json` | `"type": "module"`, `"private": true`. Script’ler: `dev` (vite), `build` (`tsc -b && vite build`), `preview`, `typecheck` (`tsc -b`), `lint` (`eslint .`), `format` (`prettier --write .`), `format:check` (`prettier --check .`), `test` (`vitest run`), `test:e2e` (`playwright test`). Tarayıcıya giden paketler `dependencies`’te, araçlar `devDependencies`’te; `react-router-dom` yok. |
-| `tsconfig*.json` | `src/main.tsx`’i derleyen config strict, `jsx: react-jsx`, `paths: { "@/*": ["./src/*"] }`. `tsc -b` hatasız. |
-| `vite.config.ts` | React ve Tailwind eklentileri; `@` → `src` takma adı; **`test` alanı yok**. |
-| `index.html` | `<html lang="tr">`, `<title>Kitaplık</title>` |
-| `src/main.tsx` + CSS | İmport ettiği CSS dosyası `@import 'tailwindcss'` içerir; `@tailwind` direktifi ve `tailwind.config.js` yok. |
-| `eslint.config.js` | Proje kökünde; TSX’te `react-hooks` (rules-of-hooks hata), typescript-eslint, `react-refresh` kuralları açık; `eslint-config-prettier` en sonda. `src`’de lint hatası yok. |
-| Prettier ayarı | Proje kökünde (örn. `.prettierrc.json`); `src` altındaki dosyalar biçimli. |
-| `vitest.config.ts` | `environment: 'jsdom'`, en az bir `setupFiles`; `e2e/` hariç tutulmuş. |
-| Setup dosyası | `@testing-library/jest-dom/vitest`, `cleanup()`, MSW `server.listen({ onUnhandledRequest: 'error' })` |
-| `src/**/*.test.tsx` | En az bir duman testi; `pnpm test` yeşil |
-| `playwright.config.ts` | `testDir: 'e2e'`, `webServer` (komut + url/port); `e2e/` altında en az bir senaryo |
-| `src/app/routes.tsx` | `export function createRoutes(queryClient: QueryClient): RouteObject[]` |
-| `src/app/providers.tsx` | `export function AppProviders({ queryClient, children })` — en az `QueryClientProvider` |
-| Sayfalar | `/` → h1 **Kitaplık**; tanımsız her adres → **Sayfa bulunamadı** |
-
-## Önerilen ilk testler
-
-```tsx title="src/app/App.test.tsx"
+```tsx
 it('ana sayfada "Kitaplık" başlığını gösterir', () => {
   renderApp('/')
   expect(screen.getByRole('heading', { level: 1, name: 'Kitaplık' })).toBeInTheDocument()
 })
 ```
 
-```ts title="e2e/smoke.spec.ts"
-test('ana sayfa açılır', async ({ page }) => {
-  await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1, name: 'Kitaplık' })).toBeVisible()
-})
-```
+## Sözleşme
 
-## Çalıştır
+- Dışa aktarılan bileşen ve fonksiyon imzaları:
+  - `src/app/routes.tsx` → `createRoutes(queryClient: QueryClient): RouteObject[]`
+  - `src/app/providers.tsx` → `AppProviders({ queryClient, children }: { queryClient: QueryClient; children: React.ReactNode }): React.JSX.Element`
+- Arayüz metinleri:
+  - `/` yolunda seviye 1 başlık: `Kitaplık`
+  - Tanımsız adreslerde: `Sayfa bulunamadı`
+- Komut sözleşmesi:
+  - `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test` ve `pnpm test:e2e` komutları başarıyla (sıfır hata) sonuçlanmalıdır.
 
-Kendi komutlarınla dene, sonra platformun testlerini çalıştır:
+## Kısıtlar
 
-```bash
-pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm test:e2e
-```
-
-:::info
-Bu görevin testleri projenin araçlarını gerçekten çalıştırır (`vitest run`, `playwright test --list`), bu yüzden 20–60 saniye sürebilir. Kırmızı bir testin mesajı, çalıştırılan aracın son çıktı satırlarını içerir.
-:::
-
-Bitince commit’le: `git commit -m "chore(kitaplik): proje iskeleti ve araç zinciri"`.
+- `react-router-dom` paketi doğrudan kurulmamalıdır; React Router 8 standardında `react-router` paketi kullanılmalıdır.
+- Vite test yapılandırması ayrı bir `vitest.config.ts` dosyasında tutulmalıdır.

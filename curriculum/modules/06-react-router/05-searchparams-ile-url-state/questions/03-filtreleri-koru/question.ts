@@ -7,7 +7,8 @@ export default defineQuestion({
   concepts: ['router.search-params', 'react.controlled-input', 'react.immutability', 'ts.union'],
   files: ['SearchControls.tsx'],
   hints: [
-    'Tek doğru kaynak `useSearchParams` sonucu.',
-    'Setter callback’inde önceki parametreleri kopyala, değişen anahtarı yaz ve `page` değerini sil.',
+    "Input değerini URL'den oku; sorgu veya tür değişince hangi anahtar geçersizleşiyor, hangisi korunuyor?",
+    "`useSearchParams` setter callback'inde mevcut params'ı yeni `URLSearchParams` nesnesine kopyala.",
+    "Q değişince q'yu güncelle, türü koru ve page'i sil; tür düğmeleri de aynı koruma kuralını izlesin.",
   ],
 })

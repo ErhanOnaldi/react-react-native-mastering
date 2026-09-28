@@ -12,8 +12,8 @@ export default defineQuestion({
     'src/router.tsx',
   ],
   hints: [
-    'Önce ratedMoviesQuery key’ini bütün okuma/yazma yerlerinde paylaş.',
-    'onMutate: cancel, snapshot, setQueryData; onError: snapshot; onSettled: invalidate.',
-    'RatingStars’ı erişilebilir butonlarla kur; RatedPage query sonucunu listele.',
+    'Puan, session ve rated liste arasındaki veri kimliğini bütün ekranlarda tutarlı kıl.',
+    '`onMutate`, `cancelQueries`, snapshot ve `onError` rollback callback’lerini kullan.',
+    'İlgili listeyi `onSettled` içinde yenile; kontrolü erişilebilir butonlarla sun ve `/rated` sayfasını bağla.',
   ],
 })

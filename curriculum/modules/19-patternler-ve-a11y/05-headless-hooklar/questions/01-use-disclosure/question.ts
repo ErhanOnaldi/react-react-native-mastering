@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['pattern.headless', 'react.custom-hooks', 'react.state-snapshot', 'react.useCallback'],
   files: ['useDisclosure.ts'],
   hints: [
-    '`useState(initial)` ile başla; `open` ve `close` state’i sabit `true`/`false` yapar.',
-    '`toggle` eski render’ın değerini değil en güncel değeri tersine çevirmeli. Fonksiyonların referansını render’lar arasında sabit tutmak için hangi hook’u biliyorsun?',
-    '`const toggle = useCallback(() => setIsOpen((value) => !value), [])`; `open` ve `close`’u da aynı şekilde `useCallback(..., [])` ile yaz.',
+    'Açma ve kapatma tekrar çağrıldığında aynı sonucu vermeli; iki hızlı tersine çevirme ise ilk duruma dönmeli.',
+    '`useState` functional updater ve `useCallback` davranışlarını gözden geçir.',
+    '`open` true, `close` false planlasın. `toggle`, updater içinde önceki değeri tersine çevirsin; public eylem referanslarını sabitle.',
   ],
 })

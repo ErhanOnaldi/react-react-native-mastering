@@ -8,8 +8,8 @@ export default defineQuestion({
   files: ['GenreDiscover.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Tür ve sayfa birlikte sonucun kimliğini belirler.',
-    'Seçimleri URL’de tut; veri sorgusunun key değerine ikisini de kat.',
-    'Tür değişince page 1 olsun; geri gezinince eski tür ve sayfanın kendi sonucu görünsün.',
+    'Aksiyon/page 1 ile Komedi/page 1 aynı cevabı mı temsil ediyor? Bu farkı belirle.',
+    '`useSearchParams` ile URL değerlerini oku ve ikisini de query key’e taşı.',
+    'Tür seçildiğinde search params’ı page 1 ile güncelle; popstate eski birleşimi geri getirsin.',
   ],
 })

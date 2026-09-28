@@ -1,25 +1,36 @@
 ---
-title: "Sinema tip sözleşmesini büyüt"
-minutes: 10
+title: "Sinema'nın tip sözleşmesini genişlet"
+minutes: 7
 kind: project
 ---
 
-# Sinema tip sözleşmesini büyüt
+# Sinema'nın tip sözleşmesini genişlet
 
 :::pain[Problem]
-Sinema'nın `src/types/tmdb.ts` dosyası yalnızca liste öğesini biliyor. Detay, kadro ve görseller farklı dosyalarda tahmin edilen tiplerle dolaşıyor; yükleniyor/hata durumu da üç ayrı değişken.
+Sinema liste cevabındaki film alanlarını biliyor ama detay, oyuncu kadrosu ve görseller başka dosyalarda elle tahmin ediliyor. Birkaç yerde farklı tip kullanılması, aynı veriye farklı güven düzeyi veriyor.
 :::
 
-## Sinema'da uygula
+## Önce cevapların şeklini karşılaştır
 
-Önce TMDB'nin trend ve detay fixture'larını karşılaştır. Detay cevabında liste öğesindeki `genre_ids` yok; onun yerine `genres` var. `credits` ve `videos`, yalnızca ilgili cevap eklendiğinde bulunur.
+Projedeki liste ve detay fixture'larını okuyup hangi alanların ortak, hangilerinin yalnız belirli cevaplarda bulunduğunu ayır. Listeye özgü alanı detay tipinde varmış gibi taşımamaya dikkat et. Ortak sayfalama yapısını generic tut; değişen sonuç öğesi bu yapının parametresi olsun.
 
-İki proje görevini sırayla yap: önce `src/types/tmdb.ts` ve `src/lib/tmdb-image.ts`, sonra `src/lib/remote-data.ts`. Tipleri tek kaynaktan türet; URL ve durum yardımcılarında gerçek davranışı testlerle doğrula.
-
-:::tip
-`MovieDetails` için `Omit<Movie, 'genre_ids'>` merdivenin yeni basamağıdır. `Paginated<Movie>` ile önceki modülün `MovieListResponse` adını korursun; sonraki modüller bu adı kullanır.
+:::model[Utility type merdiveni]
+`Pick` görünüm için alan seçer, `Omit` listeye özgü alanı tip görünümünden çıkarır; `Partial` ise güncelleme alanlarını opsiyonel yapar. Bu dönüşümler TypeScript tarafındadır. Yeni bağlamda bunlarla TMDB cevaplarının tiplerini tek kaynaktan türeteceksin; fixture verisi yine runtime gerçeğidir.
 :::
 
-:::sector
-Tip tanımları uygulamanın ortak dilidir. Bir sonraki React modülünde kart props'u ve koşullu render bu sözleşmelere dayanacak.
-:::
+İlk görev ayrıca poster yolunu URL'ye dönüştürür. `null` poster için geçerli bir adres uydurma; işlevin dönüş sözleşmesi bu durumda anlamlı boş sonucu vermeli. Boyut seçeneklerini açık literal union olarak sınırla.
+
+## Durumları Sinema'da kullan
+
+İkinci görev, uzak veri durumlarını ortak bir dosyada toplar. Dört status için ayrı dallar kur; success verisini, error mesajını doğru dala koy. Guard'lar status kontrolüyle daraltma yapar ve her guard kendi durumunda true vermelidir.
+
+Bu modülde öğrendiğin tipler sonraki React modülünde component props'larına ve koşullu render'a temel olacak. Proje kodunda dış cevabı doğrulama ile iç uygulama durumunu modellemenin farklı işler olduğunu ayrı tut.
+
+## Özet
+
+- Fixture'lardan liste ve detay şekillerini karşılaştır.
+- Tipleri ortak kaynaklardan türet; çalışma zamanı değerlerini utility type değiştirmez.
+- Uzak veri union'ı her geçerli durumu ayrı ve eksiksiz tanımlar.
+
+**Kendini yokla:** `MovieDetails` tipinden liste alanını `Omit` etmek fixture nesnesinden de siler mi?  
+*Cevap:* Hayır; yalnızca TypeScript'in o tip üzerinden sunduğu görünümü değiştirir.

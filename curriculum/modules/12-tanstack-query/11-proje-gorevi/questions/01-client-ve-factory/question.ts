@@ -12,9 +12,9 @@ export default defineQuestion({
     'src/main.tsx',
   ],
   hints: [
-    'Önce `movies-api.ts` imzalarını oku; yeni fetch yazma.',
-    '`queryOptions({ queryKey: [...], queryFn: () => getMovieDetails(id), staleTime: 60_000 })` biçimiyle başla.',
-    '`all` kök key’i ile alt aileleri kur; `main.tsx` içinde tek QueryClientProvider kullan.',
+    'Başlamadan önce API fonksiyonlarının argümanlarını ve döndürdüğü tipleri çıkar.',
+    '`QueryClient` ve `queryOptions` helper’larıyla her sorgu için key ve function’ı birlikte kur.',
+    '`all` kökünü `["movies"]` yap; detail/search için 60_000 süreyi ve entry dosyasındaki provider’ı ekle.',
   ],
   rubric: [
     '`queryClient` tek uygulama cache’i olarak kurulur ve sağlayıcıyla ağaca verilir.',

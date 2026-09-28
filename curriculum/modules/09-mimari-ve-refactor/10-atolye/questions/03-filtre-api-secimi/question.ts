@@ -8,9 +8,10 @@ export default defineQuestion({
   files: ['DiscoverFilters.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'İki kontrol birlikte çalışır ama yeni bir kontrol sonradan eklenebilir.',
-    'Tek filters değeri veya alt seçim parçalarıyla aynı kullanıcı davranışını sağlayabilirsin.',
-    'Seçimi yorumda anlat; tür ve sıralamayı etiketli kontrollerle sun, sıfırlamayı aynı kaynaktan yap.',
+    'Yeni bir seçim eklendiğinde hangi kullanım biçimi anlaşılır kalır?',
+    'Controlled select alanları için ayrı props ya da tek filters nesnesi tasarlayabilirsin.',
+    'Tür ve sıralama state’ini varsayılanlarıyla başlat; değişince aynı sahibi güncelle.',
+    'Reset iki değeri beraber geri almalı; yorumda seçtiğin API biçimini gerekçelendir.',
   ],
   rubric: [
     'Kod yorumu seçilen API biçimini ve nedenini somut biçimde açıklar.',

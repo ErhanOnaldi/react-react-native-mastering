@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280">
+  <title>Korumalı route kapısı: oturum kontrolü, Outlet ve yönlendirme</title>
+  <defs>
+    <marker id="ok-route" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-route-success" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-route-danger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">Route kapısı oturumu kontrol eder; yetkisiz girişte dönüş yolunu saklayıp login'e yönlendirir</text>
+
+  <rect class="d-box" x="30" y="65" width="150" height="85" rx="8"/>
+  <text class="d-title" x="105" y="93" text-anchor="middle">Kullanıcı Hedefi</text>
+  <text class="d-code" x="105" y="117" text-anchor="middle">/watchlists</text>
+  <text class="d-muted" x="105" y="137" text-anchor="middle">URL gezinmesi</text>
+
+  <line class="d-line" x1="180" y1="107" x2="229" y2="107" marker-end="url(#ok-route)"/>
+
+  <rect class="d-accent" x="235" y="60" width="185" height="95" rx="8"/>
+  <text class="d-title" x="327" y="90" text-anchor="middle">&lt;ProtectedRoute /&gt;</text>
+  <text class="d-code" x="327" y="114" text-anchor="middle">isAuthenticated?</text>
+  <text class="d-muted" x="327" y="136" text-anchor="middle">Oturum sorgusu</text>
+
+  <!-- true -> Outlet -->
+  <line class="d-line" x1="420" y1="85" x2="509" y2="85" marker-end="url(#ok-route-success)"/>
+
+  <rect class="d-success" x="515" y="55" width="210" height="70" rx="8"/>
+  <text class="d-title" x="620" y="82" text-anchor="middle">&lt;Outlet /&gt; (Başarı)</text>
+  <text class="d-text" x="620" y="102" text-anchor="middle">Özel sayfa gösterilir</text>
+  <text class="d-muted" x="620" y="118" text-anchor="middle">İzleme listesi açılır</text>
+
+  <!-- false -> Navigate -->
+  <path class="d-line-danger d-dashed" d="M420 125 C450 145 470 175 509 188" marker-end="url(#ok-route-danger)"/>
+
+  <rect class="d-warning" x="515" y="160" width="210" height="85" rx="8"/>
+  <text class="d-title" x="620" y="188" text-anchor="middle">&lt;Navigate /&gt;</text>
+  <text class="d-code" x="620" y="210" text-anchor="middle">to="/login" replace</text>
+  <text class="d-muted" x="620" y="230" text-anchor="middle">state.from ile yönlendir</text>
+</svg>

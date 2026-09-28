@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330">
+  <title>State kategorileri ve sahipleri</title>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">State'i saklamadan önce sahibini bul</text>
+
+  <rect class="d-violet" x="55" y="60" width="300" height="95" rx="8"/>
+  <text class="d-title" x="205" y="92" text-anchor="middle">Server state</text>
+  <text class="d-text" x="205" y="118" text-anchor="middle">sunucu gerçeği, cache</text>
+  <text class="d-code" x="205" y="140" text-anchor="middle">TanStack Query</text>
+
+  <rect class="d-accent" x="405" y="60" width="300" height="95" rx="8"/>
+  <text class="d-title" x="555" y="92" text-anchor="middle">URL state</text>
+  <text class="d-text" x="555" y="118" text-anchor="middle">paylaşılır, geri tuşu</text>
+  <text class="d-code" x="555" y="140" text-anchor="middle">React Router</text>
+
+  <rect class="d-success" x="55" y="190" width="300" height="95" rx="8"/>
+  <text class="d-title" x="205" y="222" text-anchor="middle">Client state</text>
+  <text class="d-text" x="205" y="248" text-anchor="middle">yerel tercih, UI</text>
+  <text class="d-code" x="205" y="270" text-anchor="middle">useState / Context / Redux</text>
+
+  <rect class="d-warning" x="405" y="190" width="300" height="95" rx="8"/>
+  <text class="d-title" x="555" y="222" text-anchor="middle">Form state</text>
+  <text class="d-text" x="555" y="248" text-anchor="middle">gönderilmemiş taslak</text>
+  <text class="d-code" x="555" y="270" text-anchor="middle">React Hook Form</text>
+</svg>

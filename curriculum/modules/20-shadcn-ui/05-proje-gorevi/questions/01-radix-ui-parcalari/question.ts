@@ -30,9 +30,10 @@ export default defineQuestion({
     'src/index.css',
   ],
   hints: [
-    '`init -b radix` sorularında CSS dosyası olarak `src/index.css`’i seç. Ardından `components.json`’da `aliases.utils`’i `@/shared/lib/cn` yap; CLI’ın ürettiği `src/lib/utils.ts` gereksiz kalırsa sil.',
-    'Fragman için `<Dialog><DialogTrigger asChild><Button>…</Button></DialogTrigger><DialogContent>…</DialogContent></Dialog>`. Başlık `DialogTitle`, açıklama `DialogDescription`; Radix adı ve açıklamayı dialoga kendisi bağlar. `dialog.tsx`’te “Close” yazan `sr-only` span’i bul.',
-    'Menü: `<DropdownMenuCheckboxItem checked={isFavorite} onCheckedChange={() => dispatch(toggleFavorite(movie.id))}>Favori</DropdownMenuCheckboxItem>` ve `<DropdownMenuItem asChild><a href=… target="_blank" rel="noreferrer">TMDB\'de aç</a></DropdownMenuItem>`. `.dark` için `RootLayout`’ta `useEffect(() => document.documentElement.classList.toggle("dark", theme === "dark"), [theme])`.',
+    "Önce mevcut Sinema alias, tema class'ını ve fragman/favori akışını oku. Hangi public davranış korunmalı, hangisi değişmeli?",
+    'Kurulumda `pnpm dlx shadcn@latest init -b radix` seç; alias haritasını düzenle. Erişilebilir bileşen aileleri `Dialog`, `DropdownMenu` ve `Button` parçalarını sağlar.',
+    "Fragman yapısında `DialogTitle` ve `DialogDescription` kullan; menüde checked item'ı favori state'ine bağla. `RootLayout` tema class'ını `document.documentElement` üzerinde eşitle.",
+    'İlk olarak `DialogContent` içindeki `Close` metnini `Kapat` yap. Klavye sırasını, focus dönüşünü ve portalın koyu temasını ayrıca gözden geçir.',
   ],
   rubric: [
     'components.json Radix seçimini, `src/index.css` yolunu ve Sinema’nın gerçek alias’larını (utils → `@/shared/lib/cn`) yansıtıyor; kök tsconfig ve Vite alias’ları çözülüyor.',

@@ -1,0 +1,1 @@
+`fetch` bir 404 cevabı alınca `Response` döndürür; `ok` kontrolü yapılmazsa hata verisi başarı verisiymiş gibi üst katmana geçer. `HttpError.status` ekranın 401, 404 ve 500 için farklı mesaj vermesine imkân tanır. 204 başarılıdır fakat JSON içermez. Ağ hatasında ayrıca HTTP durumu üretmemek önemlidir: sunucuya ulaşılamamış olabilir.

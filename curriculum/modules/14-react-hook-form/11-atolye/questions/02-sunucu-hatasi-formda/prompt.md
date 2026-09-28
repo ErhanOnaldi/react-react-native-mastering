@@ -1,7 +1,18 @@
-Bir puan seç ve `Gönder`'e bas. Sunucu hata döndürdüğünde form sanki kayıt başarılıymış gibi varsayılan puana geri dönüyor; kullanıcı ikinci denemesinde önce seçtiği puanı yeniden seçmek zorunda kalıyor.
+Puan formunda sunucu hata döndürdüğünde seçtiğin değer kayboluyor; yeniden denemeden önce aynı puanı tekrar seçmen gerekiyor.
 
-`RatingForm.tsx` içindeki `RatingForm` bileşeninde bu belirtiyi tekrar et: bir puan seç, gönder, sunucunun hata döndürdüğü durumu gözle. Seçtiğin puan hata sonrasında ekranda kalmalı; form yalnızca sunucu isteği gerçekten kabul ettiğinde sıfırlanmalı.
+## Gereksinimler
 
-## Arayüz sözleşmesi
+- Sunucu hatasından sonra seçili puan ekranda kalmalı.
+- Hata mesajı görünür olmalı ve “kaydedilemedi” kelimesini içermeli.
+- Aynı değerle tekrar gönderim yapılabilmeli; başarılı yanıtta “Puan kaydedildi” görünmeli.
+- Başarılı gönderimden sonra hata mesajı kaldırılmalı.
 
-- Sunucu hatasında görünen mesaj `kaydedilemedi` kelimesini içersin.
+## Örnek
+
+9 puan seç → Gönder → sunucu hata cevabı verir → seçim 9 olarak kalır. Tekrar Gönder → başarılı cevap → “Puan kaydedildi”.
+
+## Sözleşme
+
+- Dosya ve export: `RatingForm.tsx` → named export `RatingForm`.
+- Arayüz: “Puan” adlı seçim alanı, “Gönder” düğmesi; hata `role="alert"`, başarı görünür metin olarak bulunabilsin.
+- Önizleme `Preview.tsx` üzerinden formu gösterir.

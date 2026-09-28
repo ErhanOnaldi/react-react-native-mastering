@@ -1,3 +1,17 @@
-Sinema arama alanı yazdığını üst bileşene bildirmeli. `SearchField({ value, onChange })` yaz; `onChange` tipi `(value: string) => void` olsun. `<input aria-label="Film ara">` controlled kalsın. Handler’ı ayrı `ChangeEvent<HTMLInputElement>` fonksiyonuyla tiple ve `currentTarget.value` gönder. `value="Kara"` verilirse input Kara göstermeli.
+Arama alanında gösterilen metin parent'tan gelir; kullanıcı yeni değer yazdığında üst bileşene bildirilmelidir.
 
-**Örnek:** Boş input’a `M` yaz → `onChange("M")` çağrısı.
+## Gereksinimler
+
+- Alanın erişilebilir adı “Film ara” olmalıdır.
+- `value` prop'u input'ta görünmelidir.
+- Kullanıcı yazdığında callback yeni metinle çağrılmalıdır.
+
+## Örnek
+
+`value="Kara"` → input'ta “Kara”; boş alana “M” yaz → callback “M” değeriyle çağrılır.
+
+## Sözleşme
+
+- Dosya ve export: `SearchField.tsx` → named export `SearchField`
+- Props: `{ value: string; onChange: (value: string) => void }`
+- Arayüz: “Film ara” adını taşıyan textbox.

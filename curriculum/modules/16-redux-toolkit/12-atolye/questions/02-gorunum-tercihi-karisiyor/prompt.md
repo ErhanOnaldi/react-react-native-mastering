@@ -1,5 +1,17 @@
-Bir filmi favori işaretle, sonra `Kart görünümü` düğmesine bas: film listesi bomboş kalıyor, sanki hiç veri gelmemiş gibi.
+Film keşif ekranında görünüm seçince içerik kayboluyor; tür filtresine gidip dönünce kişisel seçim unutuluyor. Ekran bu iki davranışı düzeltmeli.
 
-Ayrı bir denemede: "Aksiyon" türünde bir filmi favori işaretle, türü "Komedi"ye çevir, sonra tekrar "Aksiyon"a dön — az önce işaretlediğin favori artık işaretli görünmüyor.
+## Gereksinimler
 
-`MovieWorkspace.tsx` içindeki `MovieWorkspace` bileşeni bu iki belirtiden kurtulmalı: görünüm değişimi film sonucunu etkilememeli, favori işareti tür değişse de doğru filmde kalmalı.
+- `Kart görünümü` seçilince film listesi görünür kalır.
+- Film favorisi başka türe geçip geri dönünce aynı film üzerinde kalır.
+- Tür değişimiyle arayüz görünüm seçimi birbirini sıfırlamaz.
+
+## Örnek
+
+Bir filmi favorile → `Kart görünümü`ne geç: film görünür ve işaretli kalır. Başka türe geçip geri dön: aynı filmin `aria-pressed` değeri `true` olur.
+
+## Sözleşme
+
+- Dosya ve export: `MovieWorkspace.tsx` → `MovieWorkspace`
+- `Kart görünümü` erişilebilir adlı bir düğmedir.
+- Favori düğmesinin adı `{film adı} favori`, durumu `aria-pressed` ile okunur.

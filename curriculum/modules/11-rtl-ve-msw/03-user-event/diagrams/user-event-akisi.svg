@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 230">
+  <title>Kullanıcı etkileşiminden yeni ekrana</title>
+  <defs>
+    <marker id="arrow-interaction" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="28" text-anchor="middle">Eylemi DOM’dan başlat, kullanıcıya görünen sonucu ölç</text>
+
+  <rect class="d-accent" x="20" y="80" width="160" height="76" rx="8"/>
+  <text class="d-title" x="100" y="110" text-anchor="middle">user-event</text>
+  <text class="d-muted" x="100" y="135" text-anchor="middle">tıkla / yaz</text>
+
+  <rect class="d-box" x="205" y="80" width="160" height="76" rx="8"/>
+  <text class="d-title" x="285" y="110" text-anchor="middle">DOM olayları</text>
+  <text class="d-muted" x="285" y="135" text-anchor="middle">focus · input · click</text>
+
+  <rect class="d-violet" x="390" y="80" width="160" height="76" rx="8"/>
+  <text class="d-title" x="470" y="110" text-anchor="middle">React handler</text>
+  <text class="d-muted" x="470" y="135" text-anchor="middle">state güncellemesi</text>
+
+  <rect class="d-success" x="575" y="80" width="165" height="76" rx="8"/>
+  <text class="d-title" x="657" y="110" text-anchor="middle">Yeni ekran</text>
+  <text class="d-muted" x="657" y="135" text-anchor="middle">DOM assertion</text>
+
+  <line class="d-line-accent" x1="180" y1="118" x2="201" y2="118" marker-end="url(#arrow-interaction)"/>
+  <line class="d-line-accent" x1="365" y1="118" x2="386" y2="118" marker-end="url(#arrow-interaction)"/>
+  <line class="d-line-accent" x1="550" y1="118" x2="571" y2="118" marker-end="url(#arrow-interaction)"/>
+</svg>

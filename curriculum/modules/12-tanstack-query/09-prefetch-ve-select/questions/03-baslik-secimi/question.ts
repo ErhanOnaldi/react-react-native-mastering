@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['query.select', 'ts.inference', 'js.array-methods'],
   files: ['MovieTitles.tsx'],
   hints: [
-    '`queryFn` gerçek TMDB listesini döndürmeli.',
-    '`select: page => page.results.map(movie => movie.title)` kullan.',
-    'Başarı dalında `query.data` artık `string[]`; bunu `<ol>` içinde render et.',
+    'Ekran yalnız başlık isterken cache’te hangi tam cevap kalmalı?',
+    'Query observer’ında `select` ile `results` içinden isimleri çıkar.',
+    '`select: page => page.results.map(movie => movie.title)`; success data’yı `<ol>` ile göster.',
   ],
 })

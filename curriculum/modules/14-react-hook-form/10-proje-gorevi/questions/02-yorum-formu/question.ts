@@ -15,13 +15,16 @@ export default defineQuestion({
   focusFiles: ['src/features/watchlists/ReviewForm.tsx'],
   reviewFiles: ['src/features/watchlists/ReviewForm.tsx'],
   hints: [
-    '`ReviewForm` named export olsun; `postId` prop’unu al.',
-    'Puan için `Controller`, metin için `register` kullan; her ikisini de zorunlu kıl.',
-    'Mutation’da DummyJSON `/comments/add` isteği gönder, `response.ok` kontrol et ve `isPending` durumunu göster.',
+    'Puan bir özel seçim, yorum ise metin alanı; ikisi aynı form kaynağında buluşmalı ama endpoint yalnız bazı alanları kabul eder.',
+    'RHF `Controller` ile controlled yıldızları, `register` ile native textarea alanını bağla; TanStack Query `useMutation` yazma isteğini yönetir.',
+    "Puan için başlangıç 0 ve en az 1 kuralı tanımla; mutation payload'ında yalnız `body`, `postId`, `userId` alanlarını oluştur.",
+    'HTTP hatasında alan değerlerini koru; `response.ok` false ise mutation error durumuna geçir.',
   ],
   rubric: [
     'Form alanları görünür etiketli ve hatalar erişilebilir mi?',
-    'Veri tipi domain tipinden Omit ile türetilmiş mi?',
-    'Hata ve başarılı kayıt durumları kullanıcıya açıkça gösteriliyor mu?',
+    'Puan ve yorum alanları doğru aralıkta doğrulanıyor mu?',
+    'Gönderilen JSON yalnız endpoint sözleşmesindeki değerleri içeriyor mu?',
+    'Pending, success ve error durumları doğru gösteriliyor mu?',
+    'Başarıda temizleme ve hata sonrası değer koruma davranışı doğru mu?',
   ],
 })

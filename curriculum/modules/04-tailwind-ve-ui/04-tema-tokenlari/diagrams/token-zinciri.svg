@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 240">
+  <title>Tema token'ından utility class'a</title>
+  <defs>
+    <marker id="token-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0,0 L8,4 L0,8 z" />
+    </marker>
+  </defs>
+  <rect class="d-accent" x="18" y="58" width="220" height="112" rx="12" />
+  <text class="d-title" x="128" y="88" text-anchor="middle">Tasarım kararı</text>
+  <text class="d-text" x="128" y="120" text-anchor="middle">marka rengi</text>
+  <text class="d-muted" x="128" y="144" text-anchor="middle">tek anlam, tek ad</text>
+  <rect class="d-violet" x="270" y="58" width="220" height="112" rx="12" />
+  <text class="d-title" x="380" y="88" text-anchor="middle">CSS değişkeni</text>
+  <text class="d-code" x="380" y="120" text-anchor="middle">--color-brand-700</text>
+  <text class="d-muted" x="380" y="144" text-anchor="middle">değer tema kapsamında</text>
+  <rect class="d-success" x="522" y="58" width="220" height="112" rx="12" />
+  <text class="d-title" x="632" y="88" text-anchor="middle">Tailwind utility</text>
+  <text class="d-code" x="632" y="120" text-anchor="middle">text-brand-700</text>
+  <text class="d-muted" x="632" y="144" text-anchor="middle">bg-brand-700 da üretilebilir</text>
+  <path class="d-line-accent" d="M246 114 H261" marker-end="url(#token-arrow)" />
+  <path class="d-line-accent" d="M498 114 H513" marker-end="url(#token-arrow)" />
+  <text class="d-muted" x="380" y="208" text-anchor="middle">@theme token'ı utility ad alanına bağlar</text>
+</svg>

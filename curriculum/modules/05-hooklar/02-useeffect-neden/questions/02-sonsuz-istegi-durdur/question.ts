@@ -7,8 +7,9 @@ export default defineQuestion({
   files: ['MovieTitle.tsx'],
   hints: [
     'Her render’da çalışan satırları bul.',
-    '`useEffect` import et ve fetch zincirini effect içine taşı.',
-    'Bu ilk sabit gösterimde effect’i `[]` ile kur; başlığı state’ten render et.',
+    'Ağ isteği render hesabı değil; commit sonrasında çalışan bir effect içinde olmalı.',
+    '`useEffect(() => { fetch(...).then(...) }, [id])` iskeletiyle başla; başlığı state’ten render et.',
+    'Headers nesnesini effect içinde kurarsan dependency listesine ayrıca nesne eklemek zorunda kalmazsın.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

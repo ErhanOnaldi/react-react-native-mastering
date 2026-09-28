@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['query.pagination', 'query.keys', 'router.search-params'],
   files: ['MoviePages.tsx'],
   hints: [
-    '`page` değerini key ve istek URL’sine koy.',
-    '`placeholderData` için v5’in `keepPreviousData` fonksiyonunu kullan.',
-    '`isPlaceholderData` true iken geçici durum yazısını, başarıda `data.results` listesini göster.',
+    'Page 1 ile page 2 ayrı sonuçtur; geçişte eski içerik yine kullanılabilir.',
+    'Page’i query key ve request’e ekle; `placeholderData: keepPreviousData` kullan.',
+    '`isPlaceholderData` iken `Yeni sayfa yükleniyor` yaz ve sonuçları render etmeye devam et.',
   ],
 })

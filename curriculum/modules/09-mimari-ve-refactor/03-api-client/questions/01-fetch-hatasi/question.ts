@@ -4,7 +4,7 @@ export default defineQuestion({
   type: 'quiz',
   title: '404 neden fırlamadı?',
   difficulty: 'kolay',
-  concepts: ['arch.api-client', 'arch.api-error', 'fetch.error-handling'],
+  concepts: ['arch.api-client', 'arch.api-error', 'fetch.error-handling', 'web.http-anatomy'],
   question: '`fetch("/movie/999999")` 404 cevabı aldı ama `catch` çalışmadı. Neden?',
   options: [
     {

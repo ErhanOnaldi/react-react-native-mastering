@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['query.suspense', 'react.suspense', 'react.error-boundary'],
   files: ['MovieDetail.tsx'],
   hints: [
-    'useSuspenseQuery queryKey içinde id olmalı.',
-    'queryFn load(id) çağırır.',
-    'data tanımlıdır; h1 içinde data.title göster.',
+    'Bekleme ve hata UI’ının bileşenin içinde mi, yoksa onu saran ağaçta mı olması gerektiğini düşün.',
+    '`useSuspenseQuery` başarıda tanımlı `data` verir; query key kaydın id’sini içermeli.',
+    '`queryKey: ["movie", id]`, `queryFn: () => load(id)` ve `<h1>{data.title}</h1>` kullan.',
+    'Bileşende `isPending` dalı ekleme; dışarıdaki sınırlar fallback ve hatayı yönetir.',
   ],
 })

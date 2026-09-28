@@ -1,11 +1,16 @@
-Film arama sayfasında yazılan metin ve sayfa paylaşılabilir olmalı; tarayıcının geri tuşuna basınca önceki arama sonucu görünmeli, aynı aramaya tekrar dönüldüğünde gereksiz bir bekleme olmamalı.
+Film aramasında adres bağlantısı arama metni ve sayfayı yeniden açmalı; geçmişteki aramaya dönünce daha önce yüklenen sonuç hızlıca görünmeli.
 
-`MovieSearchPage.tsx` içindeki `MovieSearchPage` bileşenini tamamla:
+## Gereksinimler
 
-- Arama metni ve sayfa numarası URL'de tutulmalı; metin değişince sayfa 1'e dönmeli.
+- Arama metni ve sayfa numarası URL’de tutulur; metin değişince sayfa 1’e döner.
 - Sonuçlar TMDB'den gelir; yükleme ve hata durumları okunabilir olmalı.
-- Geri/ileri ile daha önce görülmüş bir aramaya dönüldüğünde sonuç hemen görünmeli; aynı arama kısa süre içinde tekrar ağdan istenmemeli.
+- Geri/ileri ile daha önce görülmüş arama sonucu hemen görünür; kısa süre içinde aynı arama yeniden ağdan istenmez.
 
-## Arayüz sözleşmesi
+## Örnek
 
+`?q=Matrix&page=1` → `?q=Dövüş&page=1` → geri: Matrix sonucu yeniden görünür ve ikinci Matrix isteği atılmaz.
+
+## Sözleşme
+
+- Dosya ve export: `MovieSearchPage.tsx` → `MovieSearchPage`
 - Sayfa arasında gezinmek için `Sonraki sayfa` ve `Önceki sayfa` düğmeleri bulunsun.

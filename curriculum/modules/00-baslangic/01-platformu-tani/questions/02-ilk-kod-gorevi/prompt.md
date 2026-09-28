@@ -1,9 +1,19 @@
-TMDB, her filmin puanını `vote_average` alanında `7.456` gibi bir sayı olarak gönderir. Kartlarda bunu **tek ondalıklı** göstermek istiyoruz.
+Film kartlarında TMDB'den gelen ham puan değerini tek ondalıklı ve kullanıcı dostu bir metin olarak göstermek istiyoruz.
 
-`formatVote(voteAverage)` fonksiyonunu tamamla:
+## Gereksinimler
 
-- `7.456` → `"7.5"`
-- `8` → `"8.0"`
-- Henüz oylanmamış filmlerde TMDB `0` gönderir → `"Henüz oy yok"`
+- Verilen puan değeri tek basamaklı ondalık sayıya yuvarlanmalıdır.
+- Tam sayılarda virgülden sonraki sıfır korunmalıdır (örneğin `8` girdiğinde `"8.0"` üretilmelidir).
+- Puan değeri `0` olduğunda `"Henüz oy yok"` metni dönmelidir.
 
-Bitirince **Çalıştır**'a bas (ya da **⌘/Ctrl + Enter**). Kalan testlerin mesajlarını oku: *beklenen* ve *gelen* değerleri karşılaştır.
+## Örnek
+
+| Girdi | Çıktı |
+| --- | --- |
+| `7.456` | `"7.5"` |
+| `8` | `"8.0"` |
+| `0` | `"Henüz oy yok"` |
+
+## Sözleşme
+
+- Dosya ve export: `formatVote.ts` → `export function formatVote(voteAverage: number): string`

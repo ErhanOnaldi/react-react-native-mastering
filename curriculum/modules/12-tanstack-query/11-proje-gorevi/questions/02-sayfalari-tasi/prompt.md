@@ -1,10 +1,23 @@
-Dört sayfada `useEffect` ile benzer loading/error/data state dalları var. Aramaya geri dönüşte istek sayacı artıyor; sayfa değişiminde liste boşalıyor.
+Sinema’nın Home, Search, Details ve Favorites ekranlarında sunucu verisi ortak cache’ten gelsin; arama ve sayfalama seçimleri doğru sonucu belirlesin.
 
-## İstenen
+## Gereksinimler
 
-- Home, Search, MovieDetails ve Favorites sayfalarının **sunucu verisi** akışını `useQuery`, `useQueries` veya `useInfiniteQuery` ile Query cache’inden yönet. Favori id’leri mevcut client state olarak kalsın.
-- SearchPage’de URL’deki `q` ve `page`, HomePage’de `genre` ve `page` değişince doğru veri görünsün. Boş aramada GET atma. Geçersiz page için 1 kullan.
-- Sayfalama sorgularında `keepPreviousData` kullan. Yeni sayfa beklerken önceki liste görünür ve geçici olduğu anlaşılır.
-- `MovieDetailsPage` route id’si değiştiğinde yeni film görünsün. Loading, error, boş ve başarı durumları anlaşılır kalsın.
+- Dört ekrandaki server data akışını Query’den yönet; favori id’lerini mevcut client state’te bırak.
+- Search’te `q` ve `page`, Home’da `genre` ve `page` değişince doğru içerik gelsin.
+- Boş arama isteği gönderme; geçersiz sayfayı 1 kabul et.
+- Sayfa değişirken önceki liste yeni cevap gelene kadar görünür kalsın ve geçiş anlaşılır olsun.
+- Detay id’si değişince yeni film göster; loading, error, empty ve success görünümleri anlaşılır kalsın.
+- Taze arama verisine geri dönünce aynı arama için ikinci GET gönderme.
 
-`?q=Dövüş` → detay → geri akışını istek sayacında karşılaştır: taze cache ile ikinci arama GET’i gitmemeli.
+## Örnek
+
+`?q=Dövüş&page=1` → detay → geri: sonuç `Dövüş Kulübü` görünür ve taze dönüşte arama isteği tekrarlanmaz. `page=2` yüklenirken önceki kartlar geçici olarak kalır.
+
+## Sözleşme
+
+- `src/pages/HomePage.tsx`, `SearchPage.tsx`, `MovieDetailsPage.tsx` ve `FavoritesPage.tsx` dosyaları uygulamanın mevcut named/default export’larını korur.
+- Arama ifadesi, sayfa, tür ve film id’si ilgili sorgu kimliğine yansır.
+
+## Kısıtlar
+
+- Mevcut `movieQueries` tariflerini ve `movies-api.ts` fonksiyonlarını kullan; favori seçimini server data gibi saklama.

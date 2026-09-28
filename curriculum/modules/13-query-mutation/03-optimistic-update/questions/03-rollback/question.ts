@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['query.optimistic', 'query.invalidation', 'test.msw-overrides'],
   files: ['useOptimisticRating.ts'],
   hints: [
-    '`onMutate` async olabilir: önce cancelQueries.',
-    'getQueryData ile önceki diziyi döndür; setQueryData ile yeni dizi yaz.',
-    'onError context.previous değerini geri koy; onSettled invalidation yapsın.',
+    'Geçici liste yazısını eski GET’in ezmesini ve hata halinde neyin geri konacağını düşün.',
+    '`onMutate`, `cancelQueries`, `getQueryData` ve `setQueryData` callback’lerini eşleştir.',
+    '`onMutate` içinde snapshot’ı context olarak döndür; `onError` bunu geri yüklesin.',
+    '`onSettled` içinde ilgili session key’ini invalidate et; bu görevde tek mutation varsayımı geçerli.',
   ],
 })

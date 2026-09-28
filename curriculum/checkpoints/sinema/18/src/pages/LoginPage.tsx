@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useAppDispatch } from '@/app/store'
 import { login } from '@/features/auth/auth-api'
 import { setCredentials } from '@/features/auth/authSlice'
+import { getSafeRedirect } from '@/features/auth/safe-redirect'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 
@@ -35,11 +36,10 @@ export function LoginPage() {
       dispatch(
         setCredentials({ user: { id, username }, accessToken, refreshToken }),
       )
-      const from = (location.state as { from?: string } | null)?.from
-      await navigate(
-        from?.startsWith('/') && !from.startsWith('//') ? from : '/profile',
-        { replace: true },
-      )
+      const from = (location.state as { from?: unknown } | null)?.from
+      const queryRedirect = new URLSearchParams(location.search).get('redirect')
+      const destination = getSafeRedirect(from, getSafeRedirect(queryRedirect))
+      await navigate(destination, { replace: true })
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Giriş başarısız.')
     }

@@ -6,9 +6,9 @@ export default defineQuestion({
   concepts: ['redux.typed-hooks', 'react.events', 'perf.rerender'],
   files: ['FavoriteButton.tsx'],
   hints: [
-    '`useAppSelector` ile yalnız gereken boolean değeri seç.',
-    '`state.favorites.ids.includes(id)` yeterli.',
-    'Metni `favorite ? "Favoriden çıkar" : "Favorilere ekle"` ile üret.',
+    'Bu düğmenin görünümü tek bir soruya dayanır: verilen kimlik seçili mi?',
+    'Tipli `useAppSelector` ve `useAppDispatch` hook’larını kullan; boolean seçimi diğer state değişimlerinden ayrılır.',
+    '`state.favorites.ids.includes(id)` sonucuna göre metni `favorite ? "Favoriden çıkar" : "Favorilere ekle"` yap ve tıklamada action gönder.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

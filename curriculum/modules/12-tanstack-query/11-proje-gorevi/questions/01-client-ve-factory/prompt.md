@@ -1,10 +1,24 @@
-Sinema v2’de arama, detay ve trendin API fonksiyonları var; fakat hangi sayfanın hangi veriyi cache’leyeceği ortak bir kurala bağlı değil.
+Sinema’daki ortak film okumaları aynı cache kimliğini paylaşsın; detay ve arama verisi kısa dönüşlerde yeniden kullanılabilsin.
 
-## İstenen
+## Gereksinimler
 
-- `@tanstack/react-query` ekle. `src/shared/api/query-client.ts` dosyasında **`queryClient`** export et; uygulama boyunca aynı cache kullanılsın. Detay ve arama verisi en az 60 saniye taze kalsın.
-- `src/features/movies/api/movie-queries.ts` dosyasında **`movieQueries`** export et: `all`, `trending(page)`, `discover({ genreId, page })`, `search({ query, page })`, `detail(id)`, `genres()`.
-- `detail(id)` ve `search(params)` tarifleri bağımsız bir QueryClient ile kullanıldığında da 60 saniye taze kalsın. Tarifler mevcut `movies-api.ts` fonksiyonlarından veri alsın; Bearer ve `ApiError` davranışları korunsun.
-- Aynı filtre ve sayfa aynı key; farklı query/page/id farklı key olsun. Detay key’i sonraki hover prefetch ile aynı olmalı.
+- Uygulama için tek, paylaşılabilir cache sahibi oluştur ve React ağacının üstünde kullan.
+- Film sorgularının public kimlik ailesini ve tipli tariflerini tek yerde tanımla.
+- `all`, `trending(page)`, `discover({ genreId, page })`, `search({ query, page })`, `detail(id)` ve `genres()` tariflerini sun.
+- Cevabı etkileyen parametreler key’i değiştirsin; aynı filtre ve sayfa aynı key’i kullansın.
+- Detay ve arama cevapları 60 saniye taze kalsın; aynı taze detayın ikinci okuması ek GET üretmesin.
+- Var olan API çağrılarının Bearer ve hata davranışını koru.
 
-Örnek: `queryClient.fetchQuery(movieQueries.detail(550))` başlık olarak **Dövüş Kulübü** döndürür. Aynı taze tarifi tekrar okumak yeni GET üretmez.
+## Örnek
+
+`detail(550)` → `Dövüş Kulübü`; aynı tarif tekrar okunduğunda `/3/movie/550` için toplam bir GET.
+
+## Sözleşme
+
+- `src/shared/api/query-client.ts` → named export `queryClient`.
+- `src/features/movies/api/movie-queries.ts` → named export `movieQueries` ve yukarıdaki altı public tarifi.
+- `src/main.tsx` → React uygulamasının kökünde aynı QueryClient paylaşılır.
+
+## Kısıtlar
+
+- Var olan `src/features/movies/api/movies-api.ts` fonksiyonlarını kullan; ikinci bir HTTP istemcisi oluşturma.

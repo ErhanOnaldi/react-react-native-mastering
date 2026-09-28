@@ -1,12 +1,18 @@
-Aramayı tüm listede yapıp sonra sayfalamak gerekir. Önce kesersen ikinci sayfadaki eşleşen filmi hiç göremezsin.
+Statik film listesini URL'deki arama ve tür seçimlerine göre süz, ardından istenen sayfanın öğelerini döndür.
 
-## Görev
+## Gereksinimler
 
-`selectMovies(movies, params, pageSize)` statik filmleri önce `q` ve `genre` ile filtrelesin, sonra `page` dilimini dönsün.
+- Başlık araması Türkçe büyük/küçük harfe duyarsız çalışsın.
+- `genre` pozitif sayısal id olarak `genre_ids` içinde aranmalı; bozuk tür değeri filtre uygulanmaması gibi davransın.
+- `page` eksik veya geçersizse 1 kabul edilsin.
+- Önce arama ve tür filtreleri, sonra sayfalama uygulansın.
 
-- Başlık araması Türkçe büyük/küçük harfe duyarsız olsun.
-- `genre` sayısal id olarak `genre_ids` içinde aransın.
-- `page` yoksa veya geçersizse 1 olsun.
-- Sayfalama filtrelenmiş listeye uygulansın.
+## Örnek
 
-Örnek: üç Aksiyon filminde `pageSize=2&page=2` → üçüncü film.
+Üç eşleşen Aksiyon filmi, `pageSize=2&page=2` → filtrelenmiş listenin üçüncü filmi.
+
+## Sözleşme
+
+- `selectMovies.ts` → `selectMovies(movies, params, pageSize)`.
+- Film biçimi: `{ id: number; title: string; genre_ids: number[] }`.
+- `params` tipi `URLSearchParams`; dönüş, aynı film nesnelerinden oluşan dizidir.

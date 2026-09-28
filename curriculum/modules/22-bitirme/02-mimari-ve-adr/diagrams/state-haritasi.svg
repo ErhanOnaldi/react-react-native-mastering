@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360">
+  <title>State haritası ve sahiplik ayrımı</title>
+
+  <defs>
+    <marker id="m-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M 0 1 L 10 5 L 0 9 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="25" text-anchor="middle">Bilgiyi saklamadan önce sahibini belirle: tek kaynak ve türetme akışı</text>
+
+  <!-- URL State -->
+  <rect class="d-accent" x="40" y="55" width="200" height="110" rx="8"/>
+  <text class="d-title" x="140" y="85" text-anchor="middle">URL State</text>
+  <text class="d-text" x="140" y="110" text-anchor="middle">q, page, status, workId</text>
+  <text class="d-code" x="140" y="132" text-anchor="middle">React Router</text>
+  <text class="d-muted" x="140" y="152" text-anchor="middle">Paylaşılır, geri tuşu</text>
+
+  <!-- Server State -->
+  <rect class="d-violet" x="520" y="55" width="200" height="110" rx="8"/>
+  <text class="d-title" x="620" y="85" text-anchor="middle">Server State</text>
+  <text class="d-text" x="620" y="110" text-anchor="middle">Arama, eser, yazar</text>
+  <text class="d-code" x="620" y="132" text-anchor="middle">TanStack Query</text>
+  <text class="d-muted" x="620" y="152" text-anchor="middle">Sunucu kopyası, cache</text>
+
+  <!-- Türetilmiş Değer -->
+  <rect class="d-box" x="280" y="140" width="200" height="100" rx="8"/>
+  <text class="d-title" x="380" y="170" text-anchor="middle">Türetilmiş Değer</text>
+  <text class="d-text" x="380" y="195" text-anchor="middle">liste.length, sayfa sayısı</text>
+  <text class="d-muted" x="380" y="220" text-anchor="middle">Saklanmaz, hesaplanır</text>
+
+  <!-- Form State -->
+  <rect class="d-warning" x="40" y="225" width="200" height="110" rx="8"/>
+  <text class="d-title" x="140" y="255" text-anchor="middle">Form State</text>
+  <text class="d-text" x="140" y="280" text-anchor="middle">Durum, puan, not taslağı</text>
+  <text class="d-code" x="140" y="302" text-anchor="middle">React Hook Form</text>
+  <text class="d-muted" x="140" y="322" text-anchor="middle">Gönderilene dek geçici</text>
+
+  <!-- Client State -->
+  <rect class="d-success" x="520" y="225" width="200" height="110" rx="8"/>
+  <text class="d-title" x="620" y="255" text-anchor="middle">Client State</text>
+  <text class="d-text" x="620" y="280" text-anchor="middle">Okuma listesi kayıtları</text>
+  <text class="d-code" x="620" y="302" text-anchor="middle">Context / localStorage</text>
+  <text class="d-muted" x="620" y="322" text-anchor="middle">Bu tarayıcıda kalıcı</text>
+
+  <!-- URL -> Server ok -->
+  <text class="d-muted" x="380" y="78" text-anchor="middle">URL parametresi sorguyu tetikler</text>
+  <line class="d-line" x1="240" y1="90" x2="512" y2="90" marker-end="url(#m-arrow)"/>
+
+  <!-- Form -> Client ok -->
+  <text class="d-muted" x="380" y="278" text-anchor="middle">Kaydet basılınca listeye yazar</text>
+  <line class="d-line" x1="240" y1="290" x2="512" y2="290" marker-end="url(#m-arrow)"/>
+</svg>

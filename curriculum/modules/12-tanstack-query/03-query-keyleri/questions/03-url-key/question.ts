@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['query.keys', 'router.search-params', 'fetch.query-params', 'js.optional-chaining'],
   files: ['searchKey.ts'],
   hints: [
-    'Önce `params.get` ile iki değeri oku.',
-    '`Number.isInteger` ve `raw > 0` ile page’i doğrula.',
-    '`return ["movies", "search", query, page] as const` yaz.',
+    'URLSearchParams hem metni hem sayıyı string olarak verir; önce ikisini oku.',
+    '`params.get`, `Number`, `Number.isInteger` ve pozitiflik kontrolünü kullan.',
+    '`return ["movies", "search", query, page] as const` biçiminde tuple üret.',
   ],
 })

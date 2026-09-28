@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.user-event', 'react.controlled-input'],
   files: ['SearchBox.tsx'],
   hints: [
-    'Input’u label ile ilişkilendir.',
-    'onChange içinde event.currentTarget.value kullan.',
-    'onSubmit handler’ında trim yapıp boş değilse callback’i çağır.',
+    'Önce input değerinin kaynağını ve form gönderiminde hangi değerin iletileceğini ayır.',
+    'Controlled input, `onChange` ve form `onSubmit` olaylarını kullan.',
+    'Submit handler’ında `preventDefault()`, `trim()` ve boş-string kontrolü uygula; erişilebilir label ile arama alanını ilişkilendir.',
   ],
 })

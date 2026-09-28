@@ -9,9 +9,9 @@ export default defineQuestion({
   focusFiles: ['src/pages/SearchPage.test.tsx', 'src/pages/MovieDetailsPage.test.tsx'],
   reviewFiles: ['src/pages/SearchPage.test.tsx', 'src/pages/MovieDetailsPage.test.tsx'],
   hints: [
-    'Önce happy path: role/name ile başlığı bul; URL için memory router kullan.',
-    'Arama etkileşimini await user.type ile yap; debounce için waitFor içinde URL veya istek günlüğünü denetle.',
-    'Boş ve hata durumlarında server.use ile ilgili endpoint’i override et; afterEach resetHandlers bunu temizler.',
+    'Önce her sayfa için URL, kullanıcı eylemi ve beklenen görünür sonucu tek tek yaz.',
+    '`renderWithRouter`, `userEvent.setup`, `findBy`/`waitFor` ve MSW `server.use` ile senaryoları çalıştır.',
+    'Arama için Matrix query ve empty/500 response; detay için 550/404 response üret. Her test kendi initial route ve handler’ını kursun.',
   ],
   rubric: [
     'Testler kullanıcı etkileşimini ve ekranda görünen sonucu bağlıyor.',

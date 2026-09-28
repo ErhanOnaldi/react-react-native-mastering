@@ -1,0 +1,1 @@
+`basePath` içindeki boş parçalar atılınca kök ve alt yol aynı kuralla birleştirilebilir. Asset adını bölüp yeniden üretmek gereksizdir; hash’in korunması cache anahtarını da korur. Gerçek Vite projesinde bu önek `base` yapılandırmasıyla build sırasında üretilir; yardımcı fonksiyon yalnızca URL kuralını görünür kılar.

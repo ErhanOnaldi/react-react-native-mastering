@@ -7,37 +7,59 @@ kind: review
 # readConfig şemaya dönüşüyor
 
 :::pain[Problem]
-Token `.env` içinde var görünüyor ama yalnızca boşluk; ilk istek 401 dönüyor. 0. modüldeki elle yazılmış `readConfig` büyüdü.
+Token .env dosyasında var görünüyor ama içeriği yalnızca boşluk. Uygulama başlıyor, ilk istek 401 dönüyor. 0. modülde elle yazdığın readConfig büyüdü; artık eksik, boş ve hatalı değerlerin her biri için ayrı dal gerekiyor.
 :::
 
-## Neden bu araç?
+## Ayar da dış girdidir
 
-Env değerlerini uygulama açılırken tek kez parse et. `VITE_TMDB_TOKEN` trim sonrası boş olamaz. Başlık için varsayılan, sayfa boyutu için güvenli sayı dönüşümü kullan.
+Environment değişkenlerinin editörde string olarak görünmesi, çalışma anında doğru olduklarını kanıtlamaz. Bir değer eksik olabilir, boşluk içerebilir veya sayı beklenen yerde geçersiz metin taşıyabilir. 0. modüldeki readConfig bu durumları elle kontrol ediyordu; aynı ilkeleri şema ile düzenli biçimde ifade edebilirsin.
 
-## Sinema'da bir adım ileri
+:::model[Tip derlemede, veri çalışma anında]
+TypeScript'in import.meta.env bildirimi derleme zamanı bilgisidir. Uygulama açılırken gerçek değerleri Zod ile parse edince doğrulanmış config elde edersin. Bu bağlamda doğrulamanın sonucu çoğunlukla uygulama boyunca paylaşılan tek bir env nesnesidir.
+:::
 
-`import.meta.env` TypeScript bildirimi değerin doğru olduğunu garanti etmez. `VITE_` değerleri istemci paketine gömülür; gizli sunucu anahtarları için uygun yer değildir.
+![Bilinmeyen dış verinin doğrulamayla tipli veriye ya da hataya ayrıldığını gösteren akış](diagram:zod-sinir)
 
-## Eski fonksiyondan şemaya
+## Kuralları config'e uygula
 
-0. modüldeki `readConfig` token'ı trimliyor, başlığı varsayılanlıyor ve sayfa boyutunu kontrol ediyordu. Aynı gereksinimler sürüyor; şimdi tek şema dönüşüm sonucunun tipini de belirliyor.
+Token zorunluysa trim sonrası boş olamaz; bunun için string şeması üzerinde trim ve minimum uzunluk kuralı bulunur. Hata metni \`VITE_TMDB_TOKEN\` adını içerirse eksik ayarı geliştirirken hemen bulursun. Başlık gibi opsiyonel ayar için eksik veya boş değerde \`Sinema\` seçilebilir. Sayfa boyutu metin olarak gelir; önce sayıya çevrilir, sonra pozitif tam sayı olup olmadığı kontrol edilir.
 
-```ts check
-import { z } from 'zod'
-const tokenSchema = z.string({ error: 'VITE_TMDB_TOKEN gerekli' })
-  .trim().min(1, { error: 'VITE_TMDB_TOKEN gerekli' })
-const token = tokenSchema.parse('  test-token  ')
-console.log(token)
-```
+Varsayılan davranışı seçerken \`.default('Sinema')\` yalnızca undefined değerinde çalışır. .env içinde başlık boş string olarak verilmişse bu değer eksik sayılmaz. Trim sonrasındaki boş değeri varsayılan yapmak için transform veya safeParse sonucu üzerinden açık karar gerekir. Aynı şekilde geçersiz sayfa boyutunu sessizce kabul etmek yerine eski sözleşmedeki 20 değerine dönmek bilinçli bir fallback'tir.
 
-Sayfa boyutunda `z.coerce.number().int().positive()` kullanabilirsin. Geçersiz değerde eski sözleşmeyi koruyup `20` döndürmek için `safeParse` sonucunu kontrol et. Başlıkta trim sonrası boş string ile eksik değeri birlikte ele al; `.default('Sinema')` yalnızca `undefined` için çalışır, boş string için değil.
+## Açılış anındaki sıra
 
-`import.meta.env` içindeki tip bildirimi sadece editörü bilgilendirir. Zod parse'i çalışan programda değeri denetler. Tarayıcıdaki `VITE_` değişkeni gizli tutulamaz; üretimde gizli anahtarlar sunucuda saklanır.
+1. Uygulama açılır ve import.meta.env alanları okunur.
+2. Ham config şemaya verilir; token zorunlu kuraldan, başlık ve sayfa boyutu kendi dönüşümünden geçer.
+3. Token eksik veya boşsa parse hata verir. Uygulama yanlış ayarla istek göndermek yerine erken durur.
+4. Başlık veya sayfa boyutu opsiyonel ve hatalıysa seçilen varsayılan çıktı nesnesine yazılır.
+5. Uygulamanın geri kalanı yalnızca doğrulanmış env alan adlarını kullanır.
 
-:::mistake[Sık hata]
-`.default("Sinema")` boş stringi değiştirmez; env değerini trimledikten sonra boşluğu ayrıca yönet.
+Bu akışta hata türleri farklı ele alınır. Zorunlu token yokluğu çalışmayı durdurmalıdır; varsayılanı olan başlıkta eksik değer kabul edilebilir. Her şeyi fallback yapmak gerçek yapılandırma hatasını saklar. Her şeyi fırlatmak da kullanıcıya değiştirilebilir bir görünüm ayarı yüzünden uygulamayı açtırmaz. Hangi alanın zorunlu olduğunu ürün ve dağıtım sözleşmesi belirler.
+
+## İstemci ayarları gizli değildir
+
+\`VITE_\` önekli değerler Vite tarafından istemci paketine yerleştirilir. Derlenmiş JavaScript'i indiren kişi bu değeri bulabilir; Zod onu doğrular ama gizlemez. TMDB gibi tarayıcıdan yapılan çağrılarda kullanılabilen token bile kullanım ve kota riski taşır. Veritabanı parolası veya ödeme anahtarı gibi gerçek sırlar frontend env içine konmaz; bu çağrılar backend üzerinden yapılır.
+
+Birden fazla dosyanın doğrudan import.meta.env okuması, değer adlarını ve fallback kararlarını uygulamaya yayar. Tek env modülü ise açılışta parse eder, sonuç nesnesini export eder ve başka modüllerin ham değer üzerinde kendi varsayımlarını kurmasını engeller. Bu pattern, config'i kontrol edilebilir bir arayüz yapar.
+
+:::mistake[Boş metni eksik saymamak]
+Belirti → Başlık ayarı boş görünür. Neden → Default yalnız undefined değerini ele aldı. Düzeltme → Trim sonrası boş string için ayrıca varsayılan kuralı tanımla.
+:::
+
+:::mistake[VITE_ değerini sır sanmak]
+Belirti → Token tarayıcı paketinde görülebilir. Neden → İstemci env değeri kullanıcıya gönderilen koda gömülür. Düzeltme → Gizli anahtarı backend'de tut; env şemasını gizlilik aracı gibi kullanma.
 :::
 
 :::sector
-Yapılandırma hatalarını uygulama açılışında göstermek sonradan gelen 401 tanısından daha hızlı çözülür.
+Üretim uygulamaları zorunlu config'i başlangıçta doğrular ve eksik ayarla yarım çalışmaya başlamaz. Takım, hangi env değerinin public olduğunu ve fallback politikasını .env.example içinde belgeler. İstemci env'sinde gizli değer bulunmadığını CI'da da gözden geçirir.
 :::
+
+## Özet
+
+- Environment değerleri de çalışma zamanında doğrulanmalıdır.
+- Zorunlu token eksik/boşsa açıklayıcı hata üret; opsiyonel ayarlara bilinçli fallback uygula.
+- Default undefined'i ele alır; boş metin için ayrı karar gerekir.
+- VITE_ değerleri kullanıcıya giden bundle'da görünür ve secret değildir.
+
+**Kendini yokla:** \`.default('Sinema')\` boş stringi otomatik olarak değiştirir mi?  
+*Cevap:* Hayır; undefined dışında boş metin ayrı ele alınır.

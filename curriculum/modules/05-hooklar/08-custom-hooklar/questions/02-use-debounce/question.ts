@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['react.custom-hooks', 'react.useEffect.cleanup', 'react.useEffect.deps'],
   files: ['useDebounce.ts'],
   hints: [
-    'Gecikmiş değer için state kullan.',
-    'Effect’te `setTimeout` kur ve `[value, delay]` ile yeniden başlat.',
-    'Cleanup eski timeout’u `clearTimeout` ile temizler.',
+    'Dönen değer ile en son gelen değer her zaman aynı anda değişmek zorunda değil.',
+    'Gecikmiş değer için state kullan; süreyi yönetmek için effect içinde timer kur.',
+    '`useEffect(() => { const id = setTimeout(...); return () => clearTimeout(id) }, [value, delay])` iskeleti yeterli.',
   ],
 })

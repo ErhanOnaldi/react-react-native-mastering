@@ -1,8 +1,14 @@
-## Sorun
-Detay sayfası URL’de 550 varken hep ilk filmi gösteriyor; dönüş linki de normal `<a>` ile sayfayı yeniliyor.
+Detay ekranı geçerli film kimliğini göstermeli, aramaya dönüş bağlantısı sunmalı ve kimlik olmadığında anlaşılır bir durum göstermelidir.
 
-## Görev
-`MovieRoute` bileşeni URL’deki `id` için `Film #550` biçiminde `h1` göstersin. `/search` adresine sayfayı yenilemeden giden "Aramaya dön" bağlantısı koy. Eksik id için "Film seçilmedi" yaz. Test route’u memory router’dan verir.
+## Gereksinimler
+- `/movie/550` adresinde `Film #550` başlığı görünür.
+- “Aramaya dön” bağlantısı `/search` sayfasına geçer.
+- Link kullanımı sayfayı tam yenilemeden route’u değiştirir.
 
 ## Örnek
-`/movie/603` → `Film #603`; link tıklanınca `/search`.
+`/movie/603` → `Film #603`; bağlantıya tıkla → `/search` ve “Arama” başlığı.
+
+## Sözleşme
+- `MovieRoute.tsx` dosyasında `MovieRoute` bileşenini export et.
+- Sayfa `/movie/:id` route’u içinde render edilir.
+- Başlık heading, dönüş kontrolü link rolüyle bulunabilmelidir.

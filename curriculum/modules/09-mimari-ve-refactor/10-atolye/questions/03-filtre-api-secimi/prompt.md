@@ -1,8 +1,22 @@
-Keşif ekranında kullanıcı tür ve sıralamayı birlikte ayarlıyor. Filtre alanı için iki uygulanabilir tasarım var: tüm seçimleri tek bir değer olarak taşımak veya her seçimi ayrı parçanın sunduğu bir düzen kurmak. Birini seç, uygula ve seçimini kod yorumunda gerekçelendir.
+Keşif ekranında tür ve sıralama seçimini birlikte yönet. Seçim görünür kalsın ve tek bir sıfırlama eylemi varsayılanlara dönsün.
 
-Testler `DiscoverFilters.tsx` içindeki `DiscoverFilters` bileşenini açar.
+## Gereksinimler
 
-- `Tür` seçiminde `Aksiyon` (28) ve `Komedi` (35) bulunsun.
-- `Sıralama` seçiminde `Popüler` (`popularity.desc`) ve `Başlık` (`title.asc`) bulunsun.
-- `Sıfırla` varsayılanlara dönsün. Seçili değerler ekranda okunabilsin.
-- Tür seçenekleri TMDB tür verisine karşılık gelir; bu görevde ağ isteği gerekmez.
+- Accessible name'i `Tür` olan seçimde Aksiyon (`28`) ve Komedi (`35`) seçenekleri bulunsun.
+- Accessible name'i `Sıralama` olan seçimde Popüler (`popularity.desc`) ve Başlık (`title.asc`) seçenekleri bulunsun.
+- Seçili değerler native seçim kontrollerinde görünür olsun.
+- `Sıfırla` eylemi türü `28`, sıralamayı `popularity.desc` yapsın.
+- Seçim için ağ isteği gerekmesin.
+
+## Örnek
+
+Komedi ve Başlık seçtikten sonra değerler sırasıyla `35` ve `title.asc` olur. Sıfırla sonrası `28` ve `popularity.desc` görünür.
+
+## Sözleşme
+
+- Dosya ve export: `DiscoverFilters.tsx` → named export `DiscoverFilters`.
+- İki native combobox'ın accessible name'i `Tür` ve `Sıralama`; eylem düğmesinin adı `Sıfırla`.
+
+## Kısıtlar
+
+- API tasarımını kod yorumunda gerekçelendir: seçimler tek bir değer olarak mı, ayrı kontrollü parçalar olarak mı sunuluyor?

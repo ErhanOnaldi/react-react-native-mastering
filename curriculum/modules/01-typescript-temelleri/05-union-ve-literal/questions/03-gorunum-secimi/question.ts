@@ -2,13 +2,14 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'code',
-  title: 'Literal görünüm seçimi',
+  title: 'Görünüm seçici etiketi',
   difficulty: 'kolay',
-  concepts: ['ts.literal', 'ts.functions'],
+  concepts: ['ts.literal', 'ts.union'],
   files: ['viewLabel.ts'],
   hints: [
-    'Mode yalnızca iki değerden biridir.',
-    'Birini koşulda ayırınca diğer dal bellidir.',
-    'Ternary ile iki etiketi döndür.',
+    'Görünüm modunu genel bir `string` yerine iki sabit seçenekle sınırlamayı düşün.',
+    '`"grid" | "list"` literal union tipini oluşturup koşullu ifade ile ilgili etiketi döndür.',
+    'İskelet: `export type ViewMode = "grid" | "list"; export function viewLabel(mode: ViewMode): string { return mode === "grid" ? "Kartlar" : "Liste"; }`',
+    '`ViewMode` tipini genel `string` olarak bırakırsan testlerdeki tip kısıtı kontrolünden geçemezsin.',
   ],
 })

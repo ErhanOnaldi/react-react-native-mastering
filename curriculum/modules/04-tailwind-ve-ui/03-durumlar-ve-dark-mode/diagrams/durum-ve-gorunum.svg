@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 240">
+  <title>Davranış durumu HTML'de, görünüm tepkisi Tailwind varyantında</title>
+  <rect class="d-accent" x="28" y="36" width="300" height="152" rx="12" />
+  <text class="d-title" x="178" y="70" text-anchor="middle">Gerçek durum</text>
+  <text class="d-code" x="178" y="108" text-anchor="middle">aria-pressed</text>
+  <text class="d-code" x="178" y="136" text-anchor="middle">disabled</text>
+  <text class="d-muted" x="178" y="164" text-anchor="middle">HTML / React davranışı</text>
+  <rect class="d-violet" x="432" y="36" width="300" height="152" rx="12" />
+  <text class="d-title" x="582" y="70" text-anchor="middle">Görsel işaret</text>
+  <text class="d-code" x="582" y="108" text-anchor="middle">focus-visible:*</text>
+  <text class="d-code" x="582" y="136" text-anchor="middle">disabled:* · dark:*</text>
+  <text class="d-muted" x="582" y="164" text-anchor="middle">Tailwind CSS görünümü</text>
+  <path class="d-line-accent" d="M336 112 H424" />
+  <text class="d-muted" x="380" y="224" text-anchor="middle">Görünüm durumu gösterir; davranışın yerini tutmaz</text>
+</svg>

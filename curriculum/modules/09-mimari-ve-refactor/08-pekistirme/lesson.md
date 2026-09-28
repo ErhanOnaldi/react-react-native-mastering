@@ -1,33 +1,43 @@
 ---
 title: "İki gerçek taşıma"
-minutes: 10
+minutes: 6
 kind: practice
 ---
 
 # İki gerçek taşıma
 
 :::pain[Problem]
-Arama ve detay ekranı ayrı ayrı çalışıyor, fakat ikisi de token, URL ve loading/error kararlarını kendi içinde tekrarlıyor. Bir düzeltme iki yerde unutulabiliyor.
+Arama ve detay ekranı ayrı ayrı çalışıyor; fakat ikisi de URL, ortak istek bilgisi ve sonuç görünümünü kendi içinde tekrarlıyor. Bir düzeltme iki yerde unutulabiliyor.
 :::
 
-## İhtiyaçtan karar
+:::model[UI ile davranışın sınırı]
+Tekrarlanan davranışı hook veya saf birime taşı; loading, error, empty ve success hallerini component'te görünür kıl. Burada yenilik, sınırı iki farklı yerde uygulaman: aramada URL/fetch ayrımı, detayda görünüm/afiş ayrımı.
+:::
 
-İki refactor görevinde başlangıç davranışı zaten çalışır. Önce testleri oku, sonra sorumlulukları ayır: ortak HTTP bilgisi ortak yerde, feature anlamı feature’da, görünüm bileşende.
+Bu pratikte önce çalışan çıktıya bak, sonra yalnız tek iç sorumluluğu ayır. Arama örneğinde ilk sayfa ile sonraki sayfa farklı kod yollarından gidiyor. URL kurulumunu tek kurala toplamak Türkçe arama metnini ve page değerini korumalı. Yeni bir özellik eklemeye çalışma; amaç mevcut davranışı daha az tekrar ile sürdürmek.
 
-## Sinema’da dene
+Detay görünümünde tekrar ağda değil, JSX'te: afişi olan ve olmayan veri ayrı kart dallarına ayrılmış. Başlıkla açıklama her iki durumda aynı kalır, yalnız afiş görünümü değişir. Bu farkı küçük bir görünüm bileşenine ayırmak ortak gövdenin kopyalanmasını önler.
 
-İlk görev arama sonucu ve sayfa bilgisini; ikinci görev detay başlığı ile eksik poster durumunu ele alır. Her görev bir öncekinden farklı bir veri şekli ve UI sınırı kullanır.
+## Çalışma sırası
 
-## İki farklı tekrar
-
-Arama görevinde `page === 1` için ayrı fetch dalı, sonraki sayfalar için ayrı dal çalışıyor. `buildSearchUrl(query, page)` çıkarınca Türkçe karakter kodlama ve sayfa parametresi tek yerde olur. Bu, API client dersindeki URL fikrinin farklı bir bağlamıdır: burada bütün endpoint yerine yalnız arama adresini ayırıyorsun.
-
-Detay kartında ise tekrar ağda değil JSX’te. Poster varsa ve yoksa iki ayrı kartın başlığı kopyalanmış. `MoviePoster` poster koşulunu taşırken başlık ile açıklama ortak gövdede kalır. Her iki görevde de mevcut davranış testleri başlangıçta geçer; yeni birimin testi hedefi görünür kılar. Rubric, yeni birimin gerçek akışta kullanılmasını ve gereksiz kopya kalmamasını inceler.
+1. Başlangıç çıktısını ve boş/normal sınır değerini oku.
+2. Bir sorumluluğu ayır; aynı anda metin veya endpoint davranışını değiştirme.
+3. Eski örneklerin hâlâ aynı çıktıyı verdiğini doğrula.
+4. Rubric'i kod okunurluğu ve yeni birimin gerçek akışta kullanılması için ayrıca incele.
 
 :::mistake[Sık hata]
-Çalışan kodu temizlerken yeni özellik eklemeyi ertele. Davranış değişirse küçük adım hangi değişiklikte bozulduğunu gösterir.
+**Belirti →** Başlık refactor sonrası değişti. **Neden →** Görünüm temizliği ile ürün metni değişikliği aynı adıma girdi. **Düzeltme →** Önce eski davranışı koru; yeni metni ayrı gereksinim olarak ele al.
 :::
 
-:::sector[Sektörde]
-Rubric’i bir ekip arkadaşının review notları gibi kullan: tekrar azaldı mı, sınır anlaşılır mı, gereksiz soyutlama var mı?
+:::sector
+Bakım PR'larında aynı değişikliği tek sahipli bir noktaya toplamak hata düzeltmelerini ucuzlatır. Küçük refactor adımları reviewer'ın önce/sonra davranışını anlamasını kolaylaştırır.
 :::
+
+## Özet
+
+- URL üretimini ayrılaştırırken sorgu ve sayfayı koru.
+- Ortak görünüm ile değişen afiş davranışını ayır.
+- Test edilen davranış ile kod kalitesini ayrı değerlendir.
+
+**Kendini yokla:** Afiş yokken başlık tekrar etmesin diye neyi ortaklaştırırsın?  
+*Cevap:* Başlık/açıklama gövdesini tek render noktasında bırakıp yalnız afiş kararını ayırırsın.

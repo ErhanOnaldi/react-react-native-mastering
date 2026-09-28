@@ -8,8 +8,8 @@ export default defineQuestion({
   files: ['PopularMovies.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Kısa süre içinde aynı veri tekrar açıldığında kimin elinde kalmalı?',
-    'Veriyi sabit bir query key ile iste; tazelik süresini bir dakikaya ayarla.',
-    'Başarı, yükleme ve hata durumlarını ayrı göster; aynı QueryClient ile yeniden mount edilen bileşen taze veriyi kullanmalı.',
+    'Ekran kapanınca verinin silinmemesi ve taze sayılması için hangi iki süre kararı gerekir?',
+    '`useQuery` içinde sabit key ve bir dakikalık `staleTime` ayarla.',
+    'Success, pending ve error dallarını göster; aynı client ile tekrar açılışta cache’i kullan.',
   ],
 })

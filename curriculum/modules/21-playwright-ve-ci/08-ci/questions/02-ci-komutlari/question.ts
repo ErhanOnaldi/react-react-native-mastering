@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['tooling.ci', 'test.e2e', 'test.vitest-basics', 'tooling.eslint', 'tooling.lockfile'],
   files: ['ciSteps.ts'],
   hints: [
-    'Temiz makinede önce bağımlılıklar kurulmalı; lint ve typecheck hızlı kontrollerdir.',
-    'Vitest `pnpm test` ile, Playwright `npx playwright test` ile çalışır; browser binary’sini ayrıca kur.',
-    'Sıra: install → lint → typecheck → test → playwright install → playwright test. İkinci dizide `--with-deps chromium` bulunmalı.',
+    'Temiz runner’da hangi kaynaklar önceden yoktur? Kontrolleri maliyeti düşük olandan browser gerektirene doğru sırala.',
+    'Playwright CLI’da browser kurulumu `playwright install --with-deps` komutuyla yapılır; Vitest ve Playwright ayrı runner komutlarıdır.',
+    'Diziyi install, lint, typecheck, test, browser install ve E2E olarak sırala. Komut metinleri: `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `npx playwright install --with-deps chromium`, `npx playwright test`.',
   ],
 })

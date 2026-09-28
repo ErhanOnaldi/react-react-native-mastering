@@ -8,7 +8,8 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['package.json'],
   hints: [
-    '`scripts` nesnesine yeni bir satır ekle: `"typecheck": "..."`.',
-    'Komut, build script’inin ilk yarısıyla aynı: `tsc -b`.',
+    'VS Code üzerinden `projects/sinema/package.json` dosyasını aç ve `scripts` bloğunu incele.',
+    'Yeni bir script satırı tanımla: anahtar `"typecheck"`, değer ise TypeScript derleyicisini tetikleyen komut olmalı.',
+    'İskelet: `"typecheck": "tsc -b"`. Kaydettikten sonra terminalde `pnpm typecheck` çalıştırarak doğrula.',
   ],
 })

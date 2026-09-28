@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270">
+  <title>Controlled ve uncontrolled component state sahipliği</title>
+  <defs>
+    <marker id="component-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path class="d-arrowhead-accent" d="M0 0 L8 4 L0 8 Z" />
+    </marker>
+  </defs>
+  <rect class="d-accent" x="28" y="42" width="208" height="86" rx="10" />
+  <text class="d-title" x="132" y="78" text-anchor="middle">Controlled</text>
+  <text class="d-muted" x="132" y="106" text-anchor="middle">value dış owner'da</text>
+  <rect class="d-box" x="276" y="42" width="208" height="86" rx="10" />
+  <text class="d-title" x="380" y="78" text-anchor="middle">Component</text>
+  <text class="d-muted" x="380" y="106" text-anchor="middle">görünür UI</text>
+  <rect class="d-success" x="524" y="42" width="208" height="86" rx="10" />
+  <text class="d-title" x="628" y="78" text-anchor="middle">Uncontrolled</text>
+  <text class="d-muted" x="628" y="106" text-anchor="middle">local state sahibi</text>
+  <path class="d-line-accent" d="M236 76 H266" marker-end="url(#component-arrow)" />
+  <path class="d-line-accent" d="M266 103 H246" marker-end="url(#component-arrow)" />
+  <path class="d-line-accent" d="M484 84 H514" marker-end="url(#component-arrow)" />
+  <text class="d-text" x="380" y="184" text-anchor="middle">value → UI · olay → callback → owner</text>
+  <text class="d-muted" x="380" y="216" text-anchor="middle">defaultValue yalnız başlangıcı belirler</text>
+</svg>

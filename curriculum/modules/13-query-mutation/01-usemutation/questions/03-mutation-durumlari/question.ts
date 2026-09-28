@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['query.useMutation', 'react.events', 'fetch.loading-states'],
   files: ['RateButton.tsx'],
   hints: [
-    'useMutation({ mutationFn: rate }) ile durum nesnesi al.',
-    'Click’te mutate({ movieId, value: 8.5 }) çağır.',
-    'isPending butonu; isSuccess ve isError mesajları yönetir.',
+    'Düğmenin hangi anda kilitlenmesi, hangi anda tekrar etkinleşmesi gerektiğini sırala.',
+    '`useMutation` ile mutation state’ini oku; `mutate` yalnızca kullanıcı olayında çağır.',
+    'Pending’de disabled ve “Kaydediliyor…” göster; success ve error için ayrı metin render et.',
+    'Hata mesajını `role="alert"` içinde tut ve ilk render’da fonksiyon çağırma.',
   ],
 })

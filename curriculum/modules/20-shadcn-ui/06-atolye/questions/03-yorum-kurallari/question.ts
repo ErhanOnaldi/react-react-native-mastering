@@ -8,8 +8,9 @@ export default defineQuestion({
   files: ['ReviewPanel.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Başlık ve metin ayrı ayrı dolu olsa bile birlikte yeterince açıklayıcı olmayabilir; ikisini birlikte değerlendiren bir kural düşün.',
-    'Doğrulama kütüphanenin tek alan kurallarının yanında, birden fazla alanı birlikte kontrol eden bir kural biçimi de var.',
-    'Sunucu hata döndürünce formu sıfırlama; yalnızca başarılı gönderimden sonra alanları temizle ve açık bir başarı mesajı göster.',
+    'Üç ayrı aşamayı bul: alanların tekil zorunluluğu, iki alanın toplam kuralı ve sunucu yanıtı.',
+    "Zod `.refine()` ile alanlar arası kural kurabilir; RHF submit state'i ile başarı/hata metinlerini ayır.",
+    'Şemaya 15 karakter toplamı koşulu ekle. Mutation reddedilince alanları tut; yalnız başarıda `reset()` çağır.',
+    'İlk hata ve sonraki başarıyı arka arkaya dene; eski hata metni başarıdan sonra ekranda kalmasın.',
   ],
 })

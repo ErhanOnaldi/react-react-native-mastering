@@ -1,35 +1,54 @@
-Kod yazmadan önce kararlarını kâğıda dök. Bu görevde iki tür belge yazıyorsun.
+Uygulamanın kodlamasına geçmeden önce, tüm bilgi akışını tek bir sahiplik çatısı altında toplayan bir state haritası ve geri dönüşü pahalı mimari kararları gerekçelendiren ADR belgeleri hazırlaman gerekiyor.
 
-## 1. State haritası
+## Gereksinimler
 
-`projects/kitaplik/docs/state-map.md` dosyasını oluştur.
+`projects/kitaplik/docs/` altında şu iki temel dokümantasyonu tamamla:
 
-- `REQUIREMENTS.md`’deki **her bilgiyi** bir satır yap: arama sorgusu, sayfa, liste filtresi, eser id’si, arama sonuçları, eser detayı, yazar adı, okuma listesi, formdaki alanlar, menüdeki liste sayısı, yükleniyor/hata durumu…
-- Sütunlar: **Bilgi · Kategori · Sahibi (nerede yaşar) · Okuyan · Yazan · Kalıcılık**.
-- Kategoriler: sunucu, istemci, URL, form, **türetilmiş**. Türetilmiş değerlerin sahibi yoktur; neyden hesaplandığını yaz.
-- Altına verinin akışını gösteren küçük bir çizim (ASCII ya da Mermaid) ve 2–3 kural ekle (örn. “Sunucu verisi `useState`’e kopyalanmaz”).
+1. **State Haritası (`docs/state-map.md`):**
+   - Gereksinimlerdeki her bilgiyi (arama sorgusu, sayfa numarası, liste filtresi, açık eser kimliği, arama sonuçları, eser detayları, yazar bilgisi, okuma listesi kayıtları, detay form taslağı, menüdeki liste sayısı, yükleniyor/hata durumları) bir satır olarak listele.
+   - Sütunlar: **Bilgi · Kategori · Sahibi (tek doğru kaynak) · Okuyan · Yazan · Kalıcılık**.
+   - Kategoriler: Sunucu, İstemci, URL, Form, **Türetilmiş**. Türetilmiş değerlerin saklanmadığını, hangi kaynaktan hesaplandığını açıkça belirt.
+   - Belgenin sonuna veri akışını özetleyen kurallar (örneğin "Sunucu verisi `useState` içine kopyalanmaz", "URL tek doğruluk kaynağıdır") ekle.
 
-## 2. ADR’ler
+2. **Mimari Karar Kayıtları (`docs/adr/`):**
+   - `0001-....md`: Sunucu verisinin (arama, eser, yazar) nasıl yönetileceğine ve önbellekleneceğine dair karar.
+   - `0002-....md`: Okuma listesinin nerede tutulacağına, tarayıcıda nasıl kalıcı hale getirileceğine ve bozuk depolama verisinin nasıl ele alınacağına dair karar.
+   - *(İsteğe bağlı)* `0003-....md`: Klasör yapısı (feature-based) ve modül sınırları kararı.
+   - Her ADR'de şu bölümler yer almalıdır: **Durum, Tarih, İlgili gereksinimler, Bağlam, Karar, Değerlendirilen alternatifler (en az iki somut seçenek), Sonuçlar (kazançlar ✅ ve bedeller ⚠️)**.
 
-`projects/kitaplik/docs/adr/` klasöründe **en az iki** ADR yaz:
+## Örnek
 
-| Dosya | Karar |
-| --- | --- |
-| `0001-….md` | Sunucu verisi (arama, eser, yazar) nasıl yönetilecek? |
-| `0002-….md` | Okuma listesi nerede tutulacak, nasıl kalıcı olacak, bozuk kayıt nasıl ele alınacak? |
-| `0003-….md` *(isteğe bağlı)* | Klasör yapısı ya da form yaklaşımı |
+Bir ADR karar bölümü örneği:
 
-Her ADR’de şu bölümler olsun: **Durum, Tarih, İlgili gereksinimler, Bağlam, Karar, Değerlendirilen alternatifler, Sonuçlar** (artılar ✅ ve bedeller ⚠️).
+```markdown
+# ADR 0001 — Arama durumu URL üzerinde tutulur
 
-:::warning
-Testler hangi aracı seçtiğine bakmaz; yalnızca sabit sözleşmeye (adresler, metinler, `createRoutes`/`AppProviders` export’ları — 3. derste) bakar. Yani burada verdiğin karar gerçekten **senin**. Redux da seçebilirsin, Zustand da; yeter ki gerekçesi yazılı olsun. Kök `package.json`’da olmayan bir paket seçersen (örn. Zustand), 3. derste onu kendin kurman gerektiğini ADR’nin “Sonuçlar” bölümüne yaz.
-:::
+- **Durum:** Kabul edildi
+- **Tarih:** 2026-09-25
+- **İlgili gereksinimler:** K-2, K-4
 
-## Kontrol
+## Bağlam
+Arama sorgusu ve sayfa numarası kullanıcılar tarafından paylaşılabilmeli ve tarayıcı geri/ileri butonlarıyla tutarlı çalışmalıdır.
 
-Otomatik test yok. **AI review prompt’unu kopyala** ile belgelerini inceletip geri bildirimleri uygula, commit’le ve **Tamamladım**’a bas.
+## Karar
+`q` ve `page` parametreleri yalnızca adres çubuğunda tutulur; istemci tarafında ayrı bir kopyası saklanmaz.
 
-```bash
-git add projects/kitaplik/docs
-git commit -m "docs(kitaplik): state haritası ve ilk ADR'ler"
+## Değerlendirilen alternatifler
+- `useState`: Sayfa yenilendiğinde veya bağlantı paylaşıldığında arama kaybolur.
+- Global istemci store'u: URL ile iki yönlü senkronizasyon yükü ve yarış koşulları doğurur.
+
+## Sonuçlar
+- ✅ Doğal bağlantı paylaşımı ve geri tuşu desteği sağlanır.
+- ⚠️ URL'den gelen string değer her okumada sınır doğrulamasına tabi tutulmalıdır.
 ```
+
+## Sözleşme
+
+- Dosya yolları:
+  - `projects/kitaplik/docs/state-map.md`
+  - `projects/kitaplik/docs/adr/0001-*.md`
+  - `projects/kitaplik/docs/adr/0002-*.md`
+
+## Kısıtlar
+
+- Testler seçtiğin kütüphanenin adına (örneğin Context veya harici bir kütüphane) değil; yalnızca sabit arayüz ve rota sözleşmelerine bakar. Ancak seçilen her kararın somut gerekçesi ve kabul edilen bedeli ADR'de belgelenmelidir.

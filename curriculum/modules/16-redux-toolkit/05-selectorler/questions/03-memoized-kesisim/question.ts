@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['redux.selectors', 'js.array-methods'],
   files: ['overlap.ts'],
   hints: [
-    'İki input selector zaten hazır.',
-    'Result fonksiyonunda `filter` kullan.',
-    '`selected.filter(id => favorites.includes(id))` sırayı korur.',
+    'Çıktıdaki sıra hangi listeden gelmeli? İki kaynak diziyi ayır.',
+    '`createSelector` result fonksiyonunda bir dizinin elemanlarını diğerinde arayabilirsin.',
+    '`selected.filter(id => favorites.includes(id))` seçili listenin sırasını korur.',
   ],
 })

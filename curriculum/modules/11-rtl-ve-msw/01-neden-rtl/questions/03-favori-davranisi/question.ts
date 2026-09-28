@@ -7,9 +7,9 @@ export default defineQuestion({
   concepts: ['test.user-event', 'test.rtl-queries', 'react.events'],
   files: ['FavoriteButton.test.tsx'],
   hints: [
-    'Önce getByRole ile erişilebilir adı bul.',
-    'userEvent.setup() ve await user.click(...) kullan.',
-    'vi.fn() ile callback’i izle; ikinci render’da favori adını doğrula.',
+    'Callback’i tek başına çağırma; kullanıcıya sunulan kontrol ve durum adını birlikte düşün.',
+    '`render`, `screen.getByRole`, `userEvent.setup()` ve `await user.click(...)` kullan.',
+    '`vi.fn()` callback’i kaydetsin; başlangıç ve tıklama sonrası erişilebilir adları doğrula.',
   ],
   testWriting: {
     mutants: [

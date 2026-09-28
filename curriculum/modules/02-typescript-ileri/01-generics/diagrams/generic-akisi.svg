@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210">
+  <title>Generic tip parametresinin tanımdan kullanıma ve sonuç alanına akışı</title>
+  <defs>
+    <marker id="generic-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path class="d-arrowhead-accent" d="M0 0 L8 4 L0 8 Z" />
+    </marker>
+  </defs>
+  <rect class="d-accent" x="18" y="70" width="210" height="104" rx="12" />
+  <text class="d-title" x="123" y="102" text-anchor="middle">1 · Tanım</text>
+  <text class="d-code" x="123" y="132" text-anchor="middle">Page&lt;T&gt;</text>
+  <text class="d-muted" x="123" y="153" text-anchor="middle">değişken tip parametresi</text>
+  <path class="d-line-accent" d="M238 122 H267" marker-end="url(#generic-arrow)" />
+  <rect class="d-success" x="275" y="70" width="210" height="104" rx="12" />
+  <text class="d-title" x="380" y="102" text-anchor="middle">2 · Kullanım</text>
+  <text class="d-code" x="380" y="132" text-anchor="middle">Page&lt;Author&gt;</text>
+  <text class="d-muted" x="380" y="153" text-anchor="middle">kabuk aynı, içerik belirli</text>
+  <path class="d-line-accent" d="M495 122 H524" marker-end="url(#generic-arrow)" />
+  <rect class="d-violet" x="532" y="70" width="210" height="104" rx="12" />
+  <text class="d-title" x="637" y="102" text-anchor="middle">3 · Sonuç</text>
+  <text class="d-code" x="637" y="132" text-anchor="middle">entries: Author[]</text>
+  <text class="d-muted" x="637" y="153" text-anchor="middle">özellikler korunur</text>
+</svg>

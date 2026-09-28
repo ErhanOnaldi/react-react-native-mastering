@@ -1,5 +1,22 @@
-Karttan detaya tıklanınca boş yükleme ekranı var. Hover ile kullanıcı niyeti belli olduğunda detayı önceden getir.
+Film kartına fareyle gelindiğinde detayını hazırla ki detay açılışında aynı film için ikinci GET gitmesin.
 
-## İstenen
+## Gereksinimler
 
-`MovieHover({ id, title })` bir button render etsin. Fare butonun üstüne girince `useQueryClient().prefetchQuery(movieQueries.detail(id))` çalışsın. Salt okunur `movieQueries.ts` aynı key ve 60 saniye tazelik sağlar. Hover sonrası detayın aynı tarifi okuması ikinci GET üretmemeli.
+- Film başlığını erişilebilir button olarak göster.
+- Pointer kartın üzerine girdiğinde `id`’ye ait detay verisini hazırla.
+- Aynı id’nin hazır detayını okuyunca ikinci GET oluşmasın.
+- Farklı id başka detay cevabı kullansın.
+
+## Örnek
+
+`id=550`, `title="Dövüş Kulübü"` → adlı button; üzerine gel → detay cevabı cache’e yazılır; aynı id’yi oku → toplam bir GET.
+
+## Sözleşme
+
+- `MovieHover.tsx` dosyasından `MovieHover({ id, title }: { id: number; title: string })` named export edilir.
+- `movieQueries.ts` salt okunur kaynaktır; `movieQueries.detail(id)` sağlar.
+- Button’ın accessible name değeri `title` prop’undan gelir.
+
+## Kısıtlar
+
+- Detay tarifi 60 saniye taze kalır ve `Authorization: Bearer test-token` başlığını kullanır.

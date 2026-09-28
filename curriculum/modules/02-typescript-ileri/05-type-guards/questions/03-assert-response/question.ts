@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.type-guards', 'ts.unknown-any', 'ts.functions'],
   files: ['task.ts'],
   hints: [
-    'Assertion fonksiyonu yanlış veride mutlaka throw etmeli.',
-    'Önce üst nesne, page ve results dizisini doğrula.',
-    'every ile her öğenin id/title alanını kontrol et.',
+    'Geçersiz cevapla devam etmek yerine hangi hata mesajıyla duracağını belirle.',
+    '`asserts value is MoviePage` fonksiyonunda önce üst nesne, page ve results şeklini doğrula.',
+    '`Array.isArray` sonrası `every` ile her öğenin id/title alanlarını denetle.',
   ],
 })

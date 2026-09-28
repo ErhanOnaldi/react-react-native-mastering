@@ -1,8 +1,16 @@
-## Sorun
-Sinema arama kutusu yazıyı gösteriyor ama Enter ile aramayı başlatmıyor. Callback’i tek başına çağıran test bunu yakalamaz.
+Kontrollü arama alanı, kullanıcının yazdığı değeri güncel tutmalı ve form gönderimini doğru değerle iletmeli.
 
-## Görev
-`SearchBox` kontrollü bir form olsun. `value`, `onChange(value)` ve `onSubmit(value)` props’larını al. Etiket "Film ara", buton adı "Ara" olsun. Yazma `onChange`’i güncellesin; form gönderildiğinde `preventDefault` ile sayfa yenilenmesin ve kırpılmış değer `onSubmit`’e gitsin. Boş değerde `onSubmit` çağırma.
+## Gereksinimler
+- Etiket “Film ara”, düğme adı “Ara” olmalı.
+- Yazılan değer input’ta görünmeli ve `onChange` ile dışarı iletilmeli.
+- Enter veya düğme gönderimi aynı submit davranışını çalıştırmalı.
+- Submit değeri baş/son boşluklardan arındırılmalı; boş değer gönderilmemeli.
+- Form gönderimi sayfa yenilememeli.
 
 ## Örnek
-`value=" Matrix "` → Ara → `onSubmit("Matrix")`.
+Input değeri ` Matrix ` → gönder → `onSubmit('Matrix')`.
+
+## Sözleşme
+- `SearchBox.tsx` dosyasında `SearchBox` export et.
+- Props: `{ value: string; onChange(value: string): void; onSubmit(value: string): void }`.
+- Input searchbox rolü ve “Film ara” adıyla; submit düğmesi “Ara” adıyla bulunabilmeli.

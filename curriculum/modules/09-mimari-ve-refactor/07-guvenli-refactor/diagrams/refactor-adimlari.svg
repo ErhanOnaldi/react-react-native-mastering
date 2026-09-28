@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 290">
+  <title>Davranışı sabitleyip küçük refactor adımlarını kontrol et</title>
+  <defs>
+    <marker id="refactor-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path class="d-arrowhead-accent" d="M0 0 L8 4 L0 8 Z" />
+    </marker>
+  </defs>
+  <rect class="d-box" x="24" y="58" width="160" height="90" rx="10" />
+  <text class="d-title" x="104" y="91" text-anchor="middle">Davranışı ölç</text>
+  <text class="d-muted" x="104" y="118" text-anchor="middle">çıktı + sınırlar</text>
+  <rect class="d-accent" x="218" y="58" width="160" height="90" rx="10" />
+  <text class="d-title" x="298" y="91" text-anchor="middle">Tek adım ayır</text>
+  <text class="d-muted" x="298" y="118" text-anchor="middle">bir sorumluluk</text>
+  <rect class="d-success" x="412" y="58" width="160" height="90" rx="10" />
+  <text class="d-title" x="492" y="91" text-anchor="middle">Aynı sonucu gör</text>
+  <text class="d-muted" x="492" y="118" text-anchor="middle">test / gözlem</text>
+  <rect class="d-warning" x="606" y="58" width="130" height="90" rx="10" />
+  <text class="d-title" x="671" y="91" text-anchor="middle">Sonraki adım</text>
+  <text class="d-muted" x="671" y="118" text-anchor="middle">küçük değişiklik</text>
+  <path class="d-line-accent" d="M184 103 H208" marker-end="url(#refactor-arrow)" />
+  <path class="d-line-accent" d="M378 103 H402" marker-end="url(#refactor-arrow)" />
+  <path class="d-line-accent" d="M572 103 H596" marker-end="url(#refactor-arrow)" />
+  <path class="d-line-danger d-dashed" d="M671 160 C671 226 104 226 104 160" marker-end="url(#refactor-arrow)" />
+  <text class="d-muted" x="386" y="258" text-anchor="middle">Bir kontrol kalırsa son küçük adıma dön</text>
+</svg>

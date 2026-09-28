@@ -1,7 +1,16 @@
-# Slice selector’ı
+Arayüz, uygulamanın mevcut tema değerinin koyu olup olmadığını boolean olarak okuyabilmeli.
 
-`selectIsDark` kök store’dan karanlık tema bilgisini boolean olarak versin. `light → false`, `dark → true`; `dialogOpen` sonucu etkilemesin.
+## Gereksinimler
 
-## İstenen davranış
+- Açık tema için selector `false`, koyu tema için `true` döndürür.
+- `dialogOpen` alanındaki değişiklik sonucu etkilemez.
 
-Testlerdeki Türkçe adları gereksinim listesi olarak oku. Starter derlenir; davranışı tamamlaman gerekiyor.
+## Örnek
+
+`theme: "light", dialogOpen: true → false`; `theme: "dark", dialogOpen: false → true`.
+
+## Sözleşme
+
+- Dosya: `ui.ts`
+- Export: `uiSlice`, `setTheme(theme: "light" | "dark")`, `selectIsDark`
+- Selector kök state biçimi: `{ ui: { theme: "light" | "dark"; dialogOpen: boolean } }`

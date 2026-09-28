@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210">
+  <title>Bir öğenin utility class kararları</title>
+  <rect class="d-box" x="20" y="45" width="720" height="118" rx="12" />
+  <text class="d-title" x="380" y="76" text-anchor="middle">Tek JSX öğesi</text>
+  <rect class="d-accent" x="45" y="96" width="195" height="46" rx="8" />
+  <text class="d-code" x="142" y="124" text-anchor="middle">rounded-xl</text>
+  <rect class="d-success" x="282" y="96" width="195" height="46" rx="8" />
+  <text class="d-code" x="379" y="124" text-anchor="middle">px-4 py-2</text>
+  <rect class="d-violet" x="520" y="96" width="195" height="46" rx="8" />
+  <text class="d-code" x="617" y="124" text-anchor="middle">hover:bg-*</text>
+  <text class="d-muted" x="380" y="194" text-anchor="middle">Yapı + boşluk + koşullu görünüm, aynı öğenin yanında</text>
+</svg>

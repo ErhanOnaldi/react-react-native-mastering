@@ -1,8 +1,22 @@
-Sinema’daki puanlamayı gerçek TMDB yazma akışına bağla.
+Sinema’da verilen puan sunucuya yazılmıyor ve Puanladıklarım verisinin ortak bir okuma tanımı yok. Guest session, puanlama/silme istekleri ve rated liste bağlantısını kur.
 
-## Dosyalar ve export’lar
+## Gereksinimler
 
-- `src/features/rating/api/rating-api.ts`: `getGuestSession(): Promise<string>`, `rateMovie({ movieId, value }): Promise<void>`, `deleteRating(movieId): Promise<void>` export et. Session id’yi `localStorage` içinde sakla; yoksa `GET /authentication/guest_session/new` ile aç. POST/DELETE için `guest_session_id` query parametresi kullan. Var olan `tmdbClient` ya da eşdeğer Bearer başlıklı fetch ile çağır. 400/401/500’de Error fırlat.
-- `src/features/rating/api/rating-queries.ts`: `ratedMoviesQuery(sessionId)` export et. Bu tarif `['ratings', sessionId]` cache key’iyle `GET /guest_session/:id/rated/movies` yanıtını versin. Sonuç `{ page, results, total_pages, total_results }`; her sonuçta `rating` vardır.
+- Guest session varsa tekrar kullan; yoksa yeni session isteği yapıp kimliği sakla.
+- Puan yazma ve silme işlemleri session ve yetkilendirme bilgisini kullansın.
+- Puan yalnız 0,5–10 aralığındaki 0,5 adımları kabul etsin.
+- HTTP hata cevapları Promise’i reject etsin.
+- Rated liste cevabı `{ page, results, total_pages, total_results }` biçiminde olsun; sonuç nesnelerinde `rating` bulunsun.
+- Puanlama sonrası aynı session’ın rated listesinde film ve puanı görünsün; silme sonrası film listeden çıksın.
 
-Örnek: Dövüş Kulübü’ne 8,5 verince aynı session’ın rated listesinde `{ id: 550, rating: 8.5 }` görünür. Geçersiz puanı kullanıcıya açık hata olarak döndür.
+## Örnek
+
+Dövüş Kulübü’ne 8,5 verince `ratedMoviesQuery(sessionId)` sonucunda `{ id: 550, rating: 8.5 }` bulunur. Silme sonrası aynı film sonuçlarda bulunmaz.
+
+## Sözleşme
+
+- `src/features/rating/api/rating-api.ts`: `getGuestSession`, `rateMovie`, `deleteRating` export’ları.
+- `src/features/rating/api/rating-queries.ts`: `ratedMoviesQuery(sessionId)` export’u.
+- İmzalar: `getGuestSession(): Promise<string>`, `rateMovie(input: { movieId: number; value: number }): Promise<void>`, `deleteRating(movieId: number): Promise<void>`.
+- `ratedMoviesQuery(sessionId)` `{ page, results, total_pages, total_results }` biçiminde veri döndürür; her sonuçta `id`, `title` ve `rating` bulunur.
+- Query key `['ratings', sessionId]` biçimindedir.

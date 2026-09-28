@@ -34,7 +34,7 @@ Her temel kavram için: `tanıt → birebir örnek → biraz farklı → daha fa
 Her soru kullandığı kavramlarla etiketlenir (`concepts: ['ts.omit', 'react.useEffect.deps']`). Kavramlar merkezi bir kayıtta (`curriculum/concepts.ts`) tanımlıdır; `core: true` işaretli kavramlar için doğrulama hattı **en az 5 tekrar ve en az 2 farklı modül** şartını raporlar.
 
 ### 2.4 Ders metni yapısı
-Her ders ~5–10 dk okuma: **Problem → Kavram → Örnek → Sık hatalar → Sektörde**. Sade Türkçe, kısa paragraflar, bol ve doğru (derlenen) kod örneği.
+Concept dersleri 12–20 dk okuma, başvurulacak kaynak ciddiyetinde: **Problem → zihinsel model (diyagramlı) → adım adım iz sürme → örnekler → sık hatalar → sektörde → özet**. Taşıyıcı zihinsel modeller bir kez derinlemesine kurulur, sonraki derslerde `:::model` ile hatırlatılır. Sade Türkçe, bol ve doğru (derlenen) kod örneği. Ayrıntı: `docs/authoring-guide.md` §1.4–1.6 (2026-09-27 v2 güncellemesi, `docs/curriculum-v2-plan.md`).
 
 ## 3. Mimari
 
@@ -120,7 +120,7 @@ Project görevlerinde `@project/...` → `projects/<proje>/` (doğrulamada ilgil
 Test yazma görevlerinde öğrencinin testleri `@impl/...` import eder → `impl/` (geçmeli) ve her `mutants/<ad>/` (kalmalı).
 
 ### 4.5 İpucu ve çözüm politikası
-- 1–3 kademeli ipucu; istendikçe açılır, sayısı kaydedilir.
+- 2–4 kademeli ipucu (yön → yöntem → iskelet); istendikçe açılır, sayısı kaydedilir. Görev metni LeetCode gibi yalnızca ne istendiğini söyler; yöntem ipuçlarındadır.
 - Çözüme erken bakmak onay ister ve ilerlemede "çözüme bakıldı" olarak işaretlenir.
 - Testler geçince referans çözüm + `solution.md` ("neden böyle") açılır.
 

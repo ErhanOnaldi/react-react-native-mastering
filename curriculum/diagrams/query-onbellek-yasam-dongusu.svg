@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270">
+  <title>TanStack Query cache yaşam döngüsü</title>
+  <defs>
+    <marker id="ok-query-life" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">staleTime tazeliği, gcTime bellekte kalmayı belirler</text>
+
+  <rect class="d-violet" x="35" y="85" width="120" height="62" rx="8"/>
+  <text class="d-title" x="95" y="110" text-anchor="middle">fetching</text>
+  <text class="d-text" x="95" y="132" text-anchor="middle">ilk okuma</text>
+
+  <rect class="d-success" x="185" y="85" width="120" height="62" rx="8"/>
+  <text class="d-title" x="245" y="110" text-anchor="middle">fresh</text>
+  <text class="d-code" x="245" y="132" text-anchor="middle">staleTime</text>
+
+  <rect class="d-warning" x="335" y="85" width="120" height="62" rx="8"/>
+  <text class="d-title" x="395" y="110" text-anchor="middle">stale</text>
+  <text class="d-text" x="395" y="132" text-anchor="middle">arka refetch</text>
+
+  <rect class="d-box" x="485" y="85" width="120" height="62" rx="8"/>
+  <text class="d-title" x="545" y="110" text-anchor="middle">inactive</text>
+  <text class="d-text" x="545" y="132" text-anchor="middle">abone yok</text>
+
+  <rect class="d-danger" x="635" y="85" width="90" height="62" rx="8"/>
+  <text class="d-title" x="680" y="110" text-anchor="middle">gc</text>
+  <text class="d-text" x="680" y="132" text-anchor="middle">silinir</text>
+
+  <line class="d-line" x1="155" y1="116" x2="181" y2="116" marker-end="url(#ok-query-life)"/>
+  <line class="d-line" x1="305" y1="116" x2="331" y2="116" marker-end="url(#ok-query-life)"/>
+  <line class="d-line" x1="455" y1="116" x2="481" y2="116" marker-end="url(#ok-query-life)"/>
+  <line class="d-line" x1="605" y1="116" x2="631" y2="116" marker-end="url(#ok-query-life)"/>
+
+  <rect class="d-lane" x="160" y="195" width="440" height="42" rx="8"/>
+  <text class="d-text" x="380" y="222" text-anchor="middle">stale veri gösterilebilir; isFetching yenilemeyi anlatır.</text>
+</svg>

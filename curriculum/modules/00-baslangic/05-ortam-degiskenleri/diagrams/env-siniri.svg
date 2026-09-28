@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210">
+  <title>Vite env değerinin istemciye aktarımı</title>
+  <defs>
+    <marker id="env-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0L8 4L0 8z" />
+    </marker>
+  </defs>
+  <rect class="d-box" x="25" y="55" width="155" height="90" rx="10" />
+  <text class="d-title" x="102" y="85" text-anchor="middle">.env dosyası</text>
+  <text class="d-muted" x="102" y="110" text-anchor="middle">VITE_APP_TITLE</text>
+  <text class="d-muted" x="102" y="130" text-anchor="middle">metin değer</text>
+  <rect class="d-accent" x="220" y="55" width="155" height="90" rx="10" />
+  <text class="d-title" x="297" y="85" text-anchor="middle">Vite</text>
+  <text class="d-muted" x="297" y="110" text-anchor="middle">env'i yükler</text>
+  <text class="d-muted" x="297" y="130" text-anchor="middle">VITE_ değerini açar</text>
+  <rect class="d-warning" x="415" y="55" width="155" height="90" rx="10" />
+  <text class="d-title" x="492" y="85" text-anchor="middle">Build çıktısı</text>
+  <text class="d-muted" x="492" y="110" text-anchor="middle">değer koda gömülür</text>
+  <text class="d-muted" x="492" y="130" text-anchor="middle">dosyaya yazılır</text>
+  <rect class="d-danger" x="610" y="55" width="125" height="90" rx="10" />
+  <text class="d-title" x="672" y="85" text-anchor="middle">Tarayıcı</text>
+  <text class="d-muted" x="672" y="110" text-anchor="middle">kullanıcı</text>
+  <text class="d-muted" x="672" y="130" text-anchor="middle">değeri okuyabilir</text>
+  <path class="d-line-accent" d="M181 100H213" marker-end="url(#env-arrow)" />
+  <path class="d-line-accent" d="M376 100H408" marker-end="url(#env-arrow)" />
+  <path class="d-line-danger" d="M571 100H603" marker-end="url(#env-arrow)" />
+</svg>

@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['arch.component-api', 'react.composition', 'react.props', 'react.state'],
   files: ['MovieShelf.tsx'],
   hints: [
-    'Açık durumun kaynağına karar ver: `open` varsa dışarıdan gelir.',
-    'İç state’i `defaultOpen` ile başlat; controlled modda onu okuma.',
-    'Buton tıklamasında `onOpenChange(!visible)` çağır; yalnız uncontrolled modda iç state’i güncelle.',
+    'İki kullanımda açık/kapalı durumunun sahibi aynı mı?',
+    'Controlled/uncontrolled API kalıbı ve `ReactNode` tipine bak.',
+    '`open !== undefined` ile modu seç; görünür değeri bundan türet, klikte callback çağır.',
+    'Controlled modda yalnız owner prop değişince içerik değişsin; `aria-expanded` da aynı görünür değeri kullansın.',
   ],
 })

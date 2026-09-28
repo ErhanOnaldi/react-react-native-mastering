@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['query.invalidation', 'react.immutability', 'js.array-methods'],
   files: ['patchRating.ts'],
   hints: [
-    'setQueryData’ye updater fonksiyonu ver.',
-    'old?.map ile yeni dizi üret; seçili öğeyi spread ile kopyala.',
-    'old undefined ise undefined döndür.',
+    'Yalnız hangi alanın değiştiğini belirle; diğer kayıtlar aynı kalmalı.',
+    '`QueryClient.setQueryData` updater’ında immutable array güncellemesi yap.',
+    '`old?.map(...)` ile eşleşen öğeyi `{ ...item, rating: value }` olarak kopyala.',
+    'Cache yoksa `undefined` döndür; listede olmayan filmi ekleme.',
   ],
 })

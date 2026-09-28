@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.generics', 'ts.keyof-typeof', 'ts.api-types', 'ts.indexed-access'],
   files: ['task.ts'],
   hints: [
-    'Map anahtarları literal URL path olsun.',
-    'İki liste için Paginated<Movie>, detay için MovieDetails kullan.',
-    'İndeksli erişim `responses[path]` doğru dönüş tipini korur.',
+    'İzinli yolları ve her yolun cevap şeklini eşleştiren bir tip haritası çıkar.',
+    '`K extends keyof EndpointMap` ile yolu sınırla ve dönüşü `EndpointMap[K]` yap.',
+    'Fonksiyon gövdesinde `responses[path]` seçilen cevabı verir.',
   ],
 })

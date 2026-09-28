@@ -1,3 +1,18 @@
-Kartın çerçevesi içerikten ayrı olsun. `MoviePanel({ children, actions })` yaz; `children: ReactNode`, `actions?: ReactNode`. İçerik `<article>` içinde gösterilsin; actions verilirse `<footer>` içinde gösterilsin, verilmezse boş footer oluşturma. Bir projede actions favori düğmesi, başka yerde puan düğmesi olabilir.
+Film bilgi kutusu, ana içeriği ve isteğe bağlı alt eylemi farklı yerlerde göstermeli. Alt eylem verilmediğinde footer bulunmamalıdır.
 
-**Örnek:** `actions={<button>Favori</button>}` → düğme footer’da; actions verilmezse footer yok.
+## Gereksinimler
+
+- Ana çocuk içeriği `article` içinde görünmelidir.
+- Alt eylem verildiğinde `footer` içinde görünmelidir.
+- Alt eylem verilmediğinde `footer` hiç oluşturulmamalıdır.
+- Sayı `0` geçerli bir alt içeriktir ve footer içinde görünmelidir.
+
+## Örnek
+
+Ana içerik olarak bir başlık ve alt eylem olarak “Favoriye ekle” düğmesi ver → başlık article içinde, düğme footer içinde görünür.
+
+## Sözleşme
+
+- Dosya ve export: `MoviePanel.tsx` → named export `MoviePanel`
+- Props: `{ children: ReactNode; actions?: ReactNode }`
+- Arayüz: ana içerik `article` içinde; verilen eylem `footer` içinde.

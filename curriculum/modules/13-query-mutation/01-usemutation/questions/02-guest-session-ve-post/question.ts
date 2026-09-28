@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['query.useMutation', 'fetch.headers-auth', 'fetch.error-handling'],
   files: ['ratingApi.ts'],
   hints: [
-    'Önce session id’yi localStorage’dan oku.',
-    'İki fetch için de Bearer başlığı ve response.ok kontrolü ekle.',
-    'POST gövdesi JSON.stringify({ value }); session id query parametresinde.',
+    'İki isteğin hangi ortak bilgiyi kullandığını ve sonraki çağrıda neyin yeniden kullanılacağını belirle.',
+    '`localStorage`, `fetch`, `URLSearchParams` ve `response.ok` ile session ve puan akışını kur.',
+    'Önce session anahtarını oku; yoksa GET edip yaz. Ardından POST gövdesine `JSON.stringify({ value })` koy ve iki cevapta da `ok` kontrol et.',
+    'Geçersiz yarım adım POST’a ulaşmamalı; session id query parametresini encode et.',
   ],
 })

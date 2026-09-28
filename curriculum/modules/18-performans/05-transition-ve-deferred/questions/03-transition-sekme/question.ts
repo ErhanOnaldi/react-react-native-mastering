@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['perf.transitions', 'react.events'],
   files: ['MovieTabs.tsx'],
   hints: [
-    "Sekme güncellemesini yapan event handler'ları bul.",
-    '`useTransition()` iki değer döndürür: bekleme bilgisi ve başlatıcı.',
-    '`startTransition(() => setTab(...))` kullan; `isPending` için durum metni ekle.',
+    'Sekme state’i güncellenirken kullanıcıya bekleme durumunu iletmek ve arayüz kilitlenmesini önlemek için React’in geçiş mekanizmasını düşün.',
+    'Bileşen içinde `useTransition` hook’unu kullanarak `isPending` ve `startTransition` çiftini elde edebilirsin.',
+    "Sekme değiştirme çağrılarını sarmala: `startTransition(() => setTab('overview'))`. Durum alanı için `<p role=\"status\">{isPending ? 'Sekme açılıyor' : ''}</p>` yapısını kur.",
+    '`role="status"` içeren elementi yalnızca `isPending` true olduğunda koşullu olarak DOM’a eklemek yerine sürekli DOM’da tutup içeriğini boş dize yapmak ekran okuyucular ve testler için daha kararlıdır.',
   ],
 })

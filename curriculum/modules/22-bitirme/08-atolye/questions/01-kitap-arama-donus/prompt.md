@@ -1,16 +1,26 @@
-Kitaplık arama ekranında kullanıcı bir kitap adı yazıp arasın; sonuç sayfalanabilsin. Aynı aramaya kısa süre içinde geri dönüldüğünde sonucu tekrar beklemesin; adres çubuğundaki bağlantıyı paylaşınca aynı arama ve sayfa açılsın.
+Kitaplık arama ekranında kullanıcının kitap araması yapabilmesi, sonuçlar arasında sayfalanabilmesi, aynı aramaya geri dönüldüğünde gereksiz ağ isteği atılmadan sonucun önbellekten gelmesi ve bulunamayan sonuçlarda bilgilendirme yapılması gerekiyor.
 
-## Giriş ve davranış
+## Gereksinimler
 
-Testler `BookSearch.tsx` içindeki `BookSearch` bileşenini adres çubuğu ve veri sağlayıcısıyla birlikte açar.
+- `Kitap ara` metin kutusuna terim yazılıp `Ara` butonuna basıldığında arama başlatılmalı ve sonuçlar listelenmelidir.
+- Arama sorgusu ve sayfa bilgisi adres çubuğundaki parametrelerle (`?q=...&page=...`) senkronize çalışmalıdır; ilk sayfa 1'dir.
+- `Sonraki sayfa` butonuna tıklandığında sayfa numarası artmalı ve yeni sayfanın sonuçları listelenmelidir.
+- Tarayıcı geçmişinde geri gidildiğinde önceki sayfanın sonucu yeni bir ağ isteği atılmadan gösterilmelidir.
+- Arama sonucu boş döndüğünde ekranda tam olarak belirtilen bilgilendirme metni gösterilmelidir.
 
-- `Kitap ara` alanına yazıp aratınca sonuç listelenir.
-- `Sonraki sayfa` / `Önceki sayfa` ile sayfa değişir; ilk sayfa 1'dir.
-- Geri gidince önceki sayfanın sonucu yeniden görünür; gereksiz bir bekleme olmaz.
-- Sonuç yoksa bunu anlaşılır biçimde söyle.
+## Örnek
 
-## Arayüz sözleşmesi
+Kullanıcı "Dune" arar → 1. sayfa sonuçları gelir → "Sonraki sayfa"ya basar → "Dune Messiah" gelir → Geri döner → 1. sayfa sonuçları ("Dune") yeni bir ağ isteği atılmadan anında ekranda belirir.
 
-- Sonuç yoksa ekranda `Kitap bulunamadı` metni görünsün.
+## Sözleşme
 
-Örnek: "Dune" ara → sonraki sayfa → geri → ilk sayfanın sonucu tekrar görünür.
+- Dosya ve dışa aktarma: `BookSearch.tsx` → `export function BookSearch(): React.JSX.Element`
+- Arayüz elemanları:
+  - Metin kutusu erişilebilir adı: `Kitap ara`
+  - Arama butonu: `Ara`
+  - Sayfa butonu: `Sonraki sayfa`
+  - Sonuç bulunamadı mesajı: `Kitap bulunamadı`
+
+## Kısıtlar
+
+- Aynı arama ve sayfa kombinasyonuna geri dönüldüğünde yeni bir ağ isteği atılmamalı; sonuçlar önbellekten karşılanmalıdır.

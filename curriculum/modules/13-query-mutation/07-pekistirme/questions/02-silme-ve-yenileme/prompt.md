@@ -1,7 +1,17 @@
-DELETE başarılı ama Puanladıklarım hâlâ Dövüş Kulübü’nü gösteriyor. `useDeleteRating(sessionId, remove)` hook’unu yaz.
+DELETE başarılı ama Puanladıklarım listesi eski kalıyor. Başarılı silmede yalnız doğru oturumun listesini yenile.
 
-- `remove(movieId)` sunucu DELETE fonksiyonudur.
-- Başarılı silmeden sonra yalnız bu oturumun `['ratings', sessionId]` listesi stale olsun; diğer oturumların listesi etkilenmesin.
-- Başarısız DELETE listeyi stale yapmasın ve mevcut veriyi korusun.
+## Gereksinimler
 
-Bu görev POST akışındaki invalidation’ı farklı yazma işlemiyle tekrar eder.
+- `remove(movieId)` mutation fonksiyonudur.
+- Başarıdan sonra yalnız `['ratings', sessionId]` key’iyle başlayan liste stale olsun.
+- Başarısız DELETE mevcut cache verisini korusun ve invalidation yapmasın.
+- Callback Promise’i döndürsün.
+
+## Örnek
+
+`guest-1` oturumunda 550 filmi silinince `guest-1` listesi geçersiz olur; `guest-2` listesi olmaz.
+
+## Sözleşme
+
+- `useDeleteRating.ts` dosyasından `useDeleteRating(sessionId, remove)` named export et.
+- `remove(movieId: number): Promise<void>`; hook sonucu mutation sonucu olmalı.

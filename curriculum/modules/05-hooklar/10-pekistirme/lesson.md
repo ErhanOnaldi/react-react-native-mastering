@@ -1,38 +1,51 @@
 ---
-title: Arama akışını birleştir
-minutes: 9
+title: "Arama akışını birleştir"
+minutes: 6
 kind: practice
 ---
 
 # Arama akışını birleştir
 
 :::pain[Problem]
-Hızlı yazma, geciken sonuç ve aynı anda gelen hata Sinema aramasında birlikte yaşanıyor. Tek tek çalışan çözümler birlikte doğru çalışmalı.
+Hızlı yazma, geciken cevap, boş sorgu ve HTTP hatası aynı arama ekranında birleşiyor. Tek tek çözdüğün mekanizmalar birlikte çalışmazsa kullanıcı bazen eski sonucu, bazen yanlış hata mesajını görür.
 :::
 
-## Ne değişiyor?
+Bu pekiştirmede iki farklı yüzey var. İlk görev hook seviyesinde çalışır: `useMovieSearch` yalnızca state döndürür ve testler onu `renderHook` ile izler. İkinci görev bileşen seviyesindedir: kullanıcı `Film ara` input'una yazar, sonuçları ekranda görür, input'u temizleyince liste boşalır.
 
-Önce query’yi geciktir; ardından effect’te yalnızca gecikmiş değere istek at. Her yeni istekte önceki sonucu geçersiz kıl veya iptal et.
+:::model[Effect yaşam döngüsü]
+Bu akışta iki ayrı dış sistem var: timer ve ağ. Timer, kullanıcının ham yazısına bağlıdır; ağ isteği gecikmiş sorguya bağlıdır. İkisini tek effect'e sıkıştırırsan cleanup'ların neyi temizlediği belirsizleşir.
+:::
 
-## Sinema'da dene
+:::model[Race condition]
+Yeni sorgu başladığında eski isteğin sonucu artık ekrana yazmamalı. İster bayrakla yok say, ister desteklenen yerde abort et; kullanıcı için kural aynı: son geçerli sorgu kazanır.
+:::
 
-`useReducer` loading, success ve error geçişlerini birlikte tutar. Boş query’de idle’a dön; geç gelen cevap UI’ı değiştirmesin.
+## Çalışma sırası
 
-## İki effect, iki sorumluluk
+| Aşama | Kontrol edeceğin şey |
+| --- | --- |
+| Boş query | `idle`, istek yok, eski liste temiz |
+| Hızlı yazma | yalnız son query için arama isteği |
+| Başarı | `success`, başlık dizisi dolu |
+| Hata | `error`, mesaj okunabilir |
+| Temizleme | input boşalınca eski başlık ekranda kalmaz |
 
-1. `query` değişir; debounce timer’ı eski timer’ı temizler.
-2. Gecikmiş query değişir; ağ effect’i eski fetch’i iptal eder.
-3. Sonuç veya hata action olarak reducer’a gider.
-4. Boş query istek atmaz; state idle’a döner.
-
-Bu sıra tesadüf değil. Timer doğrudan kullanıcının yazdığı metne bağlıdır. Ağ isteği ise yalnızca gecikmiş metne bağlıdır. İkisini tek effect’e sıkıştırmak cleanup ve durum geçişlerini okumayı zorlaştırır.
-
-İlk görev `useMovieSearch` hook’unun sonucunu `renderHook` ile gözlemler; ikinci görev controlled input ve listeyi kullanıcı etkileşimiyle sınar. Önceki derslerdeki `RemoteData` ayrımını hatırla: boş sorgu, boş başarı ve hata farklı görünür.
+Yeni üçüncü soru, aynı arama akışının reducer tarafını test ettirir. Burada ağ yok; `movieSearchReducer` saf fonksiyon olarak davranır. Reducer testlerinde bütün state nesnesini karşılaştırmak faydalıdır, çünkü "başarıda eski hata temizlendi mi?" gibi alanlar kolay kaçabilir.
 
 :::mistake[Sık hata]
-Eski istek abort edilmiş olsa bile hata dalında `AbortError`’ı normal hata gibi dispatch etme. Bu, hızlı yazmada yanlış hata metni gösterir.
+Belirti → Input silindikten sonra `Matrix` listede kalıyor. Neden → Boş sorgu state'i ayrı ele alınmadı. Düzeltme → Boş query'de idle/temiz listeye dön.
 :::
 
 :::sector
-Bu alıştırma 5. modülün effect/deps/cleanup merdiveninin son basamağıdır.
+Arama kutuları ürünlerde küçük görünür ama en çok hata üreten alanlardandır. Debounce, iptal ve durum geçişleri testle kilitlenince kullanıcı hızına bağlı bug'lar azalır.
 :::
+
+## Özet
+
+- Timer ve ağ cleanup'ları ayrı sorumluluklardır.
+- Boş sorgu, boş başarıdan farklıdır.
+- Reducer geçişleri saf fonksiyon testleriyle net yakalanır.
+- Son geçerli sorgunun sonucu ekranda kalmalıdır.
+
+Kendini yokla: Reducer testinde neden `status` yanında `error` ve `results` alanlarını da beklemek gerekir?  
+Cevap: Mutantlar çoğu zaman yalnız ana durumu değil, eski veri temizliğini bozar.

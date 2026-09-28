@@ -7,6 +7,7 @@ export default defineQuestion({
   concepts: ['test.each', 'js.string-formatting', 'ts.object-types'],
   files: ['movieLabel.ts'],
   hints: [
+    'Dolu tarih ve eksik tarih için çıktı yapısının nasıl ayrıldığını düşün.',
     'Başlık ve tarih iki farklı kaynaktan geliyor; önce başlığı kırp.',
     'Boş tarihte yalnızca başlığı döndür. Dolu tarihte ilk dört karakter yılı verir.',
     'Dolu tarih için `${title.trim()} (${releaseDate.slice(0, 4)})` biçimini kullan.',

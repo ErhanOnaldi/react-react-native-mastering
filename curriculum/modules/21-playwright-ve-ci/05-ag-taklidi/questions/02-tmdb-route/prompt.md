@@ -1,16 +1,19 @@
-## Bağlam
+Tarayıcıdaki arama, dış film servisine çıkmadan tekrarlanabilir yanıt almalı. Yetkisiz istek başarılı sonuç gibi görünmemeli.
 
-MSW’deki `server.use` alışkanlığını tarayıcı isteğine taşı. Sinema araması gerçek TMDB’ye giderse CI testi rastlantısal olur. Bu görevde bir Playwright `Page` üzerine route kuracaksın.
+## Gereksinimler
 
-## Görev
-
-`mockSearch(page: Page): Promise<void>` fonksiyonunu tamamla.
-
-- `https://api.themoviedb.org/3/search/movie` adresine giden GET isteklerini yakala; query string değişebilir.
-- `Authorization: Bearer <token>` yoksa **401** ve `{ status_code: 7 }` döndür.
-- `query=dövüş` için `[{ id: 550, title: 'Dövüş Kulübü' }]` sonucunu TMDB liste zarfında döndür.
-- Başka sorgu için boş `results` döndür. `page` ve `total_pages` 1, `total_results` sonuç sayısı olsun.
+- TMDB arama adresine yapılan GET isteklerini yakala; query string değerleri değişebilir.
+- Authorization Bearer token yoksa 401 ve status_code 7 cevabı ver.
+- query değeri dövüş ise id 550 ve Dövüş Kulübü başlıklı film içeren liste dön.
+- Başka sorgularda boş results dön.
+- Liste yanıtında page ve total_pages 1; total_results sonuç sayısı olmalı.
 
 ## Örnek
 
-`?query=d%C3%B6v%C3%BC%C5%9F` ve Bearer başlığı → bir sonuç; `?query=bilinmeyen` → sıfır sonuç. Böylece URL kodlaması ile uğraşmak yerine `URLSearchParams` kullanırsın.
+Bearer başlıklı dövüş araması bir film döndürür. Bearer başlıklı bilinmeyen sorgu boş liste verir. Başlıksız dövüş araması 401 döndürür.
+
+## Sözleşme
+
+- Dosya ve export: mockSearch.ts içinden mockSearch(page: Page): Promise<void> fonksiyonunu export et.
+- İstek adresi https://api.themoviedb.org/3/search/movie, metodu GET’tir.
+- Film alanları id ve title içerir; liste gövdesi page, results, total_pages ve total_results alanlarını taşır.

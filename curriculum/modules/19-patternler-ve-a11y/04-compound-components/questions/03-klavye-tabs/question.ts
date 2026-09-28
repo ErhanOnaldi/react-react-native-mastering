@@ -6,9 +6,9 @@ export default defineQuestion({
   concepts: ['pattern.compound', 'a11y.keyboard', 'a11y.focus', 'react.useId'],
   files: ['KeyboardTabs.tsx'],
   hints: [
-    'Kökte seçim state ve useId tabanı tut; Trigger id ve panel id değerini value üzerinden üret.',
-    'List içindeki keydown olayında mevcut tabları DOM sırasıyla bul; Arrow/Home/End hedefine focus ve click uygula.',
-    'Seçilmemiş panelleri hidden yap; tabIndex yalnızca seçili Trigger için 0 olsun.',
+    'Tab tuşunun gruba girişini ve ok tuşlarının grup içi dolaşımını ayrı düşün; DOM sırası değişince davranış da sırayı izlesin.',
+    '`useId`, roving `tabIndex`, `aria-controls`, `aria-labelledby` ve List üzerindeki `keydown` davranışını kullan.',
+    'Görünen tabları DOM sırasıyla bul; ArrowRight/Left döngüsü ile Home/End hedefini belirle, hedefi focus edip seç. Seçilmeyen panellere `hidden` ver.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

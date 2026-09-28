@@ -1,15 +1,22 @@
-Sinema’da `posterUrl` hem arama hem favorilerde kullanılıyor; `SearchBox` yalnız aramada. Hepsini `shared/` içine atmak sahipliği gizler.
+Bir dosyayı kullanan feature'lara göre uygun klasör yolunu üret. Böylece tek tüketicili kodun sahibi, gerçek ortaklıktan ayrılır.
 
-## İstenen
+## Gereksinimler
 
-`chooseFolder(users)` fonksiyonunu tamamla. `users`, dosyayı kullanan feature adlarıdır.
+- Kullanıcı adlarını tekrarsız değerlendir.
+- Hiç kullanıcı yoksa `unassigned` döndür.
+- Tek farklı kullanıcı varsa `features/<ad>` döndür.
+- Birden fazla farklı kullanıcı varsa `shared` döndür.
 
-- Tek **benzersiz** feature varsa `features/<ad>` döndür.
-- İki veya daha fazla farklı feature varsa `shared` döndür.
-- Hiç kullanan yoksa `unassigned` döndür; henüz ortaklaştırma yapma.
+## Örnek
 
 | Girdi | Çıktı |
 | --- | --- |
 | `['search']` | `features/search` |
 | `['movies', 'movies']` | `features/movies` |
 | `['movies', 'favorites']` | `shared` |
+| `[]` | `unassigned` |
+
+## Sözleşme
+
+- Dosya ve export: `chooseFolder.ts` → `chooseFolder(users: string[]): string`
+- `users`, dosyayı kullanan feature adlarını içerir.

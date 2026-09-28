@@ -8,8 +8,28 @@ import '@/index.css'
 import { Provider } from 'react-redux'
 import { store } from '@/app/store'
 import { router } from '@/router'
+import { reportError } from '@/shared/lib/report-error'
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')!, {
+  onCaughtError(error, info) {
+    void reportError(error, {
+      kind: 'caught',
+      componentStack: info.componentStack,
+    })
+  },
+  onUncaughtError(error, info) {
+    void reportError(error, {
+      kind: 'uncaught',
+      componentStack: info.componentStack,
+    })
+  },
+  onRecoverableError(error, info) {
+    void reportError(error, {
+      kind: 'recoverable',
+      componentStack: info.componentStack,
+    })
+  },
+}).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>

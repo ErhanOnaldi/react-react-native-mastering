@@ -1,12 +1,24 @@
-Detay sayfası doğru Bearer başlığını gönderiyor; arama sayfası unutunca 401 alıyor. Ortak bir kapı kur.
+Tüm TMDB isteklerinde ortak yetkilendirme ve hata bilgisi kullan; böylece her feature aynı HTTP cevabını tutarlı işler.
 
-## İstenen
+## Gereksinimler
 
-`ApiError` ve `createTmdbClient(token)` export et. Dönen nesnenin `get<T>(path, params?)` metodu olsun.
+- TMDB `/3` köküne GET isteği gönder ve her URL'ye `language=tr-TR` ekle.
+- Her istekte `Authorization: Bearer <token>` başlığı gönder.
+- String ve number query parametrelerini ekle, `undefined` olanları atla.
+- Başarı cevabının JSON'unu generic dönüş tipi olarak döndür.
+- HTTP başarısızlığında hata fırlat: HTTP `status`, TMDB `status_code` veya yoksa `null`, ayrıca `status_message` veya anlaşılır varsayılan mesaj taşısın.
+- Bulunmayan film 404 ve TMDB kodu 34 ile hata vermeli.
 
-- TMDB kökü `https://api.themoviedb.org/3`; her isteğe `language=tr-TR` ekle.
-- `Authorization: Bearer <token>` başlığını gönder. `params` string/number/undefined değerleri alır; undefined atlanır.
-- Başarıda JSON’u `T` olarak döndür.
-- HTTP hata cevabında `ApiError` fırlat: `status` HTTP kodu, `statusCode` TMDB `status_code` değeri (yoksa `null`), `message` TMDB `status_message` (yoksa anlamlı varsayılan).
+## Örnek
 
-`get<{ title: string }>('/movie/550')` başlık olarak `Dövüş Kulübü` döndürmeli.
+`get<{ title: string }>('/movie/550')` çağrısı `Dövüş Kulübü` başlığını verir. `'/movie/999999'` çağrısı `status: 404`, `statusCode: 34` değerli hata verir.
+
+## Sözleşme
+
+- Dosya ve export: `tmdbClient.ts` → `ApiError` class ve `createTmdbClient(token: string)` factory.
+- Oluşan client: `get<T>(path: string, params?: Record<string, string | number | undefined>): Promise<T>`.
+- `ApiError(status: number, statusCode: number | null, message: string)` constructor'ı; alanlar aynı imzayla erişilebilir.
+
+## Kısıtlar
+
+- Token'ı URL query'sine ekleme.

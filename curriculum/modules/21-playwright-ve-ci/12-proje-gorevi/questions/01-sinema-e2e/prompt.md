@@ -1,31 +1,30 @@
-## Bağlam
+Sinema’nın iki kritik kullanıcı yolculuğunu gerçek tarayıcıda koru: aramadan film ayrıntısına gitme ve oturum açıp izleme listesi oluşturma.
 
-Sinema’nın birim ve entegrasyon testleri yeşil olsa da `/login` route’u korumalı gruba taşındığında gerçek giriş akışı kırılıyor. Bu iki yol tarayıcıda korunacak.
+## Gereksinimler
 
-## 1. Playwright kurulumu
+- Ana sayfa → Ara → dövüş araması → Dövüş Kulübü ayrıntısı akışını yürüt.
+- Boş oturumla /watchlists açıldığında kullanıcı giriş sayfasına yönlenmeli; girişten sonra liste sayfasına dönüp yeni liste kaydedilebilmeli.
+- TMDB ve DummyJSON yanıtları test verisiyle sabitlenmeli; gerçek ağa bağımlılık olmamalı.
+- TMDB isteğinde Authorization Bearer başlığı yoksa 401 dönmeli.
+- Locator’lar erişilebilir rol ve adlara dayanmalı; sabit uyku olmamalı.
+- Chromium ile Playwright testleri yerelde çalıştırılabilmeli.
 
-`projects/sinema/package.json` içine `@playwright/test` **devDependency** ekle (`pnpm-workspace.yaml` catalog sürümüyle aynı). `playwright.config.ts` dosyası `defineConfig` kullanmalı:
+## Örnek
 
-| Alan | Değer |
-| --- | --- |
-| `testDir` | `./e2e` |
-| `use.baseURL` | `http://localhost:5174` |
-| `projects` | Chromium projesi |
-| `webServer.command` | `pnpm dev` |
-| `webServer.url` | `http://localhost:5174` |
-| `webServer.reuseExistingServer` | Yerelde evet, CI’da hayır (`!process.env.CI`) |
-| `webServer.env.VITE_TMDB_TOKEN` | Boş olmayan **sahte** token |
+Arama: Ana sayfa → Ara → dövüş → Dövüş Kulübü bağlantısı → detay başlığı.  
+Oturum: /watchlists → /login → başarılı giriş → /watchlists → Hafta sonu listesi görünür.
 
-`use.trace: 'on-first-retry'` ve CI için bir retry ekle. `vite.config.ts` içindeki Vitest `test.exclude` ayarına `e2e/**` ekle (`configDefaults.exclude` varsayılanlarını koru); aksi halde `pnpm test`, Playwright spec dosyalarını Vitest olarak çalıştırır. İlk yerel denemeden önce `npx playwright install chromium` çalıştır.
+## Sözleşme
 
-## 2. Ana sayfa → arama → detay
+- Proje: sinema.
+- Config: projects/sinema/playwright.config.ts.
+- E2E dosyaları: projects/sinema/e2e/search.spec.ts ve projects/sinema/e2e/auth-watchlist.spec.ts.
+- Test komutları: projects/sinema/package.json içinde @playwright/test bağımlılığı ve Playwright’ı çalıştıran script bulunur.
+- Playwright testleri e2e/ klasöründen yüklenir, uygulama http://localhost:5174 adresinde açılır.
+- Arama senaryosunda rol/ad metinleri: Ara, Film ara, Dövüş Kulübü.
+- Giriş senaryosunda alanlar: Kullanıcı adı, Parola, Liste adı; düğmeler: Giriş yap, Kaydet.
 
-`e2e/search.spec.ts` dosyasında `page.route` ile TMDB yanıtlarını sabitle. En azından açılışta gereken `/genre/movie/list` ve `/trending/movie/week`, aramada `/search/movie`, detayda `/movie/550` isteklerini karşıla. Liste yanıtı TMDB biçiminde `{ page, results, total_pages, total_results }` olsun. 550 başlığı **Dövüş Kulübü**; fixture olarak `curriculum/fixtures/tmdb/movie-550.json` biçimini örnek al. `Authorization: Bearer ...` yoksa 401 döndür. Eksik endpoint’e sessiz başarılı yanıt verme.
+## Kısıtlar
 
-Tarayıcıda `/` aç; “Ara” bağlantısıyla aramaya git, “Film ara” **textbox**’ına `dövüş` yaz, sonuç bağlantısı görününce tıkla, detay başlığını doğrula. `page.waitForTimeout` kullanma.
-
-## 3. Giriş → izleme listesi
-
-`e2e/auth-watchlist.spec.ts` dosyasında `page.route` ile DummyJSON `POST /auth/login` yanıtını taklit et. Kullanıcı `emilys`, parola `emilyspass`; başarılı yanıt `id`, `username`, `accessToken`, `refreshToken` içermeli. Boş oturumla `/watchlists` aç: `/login`’e yönlenmeli, form görünmeli. Formu doldurup gönder; izleme listesi sayfasına dön, “Liste adı” alanına “Hafta sonu” yaz, “Kaydet”e bas, kayıtlı listede yeni adı doğrula. Bu spec için hazır `storageState` kullanma; router hatasını yakalamak istiyoruz.
-
-Testleri proje dizininde `npx playwright test` ile çalıştır. Her spec kendi route’larını kurmalı; dış ağa bağımlı olmamalı.
+- Giriş akışı boş oturumdan başlamalı; hazır storageState ile atlanmamalı.
+- Test verisi testler arasında deterministik olmalı.

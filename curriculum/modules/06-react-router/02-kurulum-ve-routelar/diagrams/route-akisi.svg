@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250">
+  <title>Adresin route ağacından ekrana dönüşmesi</title>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0,0 L8,4 L0,8 z" />
+    </marker>
+  </defs>
+  <rect class="d-violet" x="25" y="72" width="150" height="100" rx="12" />
+  <text class="d-title" x="100" y="105" text-anchor="middle">Tarayıcı</text>
+  <text class="d-code" x="100" y="138" text-anchor="middle">/shelf</text>
+  <rect class="d-accent" x="225" y="72" width="170" height="100" rx="12" />
+  <text class="d-title" x="310" y="105" text-anchor="middle">Route ağacı</text>
+  <text class="d-code" x="310" y="138" text-anchor="middle">path → element</text>
+  <rect class="d-box" x="445" y="72" width="130" height="100" rx="12" />
+  <text class="d-title" x="510" y="105" text-anchor="middle">Router</text>
+  <text class="d-muted" x="510" y="138" text-anchor="middle">eşleşme</text>
+  <rect class="d-success" x="625" y="72" width="125" height="100" rx="12" />
+  <text class="d-title" x="687" y="105" text-anchor="middle">Ekran</text>
+  <text class="d-muted" x="687" y="138" text-anchor="middle">Okuma rafı</text>
+  <path class="d-line-accent" d="M180 122 H216" marker-end="url(#arrow)" />
+  <path class="d-line-accent" d="M400 122 H436" marker-end="url(#arrow)" />
+  <path class="d-line-accent" d="M580 122 H616" marker-end="url(#arrow)" />
+  <text class="d-muted" x="198" y="207" text-anchor="middle">konum</text>
+  <text class="d-muted" x="418" y="207" text-anchor="middle">eşle</text>
+  <text class="d-muted" x="598" y="207" text-anchor="middle">render</text>
+</svg>

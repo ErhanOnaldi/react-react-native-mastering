@@ -8,9 +8,10 @@ export default defineQuestion({
   files: ['DialogPages.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'İki ekranda tekrar eden şey nedir? Kod olarak aynı olması gereken parçayı bul.',
-    'Bir onay penceresi bileşeni çıkar; açık/kapalı durumunu, başlığını ve onay metnini dışarıdan prop olarak al.',
-    'Radix’in Dialog bileşenini kullanırsan Escape’i kendisi kapatır; kapanınca hangi düğmeye odaklanacağını `onCloseAutoFocus` ile sen belirtebilirsin. İki ekran da aynı bileşeni farklı başlık ve metinle çağırsın.',
+    'İki ekranda hangi görünüm ve etkileşim aynı kalmalı, hangisi kayda göre değişmeli?',
+    "Ortak onay görünümünü tek bir bileşene çıkar; focus dönüşü için Radix Dialog'un `onCloseAutoFocus` olayını kullanabilirsin.",
+    'Bileşene başlık, açıklama, onay etiketi, callback ve odağın döneceği elementi prop olarak ver; her ekran kendi açılma durumunu tutsun.',
+    "Escape ile kapanmayı ve onayla silmeyi ayrı dene; aynı `Sil` tetikleyicisini yeniden açarken focus ref'ini güncelle.",
   ],
   rubric: [
     'Düzenleme ve silme ekranları aynı onay penceresi parçasını kullanır; kopya kod yok.',

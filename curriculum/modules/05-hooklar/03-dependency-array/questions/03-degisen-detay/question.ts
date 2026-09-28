@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['react.useEffect.deps', 'react.props', 'fetch.headers-auth'],
   files: ['MovieDetails.tsx'],
   hints: [
-    '`id` effect içinde okunuyor.',
-    'Effect dış sistemde hangi filmi temsil ediyor?',
-    'Dependency array’i `[id]` yap.',
+    'İlk film geliyor; sorun aynı bileşen açıkken prop değiştiğinde ortaya çıkıyor.',
+    'Effect dış sistemde hangi filmi temsil ediyorsa o reactive değer dependency olmalı.',
+    'Bu görevde effect gövdesi `id` okuyor; dependency listesi `[id]` olmalı.',
   ],
 })

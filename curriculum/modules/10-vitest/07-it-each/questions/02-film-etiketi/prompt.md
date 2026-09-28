@@ -1,13 +1,20 @@
-TMDB bazı filmleri `release_date: ""` ile gönderir. Kartta `"Film ()"` görünmesin. Bu kez testler hazır; aynı kuralın birkaç veri örneğiyle nasıl `it.each` içinde okunduğunu görüp `movieLabel.ts` dosyasını tamamla.
+Film kartı etiketi başlığın kenar boşluklarını kaldırmalı ve çıkış yılı varsa başlığın yanına eklemeli. Tarih yoksa boş parantez üretme.
 
-## Sözleşme
+## Gereksinimler
 
-`movieLabel({ title, release_date })` bir string döndürsün:
+- Dolu tarihten ilk dört karakter yılı alınmalı.
+- Başlığın başındaki ve sonundaki boşluklar kaldırılmalı.
+- Tarih boşsa yalnız temizlenmiş başlık dönmeli.
+
+## Örnek
 
 | Film | Beklenen |
 | --- | --- |
-| `{ title: "Dövüş Kulübü", release_date: "1999-10-15" }` | `"Dövüş Kulübü (1999)"` |
-| `{ title: " Matrix ", release_date: "1999-03-31" }` | `"Matrix (1999)"` |
-| `{ title: "Yeni Film", release_date: "" }` | `"Yeni Film"` |
+| Dövüş Kulübü, 1999-10-15 | Dövüş Kulübü (1999) |
+| “ Matrix ”, 1999-03-31 | Matrix (1999) |
+| Yeni Film, boş tarih | Yeni Film |
 
-Başlıktaki kenar boşluklarını kaldır. Eksik tarih için yıl parantezi üretme. Testteki her tablo satırı ayrı bir davranış örneği olarak raporlanır.
+## Sözleşme
+
+- Düzenlenecek dosya: movieLabel.ts
+- Export: movieLabel(movie: { title: string; release_date: string }): string

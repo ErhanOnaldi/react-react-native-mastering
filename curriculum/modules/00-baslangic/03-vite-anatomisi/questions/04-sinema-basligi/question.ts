@@ -8,7 +8,8 @@ export default defineQuestion({
   project: 'sinema',
   focusFiles: ['src/App.tsx'],
   hints: [
-    '`<main>` içine, mevcut paragrafın üstüne bir `<header>` ekle.',
-    'Başlık `<h1>Sinema</h1>`, alt yazı `<p>Bugün ne izlesek?</p>` olsun.',
+    'VS Code üzerinden `projects/sinema/src/App.tsx` dosyasını aç.',
+    '`<main>` kapsayıcısı içine yeni bir `<header>` elementi yerleştir.',
+    'İskelet: `<header><h1>Sinema</h1><p>Bugün ne izlesek?</p></header>`. Kaydettiğinde Vite HMR ile tarayıcının anında güncellendiğini izle.',
   ],
 })

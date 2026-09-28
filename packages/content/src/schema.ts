@@ -43,7 +43,7 @@ const questionBase = {
   concepts: z.array(z.string()).min(1),
 }
 
-const hintsSchema = z.array(z.string().min(1)).max(3).default([])
+const hintsSchema = z.array(z.string().min(1)).max(4).default([])
 const rubricSchema = z.array(z.string().min(1)).min(1).optional()
 
 export const quizOptionSchema = z.object({

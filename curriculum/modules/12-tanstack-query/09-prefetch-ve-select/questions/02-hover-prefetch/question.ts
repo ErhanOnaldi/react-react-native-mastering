@@ -8,8 +8,8 @@ export default defineQuestion({
   files: ['MovieHover.tsx'],
   timeoutMs: 15000,
   hints: [
-    '`useQueryClient()` ile client’ı al.',
-    '`onMouseEnter` olayında `client.prefetchQuery(movieQueries.detail(id))` çağır.',
-    'Promise için event handler’da `void` kullan; buton başlığı prop’tan gelsin.',
+    'Kartın hangi olayı kullanıcının detayla ilgilendiğini gösterir?',
+    '`useQueryClient()` ile mevcut client’ı al ve pointer event’ine prefetch bağla.',
+    '`void client.prefetchQuery(movieQueries.detail(id))`; button name’i `title` prop’u olsun.',
   ],
 })

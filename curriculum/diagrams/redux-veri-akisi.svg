@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 305">
+  <title>Redux veri akışı</title>
+  <defs>
+    <marker id="ok-redux" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-accent" x="40" y="90" width="100" height="56" rx="8"/>
+  <text class="d-title" x="90" y="123" text-anchor="middle">dispatch</text>
+
+  <rect class="d-violet" x="170" y="90" width="120" height="56" rx="8"/>
+  <text class="d-title" x="230" y="112" text-anchor="middle">middleware</text>
+  <text class="d-muted" x="230" y="132" text-anchor="middle">async / log</text>
+
+  <rect class="d-success" x="320" y="90" width="110" height="56" rx="8"/>
+  <text class="d-title" x="375" y="123" text-anchor="middle">reducer</text>
+
+  <rect class="d-box" x="460" y="90" width="100" height="56" rx="8"/>
+  <text class="d-title" x="510" y="123" text-anchor="middle">store</text>
+
+  <rect class="d-success" x="590" y="90" width="120" height="56" rx="8"/>
+  <text class="d-title" x="650" y="112" text-anchor="middle">selector</text>
+  <text class="d-muted" x="650" y="132" text-anchor="middle">UI okur</text>
+
+  <line class="d-line" x1="140" y1="118" x2="166" y2="118" marker-end="url(#ok-redux)"/>
+  <line class="d-line" x1="290" y1="118" x2="316" y2="118" marker-end="url(#ok-redux)"/>
+  <line class="d-line" x1="430" y1="118" x2="456" y2="118" marker-end="url(#ok-redux)"/>
+  <line class="d-line" x1="560" y1="118" x2="586" y2="118" marker-end="url(#ok-redux)"/>
+
+  <path class="d-line d-dashed" d="M650 146 V220 H90 V150" marker-end="url(#ok-redux)"/>
+  <text class="d-muted" x="380" y="243" text-anchor="middle">UI yeni olayda tekrar action gönderir; reducer saf kalır.</text>
+  <text class="d-code" x="380" y="277" text-anchor="middle">action → state → UI</text>
+</svg>

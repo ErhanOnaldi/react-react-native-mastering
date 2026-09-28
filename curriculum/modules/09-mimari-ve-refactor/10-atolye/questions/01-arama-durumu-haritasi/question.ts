@@ -8,8 +8,9 @@ export default defineQuestion({
   files: ['SearchWorkspace.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Paylaşılacak metin ve sayfa ile geçici panel durumunun ömrü farklı.',
-    'Arama ve sayfayı URL parametrelerinden oku; paneli yerel state ile yönet.',
-    'URL değişince sonucu yeniden iste; paneli kapat. Eski isteğin geç gelmesi yeni ekranı bozmamalı.',
+    'Hangi seçimler bağlantıyla paylaşılır, hangisi yalnız geçici görünüm tercihidir?',
+    '`useSearchParams` ile URL state, React local state ile panel görünürlüğü yönetilebilir.',
+    'q/page değişimini URL ile sür, arama boşken isteği engelle ve route parametre değişiminde paneli kapat.',
+    'Yeni arama başlarken eski cevabın ekrana yazılmasını önle.',
   ],
 })

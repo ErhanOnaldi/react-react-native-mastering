@@ -1,7 +1,17 @@
-# Reducer kuralı: toplu ekleme
+Toplu kayıt ekleme kuralı, tekrarları atlayıp eski state’i korumalı.
 
-`addMany(ids)` mevcut listeye yalnız yeni ID’leri sırayla eklesin. `[550] + [550,603,603] → [550,603]`. Eski snapshot değişmesin.
+## Gereksinimler
 
-## İstenen davranış
+- Yeni kimlikler girdideki sırayla eklenir.
+- Zaten listede olan veya aynı payload içinde daha önce eklenen kimlik yeniden eklenmez.
+- Reducer çalıştırılması eski state’i değiştirmez.
 
-Testlerdeki Türkçe adları gereksinim listesi olarak oku. Starter derlenir; davranışı tamamlaman gerekiyor.
+## Örnek
+
+Başlangıç `[550]`, payload `[550, 603, 603]` → `[550, 603]`.
+
+## Sözleşme
+
+- Dosya: `bulk.ts`
+- Export: `listSlice`, `addMany(ids: number[])`
+- State biçimi: `{ ids: number[] }`

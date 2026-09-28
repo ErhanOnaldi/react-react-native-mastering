@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['react.composition', 'react.children'],
   files: ['MoviePanel.tsx'],
   hints: [
-    'Kart çerçevesi hangi içeriği kendi üretmek zorunda değil?',
-    '`children` ana içerik, `actions` isteğe bağlı alt bölge olsun.',
-    '`article` içinde children göster; actions varsa `<footer>{actions}</footer>` ekle.',
+    'Ana içerik ile alt eylem nerede görünmeli; alt eylem verilmediğinde ne olmalı?',
+    '`children` ve `actions` için render edilebilir içerik tipi kullan; yalnız nullish değeri yok say.',
+    '`article` içine `children`, `actions != null` iken `<footer>{actions}</footer>` koy.',
+    'Sıfır geçerli içeriktir; `actions && ...` ile footer koşulu kurma.',
   ],
 })

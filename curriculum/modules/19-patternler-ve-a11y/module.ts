@@ -14,5 +14,8 @@ export default defineModule({
     'useDisclosure ile görünümden bağımsız açılma mantığı yazabilirsin',
     'React 19 ref prop’uyla asChild/Slot davranışını birleştirebilirsin',
     'Eski render props ve HOC kodlarını okuyup modern karşılıklarını seçebilirsin',
+    'Intl ile Türkçe sayı, tarih, metin sıralama ve çoğul biçimlerini üretebilirsin',
+    'Birden fazla dil için tipli mesaj kataloğu ve doğru belge yönü kurabilirsin',
+    'Azaltılmış hareket tercihini gözetip geçişleri güvenli biçimde uygulayabilirsin',
   ],
 })

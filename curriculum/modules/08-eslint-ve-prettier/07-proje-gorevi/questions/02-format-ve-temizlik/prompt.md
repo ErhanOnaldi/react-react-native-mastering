@@ -1,12 +1,26 @@
 # Sinema format ve lint temizliği
 
-Config hazır; şimdi herkes aynı Sinema dosyasını aynı biçimde kaydetsin.
+Sinema’da bütün geliştiricilerin aynı biçimi kullanmasını sağla. Lint hataları kaynak kodda çözülmeli; film arama, TMDB ve gezinme davranışı korunmalı.
 
-- Proje kökünde **`.prettierrc.json`** oluştur: `singleQuote: true`, `semi: false`, `plugins: ["prettier-plugin-tailwindcss"]`, `tailwindStylesheet: "./src/index.css"`.
-- `prettier` ve `prettier-plugin-tailwindcss` Sinema’da yoksa kök `package.json` ve workspace catalog’daki sürümleri izleyerek `devDependencies` içine ekle.
-- Proje kökünde **`.prettierignore`** oluştur. En az `dist` ve `coverage` gibi üretilen çıktıları dışla.
-- `package.json` `scripts` içine `lint` → `eslint .`, `format` → `prettier --write .`, `format:check` → `prettier --check .` ekle. Mevcut script’leri silme.
-- `pnpm lint` çalıştır; `src` altındaki bütün lint hatalarını düzelt. Film detayında eksik `id` bağımlılığı kalmamalı.
-- `pnpm format` ardından `pnpm format:check` çalıştır.
+## Gereksinimler
 
-Testler config ve script’leri okur; Prettier Node API’siyle biçimi, ESLint Node API’siyle proje kaynaklarını denetler.
+- String’lerde tek tırnak ve noktalı virgülsüz biçim kullan.
+- Tailwind class’ları sırala ve Tailwind v4 stylesheet yolu `./src/index.css` olsun.
+- `.prettierignore` içinde `dist` ve `coverage` dışlansın.
+- `lint`, `format`, `format:check` script’leri sırasıyla `eslint .`, `prettier --write .`, `prettier --check .` çalıştırsın.
+- `src` altındaki TS/TSX dosyalarında lint hatası kalmasın; detay sayfasında eksik film kimliği bağımlılığı bulunmasın.
+- Biçimleme ve lint düzeltmeleri uygulamanın mevcut davranışını korusun.
+
+## Örnek
+
+`const title = "Dövüş Kulübü";` → ortak biçimden sonra `const title = 'Dövüş Kulübü'` olur. CI biçim farkı bulursa dosya değişmez, komut başarısız olur.
+
+## Sözleşme
+
+- Proje: `sinema`; proje kökünde `.prettierrc.json`, `.prettierignore` ve güncellenmiş `package.json` bulunmalıdır.
+- Tailwind kaynağı: `src/index.css`.
+
+## Kısıtlar
+
+- Mevcut `package.json` script’lerini silme; gereken paketleri yalnızca eksikse ekle.
+- Kontrol komutu dosya yazmamalıdır.

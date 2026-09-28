@@ -1,7 +1,18 @@
-# Favori kuralını slice’a taşı
+Bir kullanıcı aynı kayıt üzerinde tekrar tekrar seçim yapabilir. Seçim eklenmeli veya kaldırılmalı; diğer kayıtlar korunmalı.
 
-`favorites.ts` içinde `toggleFavorite(id)` ekle/çıkar kuralını uygula. `550 → [550] → []`; başka ID’leri koru. `selectFavoriteIds` kök state’ten okuyabilmeli.
+## Gereksinimler
 
-## İstenen davranış
+- 550 kimliği ilk işlemde listeye eklenir; aynı kimlik tekrar işlendiğinde çıkarılır.
+- Başka kimlikler eklenip çıkarılmaz.
+- Kök state’ten seçim listesini okuyan selector doğru ID dizisini döndürür.
+- Önceki state nesnesi ve dizisi değişmeden kalır.
 
-Testlerdeki Türkçe adları gereksinim listesi olarak oku. Starter derlenir; davranışı tamamlaman gerekiyor.
+## Örnek
+
+`550` üzerinde işlem: `[] → [550] → []`. Başlangıç `[155]` iken `603` eklemek `[155, 603]` üretir.
+
+## Sözleşme
+
+- Dosya: `favorites.ts`
+- Export: `favoritesSlice`, `toggleFavorite(id: number)`, `selectFavoriteIds`
+- Kök state biçimi: `{ favorites: { ids: number[] } }`

@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['react.context', 'react.custom-hooks', 'ts.optional-nullable'],
   files: ['FavoritesContext.tsx'],
   hints: [
-    'Context varsayılanı `null` olmalı.',
-    'Provider `value` ile id listesini verir.',
-    'Hook `useContext` sonucunu kontrol edip null ise hata fırlatır.',
+    'Provider yokken boş dizi dönmek hatayı gizler; yanlış yerleşimi görünür yap.',
+    'Context varsayılanı `null` olmalı; provider `value` ile `[550]` listesini verir.',
+    'Hook `useContext` sonucunu kontrol edip null ise `FavoritesProvider` geçen bir hata fırlatır.',
   ],
 })

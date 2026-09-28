@@ -1,9 +1,22 @@
 # İlk lint temizliği
 
-Sinema’dan alınan küçük bir TSX dosyasında artık kullanılmayan `MovieCard` import’u kaldı. Editördeki `movieSource` string’i, ESLint’e verilecek dosyanın **kaynak metni**.
+Sinema’dan alınan küçük bir kaynak dosyada kullanılmayan bir import kaldı. Kaynak metnini düzelt ve film başlığını gösteren bileşeni koru.
 
-- Kullanılmayan import’u kaldır.
-- `MovieTitle` export’unu ve `Dövüş Kulübü` başlığını koru.
-- `no-unused-vars` kuralı için **0 hata** üret.
+## Gereksinimler
 
-`movieSource` içindeki kodu düzenle; string’i silme. Test gerçek ESLint Node API’siyle onu `MovieTitle.tsx` olarak inceliyor.
+- Kullanılmayan import için sıfır lint hatası üret.
+- Dışa aktarılan bileşen ve `Dövüş Kulübü` başlığı korunmalı.
+- Bileşen verilen `title` değerini `<h1>` içinde göstermeli.
+
+## Örnek
+
+Girdi: `title = 'Dövüş Kulübü'` → çıktı: `<h1>Dövüş Kulübü</h1>`; lint hata sayısı `0`.
+
+## Sözleşme
+
+- Dosya: `movieSource.ts` içindeki `movieSource` adlı string dışa aktarımı.
+- String, lint edilecek TSX kaynak metnini içerir; bileşen adı `MovieTitle`, prop adı `title` olmalıdır.
+
+## Kısıtlar
+
+- Kaynak string’ini silme veya boşaltma.

@@ -7,7 +7,8 @@ export default defineQuestion({
   concepts: ['router.search-params', 'js.array-methods', 'react.derived-state'],
   files: ['selectMovies.ts'],
   hints: [
-    'Önce `filter`, sonra `slice` düşün.',
-    '`slice((page - 1) * pageSize, page * pageSize)` kullan; q ve genre koşullarını aynı filter içinde birleştir.',
+    'Arama ve tür koşullarından sonra sayfanın başlangıç ve bitiş indekslerini hesapla.',
+    'Önce `filter`, ardından `slice`; query string değerlerini `URLSearchParams` ile oku.',
+    '`slice((page - 1) * pageSize, page * pageSize)` kullan; bozuk türü filtre gibi uygulama ve Türkçe başlığı locale duyarlı karşılaştır.',
   ],
 })

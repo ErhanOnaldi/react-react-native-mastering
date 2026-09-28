@@ -1,12 +1,18 @@
-Sinema'da `?q=Matrix&page=4&genre=28` açık. Sorgu değişince dördüncü sayfada kalan ekran boş sonuç sanıyor; tüm params nesnesini değiştirince de tür kayboluyor.
+Arama kontrolleri adresle aynı seçimleri göstermeli. Sorgu veya tür değiştiğinde eski sayfa numarasını kaldır, ilgisiz filtreleri koru.
 
-## Görev
+## Gereksinimler
 
-`SearchControls` URL'yi tek kaynak olarak kullansın:
+- `Film ara` adlı text input'un değeri `q` parametresinden gelsin ve değişince URL güncellensin.
+- `Aksiyon` düğmesi `genre=28` seçsin; `Tüm türler` düğmesi genre parametresini kaldırsın.
+- Sorgu veya tür değişince `page` kaldırılsın; diğer filtreler korunsun.
+- Sayfa eksik veya bozuksa görünür metin `Sayfa 1` olsun.
 
-- Input değeri `q` parametresinden gelsin; her değişimde URL'ye yazılsın.
-- **Aksiyon** `genre=28` yapsın; **Tüm türler** türü kaldırsın.
-- Sorgu veya tür değişiminde `page` silinsin, diğer filtre korunsun.
-- Görünen sayfa eksik veya bozuk değer için `1` olsun.
+## Örnek
 
-Örnek: `?q=Matrix&page=4&genre=28` üzerinde sorguyu temizlemek → `genre=28` kalır, `page` gider.
+`?q=Matrix&page=4&genre=28` üzerinde sorguyu temizle → `genre=28` kalır, `page` kalkar.
+
+## Sözleşme
+
+- `SearchControls.tsx` içinden `SearchControls` named export edilir.
+- Route `/search` adresinde açılır.
+- Arama alanının erişilebilir adı `Film ara`; tür düğmelerinin adları `Aksiyon` ve `Tüm türler`.

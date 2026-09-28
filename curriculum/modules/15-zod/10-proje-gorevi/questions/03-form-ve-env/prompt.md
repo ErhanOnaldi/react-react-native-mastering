@@ -1,8 +1,24 @@
-Form kurallarını ve uygulama env değerlerini Zod'a taşı.
+Sinema'nın liste ve yorum formlarını, ayrıca uygulama ayarlarını tek ve tutarlı veri kurallarıyla çalıştır.
 
-1. `src/features/watchlists/schemas.ts` oluştur; named export `watchlistSchema`, `reviewSchema`. `watchlistSchema`: `name` trim sonrası boş değil (`Ad gerekli`), `description` string, `isPublic` boolean, `tags` öğeleri `{ value: string }`. `reviewSchema`: `body` trim sonrası boş değil (`Yorum gerekli`), `rating` 1–5. Form değer tipleri şemayla uyumlu olsun; `Watchlist` kayıt tipindeki `id` ve `createdAt` alanları sadece kayıt sonrası eklensin.
-2. `WatchlistForm` ve `ReviewForm` bu şemalarla aynı kuralları uygulasın. Mevcut etiket ekleme/silme, yıldız seçimi, yorum gönderme, label ve hata akışını koru; aynı kuralları iki yerde tekrar etme.
-3. `src/shared/config/env.ts` oluştur; named export `env`. `import.meta.env.VITE_TMDB_TOKEN` değeri trimlensin ve boşsa `VITE_TMDB_TOKEN` içeren açık hata versin. Opsiyonel `VITE_APP_TITLE` boşsa `Sinema` olsun. Client Bearer başlığı tokenı buradan okusun.
-4. Dönüşen alanların giriş ve çıkış tipleri doğru kalsın.
+## Gereksinimler
+- Liste adı trim sonrası boş olmasın; açıklama string, görünürlük boolean, etiketler { value: string } öğelerinden oluşsun.
+- Yorum metni trim sonrası boş olmasın ve Yorum gerekli mesajı gösterilsin; rating 1–5 aralığında olsun.
+- Boş liste adı Ad gerekli mesajını göstermeli; geçersiz form gönderilmemeli.
+- Watchlist kayıt tipindeki id ve createdAt yalnızca kayıt sonrası eklenir.
+- Env tokenı trimlenip boşsa VITE_TMDB_TOKEN adını içeren hata versin; opsiyonel boş başlık Sinema olsun.
+- TMDB Bearer başlığı env'den okunan tokenı kullansın.
+- Form input ve submit değerleri dönüşüm olduğunda doğru biçimde tiplensin.
+- Etiket ekleme/silme, yıldız seçimi, label ve hata akışı ile mevcut gönderim davranışı korunsun.
 
-Mevcut 14. modül form davranışları bozulmamalı.
+## Örnek
+Liste adı "  Klasikler  " olarak girilince kayıt adı Klasikler olur. Boş yorum gönderilmez ve /comments/add isteği atılmaz.
+
+## Sözleşme
+- src/features/watchlists/schemas.ts dosyasında watchlistSchema ve reviewSchema named export'larını oluştur.
+- src/features/watchlists/WatchlistForm.tsx içindeki WatchlistForm ve src/features/watchlists/ReviewForm.tsx içindeki ReviewForm bileşenlerini güncelle.
+- src/shared/config/env.ts dosyasında env named export'unu oluştur.
+- WatchlistForm'da Liste adı alanı ve Kaydet düğmesi; ReviewForm'da Yorum alanı, 1 yıldız–5 yıldız arası erişilebilir seçim düğmeleri ve Gönder düğmesi bulunmalı.
+- Alan hataları role=alert ile bulunabilir olmalı.
+
+## Kısıtlar
+- Aynı alan kuralı form davranışında iki ayrı yerde çelişkili biçimde tanımlanmamalı.

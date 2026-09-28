@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['redux.selectors', 'ts.inference'],
   files: ['ui.ts'],
   hints: [
-    'Selector slice state’ini alır.',
-    '`state.theme` alanını karşılaştır.',
-    '`state.theme === "dark"` döndür.',
+    'Sonuç yalnızca tema değerine bağlı olmalı; diğer UI alanları ilgisizdir.',
+    'Slice içindeki `selectors` alanında selector, root state değil slice state alır.',
+    '`state.theme === "dark"` karşılaştırmasını `selectIsDark` selector’ından döndür.',
   ],
 })

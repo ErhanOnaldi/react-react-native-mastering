@@ -8,9 +8,10 @@ export default defineQuestion({
   files: ['MoviePages.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'İki ekranda aynı kalan görünüm ile farklı olan veri kaynağını ayır.',
-    'Popüler ve arama ekranları aynı liste durumlarını gösterebilir.',
-    'Ortak listeyi sonuç ve durum props’larıyla besle; sorguyu yalnız arama ekranı kullansın.',
+    'İki ekranda kullanıcıya aynı görünen parçayı, ekrana göre değişen veriden ayır.',
+    'Composition ve props ile aynı liste component’ini farklı veri kaynağına bağlayabilirsin.',
+    'Ortak listeye sonuç/durum ver; yalnız arama ekranı sorguyu ve isteği yönetsin.',
+    'Boş sonuç ve hata başarı listesinden farklı görünmeli; hata accessible alert olmalı.',
   ],
   rubric: [
     'İki ekran aynı film listesi görünümünü yeniden kullanır.',

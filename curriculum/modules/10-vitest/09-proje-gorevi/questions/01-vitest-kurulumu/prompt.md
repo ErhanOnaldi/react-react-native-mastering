@@ -1,16 +1,31 @@
-Sinema refactor’undan sonra build yeşildi, fakat arama sayfasındaki hata iki gün saklandı. Şimdi projede her değişiklikten sonra çalıştırabileceğin bir test komutu kur.
+Sinema projesine tek komutla yerelde çalıştırılabilen test altyapısı ekle. İlk kalıcı testler puan ve boş tarih biçimleme davranışlarını korusun.
 
-## Yapılacaklar
+## Gereksinimler
 
-1. `vite.config.ts` içinde `defineConfig` öğesini `vitest/config` üzerinden import et. Mevcut Vite ayarlarını koruyarak `test: { environment: 'jsdom', globals: false }` ekle. Hook testleri DOM ortamına ihtiyaç duyacak.
-2. `package.json` dosyasına `"test": "vitest run"` script’ini ekle. Proje bağımlılıklarında `vitest` ve `jsdom` bulunsun; sürümleri kök catalog ile aynı olsun.
-3. `src/shared/lib/format.test.ts` oluştur. `formatVote`, `releaseYear` ve `formatDate` fonksiyonlarını aynı klasördeki `format.ts` dosyasından import et. `describe`, `it`, `expect` öğelerini `vitest` paketinden açıkça import et.
+- Vite yapılandırması DOM test ortamını kullansın ve test API’lerini global değişken olarak açmasın.
+- package.json içinde tek seferlik test çalıştırma script’i bulunsun.
+- Proje bağımlılıklarında Vitest ve jsdom olsun; sürümler kök catalog ile eşleşsin.
+- Dört biçimleme durumunu Türkçe davranış adlarıyla sınayan gerçek assertion’lar ekle.
+- Beklenen değerlerden biri geçici olarak değiştirildiğinde test komutu başarısız olmalı; sonra doğru beklentiyi geri koy.
+
+## Örnek
 
 | Durum | Beklenen |
 | --- | --- |
-| `formatVote(8)` | `"8.0"` |
-| `formatVote(0)` | `"Henüz oy yok"` |
-| `releaseYear("")` | `""` |
-| `formatDate("")` | `"Tarih yok"` |
+| Puan 8 | 8.0 |
+| Puan 0 | Henüz oy yok |
+| Boş çıkış yılı | boş string |
+| Boş tarih | Tarih yok |
 
-Test adlarını Türkçe davranış cümleleri olarak yaz. Ardından Sinema klasöründe `pnpm test` çalıştır ve testlerden birinin gerçekten kırıldığını görmek için bir beklenen değeri kısa süreliğine yanlış yazıp geri düzelt.
+## Sözleşme
+
+- Vite ayarı: vite.config.ts
+- Test dosyası: src/shared/lib/format.test.ts
+- Modül: src/shared/lib/format.ts; export’lar formatVote, releaseYear ve formatDate
+- Proje script’i: package.json içindeki test komutu
+- Doğrulama: Sinema klasöründe pnpm test
+
+## Kısıtlar
+
+- Mevcut Vite ayarlarını ve project alias’larını koru.
+- Bağımlılık sürümleri kök workspace catalog’undaki sürümlerle aynı olmalı.

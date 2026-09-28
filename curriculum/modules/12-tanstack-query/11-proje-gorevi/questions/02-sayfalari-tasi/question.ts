@@ -13,9 +13,9 @@ export default defineQuestion({
     'src/pages/FavoritesPage.tsx',
   ],
   hints: [
-    'Önce SearchPage’deki useEffect/state üçlüsünü tek useQuery ile değiştir.',
-    '`q`, `page` ve `genre` değerlerini `movieQueries` key factory’ye parametre olarak ver; boş aramada `enabled` veya `skipToken` kullan.',
-    'Pagination sorgusunda `placeholderData: keepPreviousData` ve geçici durumu belirtmek için `isPlaceholderData` kullan; detayda id değişimi key’den gelsin.',
+    'Önce her sayfada server state ile client state’i ayır; URL’den gelen değerleri not et.',
+    '`useQuery` ve `movieQueries` ile cevabı değiştiren her URL değerini sorgu kimliğine bağla.',
+    'Boş aramada `skipToken`, sayfalamada `keepPreviousData`; detay key’inde route id kullan.',
   ],
   rubric: [
     'Dört sayfa Query cache’inden sunucu verisi okur; favori seçimi client state’te kalır.',

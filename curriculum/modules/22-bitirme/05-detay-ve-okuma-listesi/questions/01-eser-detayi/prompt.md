@@ -1,19 +1,44 @@
-Arama sonucunda bir başlığa tıklayınca Kitaplık artık yalnız bir kart değil, eserin kendisini göstermeli. Open Library'de eser ve yazar ayrı kaynaklar; eksik yazar eseri kaybettirmemeli.
+Kitaplık arama sonuçlarında seçilen bir kitabın detay sayfasını oluşturman, Open Library eser ve bağımlı yazar verilerini güvenle çekip birleştiren dayanıklı bir eser görünümü kurman gerekiyor.
+
+## Gereksinimler
+
+Eser detay sayfasını (`/works/:workId`) şu davranışlarla geliştir:
+
+1. **Rota ve Gezinme:**
+   - Arama sonuçlarındaki kitap başlıkları `/works/{id}` adresine yönlendiren bağlantılar olmalıdır.
+   - Aynı sayfa açıkken URL'deki `workId` parametresi değiştiğinde yeni eserin bilgileri getirilmelidir.
+2. **Eser Verisi ve Başlık:**
+   - Eser bilgisi `GET https://openlibrary.org/works/{id}.json` adresi üzerinden çekilmelidir.
+   - Eser başlığı seviye 1 başlık (`h1`) olarak gösterilmelidir.
+3. **Açıklama Alanı Normalizasyonu:**
+   - API'den gelen `description` alanı düz metin veya `{ type: string, value: string }` biçiminde bir nesne olabilir. Her iki durum da düzgün metne dönüştürülmeli; açıklama yoksa ekranda tam olarak **“Açıklama yok.”** ifadesi yer almalıdır.
+4. **Bağımlı Yazar İsteği:**
+   - Eser kaydındaki `authors[].author.key` referansı kullanılarak `GET https://openlibrary.org/authors/{id}.json` isteği atılmalıdır.
+   - Yazar isteği 404 dönerse veya başarısız olursa ana eser ekranı çalışmaya devam etmeli ve yazar alanında **“Yazar bilinmiyor”** gösterilmelidir.
+5. **Kapak Görseli:**
+   - `covers` dizisindeki ilk geçerli pozitif id kullanılarak `https://covers.openlibrary.org/b/id/{id}-M.jpg` adresi oluşturulmalıdır.
+   - `-1` değeri veya negatif sayılar geçerli kapak sayılmaz; bu durumda kırık görsel yerine yerel bir yer tutucu gösterilmelidir.
+6. **Hata ve Durum Yönetimi:**
+   - Eser isteği 404 dönerse ekranda **“Kitap bulunamadı”** mesajı görünmelidir.
+   - Diğer sunucu veya ağ hatalarında `role="alert"` içeren bir uyarı ve **“Tekrar dene”** butonu gösterilmeli; butona basıldığında istek tekrarlanmalıdır.
+
+## Örnek
+
+Kullanıcı `/works/OL893414W` adresine gider:
+- Eser başlığı `h1` içinde "Dune" olarak belirir.
+- Bağımlı yazar isteği tamamlanır ve yazar adı "Frank Herbert" olarak görüntülenir.
+- Kapak görseli ve kitap açıklaması eksiksiz ekrana basılır.
 
 ## Sözleşme
 
-- `src/app/routes.tsx` içindeki `createRoutes(queryClient)` ağacına `/works/:workId` yolunu ekle. Arama sonuçlarındaki eser başlıkları `/works/{id}` adresine giden linkler olsun.
-- `GET https://openlibrary.org/works/{id}.json` ile eseri getir. `OL893414W` → **Dune**; `OL24252290W` → **Suç ve Ceza**. Başlık `h1`, açıklama ve yazar adını göster.
-- `description` düz metin veya `{ type, value }` olabilir; ikisini de metne çevir. Yoksa **“Açıklama yok.”** yaz.
-- `authors[].author.key` ile `/authors/{id}.json` isteği at. Yazar isteği 404 olursa ekran çalışsın ve **“Yazar bilinmiyor”** yazsın.
-- İlk geçerli `covers` id'sinden `https://covers.openlibrary.org/b/id/{id}-M.jpg` adresini oluştur. `-1` geçerli kapak sayılmaz; görsel yerine yer tutucu göster.
-- Eser 404 ise **“Kitap bulunamadı”** göster. Diğer sunucu/ağ hatasında `role="alert"` uyarısı ve **“Tekrar dene”** butonu göster; buton isteği yeniden denesin.
-- Aynı sayfa açıkken URL'deki `workId` değişirse yeni eseri göster. 4. dersteki arama sorgusu da çalışmaya devam etsin.
+- Dışa aktarılan rota ağacı:
+  - `src/app/routes.tsx` içinde `createRoutes(queryClient)` fonksiyonuna `/works/:workId` rota tanımı eklenmelidir.
+- Arayüz metinleri:
+  - Eksik açıklama metni: `Açıklama yok.`
+  - Eksik/bulunamayan yazar metni: `Yazar bilinmiyor`
+  - Eser bulunamadı mesajı: `Kitap bulunamadı`
+  - Hata uyarısı rolü: `role="alert"`, buton: `Tekrar dene`
 
-## Nasıl kontrol edeceksin?
+## Kısıtlar
 
-`/search?q=dune` → **Chapterhouse Dune** başlığına tıkla → `/works/OL893508W` açılsın. Sonra doğrudan `/works/OL24252290W` aç: açıklama olmadığını ve yazar isteği 404 olsa bile ekranın kaldığını gör. Platform testlerinde 500 ve `-1` kapak durumları da var.
-
-:::tip
-API cevabının eksik veya bozuk olabileceğini hesaba kat; ekranda geçerli bir eser modeli kullan.
-:::
+- Yazar isteği başarısız olsa bile eser ekranı sağlam kalmalıdır; yazar hatası eser sayfasını çökertmemelidir.

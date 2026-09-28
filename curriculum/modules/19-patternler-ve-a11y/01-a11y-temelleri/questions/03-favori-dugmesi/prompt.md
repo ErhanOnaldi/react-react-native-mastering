@@ -1,7 +1,4 @@
-Film kartındaki yıldız düğmesi gözle anlaşılıyor, ama ekran okuyucu yalnızca “düğme” diyor. Önizlemede Tab ile düğmeye gel: odak halkası var, anlamı yok.
-
-## Görev
-`FavoriteButton({ isFavorite, onToggle })` bileşenini düzelt. Bu düğme bir **toggle**; derste gördüğün “sabit ad + durum” yolunu kullan.
+Film kartındaki yıldız düğmesi gözle anlaşılıyor, ama ekran okuyucu yalnızca “düğme” diyor. Düğmeyi klavye ve ekran okuyucu kullanıcılarının da anlayıp kullanabileceği hale getir.
 
 ## Gereksinimler
 - Gerçek bir `<button type="button">` kalsın (Tab, Enter, Space bedava gelsin).
@@ -10,7 +7,15 @@ Film kartındaki yıldız düğmesi gözle anlaşılıyor, ama ekran okuyucu yal
 - Görsel yıldızı (`☆` / `★`) `aria-hidden="true"` ile ağaçtan gizle.
 - Tıklama, Enter ve Space `onToggle`'ı her seferinde bir kez çağırsın.
 
-| `isFavorite` | Ad | `aria-pressed` | Görsel |
+## Örnek
+
+| `isFavorite` | Erişilebilir ad | Durum | Görsel |
 | --- | --- | --- | --- |
 | `false` | Favori | `false` | ☆ |
 | `true` | Favori | `true` | ★ |
+
+## Sözleşme
+
+- `FavoriteButton.tsx` içinden named export `FavoriteButton({ isFavorite, onToggle })`.
+- `onToggle: () => void`; `isFavorite: boolean`.
+- Kontrolün rolü `button`, adı `Favori` olmalı.

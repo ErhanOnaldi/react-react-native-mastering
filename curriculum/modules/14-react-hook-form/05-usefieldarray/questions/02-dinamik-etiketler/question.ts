@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['form.rhf-field-array', 'react.lists-keys', 'form.rhf-register'],
   files: ['TagForm.tsx'],
   hints: [
-    "Alan sayısı değişiyor; `useFieldArray({ control, name: 'tags' })` kullan.",
-    '`fields` listesini `field.id` ile map et; her input `tags.${index}.value` yoluna register olsun.',
-    'Ekleme ve silme düğmeleri `type="button"` olmalı; `append({value: \'\'})` ve `remove(index)` kullan.',
+    'Satır sırası değişince React aynı DOM alanını başka etikete vermemeli; kimlik ile konumu ayrı düşün.',
+    "RHF'nin `useFieldArray` API'si bu listeyi yönetir; render key'i olarak `field.id` kullan.",
+    '`fields.map` içinde `register(\`tags.${index}.value\`)` bağla; `append({ value: \'\' })`, `remove(index)` ve `type="button"` kullan.',
   ],
 })

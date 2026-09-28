@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['form.a11y', 'form.rhf-errors', 'test.rtl-queries'],
   files: ['AccessibleNameForm.tsx'],
   hints: [
-    'Input için görünür bir `<label>` ve eşleşen `htmlFor`/`id` ekle.',
-    'Hata varken `aria-invalid` true olsun.',
-    '`aria-describedby` hata mesajının id’sini göstersin; mesaj `role="alert"` taşısın.',
+    'Placeholder metni input odaktan çıkınca kaybolur; alanın kalıcı adını ve hata bilgisini ayrı ayrı planla.',
+    'Native label bağlantısı için `htmlFor`/`id`, geçersizlik için `aria-invalid`, açıklama için `aria-describedby` kullan.',
+    'Hata varken aynı id değerini input `aria-describedby` ve hata paragrafında kullan; paragrafı `role="alert"` ile göster.',
   ],
 })

@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['arch.api-client', 'fetch.query-params', 'ts.record'],
   files: ['buildTmdbUrl.ts'],
   hints: [
-    'TMDB kökünü tek sabitte tut.',
-    'URL nesnesine `/3` sonrasındaki path’i ekle; `searchParams` kullan.',
-    'Önce `language=tr-TR` ekle, sonra `Object.entries(params)` ile tanımlı değerleri string’e çevir.',
+    'Hesapla: URL kurulumunda hangi kısımlar tüm endpoint’lerde değişmeden kalıyor?',
+    '`URL` ve `URLSearchParams` API’leriyle path ve query değerlerini oluştur.',
+    'TMDB kökünü URL constructor’a ver; `language` ile başla, sonra tanımlı parametreleri `.set()` ile ekle.',
+    '`undefined` değerini string’e çevirme; boş değeri atlamak ile boş string göndermek aynı şey değil.',
   ],
 })

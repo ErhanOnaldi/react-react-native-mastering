@@ -8,8 +8,8 @@ export default defineQuestion({
   files: ['RatingForm.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Hata durumunda ekranda hangi bilginin kaybolmaması gerekiyor: seçilen puan mı, yoksa yalnızca bir durum mesajı mı?',
-    'Formu sıfırlamak yalnızca sunucunun isteği kabul ettiği durumda doğru bir davranış.',
-    'İstek cevabını kontrol et: başarısızsa hata durumunu göster ve `reset()`’e hiç gitme; başarılıysa `reset()` çağır.',
+    'Hata cevabından sonra ekranda hangi değer kalmalı? Aynı formu tekrar gönderebilmek için gerekli seçime bak.',
+    'Mutation sonucunu başarı ve hata dallarında ayrı değerlendir; formun temizlenme anı başarıya bağlı olmalı.',
+    'Başarısız istekte mesajı göster ama `reset()` çağırma; başarılı yanıtta temizle ve eski hatayı kaldır.',
   ],
 })

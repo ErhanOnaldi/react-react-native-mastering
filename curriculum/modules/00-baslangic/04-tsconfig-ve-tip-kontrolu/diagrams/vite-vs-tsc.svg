@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260">
+  <title>Vite ile tsc tip denetimi ayrımı</title>
+  <defs>
+    <marker id="ts-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <!-- Kaynak Kod -->
+  <rect class="d-box" x="30" y="80" width="150" height="100" rx="8"/>
+  <text class="d-title" x="105" y="110" text-anchor="middle">Kaynak Kod</text>
+  <text class="d-code" x="105" y="135" text-anchor="middle">App.tsx</text>
+  <text class="d-muted" x="105" y="160" text-anchor="middle">Tip + JSX</text>
+
+  <!-- Üst Yol: Vite Dev Server -->
+  <rect class="d-accent" x="240" y="30" width="220" height="85" rx="8"/>
+  <text class="d-title" x="350" y="55" text-anchor="middle">Vite (pnpm dev)</text>
+  <text class="d-text" x="350" y="80" text-anchor="middle">Tipleri siler, denetlemez</text>
+  <text class="d-muted" x="350" y="100" text-anchor="middle">Milisaniyede çalışır</text>
+
+  <rect class="d-warning" x="520" y="30" width="200" height="85" rx="8"/>
+  <text class="d-title" x="620" y="55" text-anchor="middle">Tarayıcıda Çalışır</text>
+  <text class="d-text" x="620" y="80" text-anchor="middle">Sayfa açık, ama...</text>
+  <text class="d-muted" x="620" y="100" text-anchor="middle">Gizli tip hatası olabilir</text>
+
+  <!-- Alt Yol: tsc -->
+  <rect class="d-violet" x="240" y="145" width="220" height="85" rx="8"/>
+  <text class="d-title" x="350" y="170" text-anchor="middle">tsc -b (typecheck)</text>
+  <text class="d-text" x="350" y="195" text-anchor="middle">Tüm tipleri satır satır denetler</text>
+  <text class="d-muted" x="350" y="215" text-anchor="middle">Kesin ve eksiksiz</text>
+
+  <rect class="d-success" x="520" y="145" width="200" height="85" rx="8"/>
+  <text class="d-title" x="620" y="170" text-anchor="middle">Build Bariyeri</text>
+  <text class="d-text d-text-danger" x="620" y="195" text-anchor="middle">Hata varsa durdurur!</text>
+  <text class="d-muted" x="620" y="215" text-anchor="middle">Temizse paketleme başlar</text>
+
+  <!-- Bağlantı Okları -->
+  <line class="d-line" x1="180" y1="115" x2="236" y2="75" marker-end="url(#ts-ok)"/>
+  <line class="d-line" x1="180" y1="145" x2="236" y2="185" marker-end="url(#ts-ok)"/>
+  <line class="d-line" x1="460" y1="72" x2="516" y2="72" marker-end="url(#ts-ok)"/>
+  <line class="d-line" x1="460" y1="187" x2="516" y2="187" marker-end="url(#ts-ok)"/>
+</svg>

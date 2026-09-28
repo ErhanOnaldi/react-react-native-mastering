@@ -1,8 +1,16 @@
-## Sorun
-Arama testi her sorguda Matrix dönerse URL state hatası gizlenir. API yanıtını istek query’sine bağla.
+Arama cevabındaki filmler, kullanıcının gönderdiği query ile eşleşmeli; boş sorgu sonuç döndürmemelidir.
 
-## Görev
-`makeSearchHandler(movies)` bir MSW `GET /search/movie` handler’ı döndürsün. İstek URL’sindeki `query` değerini baş/son boşluklara ve büyük/küçük harfe duyarsız, Türkçe harfleri doğru eşleştirerek film başlıklarında ara. Boş query için hiç sonuç verme. Liste cevabı `{ page: 1, results, total_pages: 1, total_results }` biçiminde olsun. `movies` verisi için `TmdbListMovie[]` kullan.
+## Gereksinimler
+- Baş/son boşluklar eşleşmeyi etkilemez.
+- Büyük/küçük harf farkı eşleşmeyi etkilemez; Türkçe harf dönüşümü doğru uygulanır.
+- Sorgu, film başlığında aranır.
+- Boş query için sonuç dizisi boş ve `total_results` sıfırdır.
+- Cevap `{ page: 1, results, total_pages: 1, total_results }` biçimindedir.
 
 ## Örnek
-`movies=[Dövüş Kulübü, Matrix]`, `?query=matrix` → yalnızca Matrix.
+`[Dövüş Kulübü, Matrix]` ve `query=matrix` → yalnız Matrix.
+
+## Sözleşme
+- `searchHandler.ts` dosyasından `makeSearchHandler(movies: TmdbListMovie[])` export et.
+- Fonksiyon `${TMDB_BASE}/search/movie` adresi için MSW handler döndürür.
+- `TmdbListMovie` tipi `@test-utils` içinden alınır.

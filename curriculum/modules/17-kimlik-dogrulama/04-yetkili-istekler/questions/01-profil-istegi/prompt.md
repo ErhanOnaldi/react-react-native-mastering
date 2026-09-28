@@ -1,16 +1,22 @@
-Login sonrası token var ama `/auth/me` başlıksız isteğe 401 veriyor.
+Korumalı bir kullanıcı profili uç noktasına kimlik kanıtı sunarak istek atan ve gelen profil verisini ayrıştıran bir istemci fonksiyonu oluştur.
 
-## Görev
+## Gereksinimler
 
-`getProfile(accessToken)` fonksiyonunu yaz:
+- İstemci fonksiyonu verilen erişim belirtecini yetkilendirme başlığı olarak sunucuya iletmelidir.
+- Sunucu isteği başarıyla yanıtladığında, profil nesnesinden kullanıcı kimliği (`id`) ve kullanıcı adı (`username`) alanları döndürülmelidir.
+- Belirteç eksikse, geçersizse veya süresi dolmuşsa sunucunun döndürdüğü durum kodunu (`401`) içeren bir hata fırlatılmalıdır.
+- Hata durumlarında sahte veya varsayılan bir profil döndürülmemeli, hata açıkça çağırıcıya yansıtılmalıdır.
 
-- `GET https://dummyjson.com/auth/me` isteğine `Authorization: Bearer <accessToken>` ekle.
-- Başarılı yanıttan `{ id, username }` döndür.
-- 401 dahil her başarısız yanıtta status içeren `Error` fırlat.
+## Örnek
 
-| Token | Beklenen |
+| Belirteç | Beklenen Sonuç |
 | --- | --- |
-| Login’den gelen access token | `username: 'emilys'` |
-| Boş veya süresi dolmuş token | Hata; sahte profil yok |
+| Geçerli erişim belirteci | `{ id: 1, username: "emilys" }` |
+| Boş belirteç (`""`) | Hata fırlatılır: `"401"` içeren mesaj |
+| Süresi dolmuş belirteç | Hata fırlatılır: `"401"` içeren mesaj |
 
-Bu adımda refresh yok. 401’i görünür kılmak, sonraki dersin başlangıç noktası.
+## Sözleşme
+
+- `profile.ts` dosyasından `getProfile(accessToken: string): Promise<Profile>` fonksiyonunu named export et.
+- Tip:
+  - `Profile`: `{ id: number; username: string }`

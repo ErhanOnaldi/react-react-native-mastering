@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 275">
+  <title>Aynı query options tarifini üç farklı tüketici kullanır</title>
+  <defs>
+    <marker id="query-options-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+  <rect class="d-accent" x="250" y="28" width="260" height="64" rx="8"/>
+  <text class="d-title" x="380" y="55" text-anchor="middle">Tek options tarifi</text>
+  <text class="d-code" x="380" y="77" text-anchor="middle">queryKey + queryFn</text>
+  <rect class="d-box" x="35" y="180" width="195" height="65" rx="8"/>
+  <text class="d-title" x="132" y="208" text-anchor="middle">useQuery</text>
+  <text class="d-muted" x="132" y="231" text-anchor="middle">abone olur</text>
+  <rect class="d-warning" x="282" y="180" width="195" height="65" rx="8"/>
+  <text class="d-title" x="379" y="208" text-anchor="middle">prefetchQuery</text>
+  <text class="d-muted" x="379" y="231" text-anchor="middle">cache'i hazırlar</text>
+  <rect class="d-success" x="530" y="180" width="195" height="65" rx="8"/>
+  <text class="d-title" x="627" y="208" text-anchor="middle">fetchQuery</text>
+  <text class="d-muted" x="627" y="231" text-anchor="middle">data döndürür</text>
+  <line class="d-line" x1="310" y1="94" x2="178" y2="175" marker-end="url(#query-options-arrow)"/>
+  <line class="d-line-accent" x1="380" y1="94" x2="380" y2="175" marker-end="url(#query-options-arrow)"/>
+  <line class="d-line" x1="450" y1="94" x2="582" y2="175" marker-end="url(#query-options-arrow)"/>
+</svg>

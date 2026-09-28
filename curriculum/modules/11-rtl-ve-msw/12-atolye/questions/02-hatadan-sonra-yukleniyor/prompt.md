@@ -5,3 +5,5 @@ Film detayı isteği 500 döndüğünde ekran `Yükleniyor` yazısında kalıyor
 ## Arayüz sözleşmesi
 
 - Hata durumunda kullanıcının tekrar deneyebileceği bir `Yeniden dene` düğmesi olsun.
+- Başarısız yükleme alert rolünde “yüklenemedi” ifadesini içersin; yeniden denemede başarılı başlık görünsün ve yükleme mesajı hata halinde takılı kalmasın.
+- Aynı film için ilk istek ve retry isteği olmak üzere iki istek atılsın; film kimliği değişince yeni filmin içeriği gösterilsin.

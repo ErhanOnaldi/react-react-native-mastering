@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250">
+  <title>Sayfadan API client üzerinden fetch'e giden katmanlar</title>
+  <defs>
+    <marker id="api-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path class="d-arrowhead-accent" d="M0 0 L8 4 L0 8 Z" />
+    </marker>
+  </defs>
+  <rect class="d-box" x="20" y="64" width="148" height="96" rx="10" />
+  <text class="d-title" x="94" y="99" text-anchor="middle">Sayfa</text>
+  <text class="d-muted" x="94" y="126" text-anchor="middle">URL + görünüm</text>
+  <rect class="d-accent" x="214" y="64" width="148" height="96" rx="10" />
+  <text class="d-title" x="288" y="99" text-anchor="middle">Feature API</text>
+  <text class="d-muted" x="288" y="126" text-anchor="middle">endpoint anlamı</text>
+  <rect class="d-success" x="408" y="64" width="148" height="96" rx="10" />
+  <text class="d-title" x="482" y="99" text-anchor="middle">tmdbClient</text>
+  <text class="d-muted" x="482" y="126" text-anchor="middle">auth + HTTP hata</text>
+  <rect class="d-violet" x="602" y="64" width="138" height="96" rx="10" />
+  <text class="d-title" x="671" y="99" text-anchor="middle">fetch</text>
+  <text class="d-muted" x="671" y="126" text-anchor="middle">tarayıcı ağı</text>
+  <path class="d-line-accent" d="M168 112 H204" marker-end="url(#api-arrow)" />
+  <path class="d-line-accent" d="M362 112 H398" marker-end="url(#api-arrow)" />
+  <path class="d-line-accent" d="M556 112 H592" marker-end="url(#api-arrow)" />
+  <text class="d-text" x="380" y="205" text-anchor="middle">İstek aşağı iner, cevap ve hata yukarı döner</text>
+</svg>

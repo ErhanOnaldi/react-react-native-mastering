@@ -27,8 +27,9 @@ export default defineQuestion({
     'UI, feature API ve shared HTTP sınırları anlaşılır; gereksiz soyutlama veya döngüsel import yok.',
   ],
   hints: [
-    'Önce endpoint yollarını ve parametrelerini eski sayfalardan listele.',
-    'MovieListResponse, MovieDetails ve Genre tiplerini `src/shared` veya ilgili `src/features/movies` dosyalarında ortaklaştır.',
-    'getMovieDetails için append_to_response=credits,videos; discover için with_genres; search için query gönder.',
+    'Sayfa ve hook’ların ihtiyaç duyduğu film kaynaklarını ve URL seçimlerini listele.',
+    'Film cevap tiplerini feature içindeki ortak tip dosyasında tanımla; endpoint fonksiyonlarını film feature’ına yakın tut.',
+    'Trend, tür, arama, detay ve tür listesini ayrı named export’larla ortak client’a bağla; endpoint parametrelerini eşleştir.',
+    'Detay cevabında credits/videos birlikte gelir; favorilerde detay kullanan akışı da bağlamayı unutma.',
   ],
 })

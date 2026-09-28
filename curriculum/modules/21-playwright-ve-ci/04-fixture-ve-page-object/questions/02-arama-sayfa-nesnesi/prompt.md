@@ -1,48 +1,22 @@
-## Bağlam
+Arama sayfasını kullanan senaryolar ortak bir arayüz üzerinden çalışmalı ve yalnızca ilgili sorgunun sonuçları hazır olduğunda devam etmeli.
 
-Üç spec dosyası arama yapıyor ve her biri beklemeyi kendince yazmış; ikisi ara sıra kalıyor. Arama sayfasının bilgisini (locator’lar, eylemler, **doğru bekleme**) tek bir page object’te toplayacağız. Spec’ler bundan sonra yalnızca `searchPage.search('matrix')` diyecek.
+## Gereksinimler
 
-## Görev
-
-`SearchPage` sınıfını tamamla:
-
-| Üye | Ne yapar? |
-| --- | --- |
-| `searchBox` | “Film ara” arama kutusu (`searchbox`) |
-| `results` | “Arama sonuçları” bölgesindeki (`region`) sonuç maddeleri (`listitem`) |
-| `goto()` | `/search` sayfasını açar |
-| `search(query)` | Sorguyu kutuya yazar ve **bu sorgunun** sonuçları ekrana gelene kadar bekler |
-| `resultTitles()` | Şu an listelenen film adlarını (sonuç bağlantılarının metni) dizi olarak döndürür; kendisi beklemez |
-| `openMovie(title)` | Sonuçlardan adı **tam** `title` olan filme tıklar; detay sayfasında filmin başlığı (h2) görünene kadar bekler |
-
-## Sayfa nasıl davranıyor?
-
-- Kutuya yazınca **350 ms** debounce, sonra “Aranıyor…” görünür. Bu görevde arama cevabı **800 ms**, detay **600 ms** sürüyor.
-- Cevap gelince bölgede bir başlık ve liste çıkar:
-
-```html
-<section aria-label="Arama sonuçları">
-  <h3>“matrix” için 2 sonuç</h3>
-  <ul>
-    <li><a href="/movie/603">Matrix</a> (1999)</li>
-    <li><a href="/movie/604">Matrix Reloaded</a> (2003)</li>
-  </ul>
-</section>
-```
-
-- Sonuç yoksa: `<h3>“xyz” için 0 sonuç</h3><p>Sonuç bulunamadı.</p>`.
-- İkinci bir arama yazdığında **eski sonuçlar** yeni cevap gelene kadar bir süre ekranda kalır.
+- Arama alanı Film ara adıyla seçilebilir; sonuçlar Arama sonuçları bölgesinde listelenir.
+- Sayfa yolu /search olmalıdır.
+- Yeni sorgunun kendi sonuç başlığı hazır olmadan işlem tamamlanmış sayılmamalı. Eski sonuçların görünür olması yeterli değildir.
+- Gösterilen film bağlantılarının metinleri bir dizi olarak okunabilir.
+- Sonuç bulunmadığında arama tamamlanır ve boş dizi döner.
+- Tam adı eşleşen film seçildiğinde detay sayfası açılır ve detay başlığı görünür.
 
 ## Örnek
 
-```ts
-const searchPage = new SearchPage(page)
-await searchPage.goto()
-await searchPage.search('matrix')
-await searchPage.resultTitles() // ['Matrix', 'Matrix Reloaded'] — hemen, beklemeden
-await searchPage.search('dövüş')
-await searchPage.resultTitles() // ['Dövüş Kulübü'] — eski Matrix sonuçları değil
-await searchPage.openMovie('Matrix Reloaded') // /movie/604, başlık görünüyor
-```
+matrix araması iki başlık döndürür. Ardından dövüş araması yalnızca Dövüş Kulübü’nü verir; boş arama sonucu boş dizi olur. Matrix Reloaded açıldığında /movie/604 adresindeki başlık görünür.
 
-Constructor’da parameter property (`constructor(readonly page: Page)`) kullanma; alanlar zaten tanımlı.
+## Sözleşme
+
+- Dosya ve export: SearchPage.ts içinden SearchPage sınıfını export et.
+- searchBox ve results alanları Playwright Locator’dır.
+- results bölgesi Arama sonuçları adlı region; içindeki her film listitem ve film adı linktir.
+- Constructor bir Page alır.
+- Üyeler: searchBox, results, goto(): Promise<void>, search(query: string): Promise<void>, resultTitles(): Promise<string[]> ve openMovie(title: string): Promise<void>.

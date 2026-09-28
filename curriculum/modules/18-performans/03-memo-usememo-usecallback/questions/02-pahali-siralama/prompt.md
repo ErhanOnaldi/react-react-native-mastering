@@ -1,12 +1,22 @@
-## Durum
-500 filmin puan sıralaması pahalı. Kullanıcı yalnız temayı değiştirince `rank` yeniden çağrılıyor.
+Filmler puanlarına göre sıralanarak listeleniyor. Ancak kullanıcı arayüz temasını (açık/koyu mod) değiştirdiğinde pahalı sıralama fonksiyonu gereksiz yere baştan çalışıyor.
 
-## Yap
-- `rank(movies)` sonucunu gerçekten bağımlı olduğu değerler için sakla.
-- Tema değişimi sıralamayı tekrarlamasın; film dizisi veya `rank` işlevi değişirse tekrar çalışsın.
-- Giriş dizisini mutasyona uğratma (testte `rank` kopya alır).
+## Gereksinimler
+- Verilen filmleri `rank` fonksiyonu ile sıralayarak numaralı liste (`<ol> > <li>`) içinde film başlıklarını göster.
+- Tema (`theme`) prop'u değiştiğinde sıralama fonksiyonunun tekrar çalışmasını engelle; önceki hesaplama sonucunu koru.
+- Yalnızca `movies` dizisi veya `rank` fonksiyonu referansı değiştiğinde sıralamayı yeniden hesapla.
+- Giriş dizisini mutasyona uğratma (sıralama yeni bir dizi kopyası üzerinden yapılmalıdır).
 
-| Değişim | Beklenen |
-|---|---|
-| `theme` | Aynı hesaplama sonucu |
-| `movies` | Yeni sıralama |
+## Örnek
+`movies` değişmediği sürece `theme` değeri "dark"tan "light"a geçtiğinde sıralama fonksiyonu sıfır kez çalışır; ekrandaki sıralı liste aynen korunur.
+
+## Sözleşme
+- Dosya ve export: `RankedMovies.tsx` → `RankedMovies(props: { movies: Movie[], theme: string, rank: (items: Movie[]) => Movie[] })`
+- Tip tanımı:
+  ```ts
+  export interface Movie {
+    id: number
+    title: string
+    score: number
+  }
+  ```
+- Arayüz: `section[data-theme]` içinde `<ol> > <li>{title}</li>`.

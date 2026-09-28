@@ -1,16 +1,14 @@
-`FormMessage` ekranda şemanın mesajını gösterir. Sinema'nın yorum şemasında mesaj verilmemiş kurallar var; kullanıcı puan seçmeden gönderince "Invalid input: expected number, received undefined" görüyor.
+Yorum gönderilmeden önce alanları doğrula ve kullanıcıya her durumda Türkçe, açık bir mesaj göster. Geçerli metni temizlenmiş halde dışarı ver.
 
-## Görev
-`reviewSchema.ts` içindeki şemayı, her kuralın kullanıcıya **Türkçe ve anlaşılır** bir mesaj göstereceği şekilde tamamla. Zod 4'ün `error` parametresini kullan.
+## Gereksinimler
+- `body` baştaki ve sondaki boşluklardan arındırılsın, boş kaldığında `Yorum gerekli` mesajıyla reddedilsin ve 500 karakteri aşmasın.
+- `rating` zorunlu, sayı ve tam sayı olsun; 1–5 aralığının dışı reddedilsin.
+- Mesajlar: yanlış/yok rating `Puan seç`; kesirli rating `Puan tam sayı olmalı`; aralık dışı rating `Puan 1 ile 5 arasında olmalı`; 500'den uzun body `Yorum en fazla 500 karakter olabilir`.
+- Geçerli girdi temizlenmiş `body` ve sayısal `rating` döndürsün.
 
-| Alan | Kural | Mesaj |
-| --- | --- | --- |
-| `body` | baş/son boşluk temizlenir, en az 1 karakter | `Yorum gerekli` |
-| `body` | en fazla 500 karakter | `Yorum en fazla 500 karakter olabilir` |
-| `rating` | yok ya da sayı değil | `Puan seç` |
-| `rating` | tam sayı | `Puan tam sayı olmalı` |
-| `rating` | 1 ile 5 arası | `Puan 1 ile 5 arasında olmalı` |
+## Örnek
+`{ body: '  Harika  ', rating: 4 }` → `{ body: 'Harika', rating: 4 }`.
 
-`ReviewValues` tipi şemadan türesin. Geçerli girdi temizlenmiş haliyle dönsün: `{ body: '  Harika  ', rating: 4 }` → `{ body: 'Harika', rating: 4 }`.
-
-Bu şema sonraki görevde form parçalarına bağlanacak.
+## Sözleşme
+- `reviewSchema.ts` → `reviewSchema` ve bundan türetilmiş `ReviewValues` export'ları.
+- Şema `safeParse` ve `parse` ile kullanılabilir olmalı.

@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['form.rhf-register', 'form.rhf-errors', 'query.useMutation', 'fetch.error-handling'],
   files: ['CommentForm.tsx'],
   hints: [
-    'Önce boş metni RHF `required` kuralıyla engelle.',
-    'Mutation fonksiyonunda `POST /comments/add` ve JSON gövdesi kur; `response.ok` kontrol et.',
-    '`mutateAsync` başarılı olunca reset; `isPending`, `isError`, `isSuccess` için görünür durumlar ekle.',
+    'Alan doğrulaması başarısızsa ağa gitme; hata yanıtında da kullanıcının yazısı kalmalı.',
+    'TanStack Query `useMutation` ile yazma isteğini yönet; `fetch` cevabında `response.ok` durumunu kontrol et.',
+    "`handleSubmit` callback'inde `mutateAsync(values)` bekle; başarılı dalda `reset()`, hata/pending/success durumlarında uygun mesaj ve düğme durumu kullan.",
   ],
 })

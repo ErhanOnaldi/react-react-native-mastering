@@ -1,1 +1,19 @@
-Yükleme başlarken eski film ekranda kalmasın. `RemoteData<T>` dört durumu içersin. `RemoteAction<T>`: `{ type:'start' }`, `{ type:'resolve'; data:T }`, `{ type:'reject'; error:string }`, `{ type:'reset' }`. `transition<T>(state, action): RemoteData<T>` her eylemde yeni doğru durum nesnesini döndürsün; `start` eski data'yı taşımasın. Bilinmeyen yeni action için `never` kontrolü koy.
+Bir liste yenilemesi başlarken önceki sonuçlar ekranda kalmamalı. Her olay, uzak veri durumunu kendi yeni ve tutarlı biçimine geçirmeli.
+
+## Gereksinimler
+
+- Durumlar `idle`, `loading`, `success` ve `error` olmalı.
+- Eylemler başlangıç, başarılı cevap, hata ve sıfırlama olaylarını taşımalı.
+- Başlangıç olayı eski başarı verisini taşımamalı.
+- Başarı yalnız veriyi, hata yalnız hata metnini içermeli; sıfırlama idle üretmeli.
+- Her geçiş yeni durum nesnesi döndürmeli ve bilinmeyen eylemler exhaustive kontrol edilmeli.
+
+## Örnek
+
+`success` durumundaki listeye `start` gönderilince `{ status: 'loading' }` döner. `loading` durumuna `resolve` gönderilince yeni sonuçları taşıyan `success` döner.
+
+## Sözleşme
+
+- Dosya: `task.ts`
+- Export tipleri: `RemoteData<T>`, `RemoteAction<T>`.
+- Export fonksiyon: `transition<T>(state: RemoteData<T>, action: RemoteAction<T>): RemoteData<T>`.

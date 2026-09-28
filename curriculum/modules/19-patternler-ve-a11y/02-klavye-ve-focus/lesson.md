@@ -1,55 +1,83 @@
 ---
 title: "Klavye ve focus döngüsü"
-minutes: 9
+minutes: 15
 kind: concept
 ---
 
 # Klavye ve focus döngüsü
 
-:::pain[Problem]
-Film detayında fragman penceresini açtın. Tab'a bastığında focus pencerenin arkasındaki arama kutusuna kaçıyor; Escape hiçbir şey yapmıyor. Fareyle kapattığında da klavyede nerede kaldığını kaybettin: focus sayfanın en başına düştü.
+:::pain[Belirti]
+Film ayrıntısında fragman penceresini açtın. Tab'a basınca focus pencerenin arkasındaki arama alanına kaçıyor; Escape hiçbir şey yapmıyor. Fareyle kapattığında da klavyede nerede kaldığını kaybediyorsun: odak sayfanın başına düşüyor.
 :::
 
-## Modal dialog sözleşmesi
-Klavye kullanıcısı için bir modal dört şey vaat eder:
+## Modalın klavye sözleşmesi
 
-1. **Açılınca** focus dialogun içindeki ilk anlamlı kontrole gider.
-2. **Açıkken** Tab ve Shift+Tab dialogun içinde döner (focus trap).
-3. **Escape** dialogu kapatır.
-4. **Kapanınca** focus dialogu açan öğeye geri döner.
+Modal dialog, sayfanın geri kalanıyla geçici olarak etkileşimi durdurur. Bu yüzden bir klavye kullanıcısına dört davranış vaat eder: açılınca focus içeri gider; dialog açıkken Tab sırası içeride kalır; Escape dialogu kapatır; kapanınca focus açan öğeye döner. Bunlar ayrı özellikler gibi görünse de kullanıcıya tek bir kesintisiz görev sunar.
 
-Dördüncü madde için dialog açılmadan hemen önce `document.activeElement` değerini sakla. Kapanırken o öğe hâlâ sayfadaysa (`isConnected`) ona focus ver.
+![Açan öğeden modalın içine focus geçişini, dialog içinde Tab döngüsünü ve kapanışta iadesini gösteren diyagram](diagrams/focus-dongusu.svg "Açılış, trap ve focus iadesi")
 
-```tsx title="FocusSketch.tsx"
+Kurallar:
+
+1. **Açılışta önceki focus'u sakla.** Dialog açılmadan hemen önce `document.activeElement` tetikleyicidir. Modalı açan kontrol DOM'da kalmayabilir; iade etmeden önce `isConnected` kontrolü yap.
+2. **Focus'u anlamlı başlangıca taşı.** İlk buton uygunsa onu seç. Dialog uzun metinle başlıyorsa başlığı `tabIndex={-1}` verip focus başlangıcı yapabilirsin; bu, başlığı normal Tab sırasına eklemez.
+3. **Sadece uçlarda Tab'ı yönet.** Son kontrolde Tab ileri giderse ilk kontrole, ilk kontrolde Shift+Tab geriye giderse sona sar. Aradaki doğal sıralamayı tarayıcıya bırak.
+4. **Adayları güncel DOM'dan bul.** Modal içeriği değişebiliyorsa sabit bir NodeList eski kalır. `disabled` öğeler focus alamaz; görünmeyen veya `tabIndex=-1` öğeleri de aday dışı bırak.
+5. **Kapanışta iki işi birlikte yap.** Dinleyiciyi kaldır ve önceki öğe hâlâ sayfadaysa focus'u ona ver. Modalı kapatırken kullanıcı klavye bağlamını kaybetmemeli.
+
+Buradaki model, erişilebilirlik ağacının anlattığı isimden farklı bir soruyu çözer. Erişilebilir ad “bu kontrol nedir?” der; focus “klavyeden sıradaki etkileşim nerede?” sorusuna cevap verir. [a11y temelleri](../01-a11y-temelleri/lesson.md) içindeki rol–ad–durum düşüncesi hâlâ geçerlidir; şimdi ona zaman içindeki focus hareketi ekleniyor.
+
+Focus trap, bütün Tab hareketini elle taklit etmek değildir. Dialogda ilk ve son focusable elemanı bulup sınırda müdahale etmek yeterlidir. Sıfır eleman varsa ilk/son indeksine erişmeye çalışma; başlığı başlangıç odağı yap veya dialogun etkileşim sözleşmesine göre uygun bir kontrol ekle. Yalnızca bir eleman varsa ileri ve geri sınırlar aynı öğeye döner.
+
+## Sınırda dönen focus'u izleyelim
+
+Dialog açılınca focus `Oynat` düğmesine gider. Son kontrol `Kapat`; arada bir `Altyazı dili` select'i bulunduğunu varsayalım:
+
+| Tuş / olay | Önceki focus | Sonraki focus | Neden |
+| --- | --- | --- | --- |
+| Dialog açılır | Fragmanı aç | Oynat | Açılış odağı içeride olmalı |
+| Tab | Oynat | Altyazı dili | Tarayıcının doğal sırası |
+| Tab | Altyazı dili | Kapat | Tarayıcının doğal sırası |
+| Tab | Kapat | Oynat | Son sınır aşılacağı için olay durdurulur |
+| Shift+Tab | Oynat | Kapat | İlk sınırda ters yönde sarılır |
+| Escape | Dialog içi öğe | Fragmanı aç | Kapanış iadesi |
+
+Keydown handler'ı `event.key === 'Tab'` ve `event.shiftKey` değerlerine bakar. Son elemana gelip ileri gidişte `preventDefault()` çağrılır, sonra ilk elemana focus verilir. İlk elemana gelip geriye gidişte aynı işlem ters yönde yapılır. Diğer Tab tuşlarında `preventDefault()` çağırmamak önemlidir; gereksiz müdahale tarayıcının alışılmış focus sırasını bozabilir.
+
+## Kırık döngü, doğru döngü
+
+Yalnızca Escape listener'ı ekleyip açılışta focus vermek, focus trap değildir:
+
+```tsx
 useEffect(() => {
   if (!open) return
-  const previous = document.activeElement // açan düğme
-  firstRef.current?.focus()
-  // ...keydown dinleyicisi
-  return () => {
-    // ...dinleyiciyi kaldır
-    if (previous instanceof HTMLElement && previous.isConnected) previous.focus()
-  }
+  firstControl.current?.focus()
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') onClose()
+  })
+}, [open, onClose])
+```
+
+Bu kodda Tab sınırları yönetilmiyor, listener cleanup'ı yok ve `onClose` her render'da değişirse effect yeniden kurulur. Eski callback'i kaldırmak da mümkün olmaz; listener'a kayıt anında isimsiz yeni fonksiyon verildi. Focus klavyeyle dialog dışına çıkabilir ve kapalı dialog Escape'e tepki vermeye devam eder. Doğru çözüm, effect süresince saklanan aynı callback'i cleanup'ta kaldırır, uçlardaki Tab davranışını ele alır ve önceki focus'u geri verir.
+
+Sadece ilk elemana focus vermek focus trap değildir:
+
+```tsx
+useEffect(() => {
+  if (open) firstButton.current?.focus()
 }, [open])
 ```
 
-## Focus trap nasıl çalışır?
-Tarayıcı Tab'ı zaten sırayla işler; sen yalnızca **sınırları** yönetirsin. Son kontroldeyken Tab'a basılırsa `preventDefault()` ile tarayıcının hareketini durdur ve ilk kontrole focus ver. Shift+Tab ile ilkteysen sonuncuya git. İçerik değişebiliyorsa "ilk" ve "son" kontrolü her tuşta yeniden bul ve `disabled` olanları atla.
-
-## Effect ne zaman yeniden çalışır?
-Escape için `onClose` prop'unu çağırman gerekiyor. `onClose`'u dependency array'e koyarsan, üst bileşen her render'da yeni bir `() => setOpen(false)` ürettiğinde effect **yeniden** çalışır: cleanup focus'u açan düğmeye taşır, setup onu tekrar ilk kontrole çeker. Kullanıcı Kapat düğmesindeyken focus kendi kendine zıplar.
-
-`onClose` burada bir **olay**: effect'in senkronize ettiği şey değil. React 19.2'den beri kararlı olan `useEffectEvent` tam bunun için:
+Kullanıcı ilk Tab'dan sonra sayfanın geri kalanına geçer. Ayrıca kapanışta geri dönüş yoktur. Tam bir uygulama focus edilebilir öğeleri modal DOM'undan bulur, iki sınır tuşunda yönlendirir ve cleanup'ta açan öğeye döner. Aşağıdaki örnek yalnızca Escape dinleyicisinin yaşam döngüsünü gösterir:
 
 ```tsx check
 import { useEffect, useEffectEvent } from 'react'
 
 export function useEscape(open: boolean, onClose: () => void) {
-  const handleClose = useEffectEvent(() => onClose())
+  const closeFromKey = useEffectEvent(() => onClose())
   useEffect(() => {
     if (!open) return
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') handleClose()
+      if (event.key === 'Escape') closeFromKey()
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
@@ -57,15 +85,54 @@ export function useEscape(open: boolean, onClose: () => void) {
 }
 ```
 
-Effect artık yalnızca `open` değişince kurulur; `handleClose` her çağrıldığında en güncel `onClose`'u kullanır. 5. modülde dediğimiz gibi bu, eksik dependency'yi gizleme aracı değildir: `open` hâlâ dependency'dir.
+İz sürme: `open` false iken handler kurulmaz. true olduğunda setup listener ekler. Kullanıcı Escape'e basınca listener güncel kapatma davranışını çağırır. State false olunca React cleanup'ı çalıştırıp aynı listener referansını kaldırır. Bileşen unmount olursa cleanup yine çalışır. `useEffectEvent` güncel callback'i okur ama effect'in her yeni callback referansında yeniden kurulmasını gerektirmez. Yine de `open`, effect'in gerçek girdisi olduğu için dependency olarak kalır.
 
-## Başka bir klavye düzeni
-Her bileşenin klavye sözleşmesi aynı değildir. Tabs'te Tab her sekmede durmaz: yalnızca seçili sekme Tab sırasındadır, sekmeler arasında yön tuşlarıyla gezilir. Aynı "focus'u yönet" fikri, farklı kurallarla 4. derste karşına çıkacak.
+Bu ayrım önemlidir: Effect tarayıcı listener'ı gibi dış sistemle senkronize olur; `onClose` ise klavye olayı geldiği anda yapılacak eylemdir. `onClose`'u doğrudan dependency listesine koyup ebeveynin her render'da yeni callback oluşturmasına izin verirsen effect cleanup focus'u erken iade edebilir, yeni setup focus'u tekrar içeri alabilir. Odak zıplaması, yalnızca “callback değişti” uyarısı değil, kullanıcının konumunun kaybolmasıdır.
 
-:::mistake
-`keydown` dinleyicisini ekleyip cleanup'ta kaldırmayı unutursan dialog kapandıktan sonra da Escape'i yakalamaya devam eder; sonraki dialogda iki kez `onClose` çağrılır.
+## Belirti → neden → düzeltme
+
+:::mistake[Belirti: Dialog kapanınca focus sayfanın başına düşüyor]
+Belirti → Escape sonrası sonraki Tab beklenmeyen bir bağlantıya gidiyor.  
+Neden → Açılıştaki `document.activeElement` saklanmamış ya da artık DOM'da olmayan öğeye dönülmüş.  
+Düzeltme → Önceki öğeyi sakla; kapanışta `isConnected` ise focus ver.
+:::
+
+:::mistake[Belirti: Dialog kapanınca Escape hâlâ çalışıyor]
+Belirti → Modal kapalıyken Escape'e basmak eski kapanış davranışını çağırıyor.  
+Neden → Document listener cleanup'ta kaldırılmamış veya farklı callback referansı kaldırılmaya çalışılmış.  
+Düzeltme → Setup ve cleanup'ta aynı fonksiyon değerini kullan.
+:::
+
+:::mistake[Belirti: Klavye odağı dialog açıkken zıplıyor]
+Belirti → Kullanıcı Kapat düğmesinde beklerken focus açana ve sonra tekrar dialoga taşınıyor.  
+Neden → Sık değişen callback effect'i yeniden kuruyor.  
+Düzeltme → Effect'i açık/kapalı durumu gibi gerçek senkronizasyon girdisine bağla; olay callback'ini güncel okuyan API'yi kullan.
+:::
+
+:::mistake[Belirti: Shift+Tab arka sayfaya geçiyor]
+Belirti → İlk kontrolden geriye gidince modal dışı bir bağlantı focus alıyor.  
+Neden → Sadece ileri Tab sınırı ele alınmış.  
+Düzeltme → `shiftKey` ile ters yönü ayrı ele alıp ilk kontrolden son kontrole sar.
+:::
+
+:::model[Render → commit → effect]
+Render hangi kontrollerin DOM'da bulunacağını hesaplar. Focus ve `document` listener'ı tarayıcının dış durumudur; kontroller DOM'a commit edildikten sonra senkronize edilir. Bu bağlamda effect açılma durumuna göre listener kurar ve kapanışta temizler.
 :::
 
 :::sector
-Üretimde karmaşık dialoglar için test edilmiş primitive'ler (Radix, React Aria, Base UI) kullanılır; iframe, iç içe dialog, dinamik içerik gibi köşe durumları çoktur. Mekaniği bir kez kendin kurmak, o kütüphanelerin ne yaptığını ve hatasını nerede arayacağını anlamanı sağlar.
+Üretimde Radix, React Aria ve Base UI gibi test edilmiş primitive'ler modal davranışının zor köşelerini kapsar: dinamik içerik, iç içe pencereler, iframe ve görünür focus. Ekiplerde kontrol yalnızca Escape'in çalışmasına indirgenmez; açılış, iki yönlü Tab sınırı, kapatma ve focus iadesi tek akış olarak sınanır. Ekran okuyucu anonsu ve klavyeyle gerçek kullanım da otomatik testlerin yanına eklenir.
 :::
+
+## Özet
+
+- Modal açılışında focus içeri gider; kapanışta önceki öğeye döner.
+- Tab ve Shift+Tab yalnızca dialog sınırlarında yönlendirilir.
+- Dinamik içerik ve disabled kontroller yüzünden focus listesi güncel DOM'dan bulunur.
+- Event listener setup ile eklenir ve cleanup'ta aynı callback ile kaldırılır.
+- Focus, rol ve addan ayrı bir erişilebilirlik boyutudur; ikisi de doğru olmalı.
+
+**Kendini yokla:** Dialogda iki focusable öğe varsa ileri Tab'da ne zaman müdahale edersin?  
+*Cevap:* Son öğedeyken Tab'a basıldığında; aradaki geçişi tarayıcı yapar.
+
+**Kendini yokla:** Cleanup'ta yalnızca listener'ı kaldırmak neden yetmez?  
+*Cevap:* Kullanıcının focus'u dialog açan kontrole geri dönmez; klavye konumu kaybolabilir.

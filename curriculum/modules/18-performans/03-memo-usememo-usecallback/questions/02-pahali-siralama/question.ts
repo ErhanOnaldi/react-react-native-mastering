@@ -2,13 +2,14 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'code',
-  title: 'Pahalı sıralamayı önbelleğe al',
+  title: 'Pahalı sıralamayı sakla',
   difficulty: 'orta',
-  concepts: ['perf.memo', 'react.useMemo', 'js.array-methods', 'test.mocks'],
+  concepts: ['perf.memo', 'react.useMemo', 'perf.rerender'],
   files: ['RankedMovies.tsx'],
   hints: [
-    'Hangi props sıralamanın sonucunu etkiler?',
-    'Hesaplamayı `useMemo` içinde yap; dependency listesini sonuç girdilerinden kur.',
-    '`useMemo(() => rank(movies), [movies, rank])` kullan.',
+    'Bileşen her render olduğunda içindeki hesaplama fonksiyonunun doğrudan çağrılmasını nasıl önleyebilirsin?',
+    'Hesaplanan değeri bağımlılıkları değişene kadar bellekte tutmak için `useMemo` kullanılır.',
+    '`const result = useMemo(() => rank(movies), [movies, rank])` yapısını kullan.',
+    '`[movies]` bağımlılığıyla birlikte gelen `rank` prop’unu da bağımlılık dizisine eklemeyi unutma; aksi halde linter uyarı verir.',
   ],
 })

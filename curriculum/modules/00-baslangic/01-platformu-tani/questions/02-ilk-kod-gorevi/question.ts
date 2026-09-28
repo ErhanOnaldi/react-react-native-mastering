@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['tooling.platform', 'js.string-formatting'],
   files: ['formatVote.ts'],
   hints: [
-    'Önce test dosyasını oku: üç farklı durum var.',
-    '`sayi.toFixed(1)` bir sayıyı tek ondalıklı **string**e çevirir: `(8).toFixed(1)` → `"8.0"`.',
-    '0 durumunu en başta ayrı bir `if` ile ele al.',
+    'Önce test sekmesini aç ve beklentileri incele: tam sayılar, küsuratlı sayılar ve sıfır puan durumu.',
+    'Sayıları tek ondalık basamaklı metne çevirmek için `sayi.toFixed(1)` metodunu kullanabilirsin.',
+    '`if (voteAverage === 0) return "Henüz oy yok"; return voteAverage.toFixed(1);`',
+    'Tuzak: `Math.round(x * 10) / 10` tam sayılarda `"8.0"` yerine `"8"` üretir; testin beklediği `"8.0"` çıktısı için `toFixed(1)` gereklidir.',
   ],
 })

@@ -1,7 +1,15 @@
-Favoriler sayfası seyrek açılıyor, fakat kodu ilk pakete giriyor. Data mode route'unu lazy modüle taşı.
+Favoriler ekranı kendi adresinde açılmalı ve route modülü yüklendiğinde kullanıcıya sayfa içeriği sunmalı.
 
-## Görev
+## Gereksinimler
 
-`FavoriteRoute.tsx`, Router'ın tanıdığı **`Component` named export**'unu sunsun. Bileşen `Favoriler` başlığını ve `/` adresine **Ana sayfa** linkini göstersin. Test `lazy: () => import('@exercise/FavoriteRoute')` ile modülü yükler.
+- Modül yüklendiğinde `Favoriler` başlığını göster.
+- `/` adresine giden `Ana sayfa` bağlantısı sun.
 
-`default export` tek başına lazy route alanı değildir.
+## Örnek
+
+`/favorites` açılır → `Favoriler` başlığı ve `Ana sayfa` linki görünür.
+
+## Sözleşme
+
+- `FavoriteRoute.tsx` içinden `Component` named export edilir.
+- Modül, `@exercise/FavoriteRoute` adresinden dinamik import edilebilir.

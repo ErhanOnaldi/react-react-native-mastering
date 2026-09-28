@@ -1,41 +1,48 @@
 ---
 title: "Sinema’da tek doğrulama kaynağı"
-minutes: 8
+minutes: 6
 kind: project
 ---
 
 # Sinema’da tek doğrulama kaynağı
 
 :::pain[Problem]
-Detay sayfası kötü TMDB yanıtında hâlâ çökebiliyor; formlar ve env ayrı kurallar taşıyor. Öğrendiklerini gerçek Sinema sınırlarına yerleştir.
+Detay sayfası kötü TMDB yanıtında hâlâ çökebiliyor; formlar ve env ayrı kurallar taşıyor. Şemaları gerçek Sinema sınırlarına yerleştirip bozuk veriyi uygulama içinde ilerlemeden yakalayacaksın.
 :::
 
-## Neden bu araç?
+:::model[Tip derlemede, veri çalışma anında]
+TypeScript tipleri gerçek TMDB cevabını, form alanını veya env değerini incelemez. Her sınırda ham değeri çalışma zamanında doğrula ve sonraki katmana parse edilmiş çıktıyı ver. Bu projede modelin değişen yanı, aynı ilkenin API, form ve başlangıç ayarlarına uygulanmasıdır.
+:::
 
-Önce film şemalarını, sonra API client doğrulamasını, ardından iki form ve env girişini tamamla. Her sınırın testini çalıştır.
+## Sınırları sırayla kur
 
-## Sinema'da bir adım ileri
+Önce film verisinin şemalarını gerçek yanıt örneklerine göre tamamla. TMDB posterinin null olabildiğini koru; başlık null ya da boşsa reddet. Sonra API client'ta HTTP durumunu ve JSON şeklinin doğruluğunu ayrı ele al. Hata sınırda oluşursa React bileşeni bozuk veriyi normal kayıt gibi çizmez.
 
-Bu modülün çıktısı sonraki Redux ve auth çalışmalarının güvenilir veri tabanı olacak.
+Form şemalarında iş kuralı tek kaynakta olmalı. RHF alan durumunu korurken resolver Zod kurallarını çalıştırır. Kullanıcıya label, alan hatası ve submit davranışı aynı şekilde görünmeye devam etmeli. Dönüşüm varsa ham form değeriyle callback'e giden sonucu karıştırma.
+
+Env ayarını uygulama açılırken parse et. Token gibi zorunlu değer boşsa açıklayıcı hata ver; başlık gibi opsiyonel değer için belirli bir varsayılan seç. Tarayıcıya gönderilen VITE_ değerlerinin gizli olmadığını unutma.
+
+| Sınır | Gözleyeceğin davranış |
+| --- | --- |
+| TMDB 200 ve title null | Client'tan veri hatası çıkar, UI bozuk başarı verisi almaz |
+| Poster null | Film şeması gerçek API değerini kabul eder |
+| Boş izleme listesi adı | Alan hatası görünür, kayıt oluşmaz |
+| Boş token | Uygulama başlangıcında env adıyla açıklayıcı hata |
 
 ## Çalışma sırası
 
-Önce film şemalarını gerçek TMDB fixture'larıyla dene; `poster_path: null` kabul edilirken `title: null` reddedilmeli. Sonra `tmdbClient.get(path, schema, params?)` ile bütün film çağrılarını şemaya bağla. Detay yanıtını MSW ile bozup hatanın UI'dan önce client içinde oluştuğunu gör.
+1. Şemaları küçük gerçekçi örneklerle doğrula: null poster geçsin, null başlık kalmalı.
+2. Client'ın HTTP ve veri hatası yollarını ayrı tut.
+3. Formlarda kural kopyalarını kaldır ve erişilebilir hata gösterimini koru.
+4. Env parse'ını uygulamanın tek config girişine taşı.
+5. Eski formların görünür davranışları ve dönüşen değer tipleri hâlâ tutarlı mı diye gözden geçir.
 
-Formlarda mevcut RHF bileşenlerini koru; `register` kurallarını Zod şemasına taşı ve `zodResolver` bağla. Env için uygulama açılışında parse yap. Sonunda 14. modülün liste ve yorum davranışlarını tekrar çalıştır.
-
-| Sınır | Beklenen sonuç |
-| --- | --- |
-| TMDB 200 + `title: null` | Şema hatası, kontrollü hata ekranı |
-| Boş izleme listesi adı | `Ad gerekli`, kayıt yok |
-| Boş token | `VITE_TMDB_TOKEN` adlı erken hata |
-
-Üç proje görevi bu adımları ayrı ayrı kontrol eder.
+Sorun gördüğünde önce sınırın hangisi olduğunu belirle. Hatalı JSON ise film şemasına, HTTP 404 ise client'ın durum kontrolüne, boş kullanıcı adı ise form sözleşmesine bak. Her şeyi ortak bir hata metnine indirmek kullanıcı deneyimini sadeleştirebilir; fakat geliştirici tanısında hata kökenini kaybetme.
 
 :::mistake[Sık hata]
-Yalnızca `movies-api.ts` dönüş tipini değiştirmek bozuk JSON’u engellemez; parse client içinde çalışmalı.
+Belirti → Dönüş tipi değişmiş görünür ama bozuk gövde hâlâ ekrana ulaşır. Neden → JSON parse edilmeden yalnızca TypeScript tipi değiştirilmiştir. Düzeltme → Parse çağrısını API client'ın gerçek dönüş yoluna yerleştir.
 :::
 
 :::sector
-Bu sınırlar güvenilir olunca sonraki Redux state’i ve auth akışları bozuk veriyi taşımak zorunda kalmaz.
+Bu sınırlar güvenilir olunca sonraki Redux ve kimlik doğrulama akışları bozuk TMDB verisini veya boş config'i state'e taşımak zorunda kalmaz. Takım incelemesinde hem şemanın kurallarını hem bu şemanın gerçek giriş noktasında çağrıldığını kontrol et.
 :::

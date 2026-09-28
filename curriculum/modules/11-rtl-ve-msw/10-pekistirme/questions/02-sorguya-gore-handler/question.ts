@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.msw-overrides', 'test.factories', 'fetch.query-params'],
   files: ['searchHandler.ts'],
   hints: [
-    'request.url değerinden URL oluştur.',
-    'toLocaleLowerCase("tr") ile karşılaştır.',
-    'Filtrelenen dizinin uzunluğunu total_results yap.',
+    'Önce query’yi normalize et, sonra film listesini filtrele ve API envelope’unu kur.',
+    '`new URL(request.url)`, `searchParams` ve `toLocaleLowerCase("tr")` kullan.',
+    'Query’yi trim et; boşsa `[]` döndür, değilse eşleşenleri bul ve `total_results: results.length` ayarla.',
   ],
 })

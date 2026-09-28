@@ -1,7 +1,18 @@
-# Favorileri kalıcı yaz
+Kullanıcının seçim listesi yenilemeden sonra korunmalı; kayıt hatası arayüzün çalışmasını durdurmamalı.
 
-`toggle(id)` sonrası güncel ID dizisini `sinema:favorites` anahtarına JSON olarak yaz. Örnek: 550 eklenince `[550]`, tekrar tıklanınca `[]`. Storage hatası UI’yi çökertmesin.
+## Gereksinimler
 
-## İstenen davranış
+- Seçim değişikliği sonrasında güncel ID dizisi JSON olarak storage’a yazılır.
+- İlk eklemeden sonra değer `[550]`; aynı ID çıkarılınca `[]` olur.
+- Başka bir ID eklendiğinde mevcut ID korunur ve yeni ID sona eklenir.
+- Storage yazma hatası uygulama state geçişini çökertmez.
 
-Testlerdeki Türkçe adları gereksinim listesi olarak oku. Starter derlenir; davranışı tamamlaman gerekiyor.
+## Örnek
+
+`550` ekle → storage `[550]`; `603` ekle → `[550, 603]`; `550` çıkar → `[603]`.
+
+## Sözleşme
+
+- Dosya: `persist.ts`
+- Export: `setupStore()`, `toggle(id: number)`
+- Storage anahtarı: `sinema:favorites`; store kök state alanı: `favorites.ids`

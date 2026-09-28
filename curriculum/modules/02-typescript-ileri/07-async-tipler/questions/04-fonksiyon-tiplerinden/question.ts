@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.return-parameters', 'ts.async-types', 'ts.generics'],
   files: ['task.ts'],
   hints: [
-    'Parameters parametreleri tuple olarak verir.',
-    'ReturnType Promise’i, Awaited içindeki veriyi verir.',
-    'args[0] ID değeridir.',
+    'Örnek fonksiyonun argüman ve dönüş bilgilerini tekrar yazmadan nasıl çıkaracağını düşün.',
+    '`Parameters`, `ReturnType` ve `Awaited` yardımcı tipleri fonksiyon imzasını türetir.',
+    '`args[0]` tuple içindeki ID değeridir; bunu istenen metne ekle.',
   ],
 })

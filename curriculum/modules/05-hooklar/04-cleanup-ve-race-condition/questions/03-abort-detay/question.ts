@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['react.abort-controller', 'react.useEffect.cleanup', 'react.useEffect.deps'],
   files: ['AbortDetails.tsx'],
   hints: [
-    'Controller effect içinde kurulmalı; her id’nin kendi controller’ı olur.',
-    '`fetch` seçeneklerine `signal` ekle.',
-    'Cleanup `controller.abort()` döndürsün; catch dalında `AbortError`’ı ayır.',
+    'Yeni id geldiğinde eski ağ işi artık bu ekran için geçerli değil.',
+    '`AbortController` effect içinde kurulmalı; her id’nin kendi controller’ı olur.',
+    '`fetch` seçeneklerine `signal` ekle ve cleanup’ta `controller.abort()` çağır.',
+    'Catch dalında `AbortError` adını normal hata gibi ekrana yazma.',
   ],
 })

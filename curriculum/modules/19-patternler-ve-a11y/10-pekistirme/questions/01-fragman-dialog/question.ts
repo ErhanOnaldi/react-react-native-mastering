@@ -14,9 +14,9 @@ export default defineQuestion({
   ],
   files: ['TrailerDialog.tsx'],
   hints: [
-    'Dialogun içindeki tıklama neden arka planı kapatıyor? Olayın nereden nereye gittiğini ve focus dönüşünü düşün.',
-    'Arka planı `createPortal(..., document.body)` ile taşı. `onClick` yalnız arka planın kendisine tıklanınca kapatsın; focus için düğme ref’lerini kullan.',
-    '`if (event.target === event.currentTarget) setOpen(false)`. Effect cleanup’ında dinleyiciyi kaldır ve `triggerRef.current?.focus()` çağır.',
+    'Bu akış önceki modal, portal ve klavye kurallarını birleştiriyor. İçeri tıklama ile arka plana tıklama aynı sonuç vermemeli.',
+    '`createPortal`, `event.target/currentTarget`, `useEffect` cleanup ve DOM focus yönetimini gözden geçir.',
+    'Arka planı yalnız hedef ile handler sahibi aynıysa kapat. Kapanışta dinleyiciyi temizle ve açan düğmeye focus ver.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

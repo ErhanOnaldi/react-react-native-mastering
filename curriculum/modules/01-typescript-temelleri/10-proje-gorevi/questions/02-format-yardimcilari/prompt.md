@@ -1,9 +1,35 @@
-Sinema'nın kartı ve detay sayfası puanı/tarihi aynı biçimde göstermeli. `projects/sinema/src/lib/format.ts` dosyasını oluştur ve **üç named export** yaz:
+Sinema uygulamasının kart ve detay görünümlerinde puanların ve tarihlerin aynı kurallarla ekrana yansımasını sağlamalıyız. `projects/sinema/src/lib/format.ts` dosyasında puan ve tarih biçimlendirme yardımcılarını oluşturacaksın.
 
-| Fonksiyon | Girdi | Çıktı |
+## Gereksinimler
+
+- `src/lib/format.ts` dosyasını oluştur ve üç fonksiyonu named export olarak tanımla:
+  - `formatVote(n: number): string`
+    - Puan `0` ise `"Henüz oy yok"` metnini döndür.
+    - Diğer puanları tek ondalık basamağa yuvarla; tam sayılarda sondaki `.0` ekini koru (ör. `8` → `"8.0"`, `7.456` → `"7.5"`).
+  - `releaseYear(date: string): string`
+    - Tarih dolu ise ilk 4 karakteri (yıl) döndür (ör. `"1999-10-15"` → `"1999"`).
+    - Tarih boş (`""`) ise boş metin (`""`) döndür.
+  - `formatDate(date: string): string`
+    - Tarih boş (`""`) ise `"Tarih yok"` metnini döndür.
+    - Tarih dolu ise Türkçe uzun tarih formatına çevir (ör. `"1999-10-15"` → `"15 Ekim 1999"`, `"2026-07-15"` → `"15 Temmuz 2026"`).
+    - Saat dilimi farklarından dolayı günün kaymaması için UTC saat dilimini dikkate al.
+
+## Örnek
+
+| Fonksiyon | Girdi | Beklenen Çıktı |
 | --- | --- | --- |
-| `formatVote(n: number): string` | `7.456`, `8`, `0` | `"7.5"`, `"8.0"`, `"Henüz oy yok"` |
-| `releaseYear(date: string): string` | `"1999-10-15"`, `""` | `"1999"`, `""` |
-| `formatDate(date: string): string` | `"1999-10-15"`, `""` | `"15 Ekim 1999"`, `"Tarih yok"` |
+| `formatVote` | `0` | `"Henüz oy yok"` |
+| `formatVote` | `8` | `"8.0"` |
+| `formatVote` | `7.456` | `"7.5"` |
+| `releaseYear` | `"1999-10-15"` | `"1999"` |
+| `releaseYear` | `""` | `""` |
+| `formatDate` | `"1999-10-15"` | `"15 Ekim 1999"` |
+| `formatDate` | `""` | `"Tarih yok"` |
 
-TMDB tarihi `YYYY-MM-DD` metni olarak gönderir. `formatDate` için Türkçe **uzun ay adını** kullan; farklı saat dilimlerinde gün kaymaması için UTC'yi belirt. Boş tarih görünür metne yalnızca `formatDate` içinde dönüşür; `releaseYear` boş string bırakır ki kart kendi kararını versin.
+## Sözleşme
+
+- Dosya yolu: `src/lib/format.ts` (Sinema projesi kökü altında)
+- Export'lar:
+  - `formatVote(n: number): string`
+  - `releaseYear(date: string): string`
+  - `formatDate(date: string): string`

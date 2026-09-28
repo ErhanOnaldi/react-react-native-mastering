@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330">
+  <title>cva varyant ve boyut matrisi</title>
+  <rect class="d-lane" x="12" y="14" width="736" height="300" rx="12" />
+  <text class="d-title" x="105" y="48" text-anchor="middle">variant ↓ / size →</text>
+  <text class="d-title" x="275" y="48" text-anchor="middle">sm</text>
+  <text class="d-title" x="445" y="48" text-anchor="middle">md</text>
+  <text class="d-title" x="615" y="48" text-anchor="middle">lg</text>
+  <rect class="d-box" x="24" y="66" width="160" height="62" rx="8" />
+  <text class="d-text-accent" x="104" y="104" text-anchor="middle">primary</text>
+  <rect class="d-accent" x="195" y="66" width="160" height="62" rx="8" />
+  <text class="d-code" x="275" y="94" text-anchor="middle">bg-primary</text>
+  <text class="d-muted" x="275" y="114" text-anchor="middle">px-2 py-1</text>
+  <rect class="d-accent" x="365" y="66" width="160" height="62" rx="8" />
+  <text class="d-code" x="445" y="94" text-anchor="middle">bg-primary</text>
+  <text class="d-muted" x="445" y="114" text-anchor="middle">px-4 py-2</text>
+  <rect class="d-accent" x="535" y="66" width="160" height="62" rx="8" />
+  <text class="d-code" x="615" y="94" text-anchor="middle">bg-primary</text>
+  <text class="d-muted" x="615" y="114" text-anchor="middle">px-6 py-3</text>
+  <rect class="d-box" x="24" y="138" width="160" height="62" rx="8" />
+  <text class="d-text" x="104" y="176" text-anchor="middle">secondary</text>
+  <rect class="d-box" x="195" y="138" width="160" height="62" rx="8" />
+  <text class="d-code" x="275" y="166" text-anchor="middle">border</text>
+  <text class="d-muted" x="275" y="186" text-anchor="middle">px-2 py-1</text>
+  <rect class="d-box" x="365" y="138" width="160" height="62" rx="8" />
+  <text class="d-code" x="445" y="166" text-anchor="middle">border</text>
+  <text class="d-muted" x="445" y="186" text-anchor="middle">px-4 py-2</text>
+  <rect class="d-box" x="535" y="138" width="160" height="62" rx="8" />
+  <text class="d-code" x="615" y="166" text-anchor="middle">border</text>
+  <text class="d-muted" x="615" y="186" text-anchor="middle">px-6 py-3</text>
+  <rect class="d-box" x="24" y="210" width="160" height="62" rx="8" />
+  <text class="d-text" x="104" y="248" text-anchor="middle">ghost</text>
+  <rect class="d-box" x="195" y="210" width="160" height="62" rx="8" />
+  <text class="d-code" x="275" y="238" text-anchor="middle">bg-transparent</text>
+  <text class="d-muted" x="275" y="258" text-anchor="middle">px-2 py-1</text>
+  <rect class="d-box" x="365" y="210" width="160" height="62" rx="8" />
+  <text class="d-code" x="445" y="238" text-anchor="middle">bg-transparent</text>
+  <text class="d-muted" x="445" y="258" text-anchor="middle">px-4 py-2</text>
+  <rect class="d-warning" x="535" y="210" width="160" height="62" rx="8" />
+  <text class="d-code" x="615" y="238" text-anchor="middle">bg-transparent</text>
+  <text class="d-muted" x="615" y="258" text-anchor="middle">px-6 + compound</text>
+  <text class="d-muted" x="380" y="298" text-anchor="middle">Ortak class + seçilen hücre + varsa compound class</text>
+</svg>

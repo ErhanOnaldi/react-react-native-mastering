@@ -1,1 +1,20 @@
-Favori id’leri yenilemede kaybolmasın. `useLocalStorage<T>(key, initial)` state benzeri `[value, setValue]` tuple’ı dönsün. İlk render’da saklı JSON varsa oku; yoksa veya bozuksa `initial` kullan. Setter hem doğrudan değeri hem `old => newValue` biçiminde updater fonksiyonunu kabul etsin; değişiklik state ve `localStorage` içine yazılsın.
+Favori id'leri sayfa yenilenince kaybolmamalı. `useLocalStorage`, state benzeri bir değer döndürürken değişiklikleri tarayıcının kalıcı alanına da yazsın.
+
+## Gereksinimler
+
+- Kayıt yoksa başlangıç değeri döner.
+- Saklı JSON varsa ilk render'da okunur.
+- Saklı değer bozuk JSON ise başlangıç değeri kullanılır.
+- Setter doğrudan yeni değer alabilir.
+- Setter önceki değerden yeni değer üreten fonksiyon da alabilir.
+- Değişiklik hem hook state'ine hem `localStorage` içine yazılır.
+
+## Örnek
+
+`localStorage["favoriler"] = "[550]"` iken `useLocalStorage<number[]>("favoriler", [])` ilk değeri `[550]` verir. Setter ile `[550, 27205]` yazılınca storage değeri `"[550,27205]"` olur.
+
+## Sözleşme
+
+- Dosya ve export: `useLocalStorage.ts` → `useLocalStorage<T>(key: string, initial: T)`
+- Dönüş: `[value, setValue]`
+- Setter tipi React state setter'ı gibi doğrudan değer veya updater fonksiyonunu kabul eder.

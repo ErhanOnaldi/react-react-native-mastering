@@ -7,9 +7,10 @@ export default defineQuestion({
   concepts: ['react.controlled-input', 'react.state', 'react.render-cycle', 'perf.rerender'],
   files: ['ManualWatchlistForm.tsx'],
   hints: [
-    'Önizlemede bir harf yazıp render sayacını izle; her alan ayrı state kullanıyor.',
-    'Submit handler içinde boş ad, kısa ad ve boş ilk film için erken dön.',
-    'Geçerli durumda sekiz state değerini tek draft nesnesinde `onSave` ile gönder.',
+    'Önce bir karakter yazıp sayaçtaki önce/sonra değerlerini karşılaştır; her alanın değerini ve değişim yolunu eşleştir.',
+    'Controlled input için `useState` kullan; submit sırasında `preventDefault()` ile formun tarayıcı navigasyonunu durdur.',
+    'Üç koşulu ayrı ayrı doğrula, hata varsa `onSave` çağırma; aksi halde sekiz state değerini `WatchlistDraft` nesnesinde birleştir.',
+    'Sayı artışının tam miktarını sabitleme; geliştirme StrictMode ek render gösterebilir.',
   ],
   preview: {
     entry: 'Preview.tsx',

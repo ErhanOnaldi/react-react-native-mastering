@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270">
+  <title>Portal DOM konumunu taşır, React ilişkisini korur</title>
+  <defs>
+    <marker id="portal-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M 0 0 L 8 4 L 0 8 z" />
+    </marker>
+  </defs>
+  <rect class="d-lane" x="28" y="30" width="318" height="205" rx="14" />
+  <text class="d-title" x="187" y="58" text-anchor="middle">React ağacı</text>
+  <rect class="d-box" x="78" y="82" width="218" height="58" rx="9" />
+  <text class="d-text" x="187" y="117" text-anchor="middle">Kart bileşeni</text>
+  <rect class="d-accent" x="78" y="164" width="218" height="48" rx="9" />
+  <text class="d-text" x="187" y="194" text-anchor="middle">Modal bileşeni</text>
+  <path class="d-line-accent" d="M 187 142 V 160" marker-end="url(#portal-arrow)" />
+  <rect class="d-lane" x="414" y="30" width="318" height="205" rx="14" />
+  <text class="d-title" x="573" y="58" text-anchor="middle">DOM ağacı</text>
+  <rect class="d-box" x="464" y="82" width="218" height="58" rx="9" />
+  <text class="d-text" x="573" y="117" text-anchor="middle">Kart öğesi</text>
+  <rect class="d-violet" x="464" y="164" width="218" height="48" rx="9" />
+  <text class="d-text" x="573" y="194" text-anchor="middle">body içindeki modal</text>
+  <path class="d-line" d="M 296 188 C 350 188 394 188 460 188" marker-end="url(#portal-arrow)" />
+  <text class="d-muted" x="378" y="164" text-anchor="middle">portal</text>
+  <text class="d-muted" x="380" y="258" text-anchor="middle">DOM yeri taşınır; React olayları ve Context ilişkisi sürer</text>
+</svg>

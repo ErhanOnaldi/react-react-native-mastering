@@ -1,14 +1,28 @@
 # Sinema ESLint kapısı
 
-Sinema v1’de detay route’u değişince film eski kalabiliyor. Proje kökünde **`eslint.config.js`** oluştur ve sayfa kodunu düzelt.
+Sinema’daki TypeScript ve React kaynakları için ortak lint kuralları ekle. Detay rotasındaki film kimliği değişince sayfa yeni filmi göstermeli; önceki isteğin cevabı daha sonra gelirse güncel ekranı ezmemeli.
 
-- ESLint 10 flat config kullan; `defineConfig` yardımcısını `eslint/config`’ten al.
-- `@eslint/js` ve `typescript-eslint` önerilen kurallarını, `eslint-plugin-react-hooks` 7 flat `recommended` preset’ini ve `eslint-plugin-react-refresh` Vite config’ini ekle.
-- Tarayıcı ve Node global’lerini ilgili dosyalar için `globals` paketiyle tanımla; örneğin `document` bir tarayıcı global’idir. `dist` gibi üretilen klasörleri flat config içinde ignore et.
-- En sona `eslint-config-prettier/flat` koy. TS/TSX dosyalarını kapsa.
-- `src/pages/MovieDetailsPage.tsx` içindeki film id’si değişince yeni film gösterilsin. `useEffect` kullanıyorsan bağımlılığı ve eski istek temizliğini doğru kur; mevcut `useFetch` üzerinden id’ye bağlı URL kurmak da geçerli.
-- Kullanılmayan import’ları ve config’in gösterdiği gerçek hataları düzelt. Kuralları kapatarak geçme.
+## Gereksinimler
 
-Test `eslint.config.js` dosyasını ESLint Node API’siyle yükler ve TS/TSX örneklerinde kuralların gerçekten çalıştığını kontrol eder. Proje kodunun lint temizliği ikinci görevde denetlenir.
+- TS ve TSX dosyalarında kullanılmayan adlar hata olarak bildirilmelidir.
+- TSX’te eksik effect bağımlılığı ve koşullu Hook çağrısı yakalanmalıdır.
+- React component dosyasında component dışı yardımcı export’u yakalanmalıdır.
+- React Compiler için props/state değişmezliği kuralı etkin olmalıdır.
+- Üretilmiş `dist` dosyaları lint kapsamı dışında kalmalıdır.
+- `src/pages/MovieDetailsPage.tsx` içindeki route kimliği değişince doğru film gösterilmeli; eski istek yeni sonucu ezmemelidir.
+- Gerçek lint sorunlarını kaynakta düzelt; kuralları kapatıp geçme.
 
-Bu araçlar Sinema’nın `package.json` dosyasında yoksa `devDependencies` olarak ekle: `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `eslint-config-prettier`, `globals`. Sürüm seçiminde repo kökündeki `package.json` ve workspace catalog’u kullan.
+## Örnek
+
+Lint deneme dosyasında eksik effect bağımlılığı varsa mesaj üretilir; route kimliği `550`’dan `155`’e değişince detay sayfası `155` kimliğinin filmini gösterir.
+
+## Sözleşme
+
+- Proje: `sinema`; config dosyası proje kökünde `eslint.config.js` olmalıdır.
+- Detay sayfası yolu: `src/pages/MovieDetailsPage.tsx`.
+- Config TS/TSX dosyalarında kullanılabilir olmalı ve JavaScript/Node ile tarayıcı global’lerini doğru kapsamda tanımalıdır.
+
+## Kısıtlar
+
+- ESLint config’i flat config biçiminde olmalıdır.
+- Prettier ile çakışan ESLint biçim kuralları son katmanda etkisiz olmalıdır.

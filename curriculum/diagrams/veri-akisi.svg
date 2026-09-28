@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330">
+  <title>React veri akışı: props aşağı, olaylar yukarı</title>
+  <defs>
+    <marker id="ok-veri" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-veri-vurgu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-accent" x="285" y="35" width="190" height="72" rx="8"/>
+  <text class="d-title" x="380" y="64" text-anchor="middle">Ortak ebeveyn</text>
+  <text class="d-code" x="380" y="88" text-anchor="middle">query state</text>
+
+  <rect class="d-box" x="70" y="190" width="180" height="72" rx="8"/>
+  <text class="d-title" x="160" y="219" text-anchor="middle">SearchBox</text>
+  <text class="d-code" x="160" y="243" text-anchor="middle">value, onChange</text>
+
+  <rect class="d-box" x="510" y="190" width="180" height="72" rx="8"/>
+  <text class="d-title" x="600" y="219" text-anchor="middle">MovieList</text>
+  <text class="d-code" x="600" y="243" text-anchor="middle">query ile filtre</text>
+
+  <path class="d-line" d="M320 107 C255 145 205 160 170 186" marker-end="url(#ok-veri)"/>
+  <path class="d-line" d="M440 107 C505 145 555 160 590 186" marker-end="url(#ok-veri)"/>
+  <text class="d-muted" x="290" y="181" text-anchor="middle">props aşağı</text>
+  <text class="d-muted" x="470" y="181" text-anchor="middle">props aşağı</text>
+
+  <path class="d-line-accent" d="M145 190 C145 115 250 95 281 82" marker-end="url(#ok-veri-vurgu)"/>
+  <text class="d-text-accent" x="83" y="155" text-anchor="middle">olay yukarı</text>
+
+  <rect class="d-lane" x="150" y="285" width="460" height="28" rx="8"/>
+  <text class="d-text" x="380" y="305" text-anchor="middle">State tek yerde durur; kardeşler aynı kaynağı okur.</text>
+</svg>

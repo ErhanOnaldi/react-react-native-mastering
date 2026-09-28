@@ -1,26 +1,42 @@
 ---
-title: Sinema UI kit’ini kur
-minutes: 9
+title: "Sinema'nın UI kit'ini tamamla"
+minutes: 6
 kind: project
 ---
 
-# Sinema UI kit’ini kur
+# Sinema'nın UI kit'ini tamamla
 
-:::pain[Problem]
-Platform örnekleri çalışıyor ama Sinema MovieCard'ı hâlâ kopyalanmış düğme class'larını taşıyor. Arama ve favori akışını bozmadan ortak parçaları gerçek projeye geçirmek gerekiyor.
+:::pain[Arayüz akışı kopya class'lara bağlı]
+Sinema'da favori ve arama davranışı çalışıyor ama MovieCard, SearchBox ve diğer görünür parçalar kendi HTML ve class kararlarını taşıyor. Ortak kit'e geçerken arama ve favori akışının aynı kalması gerekiyor.
 :::
 
-## İki adım
+## Önce altyapı, sonra gerçek kullanım
 
-Önce `src/lib/cn.ts`, `src/components/ui/` ve `src/index.css` içinde ortak kit'i kur. Sonra MovieCard'ı bu parçalarla düzenle. `Button` primary/secondary/ghost ve sm/md/lg kombinasyonlarını önizlemede yan yana gör; `Input` aramada, `Badge` puanda, `Card` çerçevede kullanılır. `Skeleton` için şimdilik örnek yükleme görünümü yeterli; gerçek yükleme state'i sonraki modülde.
+İlk görev, token ve class birleştirme katmanıyla UI primitive'lerini Sinema'ya ekler. Button sınırlı varyant ve boyutları sunar; Card, Badge, Skeleton ve Input kendi doğal HTML öğelerine dayanır. Bütün parçalar aynı `cn` sözleşmesini kullanır. Koyu tema rengi CSS katmanında seçilir.
 
-## Bitiş kontrolü
+İkinci görev, MovieCard ve SearchBox'ı bu kit'e geçirir. Bu aşamada kartın nasıl renklendirileceği sana kalır; kullanıcıya görünen içerik, favori durumu, arama değeri ve tıklama davranışı aynı ürün anlamını korumalıdır. Bir tasarım sistemi yalnız class listesi değildir: HTML semantiği, erişilebilir ad ve native props da bileşen sözleşmesidir.
 
-MovieCard'ın favori düğmesi hâlâ tıklanmalı, erişilebilir adı ve basılı durumu anlaşılmalı. Arama filtresi ve favori state'i App'te kalmalı. Bir sonraki modülde veri çekmeye geçerken bu UI kit aynı kalabilir.
+:::model[Ortak görünüm ve ürün davranışını ayrı tut]
+Varyant tablosu görünümü seçer, primitive native etkileşim props'larını taşır, üst ürün bileşeni arama/favori state'ini sahiplenir. Bu projede değişen şey UI primitive'lerinin gerçek ekranlarda kullanılmaya başlamasıdır.
+:::
 
-## Önce ve sonra deneyi
+## Uygularken izle
 
-Eski MovieCard'da favori işaretle, arama metni yaz ve bir kartın başlığını kontrol et. Kit'e taşıdıktan sonra aynı adımları tekrarla. Görünüm değişebilir; `onToggleFavorite`, `SearchBox` controlled değeri ve film başlığı kaybolmamalı. `Button`'ın varyant class'ları üretmesi tek başına yeterli değil: gerçek kartın onu kullanması gerekiyor.
+Önce helper ve UI dosyalarının birbirine nasıl bağlanacağını kur. Ardından Button varyantlarını ve boyutlarını yan yana göstererek her seçeneğin görünür biçimde ayrıldığını kontrol et. Bir Badge'i Card içinde kullan; Skeleton'ın yer tuttuğunu ve Input'un label alabileceğini doğrula.
 
-`@theme` token'larını ekledikten sonra `brand` rengini CSS'te değiştirip Button ile Badge'deki farkı gör. `.dark` class'ını üst öğeye geçici olarak ekleyerek `dark:` kurallarını incele. Tema seçimini kalıcı state'e bağlamak bu görevin kapsamında değil; o ihtiyaç sonraki modülde çıkacak.
+Sonraki aşamada bir filmi favoriye ekle, arama alanına başlık yaz ve listeden bir sonucu aç. Klavyeyle butonlara ulaş; açık ve koyu temadaki metin/zemin ayrımını kontrol et. Kart görünümü farklılaşabilir ama favori state'i, controlled arama değeri ve başlık kaybolmamalı.
 
+Takıldığında her değişikliği tek katmanda daralt: `cn` class çatışmasını mı çözüyor, varyant fonksiyonu doğru class'ı mı üretiyor, yoksa gerçek `<button>` doğru props'ları mı alıyor? Ekran görüntüsü yanında DOM props'larını ve etkileşimi kontrol et. Böylece stil sorunu ile state veya HTML davranışı sorununu ayırabilirsin.
+
+:::sector
+Design system geçişleri genellikle çalışan ürün akışlarını koruyarak yapılır. Takım, ortak bileşenleri önce temel durumlarıyla oluşturur; sonra ekranları parça parça geçirir ve davranış değişmediğini kontrol eder.
+:::
+
+## Özet
+
+- Önce token/helper ve primitive katmanı kurulur; sonra gerçek ekranlar onu kullanır.
+- Button varyantları görünüm kararlarıdır, native props davranışı taşır.
+- SearchBox kontrollü kalır; favori state'i kartın dışındaki state sahibinde kalır.
+- Görsel tasarım değişebilir ama erişilebilir ad, state ve callback sözleşmesi korunur.
+
+**Kendini yokla:** UI kit'e geçişte hangi davranışları tekrar denersin? Arama, favori, erişilebilir ad ve klavye odağı.

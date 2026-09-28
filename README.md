@@ -3,7 +3,9 @@
 Sektör standardında React öğrenmek için yerelde çalışan, LeetCode tarzı etkileşimli bir öğrenme platformu.
 
 - **23 modül**, her biri ihtiyaçtan doğan bir **acı noktasıyla** açılır: önce bildiğin yöntemle çözersin, sorunu gözünle görürsün (test mesajı, canlı önizlemedeki istek sayacı…), sonra onu çözen aracı öğrenirsin.
-- **Üç soru tipi:** quiz, platform içindeki editörde kod görevi (gerçek Vitest testleri + TypeScript kontrolü) ve VS Code'da **Sinema** projesinde proje görevi.
+- **Dersler başvuru kaynağı gibi yazılır:** her kavram önce bir zihinsel modelle (diyagramlı) kurulur, sonraki derslerde hatırlatılır ve yeni bağlama uygulanır.
+- **Üç soru tipi:** quiz, platform içindeki editörde kod görevi (LeetCode gibi: görev ne istendiğini söyler, yöntem ipuçlarındadır; gerçek Vitest testleri + TypeScript kontrolü) ve VS Code'da **Sinema** projesinde proje görevi.
+- **Web platformu da işin içinde:** tarayıcıda debug, HTTP/CORS/HTTP cache, güvenlik (XSS, CSP, CSRF, sırlar), Web Vitals, yayına alma ve hata izleme, i18n ve animasyon.
 - **Stack:** React 19, TypeScript, Tailwind CSS 4, React Router 8, TanStack Query, React Hook Form, Zod, Redux Toolkit, Vitest, React Testing Library, MSW, Playwright, ESLint, Prettier, shadcn/ui (opsiyonel).
 
 ## Kurulum
@@ -86,6 +88,7 @@ pnpm test:e2e                # uçtan uca duman testi
 pnpm lint && pnpm typecheck
 pnpm validate:content        # tüm içerik: şemalar, kod blokları, çözüm geçer / başlangıç kalır, checkpoint'ler
 pnpm validate:content -m 5   # tek modül
+pnpm preview:diagram curriculum/diagrams   # diyagram yerleşim denetimi + iki temada PNG (macOS)
 ```
 
 İçerik yazmak için: `docs/authoring-guide.md` ve `docs/curriculum-plan.md`.

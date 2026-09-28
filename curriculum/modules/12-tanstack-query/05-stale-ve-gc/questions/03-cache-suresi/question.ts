@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['query.stale-gc', 'query.query-options', 'test.msw'],
   files: ['cachePolicy.ts'],
   hints: [
-    'İki süreyi ayrı seçenek olarak yaz.',
-    '`queryFn` gerçek TMDB isteği yapmalı; key id içermeli.',
-    '`staleTime: 60_000, gcTime: 300_000` ve Bearer’lı fetch kullan.',
+    'Tazeliği ve son abone ayrıldıktan sonraki bellek ömrünü birbirinden ayır.',
+    'Query options factory’de `staleTime` ve `gcTime` tanımla; key’e film id’sini ekle.',
+    '`queryOptions({ queryKey: [..., id], queryFn: ..., staleTime: 60_000, gcTime: 300_000 })` döndür.',
   ],
 })

@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['form.rhf-register', 'form.rhf-reset', 'ts.omit'],
   files: ['VisibilityForm.tsx'],
   hints: [
-    'Bu kez metne ek olarak `isPublic` boolean alanı var.',
-    '`defaultValues` içinde `isPublic: false` ver ve checkbox’ı `register` ile bağla.',
-    '`handleSubmit(onSave)` ile checkbox’ın boolean değerini gönder.',
+    'Textarea görünmese de submit nesnesinde açıklama alanı bulunmalı; görünür checkbox ise boolean olmalı.',
+    '`useForm` içindeki `defaultValues` ile başlangıçları tanımla, native checkbox alanını `register` ile kaydet.',
+    '`isPublic: false` başlangıcını kur ve form gönderimini `handleSubmit(onSave)` ile bağla.',
   ],
 })

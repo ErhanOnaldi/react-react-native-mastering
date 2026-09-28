@@ -1,18 +1,15 @@
-Yorum formunda başlık ve metin birlikte anlamlı olmalı: ikisi de dolu olsa bile çok kısa bir başlık+metin ikilisi yeterli bir yorum sayılmaz. Sunucu hata döndürürse yazılanlar kaybolmamalı; kullanıcı formu değiştirmeden tekrar gönderebilmeli. Gönderim başarılı olursa bunu açıkça göster.
+Yorum başlığı ve metni tek tek dolu olsa bile ikisi birlikte çok kısaysa gönderimi engelle. Sunucu geçici olarak hata verdiğinde kullanıcının yazısı korunsun ve yeniden deneme mümkün olsun.
 
-## Giriş ve davranış
+## Gereksinimler
+- `Başlık` ve `Yorum` alanları ayrı ayrı boş bırakılamasın.
+- İki alanın toplam uzunluğu 15 karakterden azsa `alert` içinde birlikte olduklarını belirten anlaşılır hata gösterilsin; istek atılmasın.
+- Sunucu gönderimi reddederse hata `alert` içinde `gönderilemedi` kelimesini içersin ve alanlardaki değerler korunsun.
+- Sonraki başarılı gönderimde `status` içinde `gönderildi` kelimesini içeren mesaj gösterilsin.
 
-Testler `ReviewPanel.tsx` içindeki `ReviewPanel` bileşenini açar.
+## Örnek
+`Ok` başlığı ve `iyi` metni gönderilmeden reddedilir. Yeterince uzun içerik sunucuda ilk denemede reddedilirse içerik kalır; tekrar gönderip başarı alınca başarı mesajı görünür.
 
-- `Başlık` ve `Yorum` alanları vardır; ikisi de tek başına boş bırakılamaz.
-- İkisi de dolu olsa bile toplamda çok kısaysa okunabilir bir hata gösterilir ve gönderim yapılmaz.
-- Sunucu hata döndürürse: okunabilir bir hata mesajı görünür, yazılan başlık ve metin ekranda kalır.
-- Sunucu başarıyla kabul ederse: açık bir başarı mesajı görünür.
-
-Örnek: kısa başlık + kısa metin → hata, istek atılmaz. Yeterince uzun metinle gönder → sunucu hata verirse yazılanlar dursun; tekrar gönderilince başarı mesajı görünsün.
-
-## Arayüz sözleşmesi
-
-- "Toplamda çok kısa" kuralı: başlık ve metin uzunluklarının toplamı en az 15 karakter olmalı.
-- Sunucu hatasında görünen mesaj `gönderilemedi` kelimesini içersin.
-- Başarı mesajı `gönderildi` kelimesini içersin.
+## Sözleşme
+- `ReviewPanel.tsx` → named export `ReviewPanel`.
+- Alan adları `Başlık`, `Yorum`; gönder düğmesinin adı `Gönder`.
+- Sunucu uç noktası DummyJSON `POST /comments/add`.

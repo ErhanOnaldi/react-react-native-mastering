@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220">
+  <title>Oturum durumunu kaydetme ve ayrı testlere yükleme</title>
+  <defs>
+    <marker id="auth-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path d="M0 0L8 4L0 8Z" class="d-arrowhead-accent" />
+    </marker>
+  </defs>
+  <rect x="28" y="64" width="195" height="90" rx="12" class="d-accent" />
+  <text x="125" y="98" text-anchor="middle" class="d-title">Giriş setup’ı</text>
+  <text x="125" y="124" text-anchor="middle" class="d-muted">cookie ve localStorage</text>
+  <rect x="282" y="64" width="195" height="90" rx="12" class="d-violet" />
+  <text x="379" y="98" text-anchor="middle" class="d-title">storageState</text>
+  <text x="379" y="124" text-anchor="middle" class="d-muted">başlangıç durumu dosyası</text>
+  <rect x="536" y="35" width="196" height="65" rx="12" class="d-success" />
+  <text x="634" y="74" text-anchor="middle" class="d-title">Test A: yeni context</text>
+  <rect x="536" y="119" width="196" height="65" rx="12" class="d-success" />
+  <text x="634" y="158" text-anchor="middle" class="d-title">Test B: yeni context</text>
+  <path d="M227 109H269" class="d-line-accent" marker-end="url(#auth-arrow)" />
+  <path d="M481 100L525 68" class="d-line-accent" marker-end="url(#auth-arrow)" />
+  <path d="M481 119L525 151" class="d-line-accent" marker-end="url(#auth-arrow)" />
+  <text x="380" y="211" text-anchor="middle" class="d-muted">Kimlik başlangıcı ortak, test context’leri ayrı</text>
+</svg>

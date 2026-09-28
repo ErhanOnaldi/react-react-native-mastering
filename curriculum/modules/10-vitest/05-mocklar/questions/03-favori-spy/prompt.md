@@ -1,8 +1,20 @@
-Sinema’da favori butonuna iki kez basıldığında aynı film iki defa kaydedilmemeli. `@impl/favoriteStore` içindeki `addFavorite(id)` fonksiyonunun **dış etkisini** test et.
+Favori depolaması aynı filmi iki kez eklediğinde yinelenen id üretmemeli. Kalıcı yazımın anahtarını ve saklanan JSON değerini doğrula.
 
-- `localStorage` içeriğini test öncesi temizle.
-- `vi.spyOn` ile `setItem` çağrısını gözle: anahtar `favoriteIds` olmalı.
-- `550` iki kez eklendiğinde saklanan JSON dizisi `[550]` olmalı.
-- Spy’ı test sonunda geri yükle.
+## Gereksinimler
 
-`vi.fn` sıfırdan fonksiyon üretir; `vi.spyOn` var olan `setItem` metodunun gerçek davranışını koruyarak çağrıyı izler.
+- Test başlamadan localStorage içeriğini temizle.
+- 550 id’si favoriteIds anahtarı altında JSON olarak saklanmalı.
+- 550 iki kez eklendiğinde saklanan listede tek bir 550 bulunmalı.
+- Spy test sonunda geri yüklenmeli.
+
+## Örnek
+
+İşlem: addFavorite(550), sonra addFavorite(550).
+Beklenen anahtar: favoriteIds.
+Beklenen JSON: [550].
+
+## Sözleşme
+
+- Yazılacak dosya: favoriteStore.test.ts
+- Test edilecek modül: @impl/favoriteStore
+- Çağrı: addFavorite(id: number): void

@@ -8,8 +8,9 @@ export default defineQuestion({
   files: ['WatchlistEditor.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Form ilk açıldığında `list` prop’undan değer alıyor; prop değiştiğinde de aynı şey olmalı.',
-    'Bir prop değişimine tepki vermek için formun varsayılanlarını yeniden uygulaman gerekir.',
-    '`list.id` değiştiğinde `reset({ name: list.name, description: list.description })` çağır; `Kaydet`’i yalnızca `formState.isDirty` iken etkinleştir.',
+    'Sorunu iki ayrı anda incele: başka kayıt seçildiğinde ve hiçbir değişiklik yapmadan Kaydet’e basıldığında.',
+    'RHF `defaultValues` yalnız ilk kurulumda uygulanır; yeni kayıt kimliği değişince alan başlangıçlarını güncelle.',
+    '`list.id` değişimini izleyip `reset({ name: list.name, description: list.description })` çağır; düğmeyi `formState.isDirty` ile yönet.',
+    "Kullanıcı aynı kayıt üzerinde düzenlerken her render'da reset çağırma; bu onun yazısını siler.",
   ],
 })

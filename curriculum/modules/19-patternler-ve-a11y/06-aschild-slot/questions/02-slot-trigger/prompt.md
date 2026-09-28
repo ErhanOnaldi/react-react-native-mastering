@@ -1,9 +1,20 @@
-Mevcut film kartı button'unu `Modal.Trigger` içine koyunca iki button oluşuyor. `SlotTrigger asChild` ile yalnızca tek DOM öğesi üret ve prop/ref kaybını önle.
+Mevcut kart button'unu bir modal tetikleyicisinin içine koyunca iç içe iki button oluşuyor. Tetikleyici davranışını tek DOM öğesinde sun ve child'ın click, erişilebilir ad, class ve ref bilgilerini koru.
 
 ## Gereksinimler
-- `SlotTrigger({ asChild, onOpen, children, ref, className })` yaz. `asChild` verilmezse kendi `<button type="button">` öğesini render etsin.
-- `asChild` verildiğinde **tek** React element child'ı klonlasın. Child click handler'ı önce çalışsın; event `preventDefault()` ile durdurulmadıysa `onOpen` sonra çalışsın.
-- Child ve Trigger `className` değerleri birleşsin. Trigger'ın `aria-label` prop'u child'da görünsün; child `aria-label` verdiyse onu koru.
-- Child ref ile Trigger ref aynı DOM öğesini görsün. React 19 `ref` prop'unu kullan.
 
-Önizlemede Tab ile tek düğmeye gel ve Enter'a bas. Testte iki ref'in de aynı button'u işaret ettiğini göreceksin.
+- `asChild` verilmezse tek `<button type="button">` render et; click `onOpen` çağırsın.
+- `asChild` verilince tam bir React elementini kullan; ek button üretme.
+- Child click handler'ı önce çalışsın. Event `preventDefault()` ile durdurulmadıysa `onOpen` sonra çalışsın.
+- Child ve Trigger class değerleri birlikte bulunsun.
+- Trigger'ın `aria-label` değeri child'da yoksa aktarılsın; child kendi adını verdiyse korunsun.
+- Child ref ve Trigger ref aynı DOM öğesini göstersin.
+
+## Örnek
+
+Child `preventDefault()` çağırmadığında handler sırası `child` → `open`; çağırdığında yalnızca `child` çalışır. `className="movie"` ile `className="trigger"` aynı button'da kalır.
+
+## Sözleşme
+
+- `SlotTrigger.tsx` içinden named export `SlotTrigger({ asChild, onOpen, children, ref, className })`.
+- `onOpen: () => void`; `children` tek element olabilir; `asChild` boolean.
+- Düğme tabanlı örnekte erişilebilir rol `button` olarak kalır.

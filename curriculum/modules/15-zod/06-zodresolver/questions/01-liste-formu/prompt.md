@@ -1,5 +1,14 @@
-Sinema'da ad kuralı `register` içinde tekrar yazılmasın. `WatchlistForm({ onSave }: { onSave: (name: string) => void })` adlı named export bileşeni kur.
+Yeni izleme listesi adı boş olmasın; kayda gitmeden önce kenar boşlukları temizlensin.
 
-- `z.object({ name: z.string().trim().min(1, { error: "Ad gerekli" }) })` şemasını kullan.
-- `useForm` için `zodResolver` bağla; input label'ı `Liste adı`, buton `Kaydet` olsun.
-- Boş ad gönderilmez, hata `role="alert"` ile gösterilir; geçerli ad trimlenmiş olarak `onSave`'e gider.
+## Gereksinimler
+- Liste adı alanı boş veya yalnızca boşluksa gönderim yapılmaz ve Ad gerekli mesajı görünür.
+- Geçerli adın başındaki ve sonundaki boşluklar kaldırılarak onSave callback'ine gönderilir.
+- Input label'ı Liste adı, gönderme düğmesi Kaydet olmalı.
+
+## Örnek
+Kullanıcı "  Klasikler  " yazıp Kaydet'e basınca callback "Klasikler" alır.
+
+## Sözleşme
+- WatchlistForm.tsx dosyasında WatchlistForm({ onSave }: { onSave: (name: string) => void }) named export bileşenini tanımla.
+- Hata, role=alert ile bulunabilir olmalı.
+

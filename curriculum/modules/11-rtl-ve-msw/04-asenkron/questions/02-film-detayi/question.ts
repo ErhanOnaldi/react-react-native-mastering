@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['test.async', 'test.msw', 'fetch.loading-states', 'ts.union'],
   files: ['MovieTitle.tsx'],
   hints: [
-    'loading/error/success state’lerini ayır.',
-    'useEffect içinde fetch yap; response.ok kontrol et.',
-    'Cleanup için active bayrağı kullan; eski isteğin sonucunu yok say.',
+    'Hangi üç kullanıcı durumunun görüneceğini ve film id değişince neyin yenileneceğini belirle.',
+    '`useEffect`, `fetch`, `response.ok` ve ayrı loading/error/data state’leri kullan.',
+    'Effect’e ait `active` bayrağını cleanup’ta kapat; yalnız geçerli isteğin cevabını state’e yaz.',
   ],
 })

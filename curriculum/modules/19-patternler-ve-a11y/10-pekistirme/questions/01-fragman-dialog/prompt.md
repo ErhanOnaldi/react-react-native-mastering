@@ -1,12 +1,20 @@
-Fragman dialogunu kartın dışına (portal) taşıdın, focus akışını kurdun. Tasarım ekibi bir şey daha istiyor: **karartılmış arka plana tıklayınca** dialog kapansın. İlk denemede dialogun içine tıklamak da kapatıyor.
+Fragman penceresi açılınca arka plana tıklamak kapatmalı; pencerenin başlığına tıklamak açık bırakmalı. Açma, klavye dolaşımı ve kapanış focus'u tek akışta tamamla.
 
 ## Gereksinimler
-- `TrailerDialog({ movieTitle })` kendi aç/kapat state'ini tutsun; tetikleyici **Fragmanı aç** adlı bir `<button>` olsun.
-- Açıkken `role="dialog"`, `aria-modal="true"` ve adı **{movieTitle} fragmanı** olan bir dialog göster.
-- Dialog, tam ekran bir **arka plan** öğesinin doğrudan çocuğu olsun; arka plan `document.body` altında görünsün.
-- İçinde **Oynat** ve **Kapat** düğmeleri olsun; açılışta Oynat focus alsın.
-- Tab ve Shift+Tab dialog içinde dönsün.
-- Escape, Kapat ve **arka plana tıklama** dialogu kapatsın; her üç yolda da focus Fragmanı aç'a dönsün.
-- **Dialogun içine** (başlık, boşluk) tıklamak dialogu kapatmasın.
 
-Önizlemede önce klavyeyle (Tab, Enter, Tab, Escape), sonra fareyle (arka plana ve başlığa tıklama) dene.
+- `Fragmanı aç` adlı button dialogu açar; dialog kapalıyken DOM'da bulunmaz.
+- Açık dialog `role="dialog"`, `aria-modal="true"` ve `{movieTitle} fragmanı` adı taşır.
+- Tam ekran arka plan `document.body` altında olur; dialog onun doğrudan çocuğudur.
+- Dialogda `Oynat` ve `Kapat` düğmeleri bulunur; açılışta Oynat focus alır.
+- Tab ve Shift+Tab focus'u dialog içinde döndürür.
+- Escape, Kapat ve arka plan click'i dialogu kapatıp focus'u açan düğmeye verir.
+- Başlığa veya dialog içeriğine click yapmak dialogu kapatmaz.
+
+## Örnek
+
+`movieTitle="Yıldızlararası"` için dialogun erişilebilir adı `Yıldızlararası fragmanı` olur. Başlığa tıklamak pencereyi açık bırakır; arka planın boş alanına tıklamak kapatır.
+
+## Sözleşme
+
+- `TrailerDialog.tsx` içinden named export `TrailerDialog({ movieTitle })`.
+- `movieTitle: string`; tetikleyici adı `Fragmanı aç`.

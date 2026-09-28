@@ -1,13 +1,15 @@
 import { defineQuestion } from '@rm/content/define'
+
 export default defineQuestion({
   type: 'code',
-  title: 'İki 401’i tek refresh ile onar',
+  title: 'Paralel istekler için tek uçuş',
   difficulty: 'zor',
-  concepts: ['auth.refresh', 'arch.api-client', 'js.async-await', 'test.msw'],
+  concepts: ['auth.refresh', 'arch.api-client', 'js.async-await'],
   files: ['authClient.ts'],
   hints: [
-    'İlk isteği güncel access token ile yap; 401 dışındaki hatada refresh deneme.',
-    'Factory scope’unda `let inFlight: Promise<Tokens> | null` tut ve 401’ler arasında paylaş.',
-    'Refresh bitmiş ama ikinci 401 eski token’dan gelmişse storage’daki yeni token ile doğrudan retry yap; retry’ı bir turla sınırla.',
+    'Paralel 401 alan isteklerin aynı anda birden çok yenileme tetiklemesini engellemek için paylaşılan bir Promise değişkeni kullan.',
+    "Closure içinde `let inFlight: Promise<Tokens> | null = null;` referansı tut; 401 durumunda eğer `inFlight` yoksa `refreshSession(storage)` çağır ve Promise'ı bu değişkene ata.",
+    '`inFlight.finally(() => { inFlight = null; })` ekleyerek işlem bittiğinde değişkeni temizle; ardından dönen yeni token ile orijinal isteği bir kez tekrarla (`retry`).',
+    "İkinci 401 yanıtı ilk yenileme tamamlandıktan hemen sonra gelebilir; `storage.getTokens()?.accessToken` değeri istekte kullanılan token'dan farklıysa yeni refresh başlatma, doğrudan eldeki güncel token ile retry yap.",
   ],
 })

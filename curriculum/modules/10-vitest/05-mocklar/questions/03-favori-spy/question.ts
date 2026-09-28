@@ -7,6 +7,7 @@ export default defineQuestion({
   concepts: ['test.mocks', 'react.immutability', 'js.array-methods'],
   files: ['favoriteStore.test.ts'],
   hints: [
+    'Depolama davranışı gerçek çalışırken hangi yan etkinin gözlenmesi gerektiğini belirle.',
     'Depolamayı test başında temizle; `Storage.prototype` üzerindeki `setItem` metodunu izle.',
     '`vi.spyOn(Storage.prototype, "setItem")` ile yazılan anahtarı ve JSON verisini denetle.',
     'Aynı id’yi iki kez ekle; kaydedilen dizide tek kez bulunmalı.',

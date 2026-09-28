@@ -13,9 +13,10 @@ export default defineQuestion({
   ],
   files: ['MovieSummary.tsx', 'MoviePoster.tsx'],
   hints: [
-    'Starter’ın başlık ve posteri doğru gösterdiğini önce doğrula.',
-    'İki dalın ortak JSX’ini karşılaştır.',
-    'Tek başlık ve açıklama oluştur; yalnız poster varsa img göster.',
+    'Hangi metinler afişin varlığından bağımsız olarak aynı kalmalı?',
+    'Composition/component sınırını kullan; poster parçasının props sözleşmesi açık olsun.',
+    'Özet JSX’inde tek başlık ve paragraf tut; dış bileşen afiş yokluğunu yönetir.',
+    'Null path için img render etme; alt metni film başlığıyla eşleştir.',
   ],
   rubric: [
     'Poster yokluğu ortak kart gövdesini çoğaltmaz.',

@@ -1,10 +1,22 @@
-Puanlamanın ekranda hemen görünmesini sağla.
+Film puanını seçince yeni değer hemen görünmeli; sunucu reddederse eski değer geri gelmeli. Ayrıca kullanıcının puanladığı filmler `/rated` sayfasında yer almalı.
 
-## Dosyalar ve export’lar
+## Gereksinimler
 
-- `src/features/rating/hooks/useRateMovie.ts`: `useRateMovie(sessionId)` export et. `rateMovie` yazma işlemi başlar başlamaz aynı oturumun `ratedMoviesQuery(sessionId).queryKey` listesindeki puan geçici olarak değişsin. Sunucu hata verirse eski değer geri gelsin; işlem bitince liste tazelensin.
-- `src/features/rating/components/RatingStars.tsx`: `RatingStars({ movieId, value, onRate })` export et. 0,5–10 puan seçilebilir ve `onRate(value)` çağrılır. Seçilen değeri erişilebilir metinle göster; bekleyen ve hata durumlarını belirt.
-- `src/pages/RatedPage.tsx`: default export `RatedPage`. Geçerli oturumun Puanladıklarım listesini başlık ve puanla göster; boş ve hata durumlarını göster.
-- `src/router.tsx`: `/rated` route’u ve nav link’i ekle. Detay sayfasında `RatingStars` kullan; verilen puan rated sayfasında hemen görünsün.
+- Puanlama başlar başlamaz aynı session’ın rated cache’inde film eklenmeli veya puanı güncellenmeli.
+- POST başarısız olursa eski cache değeri geri yüklenmeli; hata kullanıcıya erişilebilir biçimde gösterilmeli.
+- İşlem tamamlanınca rated liste son sunucu durumuyla uzlaşmalı.
+- Yarım puan adımları 0,5–10 arasında seçilebilmeli; seçilen değer `onRate` callback’ine iletilmeli.
+- `RatingStars` mevcut puanı, bekleme ve hata durumlarını erişilebilir metinle göstermeli.
+- `/rated` route’u bulunmalı; sayfa film başlığını ve puanını göstermeli, boş ve hata durumları için anlaşılır UI sunmalı.
+- Router’da film detayındaki puanlama kontrolü bu akışa bağlı olmalı.
 
-MSW ile 500 POST dene: geçici 8,5 önce görünmeli, sonra eski puan geri gelmeli. Paralel mutation çakışmalarını ayrıca değerlendir.
+## Örnek
+
+550 numaralı filme 8,5 verildiğinde rated listede “Dövüş Kulübü” ve “8,5 puan” görünür. Aynı POST 500 dönerse önceki puan korunur.
+
+## Sözleşme
+
+- `src/features/rating/hooks/useRateMovie.ts`: `useRateMovie(sessionId)`; mutation variables `{ movieId: number; value: number }`.
+- `src/features/rating/components/RatingStars.tsx`: `RatingStars({ movieId, value, onRate })`; `movieId: number`, `value: number | null`, `onRate(value: number): void`.
+- `src/pages/RatedPage.tsx`: default export `RatedPage`.
+- `src/router.tsx`: export edilen `routes` içinde `/rated` route’u.

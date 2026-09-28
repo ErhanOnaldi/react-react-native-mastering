@@ -1,7 +1,25 @@
-Bir takım arkadaşın `movie-utils.ts`'i yazmış ve "testler geçiyor, bitti" demiş. Gerçekten de **testlerin hepsi yeşil**. Ama bu platformda (ve sektördeki CI'da) tip hatası olan kod kabul edilmez.
+Testleri geçen ancak katı derleyici kuralları (`verbatimModuleSyntax`, `noImplicitAny`, `strictNullChecks`) nedeniyle tip denetiminden geçemeyen yardımcı fonksiyonları düzeltmek istiyoruz.
 
-1. Önce hiçbir şeyi değiştirmeden **Çalıştır**'a bas ve sonuç panelindeki **Tip hataları** bölümünü oku.
-2. Editörde de aynı satırların altı çizili olmalı; üzerine gelince mesajı görürsün.
-3. Hataları düzelt — **davranışı değiştirmeden** (testler yeşil kalmalı). `titleById` bulunamayan bir id için `"Bilinmeyen film"` döndürmeli.
+## Gereksinimler
 
-`types.ts` salt okunur.
+- Fonksiyonların mevcut testleri başarıyla geçmeye devam etmeli, davranış değiştirilmemelidir.
+- `Movie` arayüzü yalnızca tip olarak import edilmelidir.
+- `isHighlyRated` fonksiyonunun parametre tipi açıkça `number` olarak tanımlanmalıdır.
+- `titleById` fonksiyonu aranan id listede bulunamadığında güvenli bir şekilde `"Bilinmeyen film"` döndürmelidir.
+- Dosyada hiçbir TypeScript derleyici hatası (`tsc`) kalmamalıdır.
+
+## Örnek
+
+| Çağrı | Sonuç |
+| --- | --- |
+| `isHighlyRated(8.2)` | `true` |
+| `titleById(filmler, 550)` | `"Dövüş Kulübü"` |
+| `titleById(filmler, 99999)` | `"Bilinmeyen film"` |
+
+## Sözleşme
+
+- Dosya ve exportlar: `movie-utils.ts`
+  - `export function releaseYear(movie: Movie): string`
+  - `export function isHighlyRated(score: number): boolean`
+  - `export function titleById(movies: Movie[], id: number): string`
+- Salt okunur bağımlılık: `types.ts`

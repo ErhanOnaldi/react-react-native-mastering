@@ -7,8 +7,9 @@ export default defineQuestion({
   concepts: ['ts.omit', 'ts.partial', 'js.spread'],
   files: ['task.ts'],
   hints: [
-    'Omit içinde çıkarılacak anahtarları union ile yaz.',
-    'Partial her taslak alanını opsiyonel yapar.',
-    '`{ ...draft, ...patch }` verilmiş alanları günceller ve yeni nesne üretir.',
+    'Sunucunun verdiği alanları taslak sözleşmesinin dışında bırak.',
+    '`Omit` ile alanları çıkar, ardından `Partial` ile patch alanlarını opsiyonel yap.',
+    '`{ ...draft, ...patch }` yeni nesne üretip güncellemeyi uygular.',
+    'Patch içinde açıkça gönderilen `null`, atlanmış alanla aynı değildir.',
   ],
 })

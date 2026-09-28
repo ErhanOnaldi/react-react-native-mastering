@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 315">
+  <title>Build ve yayına alma akışı</title>
+  <defs>
+    <marker id="ok-build" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-box" x="35" y="80" width="130" height="70" rx="8"/>
+  <text class="d-title" x="100" y="108" text-anchor="middle">Kaynak</text>
+  <text class="d-code" x="100" y="132" text-anchor="middle">src/ + public/</text>
+
+  <rect class="d-accent" x="205" y="80" width="130" height="70" rx="8"/>
+  <text class="d-title" x="270" y="108" text-anchor="middle">vite build</text>
+  <text class="d-text" x="270" y="132" text-anchor="middle">env çözülür</text>
+
+  <rect class="d-success" x="375" y="60" width="150" height="110" rx="8"/>
+  <text class="d-title" x="450" y="90" text-anchor="middle">dist/</text>
+  <text class="d-code" x="450" y="115" text-anchor="middle">index.html</text>
+  <text class="d-code" x="450" y="137" text-anchor="middle">assets-Hash.js</text>
+  <text class="d-code" x="450" y="159" text-anchor="middle">assets-Hash.css</text>
+
+  <rect class="d-violet" x="565" y="80" width="150" height="70" rx="8"/>
+  <text class="d-title" x="640" y="108" text-anchor="middle">Host / CDN</text>
+  <text class="d-text" x="640" y="132" text-anchor="middle">cache headers</text>
+
+  <line class="d-line" x1="165" y1="115" x2="201" y2="115" marker-end="url(#ok-build)"/>
+  <line class="d-line" x1="335" y1="115" x2="371" y2="115" marker-end="url(#ok-build)"/>
+  <line class="d-line" x1="525" y1="115" x2="561" y2="115" marker-end="url(#ok-build)"/>
+
+  <rect class="d-lane" x="65" y="220" width="630" height="58" rx="10"/>
+  <text class="d-text" x="260" y="244" text-anchor="middle">hash'li dosyalar: uzun cache + immutable</text>
+  <text class="d-text" x="520" y="244" text-anchor="middle">index.html: no-cache</text>
+  <text class="d-muted" x="380" y="266" text-anchor="middle">derin URL yenilenince SPA fallback index.html'e döner</text>
+</svg>

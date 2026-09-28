@@ -1,9 +1,14 @@
-## Durum
-Sinema listesinde bir harf yazmak yavaş. Önce listenin kaç kez commit edildiğini gör.
+Arama sonuçları listelenirken arayüz güncellemelerinin ne sıklıkla commit edildiğini izlemek istiyorsun.
 
-## Yap
-- `ProfiledMovies` listesini `Profiler` ile sar.
-- `id` değeri `movie-list`, callback doğrudan `onCommit` olsun.
-- Film başlıklarını `ul > li` olarak koru.
+## Gereksinimler
+- Liste bileşeninin render ve commit aşamalarını izleyen bir ölçüm sarmalayıcısı ekle.
+- Ölçüm kimliği olarak `movie-list` değerini kullan.
+- Ölçüm geri çağırma (callback) fonksiyonunu doğrudan bileşene gelen `onCommit` fonksiyonuna bağla.
+- Film başlıklarını mevcut `ul > li` yapısı içinde koru.
 
-Önizlemede **Liste commit** sayacı her tuşta artar. Süreyi değil, aynı eylemdeki commit sayısını karşılaştır.
+## Örnek
+Bileşen ilk kez ekrana basıldığında (`mount`) ve liste her güncellendiğinde (`update`) ilgili commit olayı `onCommit` fonksiyonuna iletilir.
+
+## Sözleşme
+- Dosya ve export: `ProfiledMovies.tsx` → `ProfiledMovies({ titles, onCommit }: { titles: string[], onCommit: ProfilerOnRenderCallback })`
+- Arayüz: `ul > li` içinde başlıklar (`screen.getAllByRole('listitem')`).

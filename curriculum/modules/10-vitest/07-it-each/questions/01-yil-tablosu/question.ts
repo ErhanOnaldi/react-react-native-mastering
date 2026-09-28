@@ -7,6 +7,7 @@ export default defineQuestion({
   concepts: ['test.each', 'test.matchers', 'js.string-formatting'],
   files: ['releaseYear.test.ts'],
   hints: [
+    'Aynı dönüşüm kuralının ayrı karar verdiği temsilci girdileri bul.',
     'Üç girdi ve çıktıyı bir tuple tablosunda topla.',
     '`it.each([...])("%s tarihi için %s döner", ...)` kullan.',
     'Boş tarih, `1999-10-15` ve `2024-01-01` satırlarını ekle.',

@@ -1,32 +1,19 @@
-## Bağlam
+Film listesindeki kartları bulan yardımcılar, sayfanın görünür yapısı değiştiğinde de doğru filmi ve eylemi bulmalı.
 
-Sinema’nın ana sayfasındaki film kartlarını testlerde tekrar tekrar bulacağız: kartın metnini kontrol etmek, favoriye eklemek, detaya gitmek. Kart bulmayı üç küçük fonksiyonda toplayalım; ama bu sefer **tasarım değişikliğine dayanıklı** olsunlar.
+## Gereksinimler
 
-Testler aynı sayfayı iki farklı HTML ile açıyor:
-
-| Sürüm | Kart HTML’i |
-| --- | --- |
-| İlk sürüm | `<li class="movie-card"><article class="card"><h3 class="card-title">…</h3> … <button class="btn btn-fav">` |
-| shadcn sürümü | `<li><div data-slot="card"><article><div data-slot="card-header"><h3 data-slot="card-title">…</h3>…</div><div data-slot="card-footer"><a>Detay</a> <button data-slot="button">` |
-
-Class’lar, sarmalayıcı `div`’ler ve buton/link sırası değişiyor. Değişmeyenler: liste `aria-label="Filmler"`, her kart bir `listitem`, başlık bir `h3`, favori butonunun adı.
-
-## Görev
-
-`locators.ts`’teki üç fonksiyon bir **Locator** döndürsün (hiçbiri `await` etmez, tıklamaz):
-
-| Fonksiyon | Neyi bulur? |
-| --- | --- |
-| `movieTitles(page)` | Yalnızca film listesindeki kart başlıkları, sırayla (sayfadaki h1/h2 değil) |
-| `movieCard(page, title)` | Başlığı **tam olarak** `title` olan kart. `'Matrix'` → yalnızca “Matrix”, “Matrix Reloaded” değil |
-| `favoriteButton(page, title)` | O kartın favori butonu. Adı tıklayınca “Favorilere ekle” ↔ “Favorilerden çıkar” diye değişir; ikisinde de bulunmalı |
+- Film başlıkları yalnızca Filmler adlı listedeki kartlardan, sayfa sırasıyla bulunmalı.
+- Başlığı tam eşleşen film kartı bulunmalı; Matrix araması Matrix Reloaded kartını seçmemeli.
+- Kartın favori düğmesi bulunmalı; düğme hem Favorilere ekle hem Favorilerden çıkar adıyla bulunabilmeli.
+- Yardımcılar locator döndürmeli; kendi başlarına tıklama veya bekleme yapmamalı.
+- Eski ve shadcn tabanlı görünümde aynı davranış korunmalı.
 
 ## Örnek
 
-```ts
-await expect(movieTitles(page)).toHaveText(['Dövüş Kulübü', 'Başlangıç', /* … */])
-await expect(movieCard(page, 'Matrix')).toHaveCount(1)
-await favoriteButton(page, 'Matrix Reloaded').click() // yalnızca o kartın butonu
-```
+Film listesi Dövüş Kulübü, Başlangıç ve Matrix içerir. Başlık locator’ı bu listedeki üç başlığı döndürür; Matrix kartı tek eşleşmedir; Matrix Reloaded kartındaki favori düğmesi yalnızca o karta aittir.
 
-Birden çok öğeye uyan bir locator’la tıklarsan Playwright “strict mode violation” hatası verir; test mesajlarında bunu görürsen locator’ın yeterince kesin değil demektir. Sayfanın HTML’ini `sinema-app.ts`’teki `movieCard` fonksiyonunda görebilirsin.
+## Sözleşme
+
+- Dosya ve export: locators.ts içinden movieTitles(page: Page), movieCard(page: Page, title: string) ve favoriteButton(page: Page, title: string) fonksiyonlarını export et.
+- Her fonksiyon Playwright Locator döndürür.
+- Film listesi erişilebilir adı Filmler olan listedir; her kart listitem, başlık h3 ve favori kontrolü button rolündedir.

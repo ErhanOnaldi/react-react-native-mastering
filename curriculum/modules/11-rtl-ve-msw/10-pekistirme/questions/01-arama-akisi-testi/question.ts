@@ -7,9 +7,9 @@ export default defineQuestion({
   concepts: ['test.user-event', 'test.async', 'test.msw-overrides', 'test.factories'],
   files: ['SearchPanel.test.tsx'],
   hints: [
-    'userEvent.setup ile yazıp butona bas.',
-    'Başlangıç loading’i getByRole, sonucu findByRole ile sorgula; başarı handler’ında `await delay(150)` kullan.',
-    'Her farklı API senaryosunda server.use(http.get(...)) kur; `requests` ile query değerini denetle.',
+    'Başarı, boş yanıt ve sunucu hatası için kullanıcının göreceği farklı kanıtları listele.',
+    '`userEvent.setup`, `server.use`, MSW `http.get` ve gecikme için `delay` kullan.',
+    'Loading’i `getByRole`, sonradan gelen heading/alert’i `findByRole` ile doğrula; request günlüğünde query’yi denetle.',
   ],
   testWriting: {
     mutants: [

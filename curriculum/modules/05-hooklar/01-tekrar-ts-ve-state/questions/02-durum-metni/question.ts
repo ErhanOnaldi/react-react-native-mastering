@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['ts.discriminated-union', 'react.conditional-rendering'],
   files: ['Status.tsx'],
   hints: [
-    '`result.status` ile her durumu ayır.',
-    'Başarı dalında `data.length` kullan.',
-    'Idle, loading ve error için erken dönüş; kalan dal success olur.',
+    'Görünen metin, `result` içindeki hangi durumun geldiğine bağlı.',
+    '`result.status` discriminant alanı TypeScript’e hangi dalda hangi alanların okunabileceğini söyler.',
+    'Idle/loading/error için ayrı return yaz; success dalında `result.data.length === 0` kontrolü yap.',
   ],
 })

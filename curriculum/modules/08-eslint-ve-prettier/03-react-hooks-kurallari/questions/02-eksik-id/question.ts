@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['react.useEffect.deps', 'router.params', 'tooling.eslint'],
   files: ['detailsSource.ts'],
   hints: [
-    'Effect içinde render’dan gelen hangi değer okunuyor?',
-    'Dependency array, effect’in okuduğu `id` ile eşleşmeli.',
-    'Boş `[]` yerine `[id]` yaz.',
+    'Effect’in dışındaki render değerlerini bul ve hangisi değişince başlık yenilenmeli diye sor.',
+    '`react-hooks/exhaustive-deps` kuralı effect’in okuduğu reaktif değerlerle dependency array’i karşılaştırır.',
+    'Bu bileşende `useEffect(..., [id])` biçimini kullan; `[]` bu prop değişimini izlemez.',
   ],
 })

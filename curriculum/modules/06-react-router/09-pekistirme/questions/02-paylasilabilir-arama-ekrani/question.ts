@@ -12,8 +12,8 @@ export default defineQuestion({
   ],
   files: ['SearchPage.tsx'],
   hints: [
-    'Önce q, genre ve page değerlerini her render’da URL’den oku; filtrelenmiş listeyi state’e kopyalama.',
-    'Başlık ve türü filtrele, ardından `slice` ile sayfayı ayır. Input veya select değişiminde page değerini sil.',
-    'Parametre güncellemelerinde `new URLSearchParams(previous)` ile kopya al; Sonraki sayfa yalnızca page değerini değiştirsin.',
+    "Input, tür seçimi, görünür sayfa ve listeyi her render URL'den nasıl türeteceğini belirle; filtrelenmiş listeyi state'e kopyalama.",
+    "`useSearchParams` ile q, genre ve page'i oku; önce filtrele, sonra `slice` ile sayfayı ayır.",
+    "Setter callback içinde `new URLSearchParams(previous)` ile kopyala. Input veya select değişince page'i sil, sonraki sayfada yalnız page değerini değiştir.",
   ],
 })

@@ -13,8 +13,9 @@ export default defineQuestion({
   reviewFiles: ['src/main.tsx', 'src/App.tsx', 'src/context/FavoritesContext.tsx'],
   focusFiles: ['src/context/FavoritesContext.tsx', 'src/main.tsx', 'src/App.tsx'],
   hints: [
-    'Önce `useLocalStorage<number[]>` ile provider içindeki id listesini tut.',
-    'Context varsayılanını `null` yap, hook’ta kontrol et.',
+    'Favori id listesinin tek sahibi provider olmalı; kartlar oradan okumalı.',
+    'Provider içinde `useLocalStorage<number[]>` ile id listesini tut.',
+    'Context varsayılanını `null` yap, hook’ta provider dışını kontrol et.',
     '`toggleFavorite` önceki diziye göre `filter` veya spread ile yeni dizi döndürsün.',
   ],
 })

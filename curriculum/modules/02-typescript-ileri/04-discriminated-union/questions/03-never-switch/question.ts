@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.exhaustive-check', 'ts.discriminated-union', 'ts.narrowing'],
   files: ['task.ts'],
   hints: [
-    'status üzerinden switch aç.',
-    'Başarı dalında show(state.data) çağır.',
-    'default içinde `const exhaustive: never = state` kullan.',
+    'Her status değerinde hangi metnin üretileceğini önce sırala.',
+    '`switch (state.status)` ile daralt; success dalında `show(state.data)` çağır.',
+    '`default` dalında `const exhaustive: never = state` ile yeni durumları yakala.',
   ],
 })

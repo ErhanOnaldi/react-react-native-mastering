@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['react.useReducer', 'react.events', 'react.conditional-rendering', 'ts.union'],
   files: ['ResultPanel.tsx'],
   hints: [
-    'Eylemler `start` ve `done` olabilir.',
-    'Reducer her dalda yeni state dönsün.',
-    'Düğmeler `dispatch` çağırır; görüntü `state.status` üzerinden belirlenir.',
+    'İki düğme iki olay üretir; ekrandaki metin bu olaylardan sonra oluşan state’e bağlı.',
+    '`useReducer` ile `start` ve `done` gibi action’ları ayır.',
+    'Reducer her dalda yeni state dönsün; düğmeler `dispatch` çağırır.',
+    'Görüntüyü `state.status` ve sonuç sayısı üzerinden seç.',
   ],
 })

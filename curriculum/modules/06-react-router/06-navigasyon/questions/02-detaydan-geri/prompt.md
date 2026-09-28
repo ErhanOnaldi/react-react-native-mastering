@@ -1,7 +1,16 @@
-Detaydan sabit `/` adresine döndüğünde kullanıcı `?q=Matrix&page=2` aramasını kaybediyor. Bilinen hedef ile geçmişe dönüş farklı niyetlerdir.
+Detaydan aramaya dönerken kullanıcının önceki filtreli arama adresi korunmalı. Bilinen bir hedef bağlantı, geçmişe dönüş ise ayrı bir kullanıcı eylemi olarak sunulsun.
 
-## Görev
+## Gereksinimler
 
-`Ara`yı `/search` adresine giden gerçek `Link` yap. **Aramaya dön** düğmesi, geçmişteki önceki adrese `useNavigate` ile dönsün. Test geçmişinde filtreli arama sayfası var.
+- `Ara` adlı bağlantının hedefi `/search` olsun.
+- `Aramaya dön` düğmesi önceki history adresine dönsün.
+- Test başlangıç geçmişinde `/search?q=Matrix&page=2` adresi `/movie/550` adresinden önce bulunur.
 
-Not: Gerçek üründe doğrudan açılan detay sayfası için ayrıca güvenli dönüş adresi tasarlarsın; bu görevde önce geçmiş davranışını gör.
+## Örnek
+
+`/search?q=Matrix&page=2` → `/movie/550` → `Aramaya dön` → `/search?q=Matrix&page=2`.
+
+## Sözleşme
+
+- `MovieNavigation.tsx` içinden `MovieNavigation` named export edilir.
+- Ekranda `Ara` linki ve `Aramaya dön` düğmesi bulunur.

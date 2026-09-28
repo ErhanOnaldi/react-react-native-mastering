@@ -1,8 +1,25 @@
-`tmdbClient` Sinema’daki ortak ağ sınırı. Token veya sayfa parametresi kaybolursa bütün özellikler etkilenir. `@impl/tmdbClient` içindeki `tmdbClient.get<T>(path, params?)` fonksiyonuna test yaz.
+Sinema’nın ortak API client’ı arama isteğini doğru parametrelerle ve yetkilendirmeyle göndermeli, başarılı cevabı çağırana korumalı. Testi gerçek ağa bağımlı kılma.
 
-- Her test kendi `vi.fn` fetch cevabını kursun; gerçek ağa çıkma.
-- `/search/movie`, `{ query: 'Başlangıç', page: 2 }` için URL parametrelerini ve Bearer başlığını kontrol et.
-- Cevaptaki film başlığının (`"Başlangıç"`) aynen döndüğünü kontrol et.
-- `afterEach` içinde global fetch’i geri al.
+## Gereksinimler
 
-`import.meta.env.VITE_TMDB_TOKEN` test ortamında `test-token` değerindedir. URL sırasını veya `RequestInit` nesnesinin tümünü karşılaştırman gerekmez.
+- /search/movie yoluna query Başlangıç ve page 2 değerleriyle istek gönderilmeli.
+- Authorization başlığı Bearer test-token olmalı.
+- Sahte yanıttaki Başlangıç filmi sonuçta korunmalı.
+- Her testten sonra global fetch eski değerine dönmeli.
+
+## Örnek
+
+İstek girdisi: query Başlangıç, page 2.
+Yanıt: results içinde id 27205 ve title Başlangıç olan film.
+Beklenen: sonuçtaki film aynı id ve başlığı taşır.
+
+## Sözleşme
+
+- Yazılacak dosya: tmdbClient.test.ts
+- Test edilecek modül: @impl/tmdbClient
+- Çağrı: tmdbClient.get<T>(path, params?)
+
+## Kısıtlar
+
+- URL query parametrelerinin sırasına bağlanma.
+- Gerçek TMDB servisine istek gönderme.

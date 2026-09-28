@@ -1,6 +1,6 @@
 # Müfredat Planı (ders ders) ve Sinema Hikâyesi
 
-Bu belge `docs/authoring-guide.md` ile birlikte okunur. Her modülün **ders listesi sözleşmedir**: klasör numaraları, `kind` ve konu sırası buna uymalı. Ders içindeki sorular, örnekler ve ayrıntılar yazara bırakılmıştır (hedef soru sayısı ±%20).
+Bu belge `docs/authoring-guide.md` ile birlikte okunur. v2 (2026-09-27) değişikliklerinin gerekçesi ve iş listesi: `docs/curriculum-v2-plan.md`; "(v2)" ile işaretli dersler o turda eklendi. Her modülün **ders listesi sözleşmedir**: klasör numaraları, `kind` ve konu sırası buna uymalı. Ders içindeki sorular, örnekler ve ayrıntılar yazara bırakılmıştır (hedef soru sayısı ±%20).
 
 Kısaltmalar: **Q** quiz · **C** code · **P** project · **(kind)** concept varsayılan; `review`, `practice`, `project` belirtilir.
 
@@ -14,6 +14,7 @@ Genel kurallar:
 ## A. Modüller
 
 ### 0 · Başlangıç ve araç zinciri — ✅ yazıldı (referans modül)
+v2 eklemeleri: `07-testleri-okumak` (test anatomisi, test çıktısını okumak, testten gereksinim çıkarmak; Q×3, C×2) · `08-tarayicida-debug` (Console, Sources breakpoint/logpoint/`debugger`, Network, Application, React DevTools; Q×4, C×1).
 
 ### 1 · TypeScript temelleri (~30) — faz 1
 **Acı:** Trend listesinde bazı filmlerin `release_date`'i boş, `poster_path`'i `null`. `movie.poster_path.startsWith(...)` çalışma zamanında çöküyor; `movie.relese_date` yazım hatası sessizce `undefined` dönüyor.
@@ -25,7 +26,7 @@ Genel kurallar:
 6. `06-narrowing` — typeof/truthiness/equality/`in`, erken dönüş, `?.` ve `??` ile null güvenliği. (Q, C×3)
 7. `07-fonksiyon-tipleri` — parametre/dönüş tipleri, opsiyonel/varsayılan parametre, callback tipleri. (Q, C×2)
 8. `08-unknown-ve-any` — `any`'nin tehlikesi, `res.json()` dönüşü, `unknown` + kontrol, `as`'in riski. (Q×2, C)
-9. `09-pekistirme` (practice) — `MovieListResponse` tiplemek + `normalizeMovie` (boş alanlarla baş etme). (C×2)
+9. `09-pekistirme` (practice) — `MovieListResponse` tiplemek + `normalizeMovie` (boş alanlarla baş etme). (C×2) + v2: `04-ilk-testini-yaz` (ilk test yazma görevi, mutation).
 10. `10-proje-gorevi` (project) — P×2 (§B checkpoint 01).
 
 ### 2 · TypeScript ileri (~28) — faz 1
@@ -37,7 +38,7 @@ Genel kurallar:
 5. `05-type-guards` — `value is T`, `in`, assertion fonksiyonları; `unknown` API verisini elle doğrulamanın zahmeti (Zod'a köprü). (Q, C×2)
 6. `06-satisfies-ve-as-const` — config nesneleri (`GENRE_COLORS satisfies Record<…>`), route tablosu. (Q, C)
 7. `07-async-tipler` — `Promise<T>`, `async`, `getJson<T>()` ve "bu tip bir yalan" (Zod'a köprü), `Awaited`, `ReturnType`, `Parameters`. (Q, C×2)
-8. `08-pekistirme` (practice) — tipli TMDB endpoint haritası + `RemoteData` reducer fonksiyonu. (C×2)
+8. `08-pekistirme` (practice) — tipli TMDB endpoint haritası + `RemoteData` reducer fonksiyonu. (C×2) + v2: `03-remote-data-testi` (test yazma, mutation).
 9. `09-proje-gorevi` (project) — P×2 (§B 02).
 
 ### 3 · React + TypeScript (~30) — faz 1
@@ -51,8 +52,10 @@ Genel kurallar:
 7. `07-kosullu-render` — `&&`/ternary/erken dönüş, `0 &&` tuzağı, `RemoteData` ile durum ekranları. (Q, C×2)
 8. `08-controlled-input-ve-lifting-state` — controlled input, arama ile filtreleme, state'i yukarı taşıma. (Q, C×2)
 9. `09-composition` — children/slot kalıpları, layout bileşenleri, composition ile prop drilling'i azaltma. (Q, C)
-10. `10-pekistirme` (practice) — statik veriyle arama + favori işaretleme yapan `MovieBrowser`. (C×2)
-11. `11-proje-gorevi` (project) — P×2 (§B 03).
+10. `10-bileseni-test-etmek` (v2) — RTL ile bileşeni kullanıcı gibi görmek: `render`, `getByRole` + `name`, `userEvent`; ağ yok. (Q×2, C×2 — biri test yazma)
+11. `11-pekistirme` (practice) — statik veriyle arama + favori işaretleme yapan `MovieBrowser`. (C×2)
+12. `12-proje-gorevi` (project) — P×2 (§B 03).
+13. `13-atolye` (practice) — bkz. `docs/practice-plan.md`.
 
 ### 4 · Tailwind ve UI bileşenleri (~20) — faz 1
 **Acı:** Aynı buton class dizisi 20 yerde kopyalanmış; `'btn ' + (active ? 'on' : '')` string cehennemi; `p-2` ile `p-4` çakışınca hangisinin kazandığı belirsiz.
@@ -76,7 +79,7 @@ Genel kurallar:
 7. `07-usereducer` — 5 bağlantılı `useState` → discriminated union action'lı reducer. (Q, C×2)
 8. `08-custom-hooklar` — kopyala-yapıştır acısı → `useDebounce`, `useLocalStorage`, `useFetch`. (Q, C×3)
 9. `09-context` — 4 seviye prop drilling → tipli Context + null kontrollü hook; sınırları (tüm tüketiciler render). (Q, C×2)
-10. `10-pekistirme` (practice) — debounced + abortable + reducer tabanlı `useMovieSearch`. (C×2)
+10. `10-pekistirme` (practice) — debounced + abortable + reducer tabanlı `useMovieSearch`. (C×2) + v2: `03-reducer-testi` (test yazma, mutation).
 11. `11-proje-gorevi` (project) — P×2 (§B 05).
 
 ### 6 · React Router (~22) — faz 1
@@ -89,15 +92,18 @@ Genel kurallar:
 6. `06-navigasyon` — `useNavigate`, aktif link stilleri, göreli linkler. (Q, C)
 7. `07-hata-ve-404` — `errorElement`, `useRouteError`, `isRouteErrorResponse`, `*` route. (Q, C)
 8. `08-lazy-route` — lazy route modülleri (code splitting'e giriş). (Q, C)
-9. `09-pekistirme` (practice) — URL state + sayfalamalı arama sayfası. (C×2)
+9. `09-pekistirme` (practice) — URL state + sayfalamalı arama sayfası. (C×2) + v2: `03-route-testi` (test yazma, `createMemoryRouter`).
 10. `10-proje-gorevi` (project) — P×2 (§B 06).
 Not: React Router 8 **data mode** (`createBrowserRouter`) öğretilir; test için `createMemoryRouter` + `RouterProvider`.
 
 ### 7 · Proje v1: Sinema (saf yöntem) (~8) — faz 1
 **Acı:** Yok — bu modül acıyı üretir. Öğrenci şimdiye kadar öğrendikleriyle (useEffect/useFetch, router, context) gerçek TMDB'ye bağlanır.
-1. `01-tmdb-ile-tanis` — TMDB API: auth başlığı, `language=tr-TR`, görsel URL'leri, sayfalama, hata kodları. (Q, C: `buildTmdbUrl`)
-2. `02-proje-gorevi` (project) — P×5 (§B 07): tmdb yardımcı, ana sayfa trend, arama, detay, tür filtresi.
-3. `03-aci-gunlugu` (review) — gözlem soruları: tekrar eden istekler, her sayfada aynı loading/error kodu, geri gelince yeniden yükleme… (Q×3, P×1 rubric: `NOTES.md` acı günlüğü)
+1. `01-http-anatomisi` (v2) — istek/cevap, yöntemler, durum kodları, `fetch`'in 4xx/5xx'te reddetmemesi, `response.ok`, gövdeyi bir kez okumak. (Q, C×2)
+2. `02-cors` (v2) — origin, same-origin policy, basit istek vs preflight, credentials; çözüm yerleri: API politikası (ASP.NET Core), Vite proxy, aynı origin. (Q×3, C)
+3. `03-http-onbellegi` (v2) — `Cache-Control`, ETag/304, hash'li dosya + `index.html` politikası, tarayıcı cache'i vs uygulama cache'i. (Q×2, C)
+4. `04-tmdb-ile-tanis` — TMDB API: auth başlığı, `language=tr-TR`, görsel URL'leri, sayfalama, hata kodları. (Q, C: `buildTmdbUrl`)
+5. `05-proje-gorevi` (project) — P×5 (§B 07): tmdb yardımcı, ana sayfa trend, arama, detay, tür filtresi.
+6. `06-aci-gunlugu` (review) — gözlem soruları: tekrar eden istekler, her sayfada aynı loading/error kodu, geri gelince yeniden yükleme… (Q×3, P×1 rubric: `NOTES.md` acı günlüğü)
 
 ### 8 · ESLint ve Prettier (~16) — faz 2
 **Acı:** v1'de `useEffect` bağımlılığı eksik (detay sayfası eski filmi gösteriyor), kullanılmayan import'lar, herkesin farklı formatı.
@@ -215,7 +221,7 @@ Zod 4 API'si: `import { z } from 'zod'`, `z.email()`, `error` parametresi.
 10. `10-alternatifler` — RTK Query, Zustand. (Q×2)
 11. `11-proje-gorevi` (project) — P×2 (§B 16).
 
-### 17 · Kimlik doğrulama (~18) — faz 5
+### 17 · Kimlik doğrulama ve güvenlik (~34) — faz 5
 **Acı:** Sayfa yenilenince oturum düşüyor; izleme listesi herkese açık; token süresi dolunca her şey sessizce 401.
 1. `01-jwt-temelleri` (Q×2)
 2. `02-login-akisi` — DummyJSON `/auth/login`, RHF + Zod. (C×2)
@@ -224,7 +230,12 @@ Zod 4 API'si: `import { z } from 'zod'`, `z.email()`, `error` parametresi.
 5. `05-refresh-token` — 401 → refresh → tekrar dene (tek uçuş). (Q, C×2)
 6. `06-korumali-routelar` (Q, C)
 7. `07-cikis-ve-temizlik` — query cache + store temizliği. (Q, C)
-8. `08-proje-gorevi` (project) — P×3 (§B 17).
+8. `08-xss-ve-react` (v2) — React'in kaçışlaması, tehlikeli çıkış noktaları, URL protokol izin listesi. (Q, C×2)
+9. `09-csp-ve-guvenlik-basliklari` (v2) — CSP, Report-Only, `frame-ancestors`, diğer güvenlik başlıkları. (Q×3, C)
+10. `10-cerez-ve-csrf` (v2) — `HttpOnly`/`Secure`/`SameSite`, `credentials`, CSRF ve savunmaları. (Q×3, C)
+11. `11-sirlar-ve-bagimliliklar` (v2) — `VITE_` değişkenlerinin bundle'a gömülmesi, açık yönlendirme, lockfile/`pnpm audit`/tedarik zinciri. (Q×2, C)
+12. `12-proje-gorevi` (project) — P×4 (§B 17; v2: `04-guvenli-donus-adresi`).
+13. `13-atolye` (practice).
 
 ### 18 · Performans ve modern React (~24) — faz 5
 **Acı:** 500 filmlik listede yazarken input takılıyor.
@@ -236,8 +247,11 @@ Zod 4 API'si: `import { z } from 'zod'`, `z.email()`, `error` parametresi.
 6. `06-sanallastirma` — `@tanstack/react-virtual`. (C)
 7. `07-code-splitting` (Q, C)
 8. `08-react19-actions-useoptimistic-use` (Q, C×2)
-9. `09-pekistirme` (practice) (C×2)
-10. `10-proje-gorevi` (project) — P×2 (§B 18).
+9. `09-web-vitals` (v2) — LCP/INP/CLS, field vs lab, `PerformanceObserver`, Lighthouse. (Q×3, C)
+10. `10-gorseller-fontlar-ve-bundle` (v2) — LCP görseli, lazy yükleme, CLS önleme, `font-display`, bundle analizi. (Q×2, C)
+11. `11-pekistirme` (practice) (C×2)
+12. `12-proje-gorevi` (project) — P×2 (§B 18).
+13. `13-atolye` (practice).
 
 ### 19 · İleri pattern'ler ve erişilebilirlik (~20) — faz 5
 **Acı:** Kendi yazdığın modal Esc ile kapanmıyor, açılınca focus sayfada kayboluyor, ekran okuyucu hiçbir şey okumuyor.
@@ -248,17 +262,22 @@ Zod 4 API'si: `import { z } from 'zod'`, `z.email()`, `error` parametresi.
 5. `05-headless-hooklar` — `useDisclosure`. (C)
 6. `06-aschild-slot` (Q, C)
 7. `07-eski-patternler` — render props, HOC'u tanımak. (Q×2)
-8. `08-pekistirme` (practice) (C×2)
-9. `09-proje-gorevi` (project) — P×2 (§B 19).
+8. `08-uluslararasilastirma` (v2) — `Intl`, Türkçe büyük/küçük harf ve sıralama, tipli mesaj kataloğu, `lang`/`dir`. (Q×2, C×2)
+9. `09-animasyon-ve-hareket` (v2) — ucuz/pahalı özellikler, `prefers-reduced-motion`, View Transitions ve `<ViewTransition>`. (Q×2, C)
+10. `10-pekistirme` (practice) (C×2)
+11. `11-proje-gorevi` (project) — P×2 (§B 19).
+12. `12-atolye` (practice).
 
 ### 20 · shadcn/ui (opsiyonel, ~12) — faz 5
 **Acı:** 19. modülde erişilebilir bir dropdown yazmanın ne kadar zor olduğunu gördün.
 1. `01-copy-paste-modeli` — Radix vs Base UI (`init -b radix`), neden kütüphane değil. (Q×3)
 2. `02-tema` — CSS değişkenleri, OKLCH. (Q, C)
 3. `03-form` — RHF + Zod ile shadcn formu. (Q, C)
-4. `04-proje-gorevi` (project) — P×2 (§B 20).
+4. `04-storybook-ve-dokumantasyon` (v2) — story/CSF, durum kataloğu, a11y ve görsel regresyon. (Q×3)
+5. `05-proje-gorevi` (project) — P×2 (§B 20).
+6. `06-atolye` (practice).
 
-### 21 · Playwright ve CI (~18) — faz 5
+### 21 · Playwright, CI ve yayına alma (~26) — faz 5
 **Acı:** Birim ve entegrasyon testleri yeşil, ama "giriş yap → listeye ekle" akışı üretimde kırık (router ayarı).
 1. `01-neden-e2e` (Q×2)
 2. `02-ilk-e2e` — config, `webServer`. (Q, C)
@@ -268,7 +287,10 @@ Zod 4 API'si: `import { z } from 'zod'`, `z.email()`, `error` parametresi.
 6. `06-oturum` — `storageState`. (Q)
 7. `07-debug-ve-trace` (Q×2)
 8. `08-ci` — GitHub Actions. (Q, C)
-9. `09-proje-gorevi` (project) — P×2 (§B 21).
+9. `09-build-ve-preview` (v2) — `vite build` çıktısı, hash'li dosyalar, `vite preview`, build anında env, `sourcemap: 'hidden'`. (Q×3, C)
+10. `10-yayina-alma` (v2) — statik host, SPA fallback, cache ve güvenlik başlıkları, preview deploy. (Q×3, C)
+11. `11-hata-izleme` (v2) — kök hata seçenekleri, `error`/`unhandledrejection`, `sendBeacon`, source map. (Q×2, C)
+12. `12-proje-gorevi` (project) — P×3 (§B 21; v2: `03-yayina-hazirlik`).
 Not: Playwright testlerini çalıştıran runner motoru bu modül yazılmadan önce eklenecek (koordinatör).
 
 ### 22 · Bitirme: sıfırdan proje (~8) — faz 6
@@ -279,7 +301,7 @@ Not: Playwright testlerini çalıştıran runner motoru bu modül yazılmadan ö
 4. `04-arama-ozelligi` (project, testler)
 5. `05-detay-ve-okuma-listesi` (project, testler)
 6. `06-test-ve-ci` (project, rubric + testler)
-7. `07-sonraki-adimlar` (concept: Next.js, React Native, Server Components; Q×2)
+7. `07-sonraki-adimlar` (concept: ASP.NET Core ile kendi API'n — CORS, kimlik, OpenAPI'den tipli istemci; ileride Next.js/Server Components ve React Native; Q×2)
 
 ---
 
@@ -307,8 +329,8 @@ Not: Playwright testlerini çalıştıran runner motoru bu modül yazılmadan ö
 | 14 | `react-hook-form`; `src/features/watchlists/` → `WatchlistForm` (ad, açıklama, görünürlük, etiketler: `useFieldArray`), watchlist'ler localStorage'da (`useWatchlists`); `ReviewForm` (puan: `Controller`, metin) → DummyJSON `POST /comments/add` mutation. |
 | 15 | `zod`, `@hookform/resolvers`; `src/features/movies/api/schemas.ts` → `movieSchema`, `movieListSchema`, `movieDetailsSchema`; `tmdbClient.get(path, schema)` cevabı doğrular; form şemaları (`watchlistSchema`, `reviewSchema`) + `zodResolver`; `src/shared/config/env.ts` → `env` (Zod ile doğrulanmış). |
 | 16 | `@reduxjs/toolkit`, `react-redux`; `src/app/store.ts` → `store`, `RootState`, `AppDispatch`, `useAppDispatch`, `useAppSelector`; slice'lar: `favoritesSlice` (Context'in yerine), `watchlistsSlice`, `uiSlice` (theme), `recentlyViewedSlice`; listener middleware ile localStorage kalıcılığı. |
-| 17 | `src/features/auth/` → DummyJSON login (`/auth/login`), `authSlice` (user, accessToken, refreshToken), `authClient` (Bearer + 401'de refresh), `ProtectedRoute` (layout route), `/login`, `/profile`; watchlist sayfaları korumalı; çıkışta `queryClient.clear()` + store sıfırlama. |
+| 17 | `src/features/auth/` → DummyJSON login (`/auth/login`), `authSlice` (user, accessToken, refreshToken), `authClient` (Bearer + 401'de refresh), `ProtectedRoute` (layout route), `/login`, `/profile`; watchlist sayfaları korumalı; çıkışta `queryClient.clear()` + store sıfırlama. v2: `src/features/auth/safe-redirect.ts` → `getSafeRedirect(value, fallback?)`; giriş sayfası `state.from` ve `?redirect=` değerini yalnızca uygulama içi yola yönlendirir (18–21 checkpoint'lerinde de var). |
 | 18 | `@tanstack/react-virtual` ile sanallaştırılmış büyük liste (favoriler/aramada), `useDeferredValue` ile arama, route'lar `lazy`, React Compiler (babel eklentisi) açık, favori butonunda `useOptimistic`. |
 | 19 | `src/shared/ui/modal/` (compound: `Modal`, `Modal.Trigger`, `Modal.Content`, focus trap, Esc), `Tabs` compound (detay sayfası: Özet/Oyuncular/Videolar), `useDisclosure`; a11y düzeltmeleri. |
 | 20 | shadcn/ui (Radix): `components.json`, `src/components/ui/*` shadcn bileşenleri (button, dialog, dropdown-menu, form alanları); kendi UI kit'in yerini alır. |
-| 21 | `@playwright/test`; `playwright.config.ts` (webServer: vite), `e2e/*.spec.ts` (ana sayfa → arama → detay; giriş → izleme listesi), `page.route` ile TMDB/DummyJSON taklidi; repo kökünde `.github/workflows/sinema-ci.yml` (lint, typecheck, test, e2e). |
+| 21 | `@playwright/test`; `playwright.config.ts` (webServer: vite), `e2e/*.spec.ts` (ana sayfa → arama → detay; giriş → izleme listesi), `page.route` ile TMDB/DummyJSON taklidi; repo kökünde `.github/workflows/sinema-ci.yml` (lint, typecheck, test, e2e). v2: `public/_redirects` (SPA fallback), `public/_headers` (cache + CSP + güvenlik başlıkları), `src/shared/lib/report-error.ts` → `reportError(error, context?)`, `main.tsx` kök hata seçenekleri, `build.sourcemap: 'hidden'`. |

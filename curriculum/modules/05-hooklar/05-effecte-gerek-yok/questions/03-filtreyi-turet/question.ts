@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['react.derived-state', 'react.controlled-input', 'js.array-methods'],
   files: ['MovieFilter.tsx'],
   hints: [
-    '`visible` için ayrı state gerekmiyor.',
-    'Her render’da props’tan `filter` ile üret.',
-    '`useEffect` ve `useState` import’unu kaldır; `titles.filter(...)` yeterli.',
+    'Ekrandaki liste yalnızca `titles` ve `query` değerlerinden hesaplanıyor.',
+    'Bu durum için ayrı state yerine render sırasında türetilmiş değer kullan.',
+    '`useEffect` ve `useState` import’unu kaldır; `const visible = titles.filter(...)` yaz.',
+    'Karşılaştırmada iki tarafı da `toLocaleLowerCase("tr")` ile küçült.',
   ],
 })

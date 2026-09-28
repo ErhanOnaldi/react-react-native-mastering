@@ -1,7 +1,18 @@
-Sunucu yavaşken 8,5’i yalnız tıklanan kartta hemen görmek istiyorsun. Cache’i değiştirmeden `PendingRating({ movieId, rate })` bileşenini yaz.
+Yavaş yanıt sırasında tek kartta 8,5 puanın gönderildiğini hemen göster. Sunucu reddederse geçici metin kaybolsun.
 
-- “8,5 ver” butonu `rate({ movieId, value: 8.5 })` mutation’ını başlatsın.
-- Pending sırasında `mutation.variables.value` ile “8,5 gönderiliyor” göster.
-- Hata gelirse geçici değer kaybolsun ve `role="alert"` ile “Kaydedilemedi” göster.
+## Gereksinimler
 
-Bu yaklaşım tek kartta geçici değer için yeterli; paylaşılan listeyi sonraki görev değiştirecek.
+- “8,5 ver” tıklanınca `rate({ movieId, value: 8.5 })` çağrılsın.
+- İstek pending iken “8,5 gönderiliyor” metni görünsün.
+- Hata olursa pending metni kalksın ve `role="alert"` içinde “Kaydedilemedi” gösterilsin.
+- Query cache’ine optimistic değer yazılmasın.
+
+## Örnek
+
+550 numaralı filmde düğmeye tıklandığında bekleme metni hemen belirir; Promise reject olunca metin yerini hata mesajına bırakır.
+
+## Sözleşme
+
+- `PendingRating.tsx` dosyasından `PendingRating({ movieId, rate })` named export et.
+- `rate(input: { movieId: number; value: number }): Promise<void>`.
+- Düğmenin başlangıç adı “8,5 ver” olsun.

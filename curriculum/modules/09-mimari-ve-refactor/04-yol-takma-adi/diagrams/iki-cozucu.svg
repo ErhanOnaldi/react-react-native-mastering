@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270">
+  <title>TypeScript ve Vite aynı src alias kökünü çözer</title>
+  <defs>
+    <marker id="alias-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path class="d-arrowhead-accent" d="M0 0 L8 4 L0 8 Z" />
+    </marker>
+  </defs>
+  <rect class="d-accent" x="32" y="56" width="194" height="84" rx="10" />
+  <text class="d-title" x="129" y="90" text-anchor="middle">TypeScript</text>
+  <text class="d-code" x="129" y="118" text-anchor="middle">paths: @/*</text>
+  <rect class="d-success" x="534" y="56" width="194" height="84" rx="10" />
+  <text class="d-title" x="631" y="90" text-anchor="middle">Vite</text>
+  <text class="d-code" x="631" y="118" text-anchor="middle">resolve.alias: @</text>
+  <rect class="d-box" x="284" y="168" width="192" height="72" rx="10" />
+  <text class="d-title" x="380" y="198" text-anchor="middle">Aynı src/</text>
+  <text class="d-muted" x="380" y="222" text-anchor="middle">modül dosyaları</text>
+  <path class="d-line-accent" d="M190 140 L300 160" marker-end="url(#alias-arrow)" />
+  <path class="d-line-accent" d="M570 140 L460 160" marker-end="url(#alias-arrow)" />
+</svg>

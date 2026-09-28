@@ -19,9 +19,10 @@ export default defineQuestion({
     'src/pages/MovieDetailsPage.tsx',
   ],
   hints: [
-    'Önce `.prettierrc.json` ve `.prettierignore` dosyalarını ekle.',
-    '`package.json` script’lerini ekleyip `pnpm lint` ve `pnpm format` çalıştır.',
-    'Tailwind v4 için `tailwindStylesheet` tam olarak `./src/index.css`; lint hatalarını kaynakta düzelt.',
+    'Önce ortak biçim tercihlerini, üretilen dosya istisnalarını ve CI kontrolünü ayrı ayrı kur.',
+    '`prettier-plugin-tailwindcss` ile `tailwindStylesheet` seçeneğini kullan; yazma ve kontrol komutlarını farklı script’lerde tut.',
+    '`.prettierrc.json`: `singleQuote: true`, `semi: false`, Tailwind plugin’i ve `tailwindStylesheet: "./src/index.css"`; `.prettierignore`: `dist`, `coverage`.',
+    'Eksik `prettier`/plugin paketlerini kök manifest ve workspace catalog sürümlerine göre devDependency ekle. `format` uygulandıktan sonra `format:check` ve lint sonuçlarını incele.',
   ],
   rubric: [
     'Biçim ve lint değişiklikleri uygulamanın TMDB, arama ve gezinme davranışını koruyor.',

@@ -8,7 +8,8 @@ export default defineQuestion({
   files: ['AppHeader.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Başlık için `<h1>`, alt yazı için `<p>` kullan; ikisini bir `<header>` içine koy.',
-    'Props’u parametrede destructure et: `function AppHeader({ title, tagline }: AppHeaderProps)`.',
+    'Test dosyasını incele: en dışta bir `<header>` elementi, içinde `<h1>` başlığı ve `<p>` alt yazısı bekleniyor.',
+    'Bileşen parametresinde props destructuring kullan: `export function AppHeader({ title, tagline }: AppHeaderProps)`.',
+    'İskelet: `<header className="border-b border-slate-200 pb-4"><h1>{title}</h1><p>{tagline}</p></header>`.',
   ],
 })

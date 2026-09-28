@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330">
+  <title>HTTP istek cevap anatomisi ve fetch davranışı</title>
+  <defs>
+    <marker id="ok-http" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-http-danger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-accent" x="40" y="75" width="150" height="80" rx="8"/>
+  <text class="d-title" x="115" y="105" text-anchor="middle">fetch</text>
+  <text class="d-code" x="115" y="130" text-anchor="middle">istek başlatır</text>
+
+  <rect class="d-box" x="250" y="45" width="210" height="120" rx="8"/>
+  <text class="d-title" x="355" y="75" text-anchor="middle">İstek</text>
+  <text class="d-code" x="355" y="100" text-anchor="middle">method + URL</text>
+  <text class="d-code" x="355" y="122" text-anchor="middle">headers</text>
+  <text class="d-code" x="355" y="144" text-anchor="middle">body?</text>
+
+  <rect class="d-violet" x="565" y="75" width="150" height="80" rx="8"/>
+  <text class="d-title" x="640" y="105" text-anchor="middle">Sunucu</text>
+  <text class="d-code" x="640" y="130" text-anchor="middle">API</text>
+
+  <rect class="d-success" x="250" y="205" width="210" height="86" rx="8"/>
+  <text class="d-title" x="355" y="233" text-anchor="middle">Cevap</text>
+  <text class="d-code" x="355" y="257" text-anchor="middle">status + headers</text>
+  <text class="d-code" x="355" y="279" text-anchor="middle">body</text>
+
+  <line class="d-line" x1="190" y1="115" x2="246" y2="115" marker-end="url(#ok-http)"/>
+  <line class="d-line" x1="460" y1="105" x2="561" y2="105" marker-end="url(#ok-http)"/>
+  <path class="d-line" d="M640 155 C640 235 560 248 464 248" marker-end="url(#ok-http)"/>
+
+  <path class="d-line-danger d-dashed" d="M250 248 C160 245 115 205 115 159" marker-end="url(#ok-http-danger)"/>
+  <text class="d-text-danger" x="140" y="291" text-anchor="middle">404/500 resolve olur</text>
+  <text class="d-muted" x="380" y="318" text-anchor="middle">Ağ hatası, CORS engeli veya abort reject eder; status için response.ok kontrol edilir.</text>
+</svg>

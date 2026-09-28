@@ -1,27 +1,37 @@
 ---
-title: "Sinema’ya kalite kapısı kur"
-minutes: 10
+title: "Sinema için lint ve format kapısı"
+minutes: 6
 kind: project
 ---
 
-# Sinema’ya kalite kapısı kur
+# Sinema için lint ve format kapısı
 
 :::pain[Problem]
-Detay sayfasında `/movie/550` → `/movie/155` yaptığında eski film kalabildi. Birkaç kullanılmayan import da dosyalarda duruyor. Yeni PR’da biçim farkları asıl değişikliği saklıyor. Şimdi aynı sorunları gerçek Sinema v1 projesinde yakalayıp düzelteceksin.
+Sinema’da film kimliği değişince eski detay kalabiliyor. Kullanılmayan import’lar dosyalarda birikmiş, farklı editör tercihleri de PR diff’ini biçim satırlarıyla dolduruyor. Araçları öğrendin; şimdi bu geri bildirimi gerçek projede tekrarlanabilir hale getir.
 :::
 
-## 1. Config ve eski film
+## Proje çalışmasının kapsamı
 
-Önce `eslint.config.js` oluştur: ESLint 10 flat config, `defineConfig` (`eslint/config`), TypeScript, React Hooks, React Refresh ve en sonda `eslint-config-prettier/flat`. `src` altındaki TS/TSX dosyalarını kapsa. `react-hooks/exhaustive-deps` mesajı verdiğinde `MovieDetailsPage` içindeki `id` akışını düzelt. `id` değişiminde yeni film gelmeli; eski istek geç dönerse ekranı ezmemeli.
+İki görev önce ESLint’i proje kaynaklarına bağlayacak, ardından Prettier tercihlerini ve komutlarını ekleyeceksin. İlk bölümde TS/TSX dosyalarının gerçekten lint edildiğini, React’e özgü hataların raporlandığını ve film kimliği değişiminde detayın güncellendiğini hedefle. İkinci bölümde tek tırnak, noktalı virgülsüz biçim ve Tailwind v4 class sıralamasını ortaklaştır; geliştirme ve CI için ayrı komutlar tanımla.
 
-## 2. Format ve script’ler
+Buradaki önemli karar, hata mesajını susturmak değil, kaynak niyetine göre düzeltmektir. Film değişimini denetleyen effect yeni kimliği izlemeli ve eski istek sonradan dönüp yeni sonucu ezmemelidir. Biçimleme ise davranışa dokunmadan görünüş farklarını azaltmalıdır.
 
-`.prettierrc.json` ve `.prettierignore` ekle. Tailwind v4 class sırası için plugin’in `tailwindStylesheet` değerini projenin `src/index.css` dosyasına bağla. `package.json` içine `lint`, `format`, `format:check` script’lerini ekle. `lint` hatasız bitene kadar kalan sorunları düzelt.
+## Çalışma sırası
 
-:::tip[Sıra]
-Önce `lint` çalıştırıp gerçek mesajları oku. Her hatayı niyetine göre düzelt; kuralı susturmak için `eslint-disable` yazma. Sonra `format` uygula ve `format:check` ile sonucu denetle.
-:::
+Önce proje kökünde lint yapılandırmasını kur ve TS/TSX kaynaklarında raporun gerçekten üretildiğini gözle. Hook ve React component dosyalarını ayrı ayrı düşün; sonra detay sayfasının route değişimindeki davranışını düzelt. Format config’ini ve ignore listesini ekledikten sonra yazma komutuyla mevcut dosyaları biçimle, CI’da kullanacağın kontrol komutunun temiz olduğunu doğrula.
+
+İki görevin sonunda Sinema’da ortak kalite komutları ve okunabilir config bulunmalı. Lint, uygulama davranışı testlerinin yerine geçmez; formatter da hatalı veriyi düzeltmez. İkisi sonraki modülde yapacağın refactor öncesi daha anlaşılır bir kod tabanı hazırlar.
 
 :::sector
-Bu kalite kapısı, sonraki modülde 300 satırlık sayfaları refactor ederken güvenli bir başlangıç sağlar. Lint tüm davranış testlerinin yerine geçmez; hatalı effect’i erken görünür kılar.
+Ekipler bu tür kalite kapılarını mevcut projeye küçük değişiklikler halinde ekler. Önce gerçek lint raporunu okuyup kaynakta düzeltme yapar, sonra formatı uygular ve CI’da yalnız kontrol çalıştırır. Böylece config, günlük geliştirme ve PR incelemesinin ortak parçası olur.
 :::
+
+## Özet
+
+- Lint config’i TS/TSX kaynaklarına gerçekten uygulanmalı.
+- Detay kimliği değişince yeni film gösterilmeli; gereksiz eski sonuç yazmamalı.
+- Prettier görünüşü düzenler; `format:check` yalnız farkı raporlar.
+- Kaynak kod hatalarını susturmak yerine niyete uygun düzelt.
+
+**Kendini yokla:** Proje lint’ten geçse bile neden detay sayfasını route değişiminde gözlemlemelisin?
+*Cevap:* Lint statik kuralları denetler; kullanıcı davranışının doğru olduğunu kanıtlamaz.

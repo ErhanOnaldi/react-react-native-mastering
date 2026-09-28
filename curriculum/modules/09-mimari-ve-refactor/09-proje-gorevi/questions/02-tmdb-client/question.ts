@@ -10,6 +10,7 @@ export default defineQuestion({
     'fetch.headers-auth',
     'fetch.error-handling',
     'ts.generics',
+    'web.http-anatomy',
   ],
   project: 'sinema',
   focusFiles: ['src/shared/api/tmdb-client.ts'],
@@ -21,8 +22,9 @@ export default defineQuestion({
     'get<T> tip parametresinin runtime doğrulaması olmadığı açık; sahte bir doğrulama iddiası yok.',
   ],
   hints: [
-    'Üçüncü dersteki ApiError örneğini proje sözleşmesine uyarla.',
-    'URLSearchParams ile language ve params değerlerini kur; import.meta.env.VITE_TMDB_TOKEN başlığını ekle.',
-    'response.ok false ise gövdeyi güvenli oku ve ApiError fırlat; başarıda JSON’u T olarak döndür.',
+    'Her endpoint’in taşıdığı ortak HTTP kararı hangisi, feature’a özel olan hangisi?',
+    '`URLSearchParams`, `response.ok` ve `Headers` API’leriyle URL, hata ve kimlik bilgisini yönet.',
+    'Ortak client’ta dili ve Authorization başlığını kur; hata cevabında status ile TMDB alanlarını taşı.',
+    'Boş/bozuk hata gövdesine varsayılan bırak; başarıdaki generic tip runtime doğrulaması değildir.',
   ],
 })

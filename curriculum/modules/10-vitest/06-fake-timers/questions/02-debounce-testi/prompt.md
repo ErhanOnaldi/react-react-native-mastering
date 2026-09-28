@@ -1,8 +1,20 @@
-Arama kutusunda hızlı yazınca eski sorgu kısa süreliğine sonuçlara gitmemeli. `@impl/useDebounce` içindeki `useDebounce(value, delay)` hook’una test yaz.
+Arama değerindeki son değişiklik 500 ms boyunca sabit kaldıktan sonra sonuç olarak görünmeli. Daha yeni bir değer gelirse önceki bekleme iptal edilmeli.
 
-- `vi.useFakeTimers()` ve `vi.useRealTimers()` kullan.
+## Gereksinimler
+
 - Başlangıç değeri hemen görünmeli.
-- Değer 200 ms sonra tekrar değişirse ilk timer’ın dolduğu anda hâlâ başlangıç değeri görünmeli.
-- Son değişimden 500 ms sonra en son değer görünmeli.
+- Yeni değer 499 ms sonra görünmemeli, 500 ms sonra görünmeli.
+- “ba” değerinden 200 ms sonra “başlangıç” gelirse ilk timer’ın eski bitişinde sonuç başlangıç değeri olarak kalmalı.
+- Son değişiklikten 500 ms sonra en yeni değer görünmeli.
+- Test sonunda gerçek saat geri yüklenmeli.
 
-Örnek sıra: `""` → `"ba"` → 200 ms → `"başlangıç"` → 300 ms → 200 ms. İlk timer t=500’de dolardı; doğru hook onu temizler.
+## Örnek
+
+Zaman çizelgesi: “” → “ba” → 200 ms → “başlangıç” → ilk timer’ın bitişi → son değerden itibaren 500 ms.
+İlk timer’ın bitişinde “ba” görünmez; son noktada “başlangıç” görünür.
+
+## Sözleşme
+
+- Yazılacak dosya: useDebounce.test.ts
+- Test edilecek modül: @impl/useDebounce
+- Hook: useDebounce<T>(value: T, delay: number): T

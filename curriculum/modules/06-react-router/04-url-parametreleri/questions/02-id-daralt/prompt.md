@@ -1,11 +1,19 @@
-`useParams<'id'>()` sana `string | undefined` verir. `Number('abc')` ise `NaN` üretir; TMDB'ye anlamsız adres gönderme.
+URL'den gelen film kimliği metindir ve eksik ya da bozuk olabilir. Geçerli pozitif film kimliklerini güvenli bir sayıya dönüştür.
 
-## Görev
+## Gereksinimler
 
-`parseMovieId(id)` geçerli pozitif tam sayı id'yi `number` olarak, diğer değerleri `null` olarak döndürsün.
+- Pozitif, güvenli tam sayı metninde sayısal id döndür.
+- Değer eksik, boş, rakam dışı, sıfır veya güvenli tam sayı sınırının dışındaysa `null` döndür.
+- Ondalık ve başında/sonunda başka karakter bulunan girdileri kabul etme.
+
+## Örnek
 
 | Girdi | Çıktı |
 | --- | --- |
 | `'550'` | `550` |
 | `undefined`, `''`, `'5x'`, `'0'` | `null` |
-| güvenli tam sayı sınırını aşan metin | `null` |
+| `'99999999999999999999'` | `null` |
+
+## Sözleşme
+
+- `parseMovieId.ts` → `parseMovieId(id: string | undefined): number | null`.

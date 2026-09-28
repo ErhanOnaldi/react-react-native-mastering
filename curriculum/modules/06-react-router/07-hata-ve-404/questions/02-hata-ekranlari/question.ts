@@ -7,7 +7,8 @@ export default defineQuestion({
   concepts: ['router.error-boundary', 'ts.narrowing'],
   files: ['RouteScreens.tsx'],
   hints: [
-    'Önce iki ayrı hata yüzeyi yaz.',
-    '`useRouteError` sonucunu `isRouteErrorResponse` ile denetle; 404 ve diğerlerini ayır.',
+    "Eşleşmeyen adres ile eşleşmiş route'un işlemi başarısız olduğunda hangi ekranların çalıştığını ayır.",
+    '`useRouteError` sonucu bilinmez; Router response olup olmadığını `isRouteErrorResponse` ile daralt.',
+    'Response status 404 ise 404 başlığı, diğer tüm durumlarda genel başlık ve her iki ekranda dönüş linki render et.',
   ],
 })

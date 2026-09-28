@@ -1,30 +1,37 @@
 ---
 title: "Sinema modalı ve detay sekmeleri"
-minutes: 9
+minutes: 7
 kind: project
 ---
 
 # Sinema modalı ve detay sekmeleri
 
-:::pain[Problem]
-Sinema'nın film detayı uzun bir sayfa: özet, oyuncu listesi, izleme listesi düğmeleri ve yorum formu alt alta. Fragmanı izlemek için sayfadan çıkıp YouTube'da aramak gerekiyor. Detay sayfasını yalnızca klavyeyle dolaşmayı dene: hangi bölümde olduğunu, hangi düğmenin ne yaptığını anlamak zor.
+:::pain[Belirti]
+Sinema'nın detay sayfası uzun: özet, oyuncular, videolar, izleme listesi ve yorum alanları art arda duruyor. Fragman için başka siteye gitmek gerekiyor. Yalnız klavyeyle sayfayı dolaştığında hangi bölümde olduğunu ve açılır pencereyi nasıl kapatacağını kestiremiyorsun.
 :::
 
-## Bu derste ne yapacaksın?
-Kod alıştırmalarında parça parça kurduğun her şeyi, yeniden kullanılabilir iki bileşen olarak Sinema'ya taşıyorsun:
+Bu proje, erişilebilir arayüz sözleşmelerini gerçek bir sayfa akışında bir araya getiriyor. Tekrar kullanılabilir bir modal ailesi açılış, klavye dolaşımı ve kapanış focus'unu yönetirken; detay sayfasındaki sekmeler içerik bölümlerini düzenliyor. Fragman verisi filmden geldiği için düğme yalnızca gerçekten açılabilecek bir video olduğunda görünmeli. Film kartındaki ve detay sayfasındaki favori kontrolleri de tutarlı ad ve durum anlatmalı.
 
-1. **`Modal`** (`src/shared/ui/modal/`): `useDisclosure` + Context + portal + focus trap + Escape + focus'u geri verme + `asChild`. Detay sayfasında **Fragmanı aç** düğmesi bu modalı açacak.
-2. **`Tabs`** (`src/shared/ui/tabs/`): Context + yön tuşları + `aria-controls`/`aria-labelledby`. Detay sayfasındaki Özet / Oyuncular / Videolar bölümleri bu sekmelere geçecek.
+## Uygularken
 
-Alıştırmalardan farkı: içerik artık sabit iki düğme değil, rastgele `children`. Focus trap ilk ve son kontrolü **her Tab'da yeniden bulmalı** ve `disabled` olanları atlamalı. Veri de gerçek: videosu olmayan filmlerde fragman düğmesi ve Videolar sekmesi hiç görünmemeli.
+Önce küçük parçaları tek tek düşün: modalın kapalı/açık durumu, tetikleyici, içerik ve kapatma kontrolü; ardından sekmelerin tek seçimi, trigger-panel ilişkisi ve klavye sırası. Parçaların birlikte kullanıldığı anda Context sınırının nerede başladığını, yanlışlıkla kök dışında kalan bir parçanın nasıl anlaşılır davranacağını kararlaştır.
 
-## Doğrulama
-Testler hem bileşenleri tek başına hem de gerçek detay sayfasını (550 Dövüş Kulübü, videosu olmayan bir film) sahte TMDB ile render ederek davranışı kontrol eder. Testler geçtikten sonra tarayıcıda fareye dokunmadan dene: Tab ile Fragmanı aç'a gel, Enter, Tab ile dolaş, Escape. Sonra sekmelere gel ve ok tuşlarıyla gez. Focus halkası her an görünür olmalı.
+Sonra MovieDetails sayfasındaki veri akışını takip et. Başlık ve fragman aynı filmden gelmeli; oyuncu listesi ve video listesi mevcut veriye dayanmalı. Video yoksa hem gereksiz sekme hem tetikleyici üretme. Var olan sayfa düzenini ve puanlama, izleme listesi, yorum gibi bölümleri koruyarak yeni alanları ekle.
 
-:::tip[Bir a11y düzeltmesi daha]
-1. derste favori düğmesindeki çelişkiyi gördün: Sinema'nın detay sayfası ve film kartı hem adı değiştiriyor ("Favoriye ekle" ↔ "Favorilerden çıkar") hem `aria-pressed` kullanıyor. Detay sayfasına dokunurken bunu da düzelt. Adlar aynı kalsın; yalnızca çelişen `aria-pressed` gitsin (görünür metin zaten ad olduğu için `aria-label` da gereksiz).
+Focus akışını tarayıcıda kendi elinle dolaş: Tab ile fragman düğmesine gel, Enter ile aç, dialog içinde iki yönde gezin, Escape ile kapat. Ardından sekmelere Tab ile girip ok tuşlarını dene. Ekran okuyucu adı, panel ilişkisi ve focus halkası birlikte anlaşılır olmalı. 550 filmi ve videosu olmayan bir filmi kontrol etmek gerçek veri sınırlarını görünür kılar.
+
+:::tip[İnceleme sırası]
+Bir davranışı izole kontrol et, sonra gerçek film sayfasında tekrar et. Son olarak klavye ile baştan sona dolaş; focus'un görünür ve beklenen yerde olduğunu doğrula.
 :::
 
 :::sector
-Sonraki (opsiyonel) modülde aynı davranışları hazır, test edilmiş Radix primitive'leriyle kuracaksın. Burada mekaniği bizzat yazmış olman, bir kütüphanenin varsayılanlarını okuyup doğru yapılandırmanı kolaylaştıracak.
+Ürün ekipleri modal ve tabs gibi temel bileşenleri tasarım sisteminde ortaklaştırır; uygulama sayfası ise gerçek veri, boş durum ve bölüm kompozisyonundan sorumludur. Bu sınırı korumak aynı klavye davranışını farklı sayfalara taşımayı ve hata düzeltmesini kolaylaştırır.
 :::
+
+## Özet
+
+- Modal davranışı ortak bir API'de; gerçek içerik sayfada kalır.
+- Focus açılışta dialoga, kapanışta tetikleyiciye döner.
+- Sekme içeriği erişilebilir isim ve id ilişkisiyle seçime bağlanır.
+- Film verisi eksik olduğunda kullanılmayan etkileşim görünmez.
+- Son kontrolü yalnız fareyle değil, klavye akışıyla yap.

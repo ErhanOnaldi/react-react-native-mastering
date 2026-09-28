@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330">
+  <title>XSS akışı ve güvenli çıkış noktaları</title>
+  <defs>
+    <marker id="ok-xss" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-xss-danger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-xss-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-warning" x="40" y="125" width="160" height="66" rx="8"/>
+  <text class="d-title" x="120" y="151" text-anchor="middle">Güvenilmeyen</text>
+  <text class="d-code" x="120" y="173" text-anchor="middle">yorum / URL</text>
+
+  <rect class="d-success" x="285" y="55" width="190" height="66" rx="8"/>
+  <text class="d-title" x="380" y="81" text-anchor="middle">React text</text>
+  <text class="d-text" x="380" y="103" text-anchor="middle">HTML değil metin</text>
+
+  <rect class="d-danger" x="285" y="195" width="190" height="74" rx="8"/>
+  <text class="d-title" x="380" y="221" text-anchor="middle">Tehlikeli sink</text>
+  <text class="d-code" x="380" y="243" text-anchor="middle">innerHTML / href</text>
+
+  <rect class="d-accent" x="545" y="195" width="170" height="74" rx="8"/>
+  <text class="d-title" x="630" y="221" text-anchor="middle">Savunma</text>
+  <text class="d-text" x="630" y="243" text-anchor="middle">sanitize, izin listesi</text>
+
+  <path class="d-line-accent" d="M200 147 C245 110 265 92 281 88" marker-end="url(#ok-xss-good)"/>
+  <path class="d-line-danger" d="M200 169 C245 205 265 224 281 232" marker-end="url(#ok-xss-danger)"/>
+  <line class="d-line" x1="475" y1="232" x2="541" y2="232" marker-end="url(#ok-xss)"/>
+
+  <rect class="d-lane" x="150" y="295" width="460" height="25" rx="8"/>
+  <text class="d-muted" x="380" y="313" text-anchor="middle">CSP son ağdır; çıkış noktası yine güvenli yazılır.</text>
+</svg>

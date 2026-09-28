@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 290">
+  <title>Çıkış ve temizlik akışı: depolama, store ve query önbelleği</title>
+  <defs>
+    <marker id="ok-logout" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <text class="d-muted" x="380" y="30" text-anchor="middle">Güvenli çıkış; yerel depolama, Redux state'i ve Query önbelleğini aynı anda sıfırlar</text>
+
+  <rect class="d-danger" x="290" y="55" width="180" height="65" rx="8"/>
+  <text class="d-title" x="380" y="82" text-anchor="middle">Çıkış Eylemi</text>
+  <text class="d-muted" x="380" y="103" text-anchor="middle">Kullanıcı veya 403 tetikler</text>
+
+  <!-- 1. Kalıcı Depolama -->
+  <rect class="d-warning" x="30" y="170" width="210" height="95" rx="8"/>
+  <text class="d-title" x="135" y="197" text-anchor="middle">1. Kalıcı Depolama</text>
+  <text class="d-code" x="135" y="222" text-anchor="middle">removeItem(key)</text>
+  <text class="d-muted" x="135" y="244" text-anchor="middle">F5 sonrası sızıntı yok</text>
+
+  <path class="d-line d-dashed" d="M325 120 C270 140 200 145 155 165" marker-end="url(#ok-logout)"/>
+
+  <!-- 2. Redux Store -->
+  <rect class="d-accent" x="275" y="170" width="210" height="95" rx="8"/>
+  <text class="d-title" x="380" y="197" text-anchor="middle">2. Redux Store</text>
+  <text class="d-code" x="380" y="222" text-anchor="middle">dispatch(clearAuth())</text>
+  <text class="d-muted" x="380" y="244" text-anchor="middle">Kullanıcı state'i sıfırlanır</text>
+
+  <line class="d-line" x1="380" y1="120" x2="380" y2="164" marker-end="url(#ok-logout)"/>
+
+  <!-- 3. Query Önbelleği -->
+  <rect class="d-success" x="520" y="170" width="210" height="95" rx="8"/>
+  <text class="d-title" x="625" y="197" text-anchor="middle">3. Query Önbelleği</text>
+  <text class="d-code" x="625" y="222" text-anchor="middle">queryClient.clear()</text>
+  <text class="d-muted" x="625" y="244" text-anchor="middle">Eski kullanıcı verisi silinir</text>
+
+  <path class="d-line d-dashed" d="M435 120 C490 140 560 145 605 165" marker-end="url(#ok-logout)"/>
+</svg>

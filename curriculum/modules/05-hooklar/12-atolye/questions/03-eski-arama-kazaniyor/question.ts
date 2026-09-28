@@ -10,6 +10,7 @@ export default defineQuestion({
     'İki istek aynı anda sürerken son yazılan sorgunun sonucunu kim belirliyor?',
     'Her sorgu çalışmasının kendi geçerlilik işareti veya iptal sinyali olabilir; yeni sorguda eskisinin yazma hakkını kaldır.',
     'Effect cleanup’ında eski çalışmayı geçersiz kıl; cevap geldiğinde yalnızca hâlâ güncel olan çalışma `setMovies` çağırsın.',
+    'İstersen AbortController kullanabilirsin; iptal hatasını kullanıcı hatası gibi göstermemeye dikkat et.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

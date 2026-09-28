@@ -11,8 +11,9 @@ export default defineQuestion({
   ],
   files: ['useFetch.ts'],
   hints: [
-    'Dönüş tipi `RemoteData<T>` union’ı olsun.',
-    'Effect dependency’si URL; null dalında idle’a dön.',
-    'Controller sinyalini fetch’e ver; `!response.ok` için hata fırlat, AbortError’ı kullanıcı hatası sayma.',
+    'URL yokken dış sistem ilişkisi yok; URL varken ağ durumunu ayrı state dallarıyla temsil et.',
+    'Dönüş tipi `RemoteData<T>` union’ı olsun; effect dependency’si URL.',
+    'Null dalında idle’a dön; URL dalında loading başlat, JSON cevabını success’e yaz.',
+    'AbortController sinyalini fetch’e ver; `!response.ok` için hata fırlat, `AbortError`ı kullanıcı hatası sayma.',
   ],
 })

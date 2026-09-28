@@ -1,13 +1,15 @@
-İzleme planı formunda plan adı, başlangıç ve bitiş tarihi girilir (tarihler `YYYY-AA-GG` biçiminde düz metin alanlarıdır).
+İzleme planında bitiş tarihi başlangıçtan önce seçilebiliyor ve kullanıcı uyarı almıyor. Başlangıçtan önce bir tarih girip Planı kaydet'e bas; form gönderilmeden ilgili alanda anlaşılır bir uyarı görünsün.
 
-`PlanForm.tsx` içindeki `PlanForm` bileşenini tamamla:
+## Gereksinimler
+- Plan adı, başlangıç ve bitiş tarihi boş bırakılamaz.
+- Bitiş başlangıçtan önceyse gönderim yapılmamalı; hata Bitiş tarihi alanına bağlı, okunabilir olmalı ve alan geçersiz durumunu bildirmeli.
+- Geçerli aralıkla gönderildiğinde callback üç girilen değeri almalı.
 
-- Üç alan da boş bırakılamaz.
-- Bitiş tarihi, başlangıç tarihinden önce olamaz; olursa hata ilgili alanın altında okunabilir ve alan `aria-invalid` ile işaretli olmalı.
+## Örnek
+2026-07-10 başlangıç ve 2026-07-05 bitiş → hata ve gönderim yok. 2026-07-10 ile 2026-07-20 → üç alan callback'e gider.
 
-## Arayüz sözleşmesi
+## Sözleşme
+- PlanForm.tsx içinde PlanForm({ onSubmit }: { onSubmit: (values: { title: string; startDate: string; endDate: string }) => void }) bileşenini tanımla.
+- Plan adı, Başlangıç tarihi, Bitiş tarihi etiketleri ve Planı kaydet düğmesi bulunmalı.
+- Hata metni önce olamaz ifadesini içermeli; Bitiş tarihi input'u hatanın id'sini aria-describedby ile kullanmalı.
 
-- Hata mesajı `önce olamaz` ifadesini içersin.
-- Geçerli bir aralıkla gönderildiğinde `onSubmit`, girilen üç değerle çağrılmalı.
-
-`PlanForm`, `{ onSubmit }: { onSubmit: (values: { title: string; startDate: string; endDate: string }) => void }` prop'unu alır.

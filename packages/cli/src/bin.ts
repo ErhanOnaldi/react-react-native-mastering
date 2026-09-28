@@ -4,6 +4,7 @@ import { DEFAULT_REPO_ROOT, resolvePaths } from '@rm/runner'
 import pc from 'picocolors'
 import { check } from './check.ts'
 import { checkpoint, setupProjects } from './checkpoint.ts'
+import { previewDiagrams } from './diagram.ts'
 import { validate } from './validate.ts'
 
 const { positionals, values } = parseArgs({
@@ -16,6 +17,8 @@ const { positionals, values } = parseArgs({
     'strict-concepts': { type: 'boolean', default: false },
     concurrency: { type: 'string', default: '4' },
     curriculum: { type: 'string' },
+    theme: { type: 'string', default: 'both' },
+    'lint-only': { type: 'boolean', default: false },
   },
 })
 
@@ -45,6 +48,9 @@ switch (command) {
       concurrency: Number(values.concurrency),
     })
     break
+  case 'diagram':
+    exitCode = await previewDiagrams(paths, arg, values.theme, values['lint-only'])
+    break
   default:
     console.log(`${pc.bold('Kullanım:')}
   pnpm check [kısa-kod] [--watch]    Soruyu terminalde çalıştır (varsayılan: son açılan soru)
@@ -52,7 +58,10 @@ switch (command) {
   pnpm setup:projects [proje]         projects/<proje>'yi (varsayılan: sinema) başlangıç iskeletinden oluştur
   pnpm validate:content [-m N]        İçerik doğrulama hattı
       --skip-runs                     Test çalıştırmadan (şema + kod blokları)
-      --skip-projects                 Proje görevlerini atla (checkpoint henüz yoksa)`)
+      --skip-projects                 Proje görevlerini atla (checkpoint henüz yoksa)
+  pnpm preview:diagram <svg|klasör>   Diyagramları platform temasıyla PNG'ye çevir (.cache/diagram-preview)
+      --theme dark|light|both
+      --lint-only                     PNG üretmeden yalnızca yerleşim denetimi (taşma, çizgi-metin çakışması)`)
     exitCode = command ? 1 : 0
 }
 process.exit(exitCode)

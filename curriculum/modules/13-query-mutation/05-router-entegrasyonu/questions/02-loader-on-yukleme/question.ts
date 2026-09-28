@@ -6,8 +6,9 @@ export default defineQuestion({
   concepts: ['query.router', 'router.loaders', 'query.query-options'],
   files: ['detailLoader.ts'],
   hints: [
-    'params.id string veya undefined olabilir; önce doğrula.',
-    'ensureQueryData aynı key ve queryFn’i alır.',
-    'Loader sonuç Promise’ini doğrudan döndür.',
+    'Route parametresinin geçersiz olabileceğini ve aynı kimlik için tekrar çağrılacağını hesaba kat.',
+    '`Number.isInteger` ile doğrula; TanStack Query’nin `ensureQueryData` işlevini kullan.',
+    '`client.ensureQueryData({ queryKey: ["movie", id], queryFn: () => load(id) })` sonucunu döndür.',
+    'Doğrulamadan önce `load` çağırma; aynı key ikinci çağrıda cache’den gelsin.',
   ],
 })

@@ -7,7 +7,8 @@ export default defineQuestion({
   concepts: ['router.navigation', 'a11y.basics'],
   files: ['MovieNavigation.tsx'],
   hints: [
-    '`Ara` için bağlantı, geri eylemi için düğme kullan.',
-    '`Link to="/search"` ve düğmede `navigate(-1)` çağır.',
+    'Önceden bilinen `/search` hedefiyle önceki history kaydına dönme niyetini ayır.',
+    '`Link` kullanıcı bağlantısı, `useNavigate` programatik geçiş içindir.',
+    '`Ara` öğesini `/search` adresine bağla; `Aramaya dön` düğmesinde `navigate(-1)` çağır.',
   ],
 })

@@ -4,7 +4,7 @@ export default defineModule({
   title: 'React + TypeScript',
   phase: 1,
   summary:
-    'Sinema için tipli bileşenler kurup statik filmlerde arama ve favori işaretleme yapıyoruz.',
+    'Render, state ve bileşen kimliği modellerini kuruyor; Sinema için tipli bileşenler yazıp statik filmlerde arama, favorileme ve kullanıcı odaklı test yapıyoruz.',
   pain: `Sinema’da bir filmi favoriye ekledin; dizi değiştiği hâlde karttaki işaret aynı kaldı. Üstelik yanlış props alan kart, ancak kullanıcı tıkladığında bozuluyor. Render, state ve tipli bileşen sözleşmesini gerçek ekranda sınayarak bu iki sorunu çözeceğiz.`,
   outcomes: [
     'Render sırasında saf kalan tipli bileşenler yazabilirsin',
@@ -13,5 +13,6 @@ export default defineModule({
     'Nesne ve dizileri immutable biçimde güncelleyebilirsin',
     'Event, liste key’i ve koşullu görünümü doğru kullanabilirsin',
     'Controlled arama alanını ve favorileri ortak üst bileşende yönetebilirsin',
+    'RTL ile bileşenin erişilebilir arayüzünü ve kullanıcı etkileşimini test edebilirsin',
   ],
 })

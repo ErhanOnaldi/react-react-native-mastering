@@ -1,7 +1,18 @@
-Üç sayfaya menüyü kopyaladın; biri eski bağlantıyı gösteriyor. Çocuk route'lar hazır, şimdi ortak kabuğu kur.
+Sinema'nın ana ve arama sayfalarında aynı navigasyon tutarlı görünmeli. Ortak kabuğu bir kez tanımla ve seçilen çocuk sayfanın içeriğini onun içinde göster.
 
-## Görev
+## Gereksinimler
 
-`RootLayout` tek bir **Ana menü** navigation alanı göstersin: Ana sayfa ve Ara. Çocuk sayfayı `<main>` içinde `<Outlet />` ile yerleştir. Ana sayfa bağlantısı alt route'ta etkin olmasın.
+- Ekranda `Ana menü` adıyla tek bir navigation alanı bulunsun.
+- Menüde `Ana sayfa` ve `Ara` bağlantıları bulunsun.
+- Çocuk sayfa içeriği `<main>` alanında görünsün.
+- `/search` adresinde `Arama` içeriği ve `Ara` bağlantısında `aria-current="page"` görünsün.
+- `/search` adresinde `Ana sayfa` bağlantısı etkin işaretlenmesin.
 
-Testler index (`/`) ve arama (`/search`) route'larını aynı layout altında açar.
+## Örnek
+
+`/` → aynı menü içinde `Filmler`; `/search` → aynı menü içinde `Arama`.
+
+## Sözleşme
+
+- `RootLayout.tsx` içinden `RootLayout` named export edilir.
+- Uygulama `/` ve `/search` adreslerinde alt sayfa içeriğini render eder.

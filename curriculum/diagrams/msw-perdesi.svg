@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300">
+  <title>MSW fetch perdesi</title>
+  <defs>
+    <marker id="ok-msw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="ok-msw-danger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-danger" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-accent" x="35" y="90" width="150" height="70" rx="8"/>
+  <text class="d-title" x="110" y="118" text-anchor="middle">Uygulama</text>
+  <text class="d-code" x="110" y="140" text-anchor="middle">fetch(...)</text>
+
+  <rect class="d-success" x="240" y="90" width="150" height="70" rx="8"/>
+  <text class="d-title" x="315" y="118" text-anchor="middle">MSW</text>
+  <text class="d-text" x="315" y="140" text-anchor="middle">isteği yakalar</text>
+
+  <rect class="d-violet" x="445" y="90" width="150" height="70" rx="8"/>
+  <text class="d-title" x="520" y="118" text-anchor="middle">Handler</text>
+  <text class="d-code" x="520" y="140" text-anchor="middle">fixture / delay</text>
+
+  <rect class="d-success" x="605" y="205" width="115" height="50" rx="8"/>
+  <text class="d-title" x="663" y="227" text-anchor="middle">Cevap</text>
+  <text class="d-code" x="663" y="247" text-anchor="middle">JSON</text>
+
+  <line class="d-line" x1="185" y1="125" x2="236" y2="125" marker-end="url(#ok-msw)"/>
+  <line class="d-line" x1="390" y1="125" x2="441" y2="125" marker-end="url(#ok-msw)"/>
+  <path class="d-line" d="M595 125 C650 140 670 170 664 201" marker-end="url(#ok-msw)"/>
+  <path class="d-line" d="M605 230 C455 265 250 250 120 164" marker-end="url(#ok-msw)"/>
+
+  <rect class="d-danger" x="195" y="12" width="240" height="50" rx="8"/>
+  <text class="d-title" x="315" y="34" text-anchor="middle">Handler yok</text>
+  <text class="d-muted" x="315" y="53" text-anchor="middle">test hatası, gerçek ağa çıkılmaz</text>
+  <line class="d-line-danger d-dashed" x1="315" y1="90" x2="315" y2="66" marker-end="url(#ok-msw-danger)"/>
+</svg>

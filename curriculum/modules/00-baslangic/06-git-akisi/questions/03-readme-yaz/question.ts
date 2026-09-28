@@ -16,7 +16,8 @@ export default defineQuestion({
     'Markdown başlıkları ve kod blokları doğru ve okunur kullanılmış mı?',
   ],
   hints: [
-    'Başlıklar önerisi: `# Sinema`, `## Kurulum`, `## Komutlar`, `## Ortam değişkenleri`.',
-    'Komutları ```bash kod bloğunda yaz.',
+    'Okurun ihtiyacı olan bilgileri sırala: proje özeti, kurulum, komutlar ve ortam değişkenleri.',
+    '`package.json` içindeki script adlarını ve `.env` örneğini inceleyip README açıklamalarını gerçek yapılandırmayla eşleştir.',
+    'Kurulum adımlarını numaralandır; terminal komutlarını `bash` kod bloklarında göster. Token için yalnızca yer tutucu kullan.',
   ],
 })

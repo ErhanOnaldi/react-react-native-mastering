@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 285">
+  <title>Prefetch ve select cache'e farklı yönlerden bağlanır</title>
+  <defs>
+    <marker id="prefetch-select-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+  <rect class="d-accent" x="35" y="45" width="205" height="70" rx="8"/>
+  <text class="d-title" x="137" y="74" text-anchor="middle">Niyet olayı</text>
+  <text class="d-code" x="137" y="98" text-anchor="middle">hover / focus</text>
+  <rect class="d-success" x="282" y="45" width="195" height="70" rx="8"/>
+  <text class="d-title" x="379" y="74" text-anchor="middle">Query cache</text>
+  <text class="d-code" x="379" y="98" text-anchor="middle">ham cevap</text>
+  <rect class="d-box" x="520" y="45" width="205" height="70" rx="8"/>
+  <text class="d-title" x="622" y="74" text-anchor="middle">useQuery</text>
+  <text class="d-code" x="622" y="98" text-anchor="middle">aynı key</text>
+  <line class="d-line-accent" x1="242" y1="80" x2="277" y2="80" marker-end="url(#prefetch-select-arrow)"/>
+  <line class="d-line" x1="479" y1="80" x2="515" y2="80" marker-end="url(#prefetch-select-arrow)"/>
+  <rect class="d-violet" x="190" y="185" width="380" height="66" rx="8"/>
+  <text class="d-title" x="380" y="213" text-anchor="middle">select: component görünümü</text>
+  <text class="d-muted" x="380" y="236" text-anchor="middle">türetilmiş değer · cache gövdesi aynı kalır</text>
+  <line class="d-line" x1="622" y1="118" x2="570" y2="180" marker-end="url(#prefetch-select-arrow)"/>
+</svg>

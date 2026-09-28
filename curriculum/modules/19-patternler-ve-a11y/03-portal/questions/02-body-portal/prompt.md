@@ -1,8 +1,17 @@
-Film kartı `overflow: hidden` kullanıyor; modalın altı kesiliyor. React ilişkisini koruyup DOM düğümünü `document.body` altına taşı.
+Film kartının `overflow: hidden` sınırı modalın altını kesiyor. Çocuk içeriği kartın dışında görünürken tıklanabilir kalmalı.
 
 ## Gereksinimler
-- `BodyPortal({ children })` çocukları `createPortal` ile body altında render etsin.
-- İçeriği tek bir **Fragman alanı** adlı `region` içinde tut; arka kartın içinde hiçbir region kalmasın.
-- Portal içindeki düğmenin click handler'ı çalışsın.
 
-Önizlemede kartın çerçevesini ve taşan alanı gözle.
+- Verilen çocukları `document.body` altında render et.
+- Çocukları adı **Fragman alanı** olan tek bir `region` içinde tut.
+- Kartın içinde `region` kalmasın.
+- İçerideki button click handler'ı çalışmaya devam etsin.
+
+## Örnek
+
+Kart içinde `<button>Oynat</button>` verildiğinde erişilebilirlik ağacında tek `Fragman alanı` region'ı ve onun içinde `Oynat` düğmesi bulunur. Bölge DOM'da `document.body` öğesinin doğrudan çocuğudur.
+
+## Sözleşme
+
+- `BodyPortal.tsx` içinden named export `BodyPortal({ children })`.
+- `children` türü `ReactNode`; içerik `region` rolü ve `Fragman alanı` adıyla gruplanır.

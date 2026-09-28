@@ -1,5 +1,18 @@
-Puanladıklarım listesi açıkken aynı filme verilen puan 8,5’ten 9’a değişti. Yeni değer zaten elinde; yalnız mevcut listeyi immutably güncelle.
+Bir filmin puanı 8,5’ten 9’a değişti. Elde bulunan kesin değerle listedeki kaydı güncelle; diğer verileri ve önceki nesneleri koru.
 
-`patchRating(client, sessionId, movieId, value)` fonksiyonu `['ratings', sessionId]` cache’inde `RatedMovie[]` tutar. Film varsa `rating` alanını değiştir; yoksa listeyi olduğu gibi bırak. Cache hiç yoksa yeni kayıt yaratma.
+## Gereksinimler
 
-Örnek: `[{id:550,rating:8.5}]` + `550,9` → `[{id:550,rating:9}]`. Eski dizi ve nesne değişmemeli.
+- `['ratings', sessionId]` cache’inde `{ id, title, rating }[]` bulunabilir.
+- Film listede varsa yalnız eşleşen kaydın `rating` alanı değişsin.
+- Film yoksa liste içeriği değişmesin.
+- Cache yoksa yeni liste veya kayıt yaratılmasın.
+- Eski array ve nesneler mutate edilmesin.
+
+## Örnek
+
+`[{ id: 550, title: 'Dövüş Kulübü', rating: 8.5 }]` ve `movieId: 550, value: 9` girdisi aynı başlıkla `rating: 9` döndürür.
+
+## Sözleşme
+
+- `patchRating.ts` dosyasından `patchRating(client, sessionId, movieId, value): void` named export et.
+- `client` bir TanStack Query `QueryClient`; puan listesi key’i `['ratings', sessionId]`.

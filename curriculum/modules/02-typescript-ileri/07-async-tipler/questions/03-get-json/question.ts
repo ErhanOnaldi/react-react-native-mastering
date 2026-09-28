@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.generics', 'ts.async-types', 'ts.api-types', 'fetch.headers-auth'],
   files: ['task.ts'],
   hints: [
-    'fetch ikinci argümanda headers kabul eder.',
-    'response.ok kontrolünü json okumadan önce yap.',
-    '`(await response.json()) as T` yalnız tip iddiasıdır.',
+    'İsteğin başlığını ve hata yanıtının çağırana nasıl yansıyacağını belirle.',
+    '`fetch` için `headers` seçeneğini ve `response.ok` kontrolünü kullan.',
+    'Başarıda JSON gövdesini `T` için cast edebilirsin; bu runtime doğrulaması değildir.',
   ],
 })

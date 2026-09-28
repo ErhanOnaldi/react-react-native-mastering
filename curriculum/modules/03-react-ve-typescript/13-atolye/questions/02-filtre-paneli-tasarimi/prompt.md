@@ -1,16 +1,21 @@
-## Durum
+Popüler film ekranına tekrar kullanılabilir başlık filtresi ekle. Panel için iki tasarım seçeneği de uygundur; seçimini ve diğerine göre somut bir ödünleşimi kod yorumunda açıkla.
 
-Popüler film ekranına başlık filtresi eklemen istendi. Aynı filtre panelinin daha sonra başka bir listede de kullanılabileceğini düşün. Veriler TMDB popüler fixture'ından alınmış ve hazır.
+## Gereksinimler
 
-## İstenen
-
-`MovieBrowser.tsx` dosyasındaki `MovieBrowser` için iki uygulanabilir panel API'sinden **birini** seç:
-
-- Tek bir `mode` prop'u: panelin arama görünümünü bu prop belirler.
-- Ayrı kompozisyon parçaları: ekran, filtre kontrolünü panelin içine yerleştirir.
-
-Seçimini kod yorumunda, diğer seçeneğe göre bir ödünleşmeyle açıkla. Kullanıcı “Film ara” alanına yazdığında başlıklar Türkçe büyük/küçük harf farkı olmadan süzülsün. Alan temizlenince tüm filmler geri gelsin. Sonuçlar liste olarak görünsün.
+- Kullanıcı “Film ara” alanından başlıkları arayabilmelidir.
+- Arama büyük/küçük harfe duyarsız olmalı; Türkçe harflerle eşleşme korunmalıdır.
+- Arama eşleşen filmleri liste olarak göstermelidir.
+- Alan temizlendiğinde dört popüler film yeniden görünmelidir.
+- Panel belirli film başlıklarına gömülmemelidir.
+- Kod yorumunda seçilen tasarımın genişleme veya kullanım maliyeti açıklanmalıdır.
 
 ## Örnek
 
-“resident” → yalnızca “Resident Evil”; alanı temizle → popüler filmlerin tamamı.
+“resident” → yalnız Resident Evil; “ÖRÜMCEK” → yalnız Örümcek-Adam: Yepyeni Bir Gün; alanı temizle → dört film.
+
+## Sözleşme
+
+- Dosya ve export: `MovieBrowser.tsx` → named export `MovieBrowser`
+- Props: başlangıç film verisi bileşende sağlanır.
+- Arayüz: “Film ara” adlı textbox ve film `listitem`'ları.
+- Tasarım seçeneği: tek yapılandırma alanı olan panel veya ekranın içine ayrı kontrol parçaları yerleştirebildiği panel.

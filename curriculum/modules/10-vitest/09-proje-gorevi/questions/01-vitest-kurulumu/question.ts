@@ -9,6 +9,7 @@ export default defineQuestion({
   focusFiles: ['vite.config.ts', 'package.json', 'src/shared/lib/format.test.ts'],
   reviewFiles: ['vite.config.ts', 'package.json', 'src/shared/lib/format.test.ts'],
   hints: [
+    'Önce yapılandırma, komut ve davranış testlerinin projede hangi dosyalarda yaşadığını bul.',
     'Vite ayarındaki `test` alanı için `defineConfig` import’unu `vitest/config` üzerinden yap.',
     '`environment: "jsdom"` ve `globals: false` ayarla; `package.json` içine `vitest run` script’i ekle.',
     '`formatVote(8)` için `"8.0"`, `formatVote(0)` için `"Henüz oy yok"`, boş tarih için `""` bekleyen testler yaz.',

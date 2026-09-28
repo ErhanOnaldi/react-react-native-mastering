@@ -25,13 +25,16 @@ export default defineQuestion({
     'src/features/watchlists/types.ts',
   ],
   hints: [
-    "Önce `Watchlist` domain tipini yaz; form değeri `Omit<Watchlist, 'id' | 'createdAt'>` olsun.",
-    '`useWatchlists` içinde localStorage’dan oku ve eklemede yeni dizi kaydet; formda `register` ve `useFieldArray` kullan.',
-    'Etiketler `{ value: string }` satırlarıdır; kaydetmeden önce boşları filtrele ve başarılı kayıttan sonra `reset` çağır.',
+    'Kalıcı liste kaydı ile kullanıcının yazdığı form değerlerini ayır; kimlik ve tarih form alanı değildir.',
+    '`Omit` ile form tipini domain tipinden türet; RHF `useFieldArray` ve `useWatchlists` custom hook ile alanları ve kalıcılığı yönet.',
+    "Local storage'dan ilk değeri oku, eklemede yeni kayıtla React state'i ve depoyu birlikte güncelle; başarılı submit'te `reset()` çağır.",
+    'Etiket satırlarını nesne olarak sakla; boş etiketleri atma ancak görev sözleşmesinde istenmediği için veriyi sessizce değiştirme.',
   ],
   rubric: [
-    'Form alanları görünür etiketli ve hatalar erişilebilir mi?',
-    'Veri tipi domain tipinden Omit ile türetilmiş mi?',
-    'Hata ve başarılı kayıt durumları kullanıcıya açıkça gösteriliyor mu?',
+    'Form alanları görünür label taşıyor; başlık hatası input ile ilişkilendirilmiş mi?',
+    'Form ve tam kayıt tipleri doğru ayrılmış; patch tipi form alanlarının alt kümesini destekliyor mu?',
+    'Etiket ekleme/silme sırası ve satır kimliği korunuyor mu?',
+    'Yeni kayıt id/tarih alıyor ve localStorage ile hook state aynı sonucu gösteriyor mu?',
+    'Hata sonrası veri korunuyor, başarı sonrası durum ve form temizliği tutarlı mı?',
   ],
 })

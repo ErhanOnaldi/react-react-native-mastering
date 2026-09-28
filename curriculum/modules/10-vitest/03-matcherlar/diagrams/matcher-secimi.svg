@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250">
+  <title>Matcher seçiminin kapsadığı fark</title>
+  <defs>
+    <marker id="match-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" class="d-arrowhead" />
+    </marker>
+  </defs>
+  <rect x="22" y="26" width="205" height="184" rx="12" class="d-box" />
+  <text x="124" y="58" text-anchor="middle" class="d-title">Beklenti</text>
+  <text x="124" y="91" text-anchor="middle" class="d-code">string / number</text>
+  <text x="124" y="119" text-anchor="middle" class="d-code">nesne / dizi</text>
+  <text x="124" y="147" text-anchor="middle" class="d-code">hata</text>
+  <text x="124" y="183" text-anchor="middle" class="d-muted">Hangi fark önemli?</text>
+
+  <rect x="277" y="20" width="205" height="62" rx="10" class="d-accent" />
+  <text x="379" y="47" text-anchor="middle" class="d-title">Tam primitive değer</text>
+  <text x="379" y="68" text-anchor="middle" class="d-code">toBe</text>
+  <rect x="277" y="96" width="205" height="62" rx="10" class="d-success" />
+  <text x="379" y="123" text-anchor="middle" class="d-title">İç içe değer yapısı</text>
+  <text x="379" y="145" text-anchor="middle" class="d-code">toEqual</text>
+  <rect x="277" y="172" width="205" height="62" rx="10" class="d-violet" />
+  <text x="379" y="199" text-anchor="middle" class="d-title">Seçili alan veya hata</text>
+  <text x="379" y="221" text-anchor="middle" class="d-code">toMatchObject / toThrow</text>
+
+  <path d="M227 92 L266 51" class="d-line-accent" marker-end="url(#match-arrow)" />
+  <path d="M227 118 L266 127" class="d-line-accent" marker-end="url(#match-arrow)" />
+  <path d="M227 148 L266 202" class="d-line-accent" marker-end="url(#match-arrow)" />
+  <rect x="526" y="67" width="210" height="110" rx="12" class="d-warning" />
+  <text x="631" y="98" text-anchor="middle" class="d-title">Sözleşmeyi koru</text>
+  <text x="631" y="127" text-anchor="middle" class="d-text">Kritik alanı zorunlu tut</text>
+  <text x="631" y="151" text-anchor="middle" class="d-text">Önemsiz farkı serbest bırak</text>
+  <path d="M482 127 L516 127" class="d-line" marker-end="url(#match-arrow)" />
+</svg>

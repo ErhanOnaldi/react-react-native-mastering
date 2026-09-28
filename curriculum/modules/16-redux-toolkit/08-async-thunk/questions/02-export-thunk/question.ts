@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['redux.async-thunk', 'js.async-await'],
   files: ['exportList.ts'],
   hints: [
-    'Thunk’un payload creator’ına `ids` gelir.',
-    'Yeni dizi için spread kullan.',
-    '`async (ids: number[]) => [...ids]` yeterli.',
+    'Girdi dizisi değişmeden kalmalı; sonucu hangi argümanla üreteceğini belirle.',
+    'Payload creator aldığı `ids` değerinden yeni dizi üretmeli; spread bunu sağlar.',
+    '`async (ids: number[]) => [...ids]` fulfilled payload’ı için yeterli.',
   ],
 })

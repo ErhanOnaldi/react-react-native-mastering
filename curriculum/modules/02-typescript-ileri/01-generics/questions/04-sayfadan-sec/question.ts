@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['ts.generics', 'ts.generic-constraints', 'ts.api-types'],
   files: ['task.ts'],
   hints: [
-    'Aramayı `page.results` içinde yap.',
-    'Generic kısıt sayesinde her öğenin `id` alanı vardır.',
-    '`find` bulunmayan ID için kendiliğinden `undefined` verir.',
+    'Sayfalama kabuğunun yalnız `results` dizisinde arama yapması gerektiğini belirle.',
+    '`T extends { id: number }` kısıtını sayfa içindeki öğeye uygula.',
+    '`page.results.find(...)` eşleşen `T` değerini veya `undefined` verir.',
   ],
 })

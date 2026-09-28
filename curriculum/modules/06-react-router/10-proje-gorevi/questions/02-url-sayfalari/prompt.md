@@ -1,11 +1,24 @@
-Adres artık değişiyor; ama sayfalar eski yerel state'i okursa yenileyince yine farklı içerik görürsün. Bu görevde URL ve statik veri aynı ekranı yeniden kursun.
+Adres artık değişiyor; sayfalar da yenileme ve doğrudan açılışta aynı statik içeriği kurmalı. URL seçimi ile mevcut favori state'ini doğru sahiplerinde tut.
 
-## Dosya ve davranış sözleşmesi
+## Gereksinimler
 
-- `src/pages/HomePage.tsx` → **named export** `HomePage`. `src/data/sample-movies.ts` içindeki statik filmleri göster; Dövüş Kulübü gibi kartlardan `/movie/550` detayına gerçek link ver. `src/components/MovieCard.tsx` gerekiyorsa buna göre güncelle.
-- `src/pages/SearchPage.tsx` → **named export** `SearchPage`. `useSearchParams` ile `q` oku; mevcut arama input'u bu değeri göstersin. `sampleMovies` başlıklarını Türkçe büyük/küçük harfe duyarsız filtrele. Sorgu değişince `page` silinsin; varsa `genre` korunsun. Boş sonuçta anlaşılır mesaj göster. `q`, `page`, `genre` için ikinci `useState` tutma.
-- `src/pages/MovieDetailsPage.tsx` → **named export** `MovieDetailsPage`. `/movie/:id` parametresini `useParams` ile al; sayısal biçimini denetle ve statik listeden filmi bul. `/movie/550` → **Dövüş Kulübü**. Geçersiz veya bulunmayan id'de kullanıcıya açık mesaj göster.
-- `src/pages/FavoritesPage.tsx` → **named export** `FavoritesPage`. `useFavorites()` içindeki id'leri statik film listesiyle eşleştir; boşsa boş durum mesajı göster. Provider `main.tsx` içinde router'ın dışındadır.
-- `src/pages/NotFoundPage.tsx` → **named export** `NotFoundPage`; tanımsız adres için 404 ve ana sayfa linki.
+- Ana sayfada statik filmler listelensin; Dövüş Kulübü kartı `/movie/550` adresine gitsin.
+- Arama sayfası URL'deki `q` değerini input'ta göstersin ve statik başlıkları Türkçe büyük/küçük harfe duyarsız filtrelesin.
+- Arama değişince `page` kaldırılsın, `genre` korunsun; boş eşleşmede anlaşılır mesaj görünsün.
+- `/movie/550` Dövüş Kulübü'nü açsın; geçersiz ve bulunmayan id'ler için ayrı açıklama gösterilsin.
+- Favoriler sayfası mevcut favori id'lerini filmlerle eşleştirsin; liste boşsa boş durum mesajı gösterilsin.
+- Tanınmayan adres için 404 başlığı ve ana sayfa bağlantısı bulunsun.
+- Bu modülde sayfa içeriği statik veriden gelir; ağ isteği gerekmiyor.
 
-Bu modülde ağ isteği yok. Modül 7'de aynı sayfalar TMDB verisi kullanacak.
+## Örnek
+
+`/search?q=Matrix` → input'ta Matrix ve eşleşen film; `/movie/550` → Dövüş Kulübü.
+
+## Sözleşme
+
+- `src/pages/HomePage.tsx` → named export `HomePage`; `src/data/sample-movies.ts` içindeki listeyi kullan.
+- `src/pages/SearchPage.tsx` → named export `SearchPage`.
+- `src/pages/MovieDetailsPage.tsx` → named export `MovieDetailsPage`.
+- `src/pages/FavoritesPage.tsx` → named export `FavoritesPage`; `src/context/FavoritesContext.tsx` içindeki `useFavorites()` değerini kullan.
+- `src/pages/NotFoundPage.tsx` → named export `NotFoundPage`.
+- `src/components/MovieCard.tsx` gerekirse güncellenebilir. Film biçimi `id`, `title`, `genre_ids` alanlarını içerir.

@@ -8,8 +8,9 @@ export default defineQuestion({
   files: ['FavoriteCards.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'Sayacın gerçekten etkilediği ve etkilemediği bileşenleri ayır.',
-    '`memo` ile kartı sar; favori callback referansını sabit tut.',
-    '`useCallback((title) => setFavorite(title), [])` ve `memo(Card)` birlikte kullan.',
+    'Sayaç state’i değiştiğinde ebeveyn bileşen render olur; alt kartların gereksiz çalışmasını önlemek için iki parçalı bir referans koruması gerekir.',
+    'Kartları `memo` ile sarılmış ayrı bir alt bileşene çıkar (`Card`), prop olarak iletilen fonksiyon referansını ise `useCallback` ile sabitle.',
+    '`const onFavorite = useCallback((title: string) => setFavorite(title), [])` ve `const Card = memo(...)` birlikte kullanılır.',
+    '`Card` bileşenine inline ok fonksiyonu (`onClick={() => onFavorite(title)}`) geçirirsen her render’da yeni bir fonksiyon nesnesi oluşur ve `memo`’nun props karşılaştırmasını bozar; fonksiyon referansını kararlı tut.',
   ],
 })
