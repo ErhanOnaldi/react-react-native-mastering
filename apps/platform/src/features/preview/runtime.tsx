@@ -31,6 +31,20 @@ window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
   return originalFetch(input, init)
 }
 
+// Öğrenci kodu derlenemezse (yarım kalmış sözdizimi) Vite hatayı katman yerine buraya yollar
+let compileError: string | undefined
+import.meta.hot?.on(
+  'rm:workspace-error',
+  (data: { message: string; file: string; line?: number; column?: number }) => {
+    const where = data.line ? `${data.file}:${data.line}:${data.column ?? 0}` : data.file
+    const detail = data.message
+      .replace(/^Transform failed with \d+ errors?:\s*/, '')
+      .replace(/[^\s[]*workspace\/(?:[^/\s]+\/)*/g, '')
+    compileError = `Kod derlenemedi (${where}). Sözdizimini kontrol et:\n\n${detail}`
+    post({ type: 'error', message: compileError })
+  },
+)
+
 window.addEventListener('error', (e) => post({ type: 'error', message: e.message }))
 window.addEventListener('unhandledrejection', (e) =>
   post({ type: 'error', message: String((e.reason as Error)?.message ?? e.reason) }),
@@ -95,4 +109,13 @@ async function start() {
   )
 }
 
-start().catch((error: Error) => post({ type: 'error', message: error.message }))
+start().catch((error: Error) => {
+  // Derleme hatası ayrıntısı zaten geldiyse "Failed to fetch dynamically imported module" onu ezmesin
+  if (compileError) return
+  post({
+    type: 'error',
+    message: error.message.startsWith('Failed to fetch dynamically imported module')
+      ? 'Kod derlenemedi. Sözdizimini kontrol et (ör. kapanmamış parantez veya tag).'
+      : error.message,
+  })
+})
