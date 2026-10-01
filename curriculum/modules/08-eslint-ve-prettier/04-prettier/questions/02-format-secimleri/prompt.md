@@ -1,12 +1,13 @@
-# Sinema format seçenekleri
+# Sinema için Prettier ayarı
 
-Ekipte aynı film listesinin farklı tırnak ve noktalı virgül tercihleriyle kaydedilmesini önle. Ortak TypeScript biçim seçeneklerini tanımla.
+Ekipte aynı film listesinin farklı tırnak ve noktalı virgül tercihleriyle kaydedilmesini önle. Proje kökünde ortak Prettier ayar dosyasını oluştur.
 
 ## Gereksinimler
 
 - String değerlerinde tek tırnak kullan.
 - Satır sonunda noktalı virgül kullanma.
 - Satır genişliği hedefi `80` karakter olsun.
+- TypeScript kaynakları biçimlendirilmelidir.
 - Format sonucu `Dövüş Kulübü` metnini korumalı ve uzun film dizisini okunabilir satırlara ayırmalıdır.
 
 ## Örnek
@@ -15,8 +16,8 @@ Girdi: `const title = "Dövüş Kulübü";` → çıktı: `const title = 'Dövü
 
 ## Sözleşme
 
-- Dosya: `formatOptions.ts` içindeki `formatOptions` adlı named export.
-- Export, Prettier `Options` tipine uyumlu olmalı ve TypeScript parser’ını seçmelidir.
+- Dosya: `prettier-config.json` içindeki ayarlar, proje config’inde `.prettierrc.json` olarak kullanılmalıdır.
+- Ayarlar Prettier'ın okuyacağı geçerli JSON olmalı ve TypeScript parser’ını seçmelidir.
 
 ## Kısıtlar
 

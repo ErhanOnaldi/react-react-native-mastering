@@ -14,5 +14,5 @@ Checkbox boş → `{ name: 'Akşam', description: '', isPublic: false }`; checkb
 ## Sözleşme
 
 - Dosya ve export: `VisibilityForm.tsx` → named export `VisibilityForm`.
-- Prop: `onSave(values: VisibilityValues)`; tip `{ name: string; description: string; isPublic: boolean }`.
+- Prop: `onSave(values: Values)`; `Values` tipi `{ name: string; description: string; isPublic: boolean }`.
 - Arayüz: “Liste adı” adlı textbox, “Herkese açık” adlı checkbox ve “Kaydet” adlı submit düğmesi.

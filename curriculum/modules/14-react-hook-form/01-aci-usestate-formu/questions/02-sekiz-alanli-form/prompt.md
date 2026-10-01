@@ -7,7 +7,7 @@ Controlled input kullanarak izleme listesi formunu tamamla. Kullanıcı sekiz al
 - İlk film boşsa “İlk film gerekli” göster.
 - Herhangi bir hata varken kayıt callback'ini çağırma.
 - Geçerli gönderimde sekiz alanın tümünü string değerlerle callback'e ver; boş bırakılan alanlar da `''` olsun.
-- Önizlemede erişilebilir adı “Render sayısı” olan sayaç kalsın ve input yazıldığında sayı artsın.
+- Önizlemede render sayacı kalsın ve input yazıldığında sayı artsın.
 
 ## Örnek
 
@@ -17,5 +17,5 @@ Controlled input kullanarak izleme listesi formunu tamamla. Kullanıcı sekiz al
 
 - Dosya ve export: `ManualWatchlistForm.tsx` → named export `ManualWatchlistForm`.
 - Prop: `onSave(draft: WatchlistDraft)`; `WatchlistDraft` alanları `name`, `description`, `cover`, `firstMovie`, `tag`, `color`, `sort`, `note` (tamamı `string`).
-- Arayüz: yukarıdaki label adları, “Kaydet” düğmesi, hata metinleri `role="alert"` içinde ve “Render sayısı” adlı `role="status"`.
+- Arayüz: yukarıdaki label adları, “Kaydet” düğmesi, hata metinleri ve render sayacı.
 - Önizleme girişi `Preview.tsx` üzerinden `ManualWatchlistForm` bileşenini kullanır.

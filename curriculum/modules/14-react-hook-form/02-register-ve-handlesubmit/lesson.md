@@ -1,157 +1,156 @@
 ---
-title: "Alan kaydı ve form deposu"
-minutes: 15
+title: "Alanı kaydet ve formu gönder"
+minutes: 14
 kind: concept
 ---
 
-# Alan kaydı ve form deposu
+# Alanı kaydet ve formu gönder
 
-:::pain[Form sekiz ayrı yere bölünüyor]
-Bir gezi planında her alan için `useState`, `value`, `onChange` ve submit nesnesi tutuyorsun. Başka sayfada aynı alanları tekrar kurunca bir input'u kaydetme verisine eklemeyi unutuyorsun. Yazarken bütün form bileşeninin render olması da gereksiz hesap yapıyor.
-:::
+Önceki derste her input'un değerini state'e bağladın. Bir formda aynı işi çok sayıda alan için yapmak tekrar üretir. React Hook Form (**RHF**), form alanlarını kaydedip değerleri göndermeye hazırlayan bir kütüphanedir. İlk adımda tek bir metin alanını bağlayalım.
 
-## Alanları tek tek state'e kopyalama
+## Bir input'u forma tanıt
 
-Controlled input'un maliyetini önceki derste ölçtün. Form kütüphanesinin farkı, alan değerlerini her karakterde React bileşeninin state'ine yansıtmak zorunda olmamasıdır. React Hook Form (RHF), input'ları forma kaydeder ve değerleri formun kendi deposunda tutar. Bileşen yalnızca ihtiyaç duyduğu form durumuna abone olduğunda ilgili değişikliklerde render alır.
-
-![Alanların kayıtlı olduğu form deposu, abonelikler ve submit akışı](diagram:form-state)
-
-Modelin kesin kuralları şunlardır:
-
-1. `useForm<T>()`, bir form örneği ve alan kayıt/submit araçlarını üretir. `T`, TypeScript'in derleme zamanı sözleşmesidir; çalışma zamanında veri doğrulaması değildir.
-2. `register('field')`, native input'a ref ve event bağlarını verir. Input değerini her render'da `value` prop'una taşıyan controlled döngü yerine, RHF native alanı izler.
-3. Her alanın adı `T` içindeki bir alana karşılık gelmelidir. Bu isim, submit nesnesindeki anahtarı ve doğrulama hatasının adresini belirler.
-4. `defaultValues`, ilk değerlerin açık kaynağıdır. Checkbox gibi boolean alanlarda ve reset davranışında bu başlangıç özellikle önemlidir.
-5. `handleSubmit(onValid)` native submit olayını alır, kayıtlı alanları toplar, kuralları çalıştırır ve yalnız geçerli değerleri `onValid`'e verir. Başarısız durumda ayrı hata callback'i kullanabilirsin.
-6. Render, `formState` veya izlenen alan değerlerine aboneliğin kapsamına göre tetiklenir. “RHF hiçbir zaman render etmez” yanlıştır; kontrolsüz her alan her tuşta tüm formu render etmek zorunda değildir.
-
-## Submit'e giden değeri izleyelim
-
-Okuma listesi yerine bir kurs planında başlık ve not alanların olduğunu düşün. `PlanValues` formun kabul edeceği değerleri anlatır; RHF'nin generic'i submit callback'ine bu yapıyı verir:
-
-```tsx
-import { useForm } from 'react-hook-form'
-
-type PlanValues = { title: string; note: string }
-
-export function CoursePlanForm({ onSave }: { onSave: (values: PlanValues) => void }) {
-  const { register, handleSubmit } = useForm<PlanValues>({
-    defaultValues: { title: '', note: '' },
-  })
-
-  return (
-    <form onSubmit={handleSubmit(onSave)}>
-      <label htmlFor="plan-title">Plan başlığı</label>
-      <input id="plan-title" {...register('title')} />
-      <label htmlFor="plan-note">Not</label>
-      <textarea id="plan-note" {...register('note')} />
-      <button type="submit">Planı kaydet</button>
-    </form>
-  )
-}
-```
-
-Bu bileşende akış şöyle ilerler:
-
-| An | Çalışan parça | Formdaki değer |
-|---|---|---|
-| İlk render | `useForm` oluşturulur, `defaultValues` uygulanır | `{ title: '', note: '' }` |
-| Input bağlanır | `register('title')` ve `register('note')` alanları tanıtır | Henüz değişiklik yok |
-| Kullanıcı yazar | Native input değişir, RHF alanı izler | `{ title: 'Haftalık plan', note: '' }` |
-| Submit olayı | `handleSubmit` formu değerlendirir | İki alan bir arada |
-| Form geçerliyse | `onSave` çağrılır | Tipli `PlanValues` nesnesi |
-
-`register` sonucunu input'a yaymak önemlidir; ref ve event bağlantılarının birini atlamak RHF'nin alanı izlemesini bozar. Aynı alana ayrıca `value`/`onChange` vererek ikinci bir kaynak kurma. Native input'a ait olmayan bir tasarım bileşeni varsa onun bağlantısı farklıdır; sonraki Controller dersinde ele alacağız.
-
-## Domain tipinden form tipini ayır
-
-Sunucu veya uygulama modeli formda olmayan alanlar taşıyabilir. Örneğin `CoursePlan` tipinde `id` ve `createdAt` sunucu tarafından üretiliyorsa, form kullanıcının yazmadığı değerleri istememelidir:
-
-```ts
-type CoursePlan = {
-  id: string
-  createdAt: string
-  title: string
-  note: string
-}
-
-type CoursePlanInput = Omit<CoursePlan, 'id' | 'createdAt'>
-```
-
-`Omit`, aynı alanları ikinci kez yazmadan domain modelinden form girdisini türetir. Yine de formun `T` tipi yalnızca derleyicinin yardım ettiği sözleşmedir. API cevabını ya da localStorage içeriğini bu generic güvenli hale getirmez; dış veriyi çalışma zamanında doğrulama ayrı konudur.
-
-Checkbox `checked` üzerinden boolean değer tutar. Metin input'ları boş string ile başlayabilir; checkbox için `defaultValues` içinde `false` açıkça vermek, UI ile submit verisinin aynı başlangıcı görmesini sağlar. Select değerleri çoğunlukla string'dir. Sayısal alanların browser event değeri de string olabilir; number dönüşümünü nerede yapacağını belirle.
-
-## Önce bozuk, sonra çalışan bağlantı
-
-Aşağıdaki input RHF'ye kaydedilmemiştir. Ekranda yazı görünür ama submit nesnesinde alan bulunmayabilir:
-
-```tsx
-import { useForm } from 'react-hook-form'
-
-function BrokenWorkshopForm() {
-  const { handleSubmit } = useForm<{ topic: string }>()
-  return <form onSubmit={handleSubmit((values) => console.log(values))}>
-    <input aria-label="Konu" />
-    <button type="submit">Gönder</button>
-  </form>
-}
-```
-
-Alanı kayıt ederek sözleşmeyi bağla:
+Sinema'da izlenecek filmler için kısa bir seçki başlığı girdiğini düşün. `useForm` form araçlarını verir; `register` alanı RHF'ye tanıtır ve input'a gerekli bağlantıları döndürür.
 
 ```tsx check
 import { useForm } from 'react-hook-form'
 
-type WorkshopValues = { topic: string }
+type SelectionValues = { title: string }
 
-export function WorkshopForm() {
-  const { register, handleSubmit } = useForm<WorkshopValues>({
-    defaultValues: { topic: '' },
+export function SelectionTitle() {
+  const { register } = useForm<SelectionValues>({
+    defaultValues: { title: '' },
   })
-  return <form onSubmit={handleSubmit((values) => console.log(values))}>
-    <label htmlFor="workshop-topic">Konu</label>
-    <input id="workshop-topic" {...register('topic')} />
-    <button type="submit">Gönder</button>
+  return <input aria-label="Seçki başlığı" {...register('title')} />
+}
+```
+
+Buradaki `{...register('title')}` ifadesi, `register`'ın verdiği input bağlantılarını alana yayar. Yazdığın değer artık `value` ve `onChange` ile bileşen state'ine kopyalanmak zorunda değildir. `defaultValues`, alan ilk açıldığında neyle başlayacağını açıkça söyler; bu örnekte başlık boş metindir.
+
+`SelectionValues` türünü `useForm<SelectionValues>()` içine veriyoruz. Bu kullanımda `<SelectionValues>` bir **generic** tür argümanıdır: formun hangi alan adları ve değer türleriyle çalışacağını TypeScript'e bildirir. Böylece `register('title')` için editör doğru alan adını önerebilir. Bu bilgi derleme sırasında yardım eder; kullanıcının yazdığı metni çalışma zamanında doğrulamaz.
+
+Kaydedilmiş bir seçkinin formda bulunmayan `id` ve `createdAt` alanları olabilir. TypeScript'in `Omit` türü, bu alanları bir modelden çıkarıp yalnız formun topladığı alanları bırakır:
+
+```ts
+type SavedSelection = { id: string; createdAt: string; title: string; description: string }
+type SelectionValues = Omit<SavedSelection, 'id' | 'createdAt'>
+```
+
+Böylece form `title` ve `description` ister; sunucunun daha sonra ekleyeceği `id` ile kayıt zamanını kullanıcıdan istemezsin. `Omit` yalnızca TypeScript türünü şekillendirir; gönderilen gerçek nesneye alan eklemez veya değer kontrolü yapmaz.
+
+## Submit callback'ine doğru veriyi ulaştır
+
+Input'u kaydetmek tek başına callback çağırmaz. `handleSubmit(onSave)`, form gönderildiğinde kayıtlı alanları toplar ve `onSave` fonksiyonuna değer nesnesi olarak verir. Şimdi başlığın yanına bir açıklama ekleyelim:
+
+```tsx
+import { useForm } from 'react-hook-form'
+
+type SelectionValues = { title: string; description: string }
+
+function SelectionForm({ onSave }: { onSave: (values: SelectionValues) => void }) {
+  const { register, handleSubmit } = useForm<SelectionValues>({
+    defaultValues: { title: '', description: '' },
+  })
+
+  return <form onSubmit={handleSubmit(onSave)}>
+    <label htmlFor="selection-title">Seçki başlığı</label>
+    <input id="selection-title" {...register('title')} />
+    <label htmlFor="selection-description">Açıklama</label>
+    <textarea id="selection-description" {...register('description')} />
+    <button type="submit">Kaydet</button>
   </form>
 }
 ```
 
-İlk kodda kayıt bağlantısı yoktur. İkinci kodda `topic` alanı tipli form nesnesine girer; `handleSubmit` event nesnesini değil alan değerlerini callback'e verir. Callback'in ikinci argümanı varsa o native event'tir, çoğu uygulamada gerekmez.
+`title` ve `description` alanlarını ayrı ayrı kaydettik; gönderimde ikisi de aynı nesnede bulunur. Açıklama boş bırakılırsa başlangıç değeri olan `''` gönderilir. `onSave`, form gönderilene kadar çalışmaz; ağ isteği veya kayıt işini callback'in içinde sen yaparsın.
 
-## RHF'nin render sınırı
+| Sıra | Ne olur? | RHF'nin topladığı değer |
+|---|---|---|
+| 1 | Form açılır | `{ title: '', description: '' }` |
+| 2 | Başlığa `Yaz akşamı` yazılır | `{ title: 'Yaz akşamı', description: '' }` |
+| 3 | Açıklamaya `Kısa filmler` yazılır | İki alanın güncel değerleri |
+| 4 | `Kaydet` gönderilir | `onSave` iki alanlı nesneyi alır |
 
-Kayıtlı native input her tuşta formun tüm JSX'ini yeniden hesaplatmak zorunda değildir. Ama `watch()` ile bütün form değerlerini okuyan veya sık değişen `formState` alanlarına abone olan bileşen render alabilir. Bu, modelin bilerek sağladığı bir seçimdir: neyi okumak istiyorsan o bilgiye abone olursun.
+Tablodaki sıra önemli: önce input'lar forma kaydolur, kullanıcı yazar, sonra submit bu alanları toplar. `handleSubmit(onSave)` fonksiyonunu forma veriyoruz; sonuna `()` koymuyoruz. Parantez eklersen form gönderimini beklemek yerine render sırasında çağırmış olursun.
 
-Bir değeri yalnız submit'te kullanıyorsan her render'da ekrana taşımana gerek yoktur. UI'de canlı özet göstereceksen o alanı izlemek anlamlıdır. Render'dan kaçmak amacıyla bütün alanları tek bir `useRef` içine taşımak ise doğrulama, reset ve erişilebilir hata ilişkisini elle kurmana neden olur.
+![Alanların kayıtlı olduğu form deposu, abonelikler ve submit akışı](diagram:form-state)
 
-:::mistake[Form verisi callback'e gelmiyor]
-**Belirti:** Input'ta yazı var, submit nesnesinde anahtar yok. → **Neden:** `register` çıktısı alana bağlanmamış ya da adı `T`/beklenen alan adıyla uyuşmuyor. → **Düzeltme:** Native input'a `{...register('alan')}` ekle ve alan adını form tipiyle aynı tut.
-:::
+## Checkbox da kayıtlı bir alandır
 
-:::mistake[Submit render sırasında çalışıyor]
-**Belirti:** Sayfa açılır açılmaz kayıt callback'i çağrılıyor. → **Neden:** `onSubmit={handleSubmit(onSave)()}` gibi dönen handler'ı render'da çalıştırıyorsun. → **Düzeltme:** Form prop'una fonksiyonun kendisini ver: `onSubmit={handleSubmit(onSave)}`.
-:::
+Bir seçkinin herkese açık olup olmadığını checkbox ile tutalım. Yeni bilgi, checkbox başlangıcının boolean olması:
 
-:::mistake[TypeScript her veriyi doğruluyor sanılıyor]
-**Belirti:** API'den gelen beklenmedik değer generic tipten geçmiş gibi kabul ediliyor. → **Neden:** Generic yalnız derleme sırasında alan adlarını ve callback tipini kontrol eder. → **Düzeltme:** Dış veri sınırında runtime schema kullan; sonraki modülde Zod ile bunu kuracaksın.
-:::
+```tsx
+type VisibilityValues = { title: string; isPublic: boolean }
 
-:::sector
-Takımlarda domain modeli, form girdisi ve sunucu cevabı ayrı şekillere sahip olabilir. Form tipini domain tipinden `Pick`/`Omit` ile türetmek tekrar yazımı azaltır; API sınırında doğrulama ise ayrı kalır. RHF'yi native alanlarda varsayılan yol seçmek, özel controlled bileşenleri köprü gerektirdiğinde ayrıca ele almak iyi bir ekip kuralıdır.
-:::
+function VisibilityChoice({ onSave }: { onSave: (values: VisibilityValues) => void }) {
+  const { register, handleSubmit } = useForm<VisibilityValues>({
+    defaultValues: { title: '', isPublic: false },
+  })
 
-Bir input'u formdan koşullu olarak kaldırıyorsan onun değeri gönderimde kalmalı mı, silinmeli mi karar ver. RHF'nin `shouldUnregister` seçeneği unmount olan alanın değerini koruma veya kayıttan çıkarma davranışını etkiler. Örneğin “başka adres kullan” kutusu kapatılınca adres alanını saklayabilirsin; backend eski adresi almamalıysa değer de gönderim nesnesinden çıkmalıdır. Bu ayarı her formda gelişigüzel açma, çünkü koşullu alan davranışını ve varsayılanlarla karşılaştırmayı değiştirir.
+  return <form onSubmit={handleSubmit(onSave)}>
+    <label htmlFor="visibility-title">Seçki başlığı</label>
+    <input id="visibility-title" {...register('title')} />
+    <label>
+      <input type="checkbox" {...register('isPublic')} />
+      Herkese açık
+    </label>
+    <button type="submit">Kaydet</button>
+  </form>
+}
+```
 
-`register` dönüşündeki `ref`, `name`, `onChange` ve `onBlur` bağlantılarını başka bir bileşene geçirirken de koru. Tasarım sistemi wrapper'ı input ref'ini gerçek DOM input'una iletmiyorsa alanın odaklanması veya hata sonrası otomatik focus çalışmayabilir. Wrapper'ın `inputRef` gibi farklı bir prop'u varsa ref'i doğru yere eşle. Bir alanı iki kez kaydetmek veya yayılım sonrasında `onChange`'i ezmek de form deposuyla DOM'u ayırır.
+Checkbox işaretli değilken `isPublic` değeri `false`, işaretliyken `true` olur. `defaultValues` bu başlangıcı ve formun beklenen şeklinin tamamını belirler. Bir form tipi tanımladığında görünmeyen ama callback'te istenen alanları da başlangıç değerlerinde tut; form nesnesinin ne içerdiği sürpriz olmasın.
 
-Form alanlarının adları iç içe yapılara da işaret edebilir. `address.city` gibi yol, submit nesnesinde nested yapı kurar; aynı yolu TypeScript tipiyle uyumlu yaz. Alan isimlerinin boşluk ve büyük-küçük harf farkını açık tutmak, payload'ın API beklentisiyle eşleşmesini sağlar. TypeScript'in doğru alan yolunu önermesi geliştirme ergonomisidir; kullanıcı girdisinin içeriğini doğrulamanın yerine geçmez.
+## Bağlantı eksikse submit verisinde alan da eksik kalır
 
-## Özet ve kendini yokla
+Gerçek hata: ekranda yazılabilen input var ama `register` kullanılmamış.
 
-- RHF kayıtlı alanları bir form deposunda tutar; her tuşta bütün formu controlled state'e kopyalaman gerekmez.
-- `register` native input bağlantısını, `handleSubmit` toplama/doğrulama/submit akışını kurar.
-- `defaultValues` ilk değerleri ve reset temelini belirler; generic runtime doğrulaması yapmaz.
-- Render'lar abonelikle ilgilidir; izlenen `formState` ve değerler değiştiğinde UI güncellenir.
+```tsx
+function UnregisteredTitle() {
+  const { handleSubmit } = useForm<{ title: string }>()
+  return <form onSubmit={handleSubmit((values) => console.log(values))}>
+    <input aria-label="Seçki başlığı" />
+    <button type="submit">Kaydet</button>
+  </form>
+}
+```
 
-**Kendini yokla:** `handleSubmit(onSave)` ne zaman `onSave`'i çağırır? Form gönderilip kurallar geçince. `useForm<CoursePlanInput>()` API yanıtını doğrular mı? Hayır; bu yalnız TypeScript sözleşmesidir.
+Input'a yazı yazabilirsin, fakat RHF'ye bu alanı tanıtmadın; bu nedenle beklediğin değer submit nesnesinde olmayabilir. Alanı `register('title')` ile bağla ve adı tipteki alanla aynı tut. Belirti “input'ta metin görünüyor ama callback'te alan yok” ise önce kayıt bağlantısını kontrol et.
+
+```tsx check
+import { useForm } from 'react-hook-form'
+
+type SelectionValues = { title: string }
+
+export function RegisteredTitle() {
+  const { register, handleSubmit } = useForm<SelectionValues>({
+    defaultValues: { title: '' },
+  })
+  return <form onSubmit={handleSubmit((values) => console.log(values))}>
+    <label htmlFor="registered-title">Seçki başlığı</label>
+    <input id="registered-title" {...register('title')} />
+    <button type="submit">Kaydet</button>
+  </form>
+}
+```
+
+İkinci bileşende input RHF'ye tanıtılmış, başlangıç değeri belirlenmiş ve form gönderimi `handleSubmit`'e bağlanmış durumda. `useForm<T>` içindeki `T` alan adlarını TypeScript'te kontrol eder; gerçek kullanıcı verisinin biçimini garanti etmez. Dış kaynaktan gelen veriyi doğrulamak ayrı bir konudur ve ileride Zod ile ele alınır.
+
+RHF'yi burada native HTML alanlarında kullanıyoruz. Bir tasarım sistemi alanı kendi kontrollü API'sini sunuyorsa bağlantı biçimi farklı olabilir; onu daha sonra ele alacağız. Bu ilk adımda alanı doğrudan `<input>`, `<textarea>` veya `<input type="checkbox">` ile kurup değerleri submit callback'inde toplamak yeterli.
+
+## Özet
+
+- `useForm<T>()` RHF form araçlarını üretir; `T` alanların TypeScript şeklini belirtir.
+- `register('alan')` native alanı forma bağlar; dönen bağlantıları input'a yaymalısın.
+- `defaultValues` alanların başlangıç değerlerini açık eder; checkbox için boolean kullan.
+- `handleSubmit(onSave)` submit'te kayıtlı değerleri toplar ve callback'e verir.
+
+**Yeni terimler:**
+
+- **RHF:** React Hook Form; input kayıt ve submit akışını yöneten React kütüphanesi.
+- **`register`:** Native input'u RHF'ye tanıtan ve bağlantı özelliklerini döndüren fonksiyon.
+- **`handleSubmit`:** Form gönderiminde kayıtlı değerleri toplayıp callback'i çağıran fonksiyon.
+- **Generic tür argümanı:** `useForm<Values>` içindeki, form alanlarının TypeScript şeklini belirten tür.
+- **`Omit`:** Bir TypeScript türündeki seçilen alanları çıkararak yeni tür oluşturan yardımcı tür.
+
+**Kendini yokla:** Callback'e input event'i mi gider, alan değerleri mi? Alan değerleri gider. Checkbox başlangıçta özel olmalıysa `defaultValues` içinde ne yazarsın? `false`.

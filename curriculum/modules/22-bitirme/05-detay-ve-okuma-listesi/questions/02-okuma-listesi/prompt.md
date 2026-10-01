@@ -13,7 +13,6 @@ Okuma listesi özelliğini ve form entegrasyonunu şu gereksinimlere göre kur:
    - **Not kuralı:** Not alanı en fazla 280 karakter olabilir; sınırı aşan girişlerde tam olarak **“Not en fazla 280 karakter olabilir.”** hatası verilmelidir. Hata mesajları ilgili alanın altında erişilebilir biçimde gösterilmelidir.
 3. **Kayıt Güncelleme ve Çıkarma:**
    - Daha önce kaydedilmiş bir eserin detayına tekrar gelindiğinde form kayıtlı değerlerle açılmalı; buton metni **Güncelle** olmalıdır. Aynı eser kimliği için ikinci bir kayıt oluşturulmamalıdır.
-   - Detay sayfasından eseri listeden çıkarma seçeneği sunulmalıdır.
 4. **Üst Menü Sayacı:**
    - Tüm sayfalarda görünen üst gezinme çubuğunda `/reading-list` adresine yönlendiren bağlantı, ekrandaki güncel kayıt sayısını **“Okuma listem (n)”** biçiminde göstermelidir. Sayı dizinin uzunluğundan türetilmelidir.
 5. **Okuma Listesi Sayfası (`/reading-list`):**

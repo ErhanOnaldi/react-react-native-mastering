@@ -1,239 +1,162 @@
 ---
 title: "Eski cevap yeniyi ezmesin"
-minutes: 17
+minutes: 19
 kind: concept
 ---
 
 # Eski cevap yeniyi ezmesin
 
-:::pain[Problem]
-Arama kutusuna hızlıca önce `Nolan`, hemen ardından `Tarantino` yazıyorsun. `Tarantino` araması sunucudan hızla (30 ms) dönüyor ve ekranda Tarantino filmleri beliriyor. Aradan yarım saniye geçtikten sonra, internetin derinliklerinde geciken eski `Nolan` cevabı (500 ms) tamamlanıyor ve ekrandaki güncel Tarantino sonuçlarının üstüne yazılıyor! Arama kutusunda "Tarantino" yazarken ekranda "Oppenheimer" listeleniyor.
-:::
+Sinema'da film adına göre oyuncu kadrosu yükleyen bir kartın var. Kullanıcı önce `Alien`, hemen sonra `Arrival` filmini seçiyor. İki ağ isteği de başlıyor; hangisinin önce biteceğini internet ve sunucu belirler. **Race condition** (yarış durumu), işlemlerin tamamlanma sırası önemliyken bu sıranın beklediğinden farklı çıkmasıdır.
 
-## Asenkron yarış koşulu (Race condition) modeli
+## İkinci istek önce bitebilir
 
-Ağ istekleri gibi asenkron operasyonlarda **başlama sırası ile bitiş sırası aynı olmak zorunda değildir**. İlk atılan istek ağdaki bir tıkanıklıktan, veritabanı sorgusunun karmaşıklığından ya da sunucu gecikmesinden ötürü ikinci istekten daha geç tamamlanabilir.
+Bu iki isteği iki ayrı paket gibi düşün: İlki yola önce çıkabilir ama daha uzun süre yolda kalabilir. Promise cevabının bitiş sırası da başlama sırasını garanti etmez.
 
-React, dependency değiştiğinde yeni render'ı üretir ve yeni effect'i çalıştırır; ancak arka planda devam eden eski Promise'leri kendiliğinden iptal edemez ya da susturamaz. Eğer önlem almazsan, eski bir işlem bittiğinde `setState` çağırarak arayüzü geçmişe fırlatır.
+| Zaman | İstek | Ne oldu? | State'e yazılan |
+| --- | --- | --- | --- |
+| 0 ms | `Alien` başladı | İlk seçim için cevap bekleniyor. | — |
+| 40 ms | `Arrival` başladı | Yeni seçim için ikinci istek açıldı. | — |
+| 90 ms | `Arrival` bitti | İkinci istek hızlı döndü. | `Arrival` kadrosu |
+| 400 ms | `Alien` bitti | Eski istek geç döndü ve callback'i hâlâ çalışabilir. | `Alien` kadrosu; ekran artık yanlış |
+
+React yeni film için yeni effect başlatabilir, ama ağda devam eden eski Promise'in sonucunun artık istenmediğini kendiliğinden bilemez. Eski cevap state'e yazılırsa kullanıcı `Arrival` seçili olduğu halde `Alien` bilgisini görür. Yeni isteği başlatmak, önceki cevabı geçersiz kılmaya yetmez.
 
 ![Eski yavaş cevabın yeni hızlı cevabı ezdiği yarış koşulu](diagram:yaris-kosulu)
 
-Yarış koşulunu engellemenin kesin kuralları:
+## Önce hangi değerin yazıldığını gör
 
-1. **Bağımsız işlem kuralı:** Her effect setup'ı kendine ait bağımsız bir asenkron süreç başlatır.
-2. **Cleanup zamanında kapatır:** Dependency değiştiğinde ya da bileşen unmount olduğunda React önce eski effect'in temizlik (cleanup) fonksiyonunu çalıştırır.
-3. **Yazma hakkını kaldırmak:** Temizlik fonksiyonu, eski asenkron işlemin sonuçlansa dahi artık ekrana (state'e) yazma hakkını iptal etmelidir.
-4. **Tarayıcı seviyesinde iptal (`AbortController`):** Eğer dış sistem bir `fetch` isteğiyse, yalnızca state yazmayı durdurmakla kalmayıp tarayıcı seviyesinde ağ isteğini de abort edebilirsin.
-5. **İptal hata değildir:** Bir isteğin kullanıcının yeni bir şey yazması sebebiyle iptal edilmesi olağan bir akıştır; oluşan `AbortError` arayüzde bir arıza gibi gösterilmemelidir.
-
-:::model[Effect yaşam döngüsü]
-Bağımlılık değiştiğinde React'in işlettiği kesin sıra şudur:  
-**Yeni render → Commit → Eski effect'in cleanup'ı → Yeni effect'in setup'ı.**  
-Cleanup'ın yeni setup'tan önce çalışması hayati önem taşır. Bu sayede eski istek tam zamanında etkisizleştirilir ve yeni isteğin yoluna çıkması engellenir.
-:::
-
-## Zaman çizelgesinde yarışın anatomisi
-
-Yarış anında arka planda saniyelerin binde birinde neler yaşandığını adım adım izleyelim:
-
-| Zaman | Kullanıcı Eylemi | Ağ / Arka Plan Olayı | Bileşen State'i | Kullanıcının Gördüğü Ekran |
-| --- | --- | --- | --- | --- |
-| 0 ms | "Nolan" yazdı | İstek 1 (`/search?q=Nolan`) yola çıktı | `query = "Nolan"` | "Yükleniyor..." |
-| 50 ms | "Tarantino" yazdı | İstek 2 (`/search?q=Tarantino`) yola çıktı | `query = "Tarantino"` | "Yükleniyor..." |
-| 120 ms | Bekliyor | **İstek 2 tamamlandı!** (Hızlı sunucu yanıtı) | `results = [Pulp Fiction...]` | **Tarantino Sonuçları (Doğru)** |
-| 450 ms | Bekliyor | **İstek 1 tamamlandı!** (Geciken eski yanıt) | `results = [Inception...]` | **Nolan Sonuçları (BOZUK!)** |
-
-Kullanıcı arama alanında "Tarantino" yazısını görürken, alttaki liste 450. milisaniyede aniden Nolan filmlerine geri döner. İşte buna **race condition** denir.
-
-## Kırık örnek
-
-Aşağıdaki kodda dependency listesi `[query]` doğru verilmiştir; yani yeni sorguda yeni istek tetiklenir. Ancak eski isteğin callback'i korumasız bırakılmıştır:
+Aşağıdaki bileşen her `movieId` değişiminde yeni kadro ister. Ancak her cevap geldiğinde koşulsuzca state güncelliyor:
 
 ```tsx
 import { useEffect, useState } from 'react'
 
-type SearchResponse = { results: { name: string }[] }
+type Cast = { name: string }[]
 
-export function DirectorSearch({ query }: { query: string }) {
-  const [director, setDirector] = useState('Yükleniyor...')
+export function CastPreview({ movieId }: { movieId: number }) {
+  const [leadName, setLeadName] = useState('Yükleniyor…')
 
   useEffect(() => {
-    fetch(`https://api.themoviedb.org/3/search/person?query=${encodeURIComponent(query)}`, {
-      headers: { Authorization: `Bearer ${import.meta.env.VITE_TMDB_TOKEN}` },
-    })
-      .then((res) => res.json() as Promise<SearchResponse>)
-      .then((data) => {
-        // TEHLİKE: Bu callback tamamlandığında query çoktan değişmiş olabilir!
-        setDirector(data.results[0]?.name ?? 'Bulunamadı')
-      })
-  }, [query])
+    fetch(`/api/movies/${movieId}/cast`)
+      .then((response) => response.json() as Promise<Cast>)
+      .then((cast) => setLeadName(cast[0]?.name ?? 'Oyuncu bilgisi yok'))
+  }, [movieId])
 
-  return <p>{director}</p>
+  return <p>{leadName}</p>
 }
 ```
 
-Bu kodda ağ ne kadar hızlıysa hata o kadar gizlenir. Fakat sunucu biraz yavaşladığında veya mobil bağlantıda arayüz kaçınılmaz olarak bozulur.
+`movieId` değiştiğinde ikinci istek açılır; ama ilk isteğin callback'i de yaşıyor. Eğer ikinci cevap önce gelip `setLeadName('Amy Adams')` der, ilk cevap daha sonra `setLeadName('Sigourney Weaver')` derse son yazan state ekranda kalır. Bitiş sırası kullanıcının son seçimiyle uyuşmak zorunda değildir.
 
-## 1. Çözüm: Geç cevabı yok saymak (`ignore` bayrağı)
+## Cleanup eski cevabın yazma hakkını kapatır
 
-En yalın ve evrensel yöntem, her effect çalışmasına özel yerel bir boolean bayrak (`ignore`) açmaktır:
+Effect'ten bir fonksiyon döndürürsen React bunu **cleanup** (temizlik) olarak saklar. Dependency değiştiğinde yeni effect'i kurmadan önce eski effect'in cleanup'ını çalıştırır; bileşen sayfadan kaldırıldığında da son cleanup çalışır. Bu küçük sırayı kullanarak eski isteğin cevabı geldiğinde state'e yazmasını önleyebiliriz.
 
 ```tsx check
 import { useEffect, useState } from 'react'
 
-type SearchResponse = { results: { name: string }[] }
+type Cast = { name: string }[]
 
-export function DirectorSearch({ query }: { query: string }) {
-  const [director, setDirector] = useState('Yükleniyor...')
+export function CastPreview({ movieId }: { movieId: number }) {
+  const [leadName, setLeadName] = useState('Yükleniyor…')
 
   useEffect(() => {
     let ignore = false
 
-    fetch(`https://api.themoviedb.org/3/search/person?query=${encodeURIComponent(query)}`, {
-      headers: { Authorization: `Bearer ${import.meta.env.VITE_TMDB_TOKEN}` },
-    })
-      .then((res) => res.json() as Promise<SearchResponse>)
-      .then((data) => {
-        // Yalnızca bayrak hâlâ güncelse state güncelle
-        if (!ignore) {
-          setDirector(data.results[0]?.name ?? 'Bulunamadı')
-        }
+    fetch(`/api/movies/${movieId}/cast`)
+      .then((response) => response.json() as Promise<Cast>)
+      .then((cast) => {
+        if (!ignore) setLeadName(cast[0]?.name ?? 'Oyuncu bilgisi yok')
       })
 
-    // Temizlik fonksiyonu: Bir sonraki render'da veya unmount'ta çalışır
     return () => {
       ignore = true
     }
-  }, [query])
+  }, [movieId])
 
-  return <p>{director}</p>
+  return <p>{leadName}</p>
 }
 ```
 
-### Bu bayrak nasıl çalışır?
-1. Kullanıcı "Nolan" yazdığında Effect 1 çalışır; bellekte `ignore_1 = false` oluşur.
-2. Kullanıcı hemen "Tarantino" yazdığında React yeni render yapar.
-3. React yeni setup'ı çalıştırmadan ÖNCE Effect 1'in cleanup'ını çağırır: `ignore_1 = true` olur.
-4. Ardından Effect 2 çalışır; bellekte yepyeni bir `ignore_2 = false` oluşur.
-5. Geciken Nolan cevabı 450 ms sonra gelse bile, closure içindeki `ignore_1` artık `true` olduğu için `setDirector` satırı pas geçilir. Ekrana hiçbir zaman bayat veri yazılmaz.
+`ignore` burada her effect kurulumu için ayrı bir boolean bayraktır. Eski kurulumun cleanup'ı kendi bayrağını `true` yapar; geç gelen eski cevap bu işareti görür ve state güncellemesini atlar. İstek ağda bitmeye devam edebilir, ama o cevabın arayüze yazma hakkı kalmaz.
 
-## 2. Çözüm: Ağ isteğini iptal etmek (`AbortController`)
+| Sıra | Kullanıcının seçimi | React'in effect işi | Eski isteğin bayrağı |
+| --- | --- | --- | --- |
+| 1 | `Alien` | Effect A isteği başlatır. | `ignoreA = false` |
+| 2 | `Arrival` | Önce A cleanup, sonra Effect B isteği. | `ignoreA = true`, `ignoreB = false` |
+| 3 | `Arrival` cevabı gelir | B cevabı state'i günceller. | B hâlâ güncel |
+| 4 | Geç `Alien` cevabı gelir | A callback'i bayrağı kontrol edip state'i değiştirmez. | A artık yok sayılır |
 
-`ignore` bayrağı state güncellenmesini engeller; ancak tarayıcı arka planda gereksiz veri indirmeye devam eder. Modern web standartlarında `fetch` çağrıları bir `AbortSignal` kabul eder. `AbortController` kullanarak gereksiz hale gelen ağ transferini tarayıcı seviyesinde fişten çekebilirsin:
+Tablodaki önemli kısım, her `ignore` değişkeninin effect callback'inin içinde tanımlı olmasıdır. Değişkeni bileşen dışında paylaşılan tek bir yere koyarsan yeni effect eski effect'in bayrağını da değiştirir; iki isteğin hangisine ait olduğunu ayırt edemezsin.
+
+:::mistake[Bayrak tüm effect'ler için ortak]
+Belirti → Yeni film seçilince yeni isteğin cevabı da bazen ekrana yazılmıyor.
+Neden → `ignore` bileşen veya dosya seviyesinde tek değişkense eski ve yeni effect aynı bayrağı paylaşır.
+Düzeltme → Bayrağı effect callback'inin içinde oluştur; her kurulum kendi cevabını ayrı takip etsin.
+:::
+
+## İstek artık gereksizse ağı da durdur
+
+`ignore` cevabın state'e yazılmasını engeller ama tarayıcı yanıt gövdesini indirmeyi sürdürebilir. `fetch` için **`AbortController`**, isteğe bir iptal sinyali vermeni sağlayan tarayıcı aracıdır. Yeni film seçilince cleanup'ta eski controller'ı iptal edebiliriz.
 
 ```tsx check
 import { useEffect, useState } from 'react'
 
-type CastResponse = { cast: { name: string }[] }
+type Rating = { average: number }
 
-export function MovieCastPreview({ movieId }: { movieId: number }) {
-  const [leadActor, setLeadActor] = useState('Yükleniyor...')
+export function RatingPreview({ movieId }: { movieId: number }) {
+  const [message, setMessage] = useState('Puan yükleniyor…')
 
   useEffect(() => {
     const controller = new AbortController()
 
-    fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits`, {
-      signal: controller.signal,
-      headers: { Authorization: `Bearer ${import.meta.env.VITE_TMDB_TOKEN}` },
-    })
-      .then((res) => res.json() as Promise<CastResponse>)
-      .then((data) => {
-        setLeadActor(data.cast[0]?.name ?? 'Kadro bilgisi yok')
-      })
+    fetch(`/api/movies/${movieId}/rating`, { signal: controller.signal })
+      .then((response) => response.json() as Promise<Rating>)
+      .then((rating) => setMessage(`Puan: ${rating.average}`))
       .catch((error: unknown) => {
-        // İptal edilen istek bir hata değildir!
-        if ((error as Error).name !== 'AbortError') {
-          setLeadActor('Kadro yüklenirken hata oluştu')
-        }
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setMessage('Puan alınamadı')
       })
 
-    // Temizlik: Yeni istek başladığında veya bileşen kapandığında eski isteği iptal et
-    return () => {
-      controller.abort()
-    }
+    return () => controller.abort()
   }, [movieId])
 
-  return <p>{leadActor}</p>
+  return <p>{message}</p>
 }
 ```
 
-`controller.abort()` çağrıldığı anda tarayıcı soketi kapatır, HTTP transferini sonlandırır ve `fetch` Promise'ini bir `DOMException: AbortError` fırlatarak reddeder. Böylece bant genişliği korunur.
+Controller'ın `signal` değerini `fetch` seçeneklerine veriyoruz. Cleanup `abort()` çağırınca tarayıcı bu isteği durdurmayı dener; Promise reddedilir ve iptal hatasının adı **`AbortError`** olur. Bu ad, kullanıcı yeni bir filme geçtiği için isteği bizim durdurduğumuzu anlatır; sunucu arızası gibi ekrana hata yazmamalıyız. Diğer hatalarda örnekteki genel hata metni kullanılabilir.
 
-## Gerçek dünyada bu yarışı nasıl simüle edersin?
+| Olay | Eski `movieId` isteği | Yeni `movieId` isteği | Ekran |
+| --- | --- | --- | --- |
+| İlk film seçilir | A başlar | — | Puan yükleniyor… |
+| Yeni film seçilir | Cleanup A'yı abort eder | B başlar | Puan yükleniyor… |
+| A reddedilir | `AbortError` sessizce geçilir | B sürer | Hata metni çıkmaz |
+| B tamamlanır | İptal edilmiş | B sonucu state'e yazılır | Yeni filmin puanı |
 
-Geliştirme makinen genelde çok hızlı bir internete bağlı olduğu için yarış koşullarını gözle yakalamak zor olabilir. Bunu test etmek için profesyonel araçları kullan:
+Sadece state yazımını önlemek yeterliyse `ignore` kısa ve genel bir çözümdür; o, Promise tabanlı her işte kullanılabilir. `AbortController` özellikle `fetch` gibi sinyali kabul eden bir işi de durdurur. Gerçek arama kutusunda genellikle amaç, artık ekranda olmayan sorgunun cevabını göstermemek ve gereksiz ağ işini azaltmaktır.
 
-1. **DevTools Network Throttling:**
-   - Chrome veya Edge DevTools'ta **Network** sekmesini aç.
-   - **Throttling** açılır menüsünden **Slow 3G** veya **Fast 3G** profilini seç.
-   - Arama kutusuna hızlıca bir şeyler yaz. Network sekmesinde kırmızı renkli `(canceled)` etiketli istekler görüyorsan `AbortController` başarıyla devrededir!
-2. **Yapay gecikme (DevTools Custom Throttling):**
-   - DevTools'ta gecikmeyi 2000 ms olarak ayarla; ilk isteğin dönerken ikinci isteğin çoktan bitmiş olduğu durumları gözünle incele.
-
-## `ignore` mu, `AbortController` mı?
-
-| Kriter | `ignore` Bayrağı | `AbortController` |
-| --- | --- | --- |
-| Ağ trafiğini keser mi? | Hayır, veri inmeye devam eder | Evet, tarayıcı transferi durdurur |
-| Promise dışı API'lerde çalışır mı? | Evet (tüm JS asenkron süreçlerinde) | Hayır, yalnızca sinyal destekleyen API'lerde |
-| Hata yönetimi (catch) | Ekstra `catch` filtresi gerektirmez | `AbortError` hatasını ayıklamak zorunludur |
-| Kod karmaşıklığı | Çok düşük | Orta |
-
-En sağlam desen, ağ isteklerinde `AbortController` kullanmak ve hata bloğunda `AbortError` kontrolünü asla unutmamaktır.
-
-## Cleanup fonksiyonunun kesin çalışma sırası
-
-React geliştiricilerinin en sık yanıldığı nokta, cleanup'ın yalnızca bileşen sayfadan kaldırılırken (unmount) çalıştığını düşünmeleridir. Oysa dependency array değiştiğinde de cleanup devreye girer.
-
-Sıralamayı tam bir netlikle zihnine yerleştir:
-
-1. **Yeni Render:** Kullanıcı yeni bir tuşa bastı; React yeni bileşen çıktısını hesapladı.
-2. **DOM Commit:** React arayüz farklarını DOM'a yazdı.
-3. **Paint:** Tarayıcı yeni ekranı kullanıcıya boyadı.
-4. **Önceki Effect Cleanup'ı:** React, bir önceki render'dan kalan cleanup fonksiyonunu çalıştırır (`controller.abort()` tetiklenir, `ignore = true` yapılır).
-5. **Yeni Effect Setup'ı:** React, yeni render'a ait effect setup'ını başlatır (yeni `fetch` ateşlenir).
-
-Bu sıra sayesinde eski dünya tamamen susturulmadan yeni dünya başlatılmaz.
-
-## Sınır durumları ve sık hatalar
-
-:::mistake[Sık hata: AbortError'ı kullanıcıya hata olarak göstermek]
-Belirti → Arama kutusuna hızlı yazınca ekranda anlık olarak kırmızı renkle "Bir hata oluştu" yazıp kayboluyor.  
-Neden → `catch` bloğu gelen hatanın `error.name === 'AbortError'` olup olmadığını kontrol etmeden genel hata state'ine yazdı.  
-Düzeltme → İptal hatalarını yakala ve sessizce yut:
-```ts
-if (error instanceof Error && error.name === 'AbortError') {
-  return // Kullanıcı bilinçli olarak yeni bir işlem yaptı, hata gösterme
-}
-```
-:::
-
-:::mistake[Sık hata: Bayrağı bileşen dışında tanımlamak]
-Belirti → Yeni atılan geçerli istekler de bazen cevapsız kalıyor ve ekranda veri görünmüyor.  
-Neden → `let ignore = false` değişkeni `useEffect` callback'i içinde değil, dosya ya da bileşen düzeyinde ortak bir değişken olarak tanımlandı. Her yeni render eski bayrağı ezdi.  
-Düzeltme → `let ignore = false` satırını MUTLAKA `useEffect` callback'inin ilk satırına yaz. Her effect çağrısının kendi closure değişkeni olmalıdır.
-:::
-
-:::mistake[Sık hata: Yanıtın güncelliğini sunucudan gelen veriden anlamaya çalışmak]
-Belirti → API cevabındaki timestamp kontrol edilmeye çalışılıyor.  
-Neden → Backend genellikle sadece veriyi döner; kullanıcının o an hangi input değerine baktığını bilemez.  
-Düzeltme → Zamanlama kararını sunucuya bırakma; React bileşeninin kendi yaşam döngüsü ve cleanup mekanizmasıyla yönet.
-:::
-
-:::sector
-Arama motorları, e-ticaret filtreleme panelleri ve finansal işlem tabloları gibi verinin anlık değiştiği alanlarda race condition savunması bir zorunluluktur. Büyük ölçekli uygulamalarda bu yönetim çoğunlukla TanStack Query veya RTK Query gibi kütüphanelere devredilir (bu kütüphaneler arka planda otomatik `AbortController` sinyali üretir). Ancak temel seviyede bu mekanizmanın nasıl çalıştığını anlamak, kütüphanelerin yetersiz kaldığı özel entegrasyonlarda hayat kurtarır.
+:::info[Slow 3G ile sırayı görünür kıl]
+Hızlı bağlantıda ilk cevap çoğu kez yeni cevaptan önce gelir ve yarış fark edilmez. Tarayıcı DevTools'un Network panelinden yavaş bir bağlantı profili seçip arka arkaya iki film seçersen, eski isteğin geç dönmesi veya iptal edilmesi daha görünür olur.
 :::
 
 ## Özet
 
-- Asenkron işlemler başlama sırasına göre bitmeyebilir; eski yavaş cevap yeni cevabı ezebilir.
-- `useEffect` cleanup fonksiyonu yalnızca unmount anında değil, her dependency değişiminde de çalışır.
-- `ignore` bayrağı, eski asenkron işlemlerin state'e yazmasını engeller.
-- `AbortController`, gereksiz kalan HTTP isteklerini tarayıcı seviyesinde sonlandırarak bant genişliğini korur.
-- `AbortError` bir sistem arızası değil, olağan bir iptal işlemidir; arayüzde hata olarak gösterilmemelidir.
+- Asenkron isteklerin bitiş sırası başlama sırasından farklı olabilir; eski cevap yeni seçimi ezebilir.
+- Cleanup, dependency değiştiğinde eski effect için; bileşen kaldırıldığında son effect için çalışır.
+- Effect içindeki `ignore` bayrağı eski cevabın state'i değiştirmesini engeller.
+- `AbortController` ve `signal`, destekleyen `fetch` isteğini iptal etmeye yarar.
+- `AbortError` beklenen iptal sonucudur; kullanıcıya normal hata gibi gösterilmez.
 
-**Kendini yokla:** Kullanıcı "A" yazıp hemen ardından "B" yazdığında, React'in effect yaşam döngüsü sırası nasıl işler?  
-*Cevap:* Render(B) → Commit(B) → Cleanup(A) → Setup(B).
+**Yeni terimler**
 
-**Kendini yokla:** `AbortController` kullanıldığında `catch` bloğunda neden `error.name === 'AbortError'` kontrolü yapılır?  
-*Cevap:* Çünkü isteği biz iptal ettik; bu kullanıcı hatası veya sunucu arızası değildir. Sessizce karşılanmalıdır.
+- **Race condition:** İşlemlerin tamamlanma sırası değişince sonucun yanlış olabildiği durum.
+- **Cleanup:** Effect'in eski dış işi kapatmak için döndürdüğü temizlik fonksiyonu.
+- **`ignore` bayrağı:** Eski async cevabın state'e yazmasına izin verilip verilmeyeceğini belirten yerel boolean.
+- **`AbortController`:** `fetch` gibi API'lere iptal sinyali sağlayan tarayıcı nesnesi.
+- **`AbortError`:** İptal edilen `fetch` Promise'inin reddedilme adı.
+
+**Kendini yokla:** Yeni sorgu geldiğinde eski Promise daha sonra biterse neden onu React kendiliğinden susturmaz?
+*Cevap:* React ağ isteğinin hâlâ geçerli olup olmadığını bilemez; cleanup ile eski sonucu biz etkisizleştiririz.
+
+**Kendini yokla:** `ignore` ile `AbortController` arasındaki temel fark nedir?
+*Cevap:* `ignore` yalnızca eski cevabın state'i güncellemesini engeller; `AbortController` destekleyen ağ isteğini de durdurmayı dener.

@@ -60,13 +60,11 @@ function SelectionGroup({ label, options, value, onChange }: SelectionGroupProps
 const GENRES: Option[] = [
   { value: 'aksiyon', label: 'Aksiyon' },
   { value: 'komedi', label: 'Komedi' },
-  { value: 'dram', label: 'Dram' },
 ]
 
 const SORTS: Option[] = [
   { value: 'puan', label: 'Puan' },
   { value: 'tarih', label: 'Tarih' },
-  { value: 'isim', label: 'İsim' },
 ]
 
 export function SelectionPages() {

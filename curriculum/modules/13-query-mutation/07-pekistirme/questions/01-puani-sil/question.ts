@@ -1,13 +1,13 @@
 import { defineQuestion } from '@rm/content/define'
 export default defineQuestion({
   type: 'code',
-  title: 'Silme isteğini gönder',
+  title: 'Silme mutation’ının durumunu göster',
   difficulty: 'orta',
-  concepts: ['query.useMutation', 'fetch.headers-auth', 'fetch.error-handling'],
-  files: ['deleteRating.ts'],
+  concepts: ['query.useMutation', 'react.events', 'fetch.loading-states'],
+  files: ['DeleteRatingButton.tsx'],
   hints: [
-    'Silme isteğinin hangi film ve hangi guest session için gönderildiğini belirle.',
-    '`fetch` seçeneklerinde `method: "DELETE"`, Bearer header ve URL query parametresi kullan.',
-    '`guest_session_id` değerini encode et; `response.ok` false ise `Error` fırlat.',
+    'Sunucu işlemi bitene kadar kullanıcıya hangi geri bildirimin gerektiğini belirle.',
+    'Silme Promise’ini bir mutation olarak kur ve kullanıcı eyleminden başlat.',
+    'Pending, success ve error durumlarına göre düğme ve mesajı render et.',
   ],
 })

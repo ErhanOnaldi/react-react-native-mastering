@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import type { Dispatch, SetStateAction } from 'react'
-export function useLocalStorage<T>(key: string, initial: T): [T, Dispatch<SetStateAction<T>>] {
+export type ValueUpdater<T> = (value: T | ((current: T) => T)) => void
+export function useLocalStorage<T>(key: string, initial: T): [T, ValueUpdater<T>] {
   const [value, setValue] = useState(initial)
-  return [value, setValue]
+  return [value, () => {}]
 }

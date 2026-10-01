@@ -1,44 +1,53 @@
 ---
-title: "Geri tuşunda eski sonucu düzelt"
-minutes: 6
+title: "Geri tuşunda eski arama sonucunu önle"
+minutes: 7
 kind: practice
 ---
 
-# Geri tuşunda eski sonucu düzelt
+# Geri tuşunda eski arama sonucunu önle
 
-:::pain[Problem]
-`/search?q=matrix` açınca Matrix görünür. “Dövüş ara” bağlantısına basıp hemen geri dönüyorsun; adres `q=matrix` olsa da gecikmiş Dövüş sonucu bir an sonra listeye yazılıyor.
+URL'deki sorgu değişince arama effect'i yeni bir istek başlatır. Ancak ağ cevapları başlama sırasıyla gelmek zorunda değildir; eski istek geç tamamlanıp yeni ekrana yazarsa buna **race condition** (yarış durumu) denir. Sorunu adres, arama alanı ve film listesini ayrı ayrı izleyerek bul.
+
+:::model[URL state]
+Güncel URL, arama ekranının hangi sorguya ait olduğunu söyler. Geri tuşu da URL'yi değiştirir; sorguyu bir kez daha local state'e kopyalarsan adres ve input iki ayrı kaynağa dönüşebilir.
 :::
 
-Bu atölyede hazır bir arama ekranındaki belirtiyi tekrarlayıp nedeni bulacaksın. URL değiştiğinde hangi değer yeni ekranın sahibi? Eski bir asenkron işlem tamamlanınca hâlâ görünür sonucu değiştirebilir mi? Önce gözlem yap, sonra sorunun oluştuğu yeri kendi çözümünle düzelt.
-
-:::model[URL state ve render kimliği]
-Adres route'un ve arama görünümünün güncel seçimini taşır; sonuçları gösteren bileşen bu seçimle senkron olmalıdır. Geri tuşu da yeni bir navigasyondur ve React route'u yeniden render eder. Yeni bağlamdaki ek risk, önceki URL'den başlatılmış ağ işinin daha sonra tamamlanıp artık geçerli olmayan ekranın state'ini güncellemesidir.
+:::model[Effect yaşam döngüsü]
+Bir effect'in dependency değeri değişince önceki effect'in **cleanup**'ı (temizlik fonksiyonu) çalışır, sonra yeni effect başlar. Cleanup, artık eski sorguya ait olan işin ekrandaki sonucu değiştirmesini durduracağın yerdir.
 :::
 
-## Belirtiyi daralt
+## Cevaplar farklı sırada gelebilir
 
-1. Arama sayfasını verilen başlangıç adresinde aç ve ilk sonucu bekle.
-2. Başka bir sorgu bağlantısını seç, sonra yeni sonuç gelmeden geri navigasyon yap.
-3. Adres çubuğunu, input değerini ve film başlığını ayrı ayrı gözle.
-4. Hangi sorgunun başlamış olduğunu ve hangi sorgunun ekranda kalması gerektiğini zaman sırasıyla not et.
-5. Eski işlemin sonucu artık geçerli değilken ekrana yazmasını engelle.
+Geri tuşu hızlıca kullanıldığında isteklerin ve ekranda kalması gereken sorgunun sırasını izle:
 
-`SearchPage`'in davranışını URL'nin tek kaynak olmasıyla birlikte düşün. Sorguyu ayrıca local state'e kopyalamak geri navigasyonda başka bir ayrışma yaratabilir. Bir effect içinde başlayan asenkron işin ömrü, bileşenin render'ları ve cleanup sırasıyla bağlıdır; önceki modülde öğrendiğin cleanup ve race condition bilgisi burada tekrar devreye girer.
+| Sıra | Olay | Hâlâ geçerli sorgu | Beklenen ekran |
+| --- | --- | --- | --- |
+| 1 | `matrix` adresi açılır | `matrix` | Matrix sonucu |
+| 2 | `dovus` adresine gidilir | `dovus` | Dövüş araması yükleniyor |
+| 3 | Hemen geri dönülür | `matrix` | Matrix araması yeniden geçerli |
+| 4 | Eski `dovus` cevabı geç gelir | `matrix` | Matrix kalır; Dövüş sonucu yazılmaz |
 
-Çözümünü birkaç farklı hız ve sıra ile gözle: hızlı yeni sorgu, geri navigasyon ve ilk yükleme. Kullanıcı arayüzünde güncel URL'nin anlattığı sonuç kalmalı. Ağ davranışını anlamak için tarayıcı Network panelinde sorguların başlangıç ve tamamlanma sırasına bakabilirsin.
+Yalnızca sorgu değişince yeni istek başlatmak yetmez. Eski istek tamamlandığında da hâlâ geçerli olup olmadığını kontrol etmelisin. Bir hata belirtisi şudur: adres `q=matrix` ve input `matrix` derken listede Dövüş Kulübü görünür. Bu, eski cevabın temizlenmeden state'i güncellediğini gösterir; effect cleanup'ında eski işin sonuç yazma hakkını kaldır.
 
-:::sector
-Arama ve filtre ekranları hızla değişen kullanıcı girdisi ile gecikmeli ağ cevabını birleştirir. Ekipler URL'nin güncel sorguyu tanımlamasını ve artık geçerli olmayan isteğin ekrana yazmamasını birlikte güvenceye alır; aksi durumda sonuçlar kullanıcıya rastgele görünür.
+Boş sorgu da ayrı bir durumdur: listeyi temizle ve istek başlatma. Dolu sorguda önceki modülde öğrendiğin `fetch` akışını kullan; proje ortamındaki `VITE_TMDB_TOKEN` değerini `Bearer token` (isteği yetkilendiren erişim anahtarı) olarak gönder.
+
+:::info[Derinlemesine (isteğe bağlı)]
+`AbortController`, tarayıcının destekleyen bir isteği durdurmasını sağlayan araçtır. Geç cevabın state'i değiştirmesini engellemek ile ağ aktarımını iptal etmek iki ayrı sonuçtur; bu arama için önce güncelliğini yitirmiş cevabın ekrana yazılmamasını güvenceye al.
 :::
 
 ## Özet
 
-- Geri tuşu URL state'ini değiştirir ve yeni bir render/navigasyon başlatır.
-- Önceki sorgudan gelen geç cevap güncel sonucu ezmemelidir.
-- Belirtiyi URL, input ve sonuç listesini karşılaştırarak daralt.
-- Effect cleanup'ı eski asenkron işin yazma hakkını kapatmak için kullan.
+- Ağ cevapları farklı sırada gelebilir; son başlayan arama her zaman son biten olmayabilir.
+- Güncel sorguyu URL'den oku; URL ile input için iki ayrı state kaynağı oluşturma.
+- Dependency değişimindeki cleanup, eski arama sonucunun ekrana yazılmasını engellemek için çalışır.
+- Boş sorguda listeyi temizle ve yeni istek başlatma.
 
-**Kendini yokla:** URL `matrix` derken `Dövüş` sonucu görünüyorsa hangi iki şey senkron değil?
+**Terimler**
 
-*Cevap:* Güncel URL seçimi ile ekrandaki asenkron sonuç.
+- **Race condition (yarış durumu):** İşlerin bitiş sırası değiştiği için eski sonucun yeni durumu bozması.
+- **Cleanup:** Effect dependency'si değiştiğinde veya component kaldırıldığında çalışan temizlik fonksiyonu.
+- **AbortController:** Destekleyen tarayıcı işlemini, örneğin bir `fetch` isteğini, iptal etme aracı.
+
+**Kendini yokla:** Adres `matrix` iken gecikmiş `dovus` cevabı neden ekrana yazılmamalı?
+
+**Cevap:** Güncel URL `matrix` aramasını seçmiştir; `dovus` cevabı artık geçerli ekranın sonucu değildir.

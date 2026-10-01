@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import * as prettier from 'prettier'
-import { formatOptions } from '@exercise/formatOptions'
+import formatOptions from '@exercise/prettier-config.json'
 
 describe('Sinema biçimi', () => {
   it('TS kodunda tek tırnak ve noktalı virgülsüz çıktı üretir', async () => {

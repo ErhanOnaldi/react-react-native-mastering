@@ -17,4 +17,4 @@ Favori id'leri sayfa yenilenince kaybolmamalı. `useLocalStorage`, state benzeri
 
 - Dosya ve export: `useLocalStorage.ts` → `useLocalStorage<T>(key: string, initial: T)`
 - Dönüş: `[value, setValue]`
-- Setter tipi React state setter'ı gibi doğrudan değer veya updater fonksiyonunu kabul eder.
+- İkinci tuple değeri doğrudan yeni değer veya önceki değeri alan bir güncelleme fonksiyonunu kabul eder.

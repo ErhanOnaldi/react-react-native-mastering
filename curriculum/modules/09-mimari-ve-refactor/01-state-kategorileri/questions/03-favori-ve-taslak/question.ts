@@ -5,14 +5,13 @@ export default defineQuestion({
   title: 'Favori ile taslak',
   difficulty: 'orta',
   concepts: ['arch.state-categories', 'react.controlled-input', 'react.context'],
-  question:
-    'Kullanıcı bir filmi favoriye ekledi, sonra henüz göndermediği yorum formuna yazdı. Doğru eşleşme nedir?',
+  question: `Kullanıcı Dövüş Kulübü'nü favoriledi ve yorum kutusuna "Harika" yazdı. Sonra sayfayı yeniliyor. Ürün kararı favoriyi bu cihazda saklıyor, ama taslağı göndermeden saklamıyor. Hangisi beklenen eşleşme?`,
   options: [
     {
-      text: 'Favori client, yorum taslağı form state',
+      text: 'Favori client state; yorum metni form state',
       correct: true,
       explanation:
-        'Doğru. Favori cihazdaki tercih; yazılan metin henüz gönderilmemiş form değeridir.',
+        'Favori cihazdaki tercih olduğu için saklanabilir; yorum ise gönderilmemiş form taslağıdır ve yenilemede kaybolabilir.',
     },
     {
       text: 'İkisi de server state',
@@ -20,12 +19,13 @@ export default defineQuestion({
         'TMDB verisi olabilir ama bu iki değer kullanıcı tarafından yerelde oluşturuldu.',
     },
     {
-      text: 'İkisi de URL state',
-      explanation: 'Bu değerler sayfa adresinin paylaşılabilir gezinme seçimi değildir.',
+      text: 'Favori URL state, yorum client state',
+      explanation:
+        'Favori başkasına paylaşılan bir sayfa seçimi değil; yorum da genel cihaz tercihi değil, form taslağı.',
     },
     {
-      text: 'Favori form, yorum URL state',
-      explanation: 'Favori bir form alanı değil; yorum taslağını URL’ye yazmak gereksizdir.',
+      text: 'Favori form state, yorum client preference',
+      explanation: 'Yıldız bir taslak alanı değil; yazılan yorumun sahibi form gönderimidir.',
     },
   ],
 })

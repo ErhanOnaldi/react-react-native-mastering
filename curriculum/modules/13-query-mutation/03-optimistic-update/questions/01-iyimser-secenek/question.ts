@@ -5,21 +5,22 @@ export default defineQuestion({
   difficulty: 'kolay',
   concepts: ['query.optimistic', 'query.useMutation'],
   question:
-    'Yalnızca tıklanan butonda “8,5 gönderiliyor” göstermek istiyorsun. Hangisi en küçük çözüm?',
+    'Kod tıklandığında bekleyen puan hangi yerde görünür?\n\n```tsx\nconst save = useMutation({ mutationFn: rate })\nreturn <>{save.isPending && <span>{save.variables.value} gönderiliyor</span>}<button onClick={() => save.mutate({ movieId: 550, value: 8.5 })}>Kaydet</button></>\n```',
   options: [
     {
-      text: 'Pending iken `mutation.variables.value` göster.',
+      text: 'Yalnız bu bileşendeki `span` içinde 8,5 görünür; query cache’i değişmez.',
       correct: true,
-      explanation: 'Tek bileşendeki geçici değer için cache patch’i gerekmez.',
+      explanation: '`variables` son `mutate` çağrısının girdisini verir; kod cache’e yazmıyor.',
     },
     {
-      text: 'Her query key’ini `setQueryData` ile değiştir.',
-      explanation: 'Tüm cache’i elle güncellemek gereksiz ve hata risklidir.',
+      text: 'Bütün puan listeleri 8,5 olarak güncellenir.',
+      explanation: 'Mutation state bileşene aittir; ortak query cache’i burada değişmiyor.',
     },
     {
-      text: 'POST bitene kadar hiçbir bilgi gösterme.',
-      explanation: 'Kullanıcı gecikmede tıklamanın alındığını anlayamaz.',
+      text: 'Başarıdan sonra span ilk kez görünür.',
+      explanation: '`isPending` yalnız Promise beklerken doğrudur; başarıda false olur.',
     },
   ],
-  explanation: 'Paylaşılan listede geçici sonucu göstermek gerekirse onMutate ile cache güncelle.',
+  explanation:
+    'Mutation variables ile geçici bilgiyi mutation’ı başlatan bileşende gösterebilirsin.',
 })

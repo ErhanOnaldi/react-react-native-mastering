@@ -6,153 +6,127 @@ kind: concept
 
 # Content Security Policy ve temel güvenlik başlıkları
 
-:::pain[Enjekte edilen reklam script'i ve görünmez iframe tuzağı]
-Kullanıcı yorumları arasında sızan küçük bir betik, harici bir sunucudan gizlice madencilik ve reklam script'i indiriyor; tarayıcı hiçbir kısıtlama olmadan bu yabancı alan adına bağlanıp kodu çalıştırıyor. Bir başka sayfada ise uygulamanın oturum ekranı, saldırganın hazırladığı şeffaf bir `<iframe>` içine gömülmüş durumda; kullanıcı oyun butonuna tıkladığını sanırken arka planda "Hesabı Sil" düğmesine basıyor. Çıkış noktasını kaçışlamak tek başına yeterli bir savunma hattı oluşturmadığında, tarayıcının kaynak politikaları devreye girmelidir.
-:::
+Sinema'nın film detay sayfası TMDB'den poster yüklüyor ve API'ye `fetch` isteği atıyor. React kodunda güvenli davranmış olsak bile tarayıcıya bu kaynakları açıkça tarif etmek ek bir koruma katmanı sağlar.
 
-## Tarayıcının kaynak kalkanı: CSP
+## Tarayıcıya izin verilen kaynağı söyle
 
-Content Security Policy (CSP), sunucunun HTTP yanıt başlığında (`Content-Security-Policy`) tarayıcıya gönderdiği ve tarayıcının o sayfa için izin verilen kaynakları katı kurallarla kısıtlamasını sağlayan bir güvenlik mekanizmasıdır.
+Bir **HTTP response header** (HTTP yanıt başlığı), sunucunun sayfa yanıtıyla birlikte tarayıcıya gönderdiği bir ayardır. `Content-Security-Policy` ya da kısaca **CSP**, bu başlıklardan biridir: sayfanın hangi kaynaklardan içerik yükleyebileceğini tarayıcıya söyler.
 
-React bileşenlerinde metin kaçışlaması yapmak XSS riskini büyük ölçüde azaltsa da, üçüncü parti kütüphaneler, unutulmuş `href` bağlantıları veya DOM manipülasyonları zafiyet yaratabilir. CSP, kodda bir açık oluşsa bile saldırganın harici bir sunucudan betik yüklemesini veya çalınan veriyi dışarı sızdırmasını (data exfiltration) engelleyen son savunma ağıdır.
+Örneğin yalnız uygulamanın kendi adresinden görsel yüklenmesine izin veren kural:
 
-### Temel CSP yönergeleri
-
-Bir CSP başlığı noktalı virgülle ayrılmış yönergelerden oluşur. Her yönerge belirli bir kaynak tipini denetler:
-
-1. **`default-src`:** Özel olarak tanımlanmamış tüm kaynak türleri için geçerli varsayılan kuralı belirler. Genellikle `'self'` (yalnızca uygulamanın kendi etki alanı) olarak ayarlanır.
-2. **`script-src`:** Hangi kaynaklardan JavaScript çalıştırılabileceğini sınırlar. Varsayılan olarak satır içi betikleri (`<script>alert(1)</script>` veya `onclick` özniteliklerini) engeller. Güvenli satır içi kodlar için sunucunun ürettiği rastgele tek kullanımlık belirteçler (`'nonce-...'`) veya SHA hash'leri kullanılır.
-3. **`img-src`:** Sayfada görüntülenebilecek görsellerin (`<img>`, CSS arka planları, favicon) etki alanlarını belirler. Örneğin Sinema uygulamasında TMDB posterleri için `https://image.tmdb.org` ve yerel base64 önizlemeleri için `data:` kaynağı eklenmelidir.
-4. **`connect-src`:** JavaScript'in `fetch`, `XMLHttpRequest` veya WebSocket ile ağ isteği atabileceği uç noktaları sınırlar. Uygulamanın bağlandığı TMDB API (`https://api.themoviedb.org`) veya oturum sunucusu bu listede yer almalıdır.
-5. **`frame-ancestors`:** Sayfanın başka siteler tarafından `<iframe>`, `<frame>`, `<object>` veya `<embed>` içine gömülüp gömülemeyeceğini denetler. Clickjacking saldırılarını engellemek için `'none'` atanır.
-6. **`object-src`:** Flash, Java applet gibi eski ve güvensiz eklentileri kısıtlar. Modern uygulamalarda her zaman `'none'` olarak ayarlanır.
-7. **`base-uri`:** Sayfadaki `<base href="...">` etiketinin işaret edebileceği etki alanını kısıtlar; göreli linklerin saldırganın sitesine yönlendirilmesini önlemek için `'self'` verilir.
-
-## Clickjacking ve frame-ancestors
-
-Clickjacking (tıklama hırsızlığı), saldırganın hedef web sitesini kendi sayfasında görünmez veya yarı saydam bir `<iframe>` içine yerleştirmesi ve kullanıcının ilgisini çekecek sahte bir görselin (örneğin "Ödül Kazan" butonu) altına tam hedef düğmenin ("Hesabımı Kapat" veya "Parayı Transfer Et") denk getirilmesiyle gerçekleşir.
-
-Kullanıcı sahte butona tıkladığında aslında görünmez çerçevenin içindeki düğmeyi tetiklemiş olur.
-
-Geçmişte bu saldırı `X-Frame-Options: DENY` veya `SAMEORIGIN` HTTP başlığıyla engelleniyordu. Modern web standartlarında bu kuralın yerini CSP'nin `frame-ancestors` yönergesi almıştır:
-
-- `frame-ancestors 'none';` → Sayfa hiçbir sitede (kendi sitesi dahil) iframe içine gömülemez.
-- `frame-ancestors 'self';` → Sayfa yalnızca kendi etki alanı altındaki sayfalarda iframe içine alınabilir.
-- `frame-ancestors https://guvenilir-ortak.example;` → Yalnızca belirtilen harici etki alanının sayfayı gömmesine izin verilir.
-
-## Politika değerlendirme ve ihlal süreci
-
-Tarayıcı bir HTML belgesini yüklerken gelen başlığı adım adım işler:
-
-| Kaynak / Eylem | Örnek İstek | İlgili Yönerge | Karar Kuralı | Sonuç |
-| --- | --- | --- | --- | --- |
-| Uygulama bundle'ı | `<script src="/assets/index.js">` | `script-src 'self'` | Kendi origin'i ile eşleşti | Yüklendi ve çalıştı |
-| Kötü amaçlı betik | `<script src="https://evil.example/bot.js">` | `script-src 'self'` | `evil.example` listede yok | Tarayıcı engelledi (Console CSP Error) |
-| Film posteri | `<img src="https://image.tmdb.org/t/p/w500/...">` | `img-src 'self' https://image.tmdb.org` | TMDB etki alanı izin listesinde | Görsel başarıyla render edildi |
-| Bilinmeyen görsel | `<img src="https://saldirgan.example/tracker.png">` | `img-src 'self' https://image.tmdb.org` | Listedeki kaynaklarla uyuşmuyor | Görsel engellendi, istek gitmedi |
-| Harici API çağrısı | `fetch('https://api.themoviedb.org/3/...')` | `connect-src 'self' https://api.themoviedb.org` | API etki alanı izinli | Yanıt başarıyla alındı |
-
-## Önce kırık, sonra doğru: Güvenlik başlıklarını kurgulamak
-
-Statik bir SPA yayınlanırken veya bir Node/ASP.NET Core sunucusu yapılandırılırken başlıkların doğru kurgulanması gerekir.
-
-Önce hiçbir kısıtlama yapmayan veya satır içi betiklere açık güvensiz başlık yapılandırmasını görelim:
-
-```http title="Eksik ve Güvensiz Başlıklar"
-HTTP/1.1 200 OK
-Content-Type: text/html
-/* HATA: CSP tanımlanmamış, iframe kısıtlaması yok, MIME sniffing açık */
+```text
+Content-Security-Policy: img-src 'self'
 ```
 
-Şimdi uygulamanın tüm ihtiyaçlarını kapsayan ve gereksiz izinleri kapatan güvenli CSP ve güvenlik başlıkları kümesini inceleyelim:
+Burada `img-src` bir **directive**'tir (yönerge); yani CSP içinde belirli bir içerik türü için kuraldır. `'self'`, sayfanın kendi origin'ini, yani aynı şema, alan adı ve portu anlatır. Bu ayarla uygulama kendi alanındaki görseli gösterebilir ama başka bir alandaki poster tarayıcı tarafından engellenir.
 
-```ts check title="src/shared/config/securityHeaders.ts"
-export interface SecurityPolicyConfig {
-  allowedApiOrigins: string[]
-  allowedImageOrigins: string[]
-  allowFraming?: boolean
-}
+Şimdi Sinema posteri TMDB'den gelsin:
 
-export function formatSecurityPolicy(config: SecurityPolicyConfig): string {
-  const directives: string[] = [
-    "default-src 'self'",
-    "script-src 'self'",
-    `img-src 'self' ${config.allowedImageOrigins.join(' ')} data:`.trim(),
-    `connect-src 'self' ${config.allowedApiOrigins.join(' ')}`.trim(),
-    "object-src 'none'",
-    "base-uri 'self'",
-  ]
-
-  if (config.allowFraming) {
-    directives.push("frame-ancestors 'self'")
-  } else {
-    directives.push("frame-ancestors 'none'")
-  }
-
-  return directives.join('; ')
-}
+```text
+Content-Security-Policy: img-src 'self' https://image.tmdb.org
 ```
 
-Bu politikayı uygulayan örnek HTTP yanıt başlıkları:
+Bu kez tarayıcı kendi alanımızdan ve `image.tmdb.org` adresinden görsel yükleyebilir. İzin listesini dar tutmak neden yararlı? Sayfada yanlışlıkla istenmeyen bir görsel kaynağı kullanılırsa tarayıcı isteği göndermez; sorun konsolda CSP ihlali olarak görünür.
 
-```http title="Üretim Güvenlik Başlıkları"
-Content-Security-Policy: default-src 'self'; script-src 'self'; img-src 'self' https://image.tmdb.org data:; connect-src 'self' https://api.themoviedb.org; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
-X-Content-Type-Options: nosniff
-Referrer-Policy: strict-origin-when-cross-origin
-Strict-Transport-Security: max-age=31536000; includeSubDomains
+## Görsel ve API isteği farklıdır
+
+Poster yüklemek ile `fetch` çağrısı yapmak ayrı türde işlemlerdir. CSP'de `img-src` görsellerin, `connect-src` ise JavaScript'in `fetch`, `XMLHttpRequest` ve WebSocket bağlantılarının gidebileceği adresleri yönetir.
+
+Sinema, hem TMDB posterini göstermeli hem TMDB API'sine istek atmalı:
+
+```text
+Content-Security-Policy: img-src 'self' https://image.tmdb.org; connect-src 'self' https://api.themoviedb.org
 ```
 
-## Diğer temel güvenlik başlıkları
+Yönergeler noktalı virgülle ayrılır. Görsel alanı `image.tmdb.org`, API alanı `api.themoviedb.org` olduğu için her biri doğru kurala eklenmiştir. API adresini yalnızca `img-src` içine yazarsak fetch izni vermiş olmayız; her yönerge sadece kendi içerik türünü denetler.
 
-Tek başına CSP tüm saldırı vektörlerini kapatmaz; tarayıcının diğer güvenlik mekanizmalarını devreye sokan ek başlıklar kullanılır:
+Birden çok kaynak denemesinin sonucu şöyle görünür:
 
-1. **`X-Content-Type-Options: nosniff`:** Tarayıcının sunucudan gelen `Content-Type` başlığını görmezden gelip dosya içeriğine bakarak MIME türü tahmin etmesini (MIME-sniffing) engeller. Örneğin bir kullanıcının yüklediği zararsız görünen bir metin dosyasının tarayıcı tarafından HTML veya JavaScript olarak çalıştırılmasını önler.
-2. **`Strict-Transport-Security` (HSTS):** Tarayıcıya sitenin gelecekteki tüm ziyaretlerde yalnızca HTTPS üzerinden açılması gerektiğini bildirir (`max-age=31536000; includeSubDomains`). Kullanıcının yanlışlıkla `http://` yazması durumunda bile tarayıcı ağa çıkmadan önce bağlantıyı HTTPS'e yükseltir.
-3. **`Referrer-Policy: strict-origin-when-cross-origin`:** Kullanıcı siteden dışarıdaki bir bağlantıya tıkladığında giden `Referer` başlığında hassas URL parametrelerinin sızmasını önler. Aynı origin'de tam yol gönderilirken, harici sitelere yalnızca sitenin kök etki alanı iletilir.
+| Tarayıcı eylemi | İlgili yönerge | İzin verilen değer | Sonuç |
+| --- | --- | --- | --- |
+| `/assets/app.js` yükle | `script-src 'self'` | Kendi origin'i | Script yüklenir |
+| TMDB posteri yükle | `img-src 'self' https://image.tmdb.org` | TMDB görsel origin'i | Poster görünür |
+| `fetch` ile TMDB API'sine bağlan | `connect-src 'self' https://api.themoviedb.org` | TMDB API origin'i | İstek yapılır |
+| Bilinmeyen alan adından görsel yükle | `img-src 'self' https://image.tmdb.org` | Kaynak listede yok | Tarayıcı engeller |
 
-## Report-Only modu ve Dev/Prod ayrımı
+Tarayıcı bir istek ya da yükleme gördüğünde ona karşılık gelen yönergeyi kontrol eder. Kaynak listede yoksa içeriği engeller; bu yüzden hata yalnızca kodda değil tarayıcının konsolunda da görünür.
 
-Katı bir CSP politikasını doğrudan canlı ortama almak, gözden kaçan bir görsel kaynağını veya analiz aracını kırarak kullanıcı deneyimini bozabilir.
+Bir yönergeyi başlık metnine çevirirken adı ve kaynakları boşlukla, yönergelerin kendisini `; ` ile ayırırız. Örneğin `img-src` ve `connect-src` için iki kural böyle tek başlık değerine dönüşür. Boş kaynak listesi olan yönergeyi başlığa eklemeyiz; aksi halde ortaya gereksiz veya anlamsız bir kural çıkar. Kaynak metinlerinde baştaki ve sondaki boşlukları temizlemek de düzgün bir başlık üretir.
 
-1. **`Content-Security-Policy-Report-Only`:** Bu başlık ihlalleri engellemez; yalnızca tarayıcı konsoluna yazar ve tanımlanmışsa `report-to` uç noktasına JSON raporu gönderir. Böylece üretimde gerçek kullanıcıların hangi kaynakları tetiklediği ölçülür, politika olgunlaşınca asıl `Content-Security-Policy` başlığına geçilir.
-2. **Vite ve Geliştirme Ortamı:** `vite dev` çalışırken sıcak modül yenileme (HMR), hata bildirim pencereleri ve stil enjeksiyonları için satır içi script'ler (`inline scripts`) ve yerel WebSocket bağlantıları kullanılır. Bu nedenle sıkı CSP politikaları genellikle yerel dev sunucusunda değil, üretim dağıtımında (Netlify/Cloudflare `_headers` dosyası, Nginx veya ters vekil sunucu yapılandırması) uygulanır.
+Örneğin kaynaklardan biri `'self'`, diğeri TMDB adresiyse `img-src: [" 'self' ", "https://image.tmdb.org"]` girdisi `img-src 'self' https://image.tmdb.org` kuralına dönüşür. Boşluklar temizlenip kaynaklar tek boşlukla birleştirilir; boş `font-src` listesi varsa o yönerge çıktıda yer almaz.
 
-## Sık hatalar ve düzeltmeleri
+## Varsayılan kuralı ve çerçevelenmeyi ekle
 
-:::mistake[script-src içine unsafe-inline eklemek]
-**Belirti:** CSP başlığı eklendiği halde XSS zafiyeti tespit ediliyor ve saldırganın eklediği script sorunsuz çalışıyor.  
-**Neden:** `script-src 'self' 'unsafe-inline'` tanımlanmıştır. `'unsafe-inline'` bayrağı satır içi betik korumasını tamamen kapatır ve CSP'nin en kritik savunma kalkanını düşürür.  
-**Düzeltme:** Satır içi betik gerekiyorsa `'unsafe-inline'` yerine sunucu tarafından üretilen `'nonce-...'` veya kodun SHA hash'ini kullan.
+Bir sayfada her içerik türü için özel yönerge yazmak istemeyebilirsin. `default-src`, ayrıca kuralı bulunmayan türler için varsayılan kaynak listesidir. Özel yönerge varsa kendi türünde `default-src` yerine o kullanılır.
+
+Sinema'nın ilk politikası kendi kaynağını varsayılan yapıp poster ve API için gerekli iki istisnayı ekleyebilir:
+
+```text
+Content-Security-Policy: default-src 'self'; img-src 'self' https://image.tmdb.org; connect-src 'self' https://api.themoviedb.org
+```
+
+Örneğin `font-src` özel olarak yazılmadığı için varsayılan kaynak kuralına uyar. Ama `img-src` açıkça tanımlandığından posterler için `default-src` kullanılmaz; posterin adresi `img-src` izinlerinde olmalıdır. Böylece genel kural dar kalırken ihtiyaç duyulan dış kaynaklar görünür biçimde listelenir.
+
+Başka bir site uygulamanı gizli bir `<iframe>` içine koyup ziyaretçiyi oradaki görünmez düğmelere tıklatmaya çalışabilir. Bu aldatma **clickjacking** (tıklama hırsızlığı) olarak bilinir. Sayfanın nerelerde çerçeve içine alınabileceğini `frame-ancestors` belirler:
+
+```text
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'
+```
+
+`'none'`, hiçbir sitenin sayfayı iframe içine gömemeyeceğini söyler. `frame-src` ise ters yönlü bir kuraldır: senin sayfandaki iframe'lerin nereden yüklenebileceğini söyler. İki yönergenin adları benzer olsa da denetledikleri taraflar farklıdır.
+
+## Politikayı canlıya almadan önce gözle
+
+Yeni bir CSP kuralı yanlışsa çalışan bir özelliği de engelleyebilir. Örneğin `img-src` listesine TMDB'yi eklemeyi unutursan posterler kaybolur. Bunu canlıda direkt zorunlu kural yapmadan önce `Content-Security-Policy-Report-Only` başlığıyla denemek mümkündür:
+
+```text
+Content-Security-Policy-Report-Only: default-src 'self'; img-src 'self'
+```
+
+`Report-Only` tarayıcıya ihlalleri raporlamasını söyler ama kaynağı engellemez. Böylece politikayı gerçek sayfada gözleyip eksik izinleri bulabilirsin. Doğru olduğuna karar verince `Content-Security-Policy` başlığıyla kuralı uygularsın. Vite geliştirme sunucusu HMR (hot module replacement; dosyayı kaydedince modülü sayfayı tümden yenilemeden değiştirme) için WebSocket ve satır içi kaynaklar kullanabildiğinden, sıkı üretim politikası geliştirme ortamını bozabilir; CSP'yi genellikle dağıtım sunucusunda yapılandırırız.
+
+:::mistake[API adresini yalnızca img-src içine yazmak]
+**Belirti:** TMDB posteri görünür ama `fetch` isteği konsolda CSP tarafından engellenir.  
+**Neden:** `img-src` görsel isteklerini denetler; JavaScript'in ağ bağlantılarını denetlemez.  
+**Düzeltme:** API origin'ini `connect-src` yönergesine ekle.
 :::
 
-:::mistake[frame-ancestors yerine frame-src ile clickjacking engellemeye çalışmak]
-**Belirti:** CSP başlığına `frame-src 'none'` yazıldığı halde saldırgan site sayfayı iframe içine gömebiliyor.  
-**Neden:** `frame-src`, uygulamanın kendi içinde açabileceği iframe'leri sınırlar. Başka sitelerin bu uygulamayı gömmesini denetleyen yönerge ise `frame-ancestors` yönergesidir.  
-**Düzeltme:** Sayfanın gömülmesini engellemek için `frame-ancestors 'none'` kuralını kullan.
+:::mistake[frame-src ile sayfanın gömülmesini engellemeye çalışmak]
+**Belirti:** `frame-src 'none'` yazmana rağmen başka bir site sayfanı iframe içine gömebilir.  
+**Neden:** `frame-src`, senin sayfanda açılan iframe'in kaynağını sınırlar; dış sitelerin seni çerçevelemesini yönetmez.  
+**Düzeltme:** Gömülmeyi sınırlamak için `frame-ancestors 'none'` kullan.
 :::
 
-:::mistake[connect-src yönergesine API etki alanını eklemeyi unutmak]
-**Belirti:** Uygulama yerelde çalışırken canlıya alındığında tüm `fetch` istekleri `Refused to connect` hatasıyla başarısız oluyor.  
-**Neden:** `connect-src 'self'` tanımlanmış ancak API'nin bulunduğu harici etki alanı (`https://api.themoviedb.org`) listeye eklenmemiştir.  
-**Düzeltme:** Uygulamanın istek attığı tüm API etki alanlarını `connect-src` listesine açıkça dahil et.
+:::mistake[Report-Only'ı kalıcı koruma sanmak]
+**Belirti:** Konsolda ihlal raporu vardır ama tarayıcı istenmeyen kaynağı yine yükler.  
+**Neden:** `Report-Only` gözlem modudur; ihlali raporlar, engellemez.  
+**Düzeltme:** Politikayı gözleyip doğruladıktan sonra zorlayıcı `Content-Security-Policy` başlığına geçir.
 :::
 
-:::sector[Sektör standardı: Statik hostlarda CSP dağıtımı]
-Vite gibi araçlarla derlenen statik SPA'larda CSP başlıkları genellikle HTML `<meta http-equiv="Content-Security-Policy">` etiketiyle ya da statik sunucu başlık dosyalarıyla dağıtılır. Ancak `frame-ancestors` ve `report-to` yönergeleri `<meta>` etiketi içinde desteklenmez; tarayıcı bunları yalnızca gerçek HTTP yanıt başlıklarında kabul eder. Bu yüzden Netlify `public/_headers`, Vercel `vercel.json` ya da Cloudflare Pages başlık kuralları sektör standardıdır.
+:::info[Derinlemesine (isteğe bağlı)]
+`script-src`, çalıştırılabilir JavaScript dosyalarının kaynağını sınırlar. Satır içi script gerekiyorsa `'unsafe-inline'` ile korumayı gevşetmek yerine, sunucunun ürettiği tek kullanımlık `nonce` değeri ya da script içeriğinin hash'iyle (kısa parmak iziyle) izin vermek mümkündür. `object-src 'none'` eski eklentileri, `base-uri` `<base>` etiketinin hedefini sınırlar. `X-Content-Type-Options: nosniff` tarayıcının MIME türünü (dosyanın içerik türü, örneğin HTML ya da JavaScript) içerikten tahmin etmesini engeller. HSTS (HTTP Strict Transport Security) tarayıcıya sonraki ziyaretlerde HTTPS kullanmasını söyler. Bunlar farklı HTTP başlıklarıdır ve uygulama dağıtımında ayrıca yapılandırılır; bu dersin ana konusu değildir.
 :::
 
 ## Özet
 
-- CSP (Content Security Policy), tarayıcının çalıştırabileceği betikleri, yükleyebileceği görselleri ve ağ isteklerini kısıtlayan son savunma hattıdır.
-- `default-src 'self'` genel kısıtlamayı belirlerken, `img-src` ve `connect-src` üçüncü taraf API ve görsel sağlayıcılarına kontrollü izin verir.
-- Clickjacking saldırısına karşı sayfayı iframe gömülmelerinden korumak için `frame-ancestors 'none'` kuralı kullanılır.
-- `X-Content-Type-Options: nosniff` MIME tahminini engeller; HSTS HTTPS kullanımını zorunlu tutar.
-- Yeni politikalar önce `Content-Security-Policy-Report-Only` ile canlıda ölçülür; dev ortamındaki HMR araçlarını engellememek için sıkı CSP prodüksiyon sunucu başlıklarında verilir.
+- CSP, HTTP yanıt başlığıyla tarayıcıya hangi kaynakların kabul edileceğini bildirir.
+- `img-src` görselleri, `connect-src` ise `fetch` gibi ağ bağlantılarını sınırlar.
+- `default-src` açıkça kural verilmeyen kaynak türlerine uygulanır; özel yönerge kendi türü için önceliklidir.
+- `frame-ancestors 'none'` başkalarının sayfanı iframe içine koymasını önler; `frame-src` sayfanın yüklediği iframe'leri yönetir.
+- `Report-Only` politikayı gözlemlemeye yarar, engelleme yapmaz; uygulanacak kural `Content-Security-Policy` başlığıdır.
 
-### Kendini yokla
+**Yeni terimler**
 
-1. Bir web sitesinde `default-src 'self'` ve `img-src 'self' https://image.tmdb.org` tanımlıysa, sitede `<img src="https://evil.example/pic.jpg">` etiketi nasıl davranır?
-*Cevap:* Tarayıcı `img-src` listesini denetler; `evil.example` izin verilen kaynaklar arasında olmadığı için görseli yüklemeyi reddeder ve konsola bir CSP ihlal hatası yazar.
+- `HTTP response header`: Sunucunun HTTP yanıtıyla tarayıcıya gönderdiği ayar bilgisi.
+- `CSP`: Tarayıcının yükleyebileceği ve bağlanabileceği kaynakları sınırlayan politika.
+- `directive`: CSP içinde bir içerik türünün kuralını belirleyen yönerge.
+- `origin`: Şema, alan adı ve portun oluşturduğu web adresi kökeni.
+- `clickjacking`: Kullanıcıyı gizlenmiş veya yanıltıcı bir çerçevede tıklatmaya dayanan saldırı.
+- `Report-Only`: CSP'yi engellemeden, ihlalleri gözlemleme modu.
 
-2. `frame-ancestors 'none'` yönergesi hangi saldırı türünü doğrudan engeller?
-*Cevap:* Clickjacking saldırısını engeller; saldırganın sayfayı kendi hazırladığı gizli bir `<iframe>` içine gömerek kullanıcıya fark ettirmeden tıklama yaptırmasını imkansız hale getirir.
+**Kendini yokla**
+
+1. Poster için TMDB görsel alanı, API için TMDB API alanı gerekiyorsa hangi yönergeler kullanılır?  
+   *Poster `img-src`, `fetch` isteği `connect-src` ile izin alır.*
+2. `default-src 'self'` yanında `img-src 'self' https://image.tmdb.org` varsa `https://evil.example/p.jpg` yüklenir mi?  
+   *Hayır. Görseller için özel `img-src` yönergesi varsayılanın yerine geçer ve `evil.example` listede yoktur.*

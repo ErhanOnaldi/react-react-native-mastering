@@ -7,7 +7,7 @@
   </defs>
   <rect x="18" y="54" width="150" height="88" rx="10" class="d-accent" />
   <text x="93" y="82" text-anchor="middle" class="d-title">FormField</text>
-  <text x="93" y="106" text-anchor="middle" class="d-muted">RHF adı: email</text>
+  <text x="93" y="106" text-anchor="middle" class="d-muted">RHF adı: note</text>
   <text x="93" y="128" text-anchor="middle" class="d-muted">ve alan hatası</text>
   <rect x="205" y="54" width="150" height="88" rx="10" class="d-box" />
   <text x="280" y="82" text-anchor="middle" class="d-title">FormItem</text>

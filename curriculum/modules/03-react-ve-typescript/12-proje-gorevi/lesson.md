@@ -1,42 +1,32 @@
 ---
-title: "Sinema proje görevi"
+title: "Sinema: statik arama ve favoriler"
 minutes: 7
 kind: project
 ---
 
-# Sinema proje görevi
+# Sinema: statik arama ve favoriler
 
-:::pain[Arama ve favori iki ayrı deneme gibi davranıyor]
-Film kartları ekranda duruyor ama favori işareti aramada kayboluyor. API'ye geçmeden önce, gerçek örnek veride arama ve favori etkileşiminin aynı uygulama içinde birlikte çalıştığını kurman gerekiyor.
-:::
-
-## Bu aşamada neler birleşiyor?
-
-İlk görevde fixture'lardan tipli statik film listesi ve üç gösterim bileşeni hazırlanır. Her bileşenin dosya/export ve props sözleşmesi görev metninde bulunur. Afiş yolu eksik olabileceği için veri tipini ve görünür fallback'i birlikte düşün; eksik resim adresini gerçekmiş gibi kullanma.
-
-İkinci görev `App` içinde sorgu ve favori kimliklerinin sahibi olmayı gerektirir. Arama kutusu controlled kalır; grid aynı owner'dan aldığı görünür filmleri gösterir. Favori bilgisini film id'leriyle tutarsan filtrelenip geri gelen kart aynı durumu alır. Filtrelenmiş listeyi state'e kopyalamadan render sırasında kaynaktan türet.
+Bu proje iki adımdan oluşur. Önce hazır TMDB fixture'larından statik film verisini çıkarıp kart, grid ve arama bileşenlerini kurarsın. Ardından `App` arama sorgusu ile favori id'lerinin sahibi olur; ekranda görünen filmler bu değerlerden hesaplanır. Bu aşamada API isteği yok.
 
 :::model[Props aşağı, olay yukarı]
-Ortak ebeveyn paylaşılacak state'i tutar ve değeri çocuklara props olarak verir. Çocuk event'ten çıkan yeni bilgiyi callback ile yukarı yollar; sonraki render aynı kaynağı yeniden dağıtır. Bu projede arama kutusu sorguyu bildirir, kart da hangi filmde favori değişikliği istediğini bildirir.
+Ortak ebeveyn paylaşılacak state'i tutup props olarak çocuklara verir. Çocuk yeni bilgiyi callback ile yukarı yollar. Burada arama alanı sorguyu, film kartı ise değişen filmin id'sini bildirir.
 :::
 
-:::model[State'in sahibi ve component kimliği]
-React state'i ağaçtaki component konumu/türü/key ile, ürün verisi ise kendi id'siyle anlam kazanır. Film listesinin sırası değişebilir ama favori kimliği değişmez. Sabit film id'sini listede key olarak kullan.
+:::model[Ağaçta kimlik ve key]
+Film id'si kaydı tanımlar; sıra veya görünür başlık değildir. Grid satırlarında bu id'yi `key` olarak kullan, favori listesini de id'lerle tut. Böylece aramayla gizlenen kart geri geldiğinde favori durumu aynı filme bağlanır.
 :::
 
-## İşi gözle kontrol et
+## Ekranı sırayla dene
 
-Önce `Dövüş` araması yap; sonra bir filmi favoriye ekle, başka filmi ara ve sorguyu temizle. Favori işareti geri gelmeli ve başka filme geçmemeli. Sonuç yokken açıklayıcı boş durum görünmeli. Bu adımlar state sahibini ve türetilmiş görünümü kontrol eder; ağ katmanını bu işin içine katmaz.
+Önce `Dövüş Kulübü` ara ve bir kartı favorile. Başka bir başlık arayıp sorguyu temizlediğinde ilk filmin işareti geri gelmeli. Eşleşme yoksa boş durum mesajı görünmeli. Bu akış sana sorgunun görünür listeyi, favori id'lerinin ise film durumunu yönettiğini gösterir.
+
+İlk adımda poster yolu olmayan kayıt için kırık görsel göstermeyen bir metin kullan. Bileşenlerin değerlerini ve callback'lerini sözleşmelerine göre bağla; ikinci adımda aynı arayüzleri `App` ortak state'iyle çalıştır.
 
 ## Özet
 
-- Örnek veriyi fixture'dan al ve mevcut `Movie` sözleşmesini koru.
-- Sorgu ile favori kimliklerini uygulamanın ortak üst bileşeninde tut.
-- Görünür listeyi türet, favori güncellemesinde yeni dizi üret ve stable key kullan.
+- Statik veriyi fixture'lardan çıkar ve `Movie` tipini koru.
+- Sorgu ile favori id'lerini `App` içinde tut; filtrelenmiş listeyi state'e kopyalama.
+- Favori güncellemesinde yeni dizi üret ve film id'sini `key` yap.
 
-**Kendini yokla:** Bir kartın favori düğmesi hangi değeri parent'a bildirmeli?  
-*Cevap:* Değişiklik istenen filmin id'sini; parent favori state'inin sahibidir.
-
-:::sector
-Gerçek projede veri kaynağını önce sabit tutmak, bileşen API'sini ağ durumlarından bağımsız biçimde kurmanı sağlar. Aynı arayüz sözleşmesi daha sonra API verisi geldiğinde de kullanılabilir.
-:::
+**Kendini yokla:** Kart favori değişikliğinde ortak ebeveyne hangi bilgiyi bildirmeli?
+*Cevap:* Durumu değiştirilecek filmin id'sini.

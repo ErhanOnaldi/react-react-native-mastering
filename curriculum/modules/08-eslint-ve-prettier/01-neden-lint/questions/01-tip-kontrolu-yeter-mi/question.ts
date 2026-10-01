@@ -5,28 +5,35 @@ export default defineQuestion({
   title: 'Tip kontrolü neden yetmedi?',
   difficulty: 'kolay',
   concepts: ['tooling.eslint', 'tooling.type-check', 'react.useEffect.deps'],
-  question:
-    "`MovieDetailsPage` içinde `useEffect(..., [])` var ama içeride URL'den gelen `id` okunuyor. `tsc -b` geçti. En doğru yorum hangisi?",
+  question: `Bu bileşende TypeScript derlemesi başarılı. ESLint'in kullanılmayan ad kuralı ne bildirir?
+
+\`\`\`tsx
+const poster = '/fight-club.jpg'
+const title = 'Dövüş Kulübü'
+
+export function MovieTitle() {
+  return <h1>{title}</h1>
+}
+\`\`\``,
   options: [
     {
-      text: 'Tipler doğru olsa da effect yeni `id` için çalışmayabilir; Hook bağımlılık kuralı bunu işaretler.',
+      text: '`poster` kullanılmıyor; ESLint bunu seçili kurala göre bildirebilir.',
       correct: true,
       explanation:
-        'Evet. TypeScript değerlerin tipini kontrol eder; effect’in hangi değişime tepki vereceğini tek başına doğrulamaz.',
+        'Doğru. Kaynakta `poster` tanımlı ama bileşen onu okumuyor; bu, tip denetiminden farklı bir kuraldır.',
     },
     {
-      text: '`tsc -b` geçtiğine göre detay sayfası her zaman yeni filmi gösterir.',
-      explanation: 'Tip doğruluğu çalışma zamanı senkronizasyonunu garanti etmez.',
+      text: 'TypeScript derlemesi `poster` kullanılmıyorsa mutlaka hata verir.',
+      explanation: 'Derleme tipi denetler; kullanılmayan ad için ayrı bir lint kuralı gerekir.',
     },
     {
-      text: 'Sorun yalnızca kullanılmayan import’tur.',
+      text: 'Prettier `poster` satırını kaldırır.',
+      explanation: 'Prettier görünüşü düzenler; kullanılmayan değişkeni silme kararı vermez.',
+    },
+    {
+      text: 'JSX içinde kullanılmayan değişken otomatik olarak kullanılmış sayılır.',
       explanation:
-        'Boş import ayrı bir temizlik sorunudur; eski film effect bağımlılığıyla ilgilidir.',
-    },
-    {
-      text: 'Her render’da `fetch` çağırmak dependency sorununu çözer.',
-      explanation:
-        'Render içindeki yan etki tekrar tekrar istek atabilir; effect’i doğru bağımlılıklarla kurmalısın.',
+        'JSX yalnızca içinde başvurulan adları kullanır; `poster` hiçbir yerde geçmiyor.',
     },
   ],
   explanation: '',

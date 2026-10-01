@@ -15,6 +15,7 @@ describe('Sinema izleme listeleri', () => {
   })
   it('adı, açıklamayı, görünürlüğü ve dinamik etiketleri saklar', async () => {
     const u = userEvent.setup()
+    const { result } = renderHook(() => useWatchlists())
     render(<WatchlistForm />)
     await u.type(screen.getByRole('textbox', { name: 'Liste adı' }), 'Hafta sonu')
     await u.type(screen.getByRole('textbox', { name: 'Açıklama' }), 'Kısa liste')
@@ -26,6 +27,7 @@ describe('Sinema izleme listeleri', () => {
     await waitFor(() =>
       expect(JSON.parse(localStorage.getItem('sinema:watchlists') ?? '[]')).toHaveLength(1),
     )
+    expect(screen.getByRole('status')).toHaveTextContent('Liste kaydedildi')
     const saved = JSON.parse(localStorage.getItem('sinema:watchlists') ?? '[]')[0]
     expect(saved).toMatchObject({
       name: 'Hafta sonu',
@@ -34,7 +36,17 @@ describe('Sinema izleme listeleri', () => {
       tags: [{ value: 'klasik' }, { value: 'arkadaşlar' }],
     })
     expect(saved.id).toEqual(expect.any(String))
-    expect(saved.createdAt).toEqual(expect.any(String))
+    expect(new Date(saved.createdAt).toISOString()).toBe(saved.createdAt)
+    expect(result.current.watchlists).toHaveLength(1)
+
+    await u.type(screen.getByRole('textbox', { name: 'Liste adı' }), 'Başka hafta')
+    await u.click(screen.getByRole('button', { name: 'Kaydet' }))
+    await waitFor(() =>
+      expect(JSON.parse(localStorage.getItem('sinema:watchlists') ?? '[]')).toHaveLength(2),
+    )
+    const savedAgain = JSON.parse(localStorage.getItem('sinema:watchlists') ?? '[]')[1]
+    expect(savedAgain.id).not.toBe(saved.id)
+    expect(result.current.watchlists).toHaveLength(2)
   })
   it('etiket silindiğinde saklanan dizi yalnızca kalan satırları içerir', async () => {
     const u = userEvent.setup()

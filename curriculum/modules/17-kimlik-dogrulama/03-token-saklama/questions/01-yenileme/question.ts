@@ -4,20 +4,23 @@ export default defineQuestion({
   title: 'Yenilemede hangi state kalır?',
   difficulty: 'kolay',
   concepts: ['auth.token-storage', 'redux.store'],
-  question: 'Sinema access token’ı yalnız Redux store’da tutuyor. F5’ten sonra ne beklersin?',
+  question:
+    'Sinema access token’ı yalnız Redux store’da tutuyor. Sayfa yenilenince store yeniden başlıyor; profil sayfası token’ı nereden alabilir?',
   options: [
     {
-      text: 'Store yeniden kurulacağı için token kaybolur.',
+      text: 'Hiçbir yerden; token yalnız bellekteydi ve sayfa yenilenince kayboldu.',
       correct: true,
       explanation: 'Bellekteki state yenilemeyle gider; kalıcılık ayrıca kurulmalıdır.',
     },
     {
-      text: 'Redux otomatik localStorage’a yazar.',
-      explanation: 'Redux tek başına kalıcılık sağlamaz; listener veya başka mekanizma gerekir.',
+      text: 'JWT olduğu için tarayıcı token’ı otomatik geri yükler.',
+      explanation:
+        'JWT yalnız token biçimidir; tarayıcının saklama veya geri yükleme davranışını değiştirmez.',
     },
     {
-      text: 'JWT olduğu için tarayıcı token’ı otomatik saklar.',
-      explanation: 'JWT bir veri biçimidir, tarayıcı storage politikası değildir.',
+      text: 'Redux store açılırken sunucu token’ı belleğe geri yazar.',
+      explanation:
+        'Redux kendiliğinden sunucuya bağlanmaz; token yeniden alınacaksa uygulamanın akışı bunu yapmalıdır.',
     },
   ],
 })

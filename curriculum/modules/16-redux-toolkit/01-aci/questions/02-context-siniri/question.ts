@@ -19,9 +19,10 @@ export default defineQuestion({
         'Context değeri nesne olarak değişir; alanın aynı kalması tek başına yeterli değildir.',
     },
     {
-      text: 'React Redux otomatik devreye girer.',
+      text: 'Context, nesnenin içindeki alanları ayrı ayrı karşılaştırır ve yalnız favorites tüketicisini render eder.',
       correct: false,
-      explanation: 'Context kullanırken Redux aboneliği yoktur.',
+      explanation:
+        'Context varsayılan olarak alan bazında abonelik sağlamaz; tüketiciler Provider değerini birlikte alır.',
     },
   ],
 })

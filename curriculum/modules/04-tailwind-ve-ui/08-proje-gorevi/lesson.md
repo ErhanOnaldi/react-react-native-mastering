@@ -6,37 +6,39 @@ kind: project
 
 # Sinema'nın UI kit'ini tamamla
 
-:::pain[Arayüz akışı kopya class'lara bağlı]
-Sinema'da favori ve arama davranışı çalışıyor ama MovieCard, SearchBox ve diğer görünür parçalar kendi HTML ve class kararlarını taşıyor. Ortak kit'e geçerken arama ve favori akışının aynı kalması gerekiyor.
+Bu projede önce Sinema'nın ortak UI parçalarını kurup sonra gerçek film ekranlarında kullanacaksın. İlk bölüm görünüm ve HTML sözleşmelerini bir araya getirir; ikinci bölüm MovieCard ve SearchBox'ı bu parçalara geçirirken arama ile favori davranışını korur.
+
+:::model[Token'dan utility'ye üç adım]
+Tasarım kararı token'da ad alır, Tailwind utility'si o kararı kullanır, bileşen de arayüzde uygular. Tema renkleri değişebilir; bileşenin anlamlı class seçimi aynı kalır.
 :::
 
-## Önce altyapı, sonra gerçek kullanım
-
-İlk görev, token ve class birleştirme katmanıyla UI primitive'lerini Sinema'ya ekler. Button sınırlı varyant ve boyutları sunar; Card, Badge, Skeleton ve Input kendi doğal HTML öğelerine dayanır. Bütün parçalar aynı `cn` sözleşmesini kullanır. Koyu tema rengi CSS katmanında seçilir.
-
-İkinci görev, MovieCard ve SearchBox'ı bu kit'e geçirir. Bu aşamada kartın nasıl renklendirileceği sana kalır; kullanıcıya görünen içerik, favori durumu, arama değeri ve tıklama davranışı aynı ürün anlamını korumalıdır. Bir tasarım sistemi yalnız class listesi değildir: HTML semantiği, erişilebilir ad ve native props da bileşen sözleşmesidir.
-
-:::model[Ortak görünüm ve ürün davranışını ayrı tut]
-Varyant tablosu görünümü seçer, primitive native etkileşim props'larını taşır, üst ürün bileşeni arama/favori state'ini sahiplenir. Bu projede değişen şey UI primitive'lerinin gerçek ekranlarda kullanılmaya başlamasıdır.
+:::model[Varyant matrisi dört parçadan oluşur]
+Button'ın base görünümü, izin verilen varyant ve boyut seçenekleri, varsayılan seçimleri ve gerekiyorsa özel kesişimleri tek tabloda düşün. Bu API görünümü seçer; `disabled`, `onClick` ve erişilebilir durum gibi native davranışları button props'ları taşır.
 :::
 
-## Uygularken izle
-
-Önce helper ve UI dosyalarının birbirine nasıl bağlanacağını kur. Ardından Button varyantlarını ve boyutlarını yan yana göstererek her seçeneğin görünür biçimde ayrıldığını kontrol et. Bir Badge'i Card içinde kullan; Skeleton'ın yer tuttuğunu ve Input'un label alabileceğini doğrula.
-
-Sonraki aşamada bir filmi favoriye ekle, arama alanına başlık yaz ve listeden bir sonucu aç. Klavyeyle butonlara ulaş; açık ve koyu temadaki metin/zemin ayrımını kontrol et. Kart görünümü farklılaşabilir ama favori state'i, controlled arama değeri ve başlık kaybolmamalı.
-
-Takıldığında her değişikliği tek katmanda daralt: `cn` class çatışmasını mı çözüyor, varyant fonksiyonu doğru class'ı mı üretiyor, yoksa gerçek `<button>` doğru props'ları mı alıyor? Ekran görüntüsü yanında DOM props'larını ve etkileşimi kontrol et. Böylece stil sorunu ile state veya HTML davranışı sorununu ayırabilirsin.
-
-:::sector
-Design system geçişleri genellikle çalışan ürün akışlarını koruyarak yapılır. Takım, ortak bileşenleri önce temel durumlarıyla oluşturur; sonra ekranları parça parça geçirir ve davranış değişmediğini kontrol eder.
+:::model[Etkileşim durumunu iki kanalda göster]
+Gerçek durum HTML veya React props'larında bulunur; Tailwind class'ı onu görünür kılar. Favori seçimi `aria-pressed` ile bildirilir, odak görünümü klavyeyle gezinirken de anlaşılır olmalıdır.
 :::
+
+:::model[Props aşağı, olaylar yukarı]
+Arama değeri üst bileşenden SearchBox'a iner, yazma olayı callback ile geri çıkar. UI kit'in Input'u değeri kendine almaz; MovieCard da favori state'ini sahiplenmez.
+:::
+
+Önce temel UI parçalarını kurup kendi küçük önizlemesinde incele. Sonra ekranları birer birer geçir: film kartında kit parçalarının doğru HTML ve props'ları taşıdığını, arama alanında ise mevcut değer ve değişim callback'inin korunduğunu kontrol et. Son olarak klavyeyle dolaş, açık ve koyu temada metin ile zemin ayrımını gözden geçir; görünüm yenilenirken arama ve favori akışlarını da dene.
+
+Sorun gördüğünde katmanları sırayla düşün: tema token'ı mı, `cn` ile class birleştirme mi, Button varyantı mı, yoksa gerçek HTML/React davranışı mı? Böylece görsel düzeltmeyi ürün state'inden ayrı inceleyebilirsin.
 
 ## Özet
 
-- Önce token/helper ve primitive katmanı kurulur; sonra gerçek ekranlar onu kullanır.
-- Button varyantları görünüm kararlarıdır, native props davranışı taşır.
-- SearchBox kontrollü kalır; favori state'i kartın dışındaki state sahibinde kalır.
-- Görsel tasarım değişebilir ama erişilebilir ad, state ve callback sözleşmesi korunur.
+- Önce UI kit'i kur, sonra MovieCard ve SearchBox'ta kullan.
+- Token ve varyantlar görünümü düzenler; native props HTML davranışını korur.
+- Arama controlled kalır, favori state'i üst bileşende kalır.
+- Klavye odağı, erişilebilir adlar ve açık/koyu tema görünümüyle birlikte akışları da dene.
 
-**Kendini yokla:** UI kit'e geçişte hangi davranışları tekrar denersin? Arama, favori, erişilebilir ad ve klavye odağı.
+**Terimler:**
+
+- **Design token:** Renk veya yazı tipi gibi tekrar kullanılan tasarım kararına verilen anlamlı ad.
+- **Varyant:** Bir bileşenin izin verilen görünüm seçeneği; örneğin Button'ın `ghost` görünümü.
+- **Native props:** Bileşenin temel aldığı HTML öğesinin props'ları ve davranışları.
+
+**Kendini yokla:** UI kit'e geçerken hangi davranışları yeniden denersin? Arama, favori, erişilebilir ad, klavye odağı ve disabled davranışı.

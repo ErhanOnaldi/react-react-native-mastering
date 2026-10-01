@@ -14,15 +14,21 @@ export default defineQuestion({
       explanation: 'İlgili alanları denetler, cevaptaki ek alanlara izin verir.',
     },
     {
+      text: '`toEqual({ page: 2, total_pages: 5 })`',
+      correct: false,
+      explanation:
+        '`toEqual` nesnenin tamamını karşılaştırır; yanıtta yeni alanlar eklenince gereksiz yere kırılır.',
+    },
+    {
+      text: '`toHaveProperty("page", 2)`',
+      correct: false,
+      explanation: 'Bu yalnız `page` alanını denetler; `total_pages` beklentisi açıkta kalır.',
+    },
+    {
       text: '`toBe({ page: 2, total_pages: 5 })`',
       correct: false,
       explanation:
-        '`toBe` nesnelerde referans eşitliği arar; yeni nesne aynı alanlara sahip olsa da farklı referanstır.',
-    },
-    {
-      text: '`toThrow()`',
-      correct: false,
-      explanation: 'Bu matcher fırlatılan hata içindir; normal response alanlarını karşılaştırmaz.',
+        '`toBe` nesnelerde aynı referansı arar; response yeni bir nesne olduğu için alanlar aynı olsa da geçmez.',
     },
   ],
 })

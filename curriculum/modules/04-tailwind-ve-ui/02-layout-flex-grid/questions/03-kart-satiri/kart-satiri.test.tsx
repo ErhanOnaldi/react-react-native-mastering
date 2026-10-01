@@ -12,8 +12,8 @@ describe('MovieRow', () => {
     )
   })
   it('uzun başlığa daralma ve kısaltma class’ı verir', () => {
-    render(<MovieRow title="Yıldızlararası" score="8.6" />)
-    expect(screen.getByRole('heading', { name: 'Yıldızlararası' })).toHaveClass(
+    render(<MovieRow title="Yıldızlararası: Uzun Bir Yolculuk" score="8.6" />)
+    expect(screen.getByRole('heading', { name: 'Yıldızlararası: Uzun Bir Yolculuk' })).toHaveClass(
       'min-w-0',
       'truncate',
     )

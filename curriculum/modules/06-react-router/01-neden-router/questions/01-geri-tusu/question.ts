@@ -14,12 +14,14 @@ export default defineQuestion({
       explanation: 'Doğru. React ağacı değişir, fakat adres ve history değişmez.',
     },
     {
-      text: 'React state çok yavaş güncellendiği için.',
-      explanation: 'Hız ile ilgisi yok; state güncellense de tarayıcı geçmişi değişmez.',
+      text: 'Geri tuşu aynı adreste kalırken React state değerini önceki haline alamaz.',
+      explanation:
+        'Geri tuşu React state geçmişini değil, tarayıcının adres geçmişini izler. Adres hiç değişmediği için döneceği başka bir kayıt yok.',
     },
     {
-      text: 'Detay bileşeninde `useEffect` eksik olduğu için.',
-      explanation: 'Effect dış sistemle senkron içindir; sayfa geçişini history ile eşleştirmez.',
+      text: 'Detay başlığı değişince tarayıcı yeni bir history kaydı kendiliğinden ekler.',
+      explanation:
+        'Ekranda başka içerik göstermek adresi değiştirmez. History kaydı için tarayıcı adresine de navigasyon gerekir.',
     },
   ],
 })

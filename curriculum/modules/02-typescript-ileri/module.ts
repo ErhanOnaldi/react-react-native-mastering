@@ -9,9 +9,10 @@ export default defineModule({
   outcomes: [
     'Generic fonksiyon ve Paginated<T> ile tekrar eden cevap tiplerini birleştirebilirsin',
     'Pick, Omit, Partial, Record ve Readonly ile var olan tiplerden yeni tipler türetebilirsin',
+    'Discriminated union ile geçerli istek durumlarını tanımlayıp her dalı ele alabilirsin',
+    'Type guard ile unknown verinin alanlarını çalışma anında kontrol edebilirsin',
     'keyof, typeof ve as const ile anahtarları ve literal değerleri güvenle kullanabilirsin',
-    'RemoteData<T> ile istek durumlarını exhaustive olarak işleyebilirsin',
-    'unknown veriye type guard uygulayıp getJson<T> iddiasının sınırını açıklayabilirsin',
+    'Promise<T> ve Awaited<T> ile asenkron sonuç tiplerini açıklayabilirsin',
     'Sinema’nın TMDB tiplerini, görsel URL yardımcısını ve uzak veri durumlarını oluşturabilirsin',
   ],
 })

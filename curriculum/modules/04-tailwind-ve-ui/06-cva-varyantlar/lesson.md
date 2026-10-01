@@ -6,169 +6,190 @@ kind: concept
 
 # cva ile tipli varyant matrisi
 
-:::pain[Üç ternary, dokuz görünüm]
-Üç buton görünümü ve üç boyut var. Kullanım yerlerinde iç içe koşullar büyüyor; ghost butonun küçük boyutunda gereken ince bir vurgu bazı sayfalarda unutuluyor.
-:::
-
-## Serbest class yerine seçenek sözleşmesi
-
-`cn()` birleştirilmiş class string'indeki çakışmaları yönetir. Fakat bir bileşenin hangi görünümleri desteklediğini, her kullanım yerinin doğru class'ı yazmasından bekleyemezsin. Class string'i serbest olduğunda `variant="danger"` gibi yazımlar derlenir ama tasarım tablosunda bulunmayabilir.
-
-Class Variance Authority (`cva`) ortak class'ları ve seçenek eksenlerini tek tanımda toplar. `variant` renk/ton gibi bir eksen, `size` kapladığı alan gibi başka bir eksen olabilir. Her ikiliyi ayrı bir isim olarak yazmak yerine her ekseni bağımsız tanımlarsın; özel kesişimler için compound variant ekleyebilirsin.
-
-:::model[Varyant matrisi dört parçadan oluşur]
-1. Base class her geçerli görünümde bulunur.
-2. Her varyant ekseni izin verilen seçenekleri ve ek class'ları listeler.
-3. Default variant, props verilmediğinde seçilecek hücreyi belirler.
-4. Compound variant birden fazla seçenek aynı anda eşleştiğinde özel class ekler.
-5. `VariantProps<typeof config>` TypeScript tipini cva tablosundan türetir.
-:::
+Sinema’da aynı türdeki film etiketleri bazen farklı renkte görünür. `selected ? 'bg-sky-700' : 'bg-slate-100'` diye koşul yazmak işe yarar; ama görünüm ve boyut gibi kararlar eklenince her kullanım yerinde yeni koşullar kurman gerekir. `cva`, yani **Class Variance Authority**, ortak class’lardan ve izin verilen görünüm seçeneklerinden class üreten küçük bir araçtır.
 
 ![Varyant ve boyut seçeneklerinin cva matrisindeki birleşimleri](diagrams/varyant-matrisi.svg)
 
-Bu model dokuz görünümü dokuz ayrı class string'ine dönüştürmeden anlatır. Ortak class, varyant class'ı ve boyut class'ı seçilir; yalnız özel kesişim varsa compound class da eklenir.
-
-## Hücre seçimini adım adım izle
-
-Önce kırık modeli görelim: görünüm her kullanım yerinde elle birleştiriliyor ve seçeneğin tipi sınırsız string.
-
-```tsx
-type LooseTagProps = { tone: string; compact?: boolean }
-function LooseTag({ tone, compact }: LooseTagProps) {
-  const color = tone === 'loud' ? 'bg-fuchsia-700' : 'bg-teal-100'
-  const space = compact ? 'px-2 py-1' : 'px-4 py-2'
-  return <span className={`inline-flex ${color} ${space}`}>Yeni</span>
-}
-```
-
-`tone="urgent"` de compile olur ve özel kombinasyonlar başka yerde yeniden yazılır. Düzeltilmiş örnek, seçenekleri tek cva tablosunda tutar:
+Önce sadece bir renk kararı ekleyelim. cva tablosundaki `tone` adlı **variant**—seçenek ekseni—`quiet` veya `highlight` değerini alabilir:
 
 ```ts check
-import { cva, type VariantProps } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
 
-const labelStyle = cva('inline-flex items-center rounded-md', {
+const genreTag = cva('inline-flex rounded-md', {
   variants: {
     tone: {
-      calm: 'bg-teal-100 text-teal-900',
-      loud: 'bg-fuchsia-700 text-white',
-      plain: 'bg-transparent text-slate-900',
-    },
-    density: {
-      tight: 'px-2 py-1 text-sm',
-      roomy: 'px-4 py-2 text-base',
+      quiet: 'bg-slate-100 text-slate-900',
+      highlight: 'bg-sky-700 text-white',
     },
   },
-  defaultVariants: { tone: 'calm', density: 'roomy' },
-  compoundVariants: [{ tone: 'plain', density: 'tight', class: 'underline' }],
 })
 
-type LabelStyleProps = VariantProps<typeof labelStyle>
-const currentStyle = labelStyle({ tone: 'plain', density: 'tight' })
+const quietTag = genreTag({ tone: 'quiet' })
 ```
 
-Bu çağrıda sıra şöyledir:
+İki seçenek de `inline-flex rounded-md` ortak class’larını alır; yalnız `tone` değerine göre renkleri değişir. Artık bileşeni kullanan yer `bg-sky-700` gibi serbest class yerine tasarım dilindeki `highlight` kararını seçebilir.
 
-| Aşama | Seçim | Eklenen class |
-|---|---|---|
-| 1 | base | `inline-flex items-center rounded-md` |
-| 2 | `tone: plain` | `bg-transparent text-slate-900` |
-| 3 | `density: tight` | `px-2 py-1 text-sm` |
-| 4 | compound eşleşmesi | `underline` |
+## İki karar birleşince
 
-`density: roomy` seçilseydi 4. aşamadaki compound koşulu eşleşmeyecekti. Compound variant'ı ilgili eksenlerin birlikte olması gereken bir istisna gibi düşün. Tabloda her hücre farklıysa bütün 3×2 kombinasyonları component içinde ayrı if dallarıyla kopyalamak gereksizdir.
+Bir etiketin renginin yanında ne kadar yer kapladığını da seçmek isteyebilirsin. cva’da her karar ayrı bir variant olur; `defaultVariants` ise çağıran o kararı belirtmediğinde kullanılacak **varsayılan seçeneği** belirler.
 
-## TypeScript tabloyu nasıl korur?
+```ts check
+import { cva } from 'class-variance-authority'
 
-`VariantProps<typeof labelStyle>` tipinde `tone` yalnız tanımlı seçeneklerden biri veya opsiyonel olarak `undefined` olabilir. `tone: 'urgent'` yazımı compile-time hatası verir. Tabloyu ve props union'ını ayrıca elle tanımlarsan birini güncelleyip diğerini unutabilirsin.
+const categoryPill = cva('inline-flex items-center rounded-md', {
+  variants: {
+    tone: {
+      quiet: 'bg-slate-100 text-slate-900',
+      highlight: 'bg-sky-700 text-white',
+    },
+    density: {
+      compact: 'px-2 py-1 text-sm',
+      spacious: 'px-4 py-2',
+    },
+  },
+  defaultVariants: { tone: 'quiet', density: 'spacious' },
+})
+
+const defaultPill = categoryPill()
+const compactHighlight = categoryPill({ tone: 'highlight', density: 'compact' })
+```
+
+İlk çağrı `quiet` ve `spacious` class’larını, ikinci çağrı `highlight` ve `compact` class’larını seçer. Bu iki ayrı eksen sayesinde her rengin her boyutu için ayrı bir class string’i kopyalamazsın; cva ortak class’ları ve seçtiğin seçeneklerin class’larını birleştirir.
+
+| Seçim sırası | `categoryPill({ tone: 'highlight', density: 'compact' })` ne ekler? |
+|---|---|
+| Ortak class’lar | `inline-flex items-center rounded-md` |
+| `tone: highlight` | `bg-sky-700 text-white` |
+| `density: compact` | `px-2 py-1 text-sm` |
+| Varsayılanlar | Bu çağrıda kullanılmaz; iki değer de açıkça verildi. |
+
+Küçük ve seçili kategoriye yalnız birlikteyken bir vurgu eklemek istersek `compoundVariants` kullanırız. **Compound variant**, birden fazla eksen aynı anda belirli değerlerdeyken eklenen class kuralıdır:
+
+```ts check
+import { cva } from 'class-variance-authority'
+
+const filmFilter = cva('rounded-md', {
+  variants: {
+    tone: { quiet: 'bg-slate-100', highlight: 'bg-sky-700 text-white' },
+    density: { compact: 'px-2 py-1', spacious: 'px-4 py-2' },
+  },
+  defaultVariants: { tone: 'quiet', density: 'spacious' },
+  compoundVariants: [
+    { tone: 'highlight', density: 'compact', class: 'ring-2 ring-sky-300' },
+  ],
+})
+
+const highlightedCompactFilter = filmFilter({ tone: 'highlight', density: 'compact' })
+```
+
+Bu çağrıda iki koşul da eşleştiği için halka class’ı eklenir; `spacious` seçilseydi eklenmezdi. Her birleşime ayrı if yazmak yerine yalnızca gerçekten özel olan hücreyi tanımladık. Böylece tablonun hangi durumda neden farklılaştığını okuyabilirsin.
+
+## Tablo seçeneklerini TypeScript’e tanıt
+
+`cva` tabloyu sınırlı tutar ama TypeScript’in seçenekleri bilmesi için `VariantProps<typeof filmFilter>` tipini kullanabilirsin. **Type inference**, mevcut tanımdan tipi çıkarmak demektir; burada seçenek union’ını tabloyla eş zamanlı tutar, elle ikinci kez yazma ihtiyacını azaltır.
 
 ```ts check
 import { cva, type VariantProps } from 'class-variance-authority'
 
-const noticeStyle = cva('rounded px-3 py-2', {
+const posterBadge = cva('rounded px-2 py-1', {
   variants: {
-    intent: { info: 'border-sky-400', warning: 'border-amber-500' },
+    status: {
+      nowShowing: 'bg-emerald-100 text-emerald-900',
+      comingSoon: 'bg-amber-100 text-amber-900',
+    },
   },
-  defaultVariants: { intent: 'info' },
+  defaultVariants: { status: 'nowShowing' },
 })
 
-type NoticeStyleProps = VariantProps<typeof noticeStyle>
-const noticeProps: NoticeStyleProps = { intent: 'warning' }
+type PosterBadgeProps = VariantProps<typeof posterBadge>
+const badgeProps: PosterBadgeProps = { status: 'comingSoon' }
 ```
 
-Bu tip geçerli sınırlı görünüm değerlerini korur, fakat runtime dış girdisini doğrulamaz. Bir API'den `intent` string'i geliyorsa TypeScript tipi o JSON'u kontrol etmez; sınırda ayrıca doğrulama gerekir. Component'e prop olarak çağıran kod derleme sırasında kontrol ediliyorsa bu iç kullanım için değerli bir güvence sağlar.
+`status` alanı artık yalnız tabloda yazan değerlerden biri olabilir; `comingSoon` geçerlidir, `soldOut` bu tabloya eklenmediği sürece geçerli değildir. Bu, component’i kullanan TypeScript kodunu korur. Bir API’den gelen herhangi bir string’i çalışma anında doğrulamaz; dış verinin kontrolü başka bir ihtiyaçtır.
 
-## Class API'sini HTML props'larıyla birleştir
+## Native button props’larını koru
 
-Gerçek `<button>` bileşeni varyant class'ı üretmekle bitmez. `disabled`, `type`, `onClick`, `aria-label` ve `data-*` gibi yerel button props'ları doğal öğeye aktarılmalıdır. `ComponentProps<'button'>` bu props tipini alır. cva'nın `size` ismi native button props tipindeki `size` ile çakışabileceğinden `Omit` ile native alanı ayırabilirsin.
+Gerçek bir eylem bileşeni sadece class üretmez. `disabled`, `type`, `onClick` ve `aria-*` gibi yerel `<button>` props’ları butona aktarılmalı. Daha önce gördüğün `ComponentProps<'button'>`, React’in button props tipini verir; `Omit<..., 'size'>` ise HTML button tipindeki `size` alanını çıkarır, çünkü burada aynı adı cva’nın boyut seçeneği kullanacak.
 
-```tsx
+```tsx check
 import type { ComponentProps } from 'react'
-import type { VariantProps } from 'class-variance-authority'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
-type ActionProps = Omit<ComponentProps<'button'>, 'size'> & VariantProps<typeof labelStyle>
-```
+function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs))
+}
 
-Render sırasında `className` varyant çıktısıyla `cn` üzerinden birleşir. Tüketici `px-8` verdiğinde temel `px-4` kaldırılabilir; bunun için tüketici class'ının merge sırasındaki yeri önemlidir. Bu, bir önceki class birleştirme modelinin yeni bağlamıdır: `cva` seçenekleri seçer, `cn` son override'ı temizler.
+const screeningActionStyle = cva('inline-flex items-center rounded-lg font-semibold', {
+  variants: {
+    variant: {
+      strong: 'bg-indigo-700 text-white',
+      quiet: 'border border-indigo-700 text-indigo-700',
+    },
+    size: {
+      compact: 'px-2 py-1 text-sm',
+      roomy: 'px-5 py-3',
+    },
+  },
+  defaultVariants: { variant: 'strong', size: 'roomy' },
+  compoundVariants: [{ variant: 'quiet', size: 'compact', class: 'underline' }],
+})
 
-`variant="primary"` yalnız görünüm adıdır; `disabled` olmak veya form gönderme davranışı değildir. Button varsayılan `type` davranışını form içinde göz önünde tut ve `disabled` state'ini gerçek niteliğe aktar. Görsel sistem semantik HTML sözleşmesini örtmemelidir.
+type ScreeningActionProps = Omit<ComponentProps<'button'>, 'size'> & VariantProps<typeof screeningActionStyle>
 
-## Matrisin büyümesini yönet
-
-İki eksen de üç seçenekliyse dokuz hücre vardır. Bir compound kural nadirse ve kolay anlatılıyorsa iyi bir istisnadır; pek çok compound kural çıkıyorsa eksenler gereğinden fazla bağımsız olabilir. Örneğin `danger` tonu yalnız bir boyutta destekleniyorsa bu kuralı API'de nasıl temsil edeceğini tasarım ekibiyle belirlemek gerekir.
-
-Her kombinasyona özel font, padding, border, icon ve gölge eklemek tabloyu karar verilemez hale getirir. Varyant sayısını ürünün gerçek tasarım seçeneklerine göre sınırla. Her yeni seçenek yeni bir kombinasyon oluşturur; test ve görsel inceleme maliyeti de artar.
-
-Class üreticisini component'ten ayrı export etmek başka bileşenlerin aynı sınıfları kullanmasına izin verebilir. Ancak bu API'yi public hale getirmek bakım sorumluluğu getirir: daha sonra class yapısını değiştirmen bu tüketicileri etkiler. Sadece gerçekten paylaşılacaksa export et.
-
-Önce kırık modeli görelim: her kullanım yeri kendi class kararını koşullarla kuruyor ve varyant tipi `string` olarak kalıyor.
-
-```tsx
-type LooseProps = { tone: string; compact?: boolean }
-function LooseTag({ tone, compact }: LooseProps) {
-  const color = tone === 'loud' ? 'bg-fuchsia-700' : 'bg-teal-100'
-  const space = compact ? 'px-2 py-1' : 'px-4 py-2'
-  return <span className={`inline-flex ${color} ${space}`}>Yeni</span>
+export function ScreeningAction({ variant, size, className, ...props }: ScreeningActionProps) {
+  return (
+    <button
+      className={cn(screeningActionStyle({ variant, size }), className)}
+      {...props}
+    />
+  )
 }
 ```
 
-Bu yaklaşım `tone="urgent"` değerini reddetmez ve özel kombinasyonları farklı component'lerde tekrarlatır. Düzeltilmiş model cva tablosundan class üretir ve TypeScript'e aynı tablonun seçeneklerini gösterir. Component'in iç yapısı değişse de çağıranlar tanımlı isimlerle kullanım yapar.
+Çağıran kod varyant seçebilir ama `disabled` ve `onClick` hâlâ gerçek `<button>` öğesine ulaşır. cva görünümü seçer; native prop’lar HTML davranışını taşır. `className` de varyant class’larıyla `cn` üzerinden birleştirilir, böylece çağıranın verdiği `px-8` gibi class aynı padding kararını geçersiz kılabilir. Bir class birleştiricinin burada olması önemli: sırf string’in sonuna eklemek, HTML’de son yazılan class’ın CSS’te kazanacağını garanti etmez.
 
-Bir varyant ekseni eklemeden önce ürün dilinde gerçekten ayrı bir karar olup olmadığını sor. `tone`, `size`, `weight`, `shape`, `intent`, `density` seçenekleri kısa sürede büyük bir matris çıkarabilir. Her eksen bağımsızsa kombinasyonlar çarpılarak çoğalır: dört tone ve üç size, on iki temel hücre demektir. Tasarımda hiç kullanılmayan hücreleri desteklememek daha sade bir API sağlar.
+## Bir yanlış tipi ve belirtisi
 
-Varsayılanların anlamı da public sözleşmenin parçasıdır. `defaultVariants` değerini değiştirmek aynı `<Button>` çağrısının her sayfadaki görünümünü değiştirir. Çağıranın varyant vermemesi bir hata mı, yoksa bilinçli varsayılan mı; bu kararı tasarım sistemi belirlemelidir. Bazı seçenekleri zorunlu yapmak istiyorsan tip katmanında `VariantProps` opsiyonelliğini bilinçli biçimde daralt.
+Props’u `tone: string` diye tanımlarsan, `tone="urgent"` gibi tabloda bulunmayan bir değer de TypeScript’ten geçer. Ekranda beklemediğin class’lar eksik kalabilir; nedenini aramak zorlaşır. Seçenek tipini tablodan türetince bu yazım editörde hata olur ve geçerli seçeneklerin listesi görünür.
 
-Compound kuralları aşırı kullanıldığında gizli karar tablosuna dönüşür. Her kuralı kısa bir cümlede açıklayabiliyor olmalısın: "plain ve tight birlikteyken alt çizgi ekle." Birçok hücreye özel class gerekiyorsa tasarımı eksenleri yeniden düşünerek sadeleştir veya ayrı bir semantik varyant tanımla.
-
-:::mistake[Belirti → neden → düzeltme]
-Geçersiz `variant` değeri TypeScript'ten geçiyor → props `string` olarak tanımlanmış → tipi `VariantProps<typeof config>` tablosundan çıkar.
-:::
+Bir başka hata `disabled:opacity-50` class’ını gerçek disabled davranışı sanmaktır. Bu class yalnız görünümü soluklaştırır; `disabled` native prop’unu `<button>` üzerine yaymadıysan düğme çalışır. Görünüm tablosuyla HTML davranışını ayrı tut.
 
 :::mistake[Belirti → neden → düzeltme]
-Küçük ghost kombinasyonunda vurgu yok → görünüm ve boyut ayrı tanımlanmış ama kesişim kuralı yazılmamış → yalnız gerekli hücre için compound variant ekle.
+Yazım hatalı `variant` değeri derleniyor → prop tipi serbest `string` → `VariantProps<typeof style>` ile tipi cva tablosundan al.
 :::
 
 :::mistake[Belirti → neden → düzeltme]
-Varyant class'ı doğru ama disabled düğme çalışıyor → görünüm tablosu davranış yerine kullanılmış → gerçek `disabled` prop'unu native button'a aktar.
+Özel küçük görünümde ek işaret yok → tek tek varyant class’ları var ama kesişim tanımlı değil → yalnız bu birleşim için compound variant ekle.
 :::
 
-:::sector
-Tasarım sisteminde varyant adları tasarımcı ve geliştiricinin ortak dili olur: `primary`, `quiet`, `danger` gibi değerler serbest renk veya class parçalarından daha kolay gözden geçirilir. İzin verilen eksenleri ürün ihtiyacına göre dar tut; API'ye her olası CSS değerini koymak bir tasarım sistemi oluşturmaz.
+:::mistake[Belirti → neden → düzeltme]
+Class doğru ama düğme tıklanabiliyor → varyant tablosu native `disabled` prop’unu aktarmıyor → davranış prop’unu gerçek `<button>` öğesine ilet.
 :::
 
-Varsayılan değer verilmesi ile prop'un zorunlu olması aynı şey değildir. `defaultVariants` class üreticisinin çalışma anındaki seçimini belirler; `VariantProps` alanları çoğunlukla opsiyonel sunar. Ürün API'si mutlaka ton seçilmesini istiyorsa, `VariantProps` tipini birleştirirken ilgili alanı `Required<Pick<...>>` benzeri utility ile zorunlu hale getirebilirsin. Bu tip kararı cva'nın default davranışından ayrıdır.
+Her yeni eksen tabloyu büyütür. İki seçenekli `tone` ve üç seçenekli `size` toplam altı birleşim sunar; ürün tasarımında gerekmeyen birleşimleri eklemek API’yi ve incelemen gereken görünümleri çoğaltır. Compound kurallar çoğalıyorsa her hücreye istisna eklemek yerine seçeneklerin gerçekten ayrı kararlar olup olmadığını tekrar düşün.
 
-Bir varyant ekseninde aynı utility class bütün seçeneklerde görünüyorsa onu base class'a taşı. Örneğin tüm tonlarda `border` ortaksa her seçenek içinde tekrarlamak yerine base'e koy. Fakat bir class herhangi bir varyantta görünmüyorsa base'e taşımak görünüm sözleşmesini değiştirir; önce matrisi karşılaştır.
-
-Class tablosu tasarımın çalıştırılabilir kaydıdır, ama tasarımın kendisi değildir. Yeni seçenek eklendiğinde mevcut bileşen kullanımını, disabled ve focus görünümünü, koyu temadaki kontrastı kontrol et. Bir varyant diğer seçeneklerle çakışan renkler üretiyorsa class birleştirici sonucu sadeleştirebilir; bu, tasarım kombinasyonunun iyi olduğu anlamına gelmez.
+:::info[Derinlemesine (isteğe bağlı)]
+`defaultVariants` çalışma anında seçim yapılmadığında class üreticisinin kullanacağı değeri söyler; varyant prop’unun çağıran için zorunlu olmasını tek başına sağlamaz. Bazı API’lerde belirli seçeneği zorunlu kılmak için `VariantProps` tipini ayrıca daraltabilirsin. Uygulama dışından gelen string değerleri de TypeScript’in runtime kontrolü değildir; sınırda doğrulanmalıdır.
+:::
 
 ## Özet
 
-- cva base, varyant, varsayılan ve compound class'ları bir araya getirir.
-- Her varyant ekseni izin verilen seçenekleri listeler; birleşimler matris hücreleridir.
-- `VariantProps` TypeScript props tipini tablodan türetir.
-- `cn` dışarıdan gelen class override'ını varyant sonucu ile birleştirir.
-- Görsel varyant, native HTML davranışının yerini tutmaz.
+- cva ortak class’ları ve izin verilen varyant seçeneklerini tek tabloda toplar.
+- `defaultVariants` çağrı değer vermediğinde seçilir; `compoundVariants` birden fazla seçim kesişince eklenir.
+- `VariantProps<typeof config>` seçenek tiplerini tablodan çıkarır.
+- `ComponentProps<'button'>` native davranışı taşır; `Omit` aynı adlı `size` alanı çakışmasını çözer.
+- `cn` çağıranın class’ını varyant görünümüyle güvenle birleştirir.
 
-**Kendini yokla:** Varyant tablosunda olmayan bir literal TypeScript'te nasıl yakalanır? `VariantProps<typeof config>` kullanımıyla.
+**Yeni terimler**
 
-**Kendini yokla:** Compound class ne zaman eklenir? Belirtilen seçenek eksenleri aynı anda eşleştiğinde.
+- **cva:** Varyant seçeneklerine göre Tailwind class’ı üreten araç.
+- **Variant:** Görünüm tablosundaki tek karar ekseni ve onun seçenekleri.
+- **Default variant:** Seçim verilmediğinde cva’nın kullandığı seçenek.
+- **Compound variant:** Birkaç seçim aynı anda eşleştiğinde eklenen kural.
+- **Type inference:** TypeScript’in var olan tanımdan tipi çıkarması.
+
+**Kendini yokla:** Bir class yalnız `quiet` ve `compact` birlikteyken gerekiyorsa nereye koyarsın? İki koşullu compound variant’a.
+
+**Kendini yokla:** `VariantProps` cva tablosunda olmayan bir seçeneği kabul eder mi? Hayır; çağıranın tipini tanımlı seçeneklerle sınırlar.

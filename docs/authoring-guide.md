@@ -8,14 +8,29 @@ Güncel kütüphane API'leri için: `docs/research/*.md` — eğitim verindeki e
 
 ## 1. Pedagojik kurallar (pazarlığa açık değil)
 
-### 1.1 İhtiyaca göre öğretim ("önce kır, sonra düzelt")
-Her yeni araç/kavram şu sırayla gelir:
+### 1.0 Öğrenci kim, ders nereden başlar (v3 — diğer kurallarla çelişirse bu kazanır)
+Öğrenci temel JavaScript biliyor ve basit React yazmış (component, props, `useState`, listeyi `map` ile basmak, basit form). TypeScript'te yalnızca 1. modülde öğrendikleri var. `useState` + props'tan derin her React kavramı **yeni**. "Biliyor" diye varsaydığın her şeyi bu listeye göre kontrol et.
+
+Her ders **öğrencinin zaten bildiği bir şeyden** başlar ve üstüne **tek seferde tek yeni fikir** koyar:
+1. **Tanıdık başlangıç:** Bildiği bir kod, editörde göreceği gerçek bir hata mesajı, ya da Sinema'da gerçekten yapacağı küçük bir iş. Örnek: generics dersi "`string[]` aslında `Array<string>`; `useState<number>` yazdın, bu da bir generic" diye açılır.
+2. **En basit hali:** 10 satırı geçmeyen ilk örnek; yalnızca yeni fikir, başka hiçbir yenilik yok.
+3. **Adım adım büyüt:** Her yeni kod bloğu öncekine **en fazla bir** yeni şey ekler ve o şeyin ne olduğu bloktan önce söylenir.
+4. **Sonra genelle:** Kural listesi ya da "zihinsel model" özeti, öğrenci örnekleri gördükten **sonra** gelir, önce değil.
+
+**Terim kuralı:** Bu kursta ilk kez geçen her teknik terim (ör. `generic`, `constraint`, `render`, `commit`, `mutation`, `closure`, `narrowing`) **ilk geçtiği cümlede ya da hemen sonrakinde** sade Türkçeyle tanımlanır: ne olduğu + neden umursadığın, tek cümle. Tanımlanmamış terimle cümle kurma. Bir derste **en fazla ~5 yeni terim**; daha fazlası gerekiyorsa ders bölünür ya da terimlerin bir kısmı sonraki derse ertelenir. Ders sonundaki özet, dersin yeni terimlerini tek satırlık tanımlarıyla listeler.
+
+**Konu yığma yasağı:** Derste yalnızca o dersin görevlerinin ve sonraki birkaç dersin gerçekten ihtiyaç duyacağı şeyler öğretilir. Sektörde nadir kullanılan ayrıntılar (ör. `useLayoutEffect`, eşzamanlı render'ın iptali, `Awaited` iç yapısı, assertion fonksiyonları) ya **ihtiyaç duyulacağı modüle taşınır** ya da dersin sonunda `:::info[Derinlemesine (isteğe bağlı)]` kutusuna konur. Bu kutudaki bilgi hiçbir görevde ve quiz'de sorulmaz. İleriye atıf tek cümleyi geçmez ("Bunu 5. modülde, effect'lerle göreceğiz.").
+
+**Sıra kuralı:** Bir ders yalnızca kendinden önceki derslerin öğrettiğini kullanabilir. Bir kavram önceki bir derste kullanılıyorsa sıra yanlıştır: ya dersin yeri değişir ya da kullanım çıkarılır.
+
+### 1.1 İhtiyaca göre öğretim ("önce kır, sonra düzelt") — doğal olduğunda
+Bir aracın varlık sebebi bir bozulmaysa şu sıra çok iyi çalışır:
 1. **Saf yöntem** — öğrencinin o ana kadar bildikleriyle çözülür.
 2. **Görünür bozulma** — sorun gözle görülür: test mesajı (`Beklenen: 1 istek, atılan: 47`), önizlemedeki istek sayacı, yanlış sonuç, çöken sayfa.
 3. **Çözüm** — kavram/araç tanıtılır.
 4. **Sonraki katman, ihtiyaç anında** — derin ayrıntı (örn. dependency array) ancak ihtiyaç doğduğu bağlamda açılır.
 
-Modül ve ders açılışları `:::pain` kutusuyla somut bir **acı** anlatır; acı mümkünse Sinema'dan gelir.
+Bu bir araçtır, her derse zorla uygulanacak bir kalıp değil. **`:::pain` kutusu isteğe bağlıdır** ve yalnızca öğrencinin gerçekten yaşayacağı ya da ekranda göreceği bir sorunu anlatır. Öğrencinin hiç yaşamadığı, uydurma ekip senaryoları ("bir ekip arkadaşı alanı iki tipte güncellemeyi unuttu") açılış olarak kullanılmaz. Doğal bir acı yoksa ders §1.0'daki tanıdık başlangıçla açılır.
 Bir kavramı ihtiyaç doğmadan önce öğretme. Örn. `useMemo`'yu Hook'lar modülünde "ne zaman GEREKMEZ" olarak an, asıl ihtiyacı Performans modülünde doğur.
 
 ### 1.2 Tekrar merdiveni
@@ -31,28 +46,41 @@ Her temel kavram için: `tanıt → birebir örnek → biraz farklı → daha fa
 - Yanlış bilgi vermektense konuyu dar tut. Emin olmadığın API'yi `docs/research/`'ten doğrula (web platformu konuları: `docs/research/web-platform.md`).
 
 ### 1.4 Ders uzunluğu ve derinlik
-Dersler bir özet değil, **başvurulacak bir kaynak** gibi yazılır. Öğrenci dersi bitirdiğinde kavramı bir iş arkadaşına kendi cümleleriyle anlatabilmeli.
+**Uzunluk zorunluluğu yok.** Ölçü, kavramın doğru ve eksiksiz aktarılmasıdır: öğrenci dersi bitirdiğinde kavramı bir arkadaşına kendi cümleleriyle anlatabilmeli ve görevleri dersten öğrendikleriyle çözebilmeli. Kelime saymak için bölüm ekleme, "derinlik" diye ilgisiz ayrıntı yığma. Bir ders çok uzuyorsa bu genelde iki ayrı fikir anlattığının işaretidir: böl. Çok kısa kaldıysa eksik olan genelde örnek ya da iz sürmedir, soyut metin değil.
 
-| `kind` | Hedef uzunluk (kod hariç) | `minutes` |
-|---|---|---|
-| `concept` | 1.000–1.800 kelime; bir core zihinsel modeli ilk kez kuran derste 2.200'e kadar | 12–20 |
-| `review` | 400–800 kelime | 6–10 |
-| `practice` / `project` (atölye dahil) | 250–600 kelime: görevlerin bağlamı, neyin ölçüldüğü, nasıl çalışılacağı | 4–8 |
+**Kısa ≠ sade.** Sadelik, terimleri tanımlamak ve fikirleri sırayla vermektir; açıklamayı kesmek değildir. Zorlanan bir öğrenciye bir kavram 250 kelimeyle öğretilemez. Her concept dersinde şu **derinlik denetimi** geçmelidir (kelime sayısı değil, içerik ölçütü):
+- Kavram en az **üç ilerleyen örnekle** kurulur (en basit hal → bir değişiklik → gerçekçi Sinema kullanımı); her örnekten sonra "ne oldu, neden?" düzyazıyla açıklanır.
+- Zamanlamanın ya da sıranın önemli olduğu konularda (state, render, event, effect, async, cache) kod **adım adım iz sürülür**: hangi satır ne zaman çalışır, değişken hangi değeri görür, ekranda ne yazar (tablo iyi çalışır).
+- Öğrencinin gerçekten yapacağı en az bir yanlış, belirtisiyle gösterilir ve düzeltilir.
+- "Neden böyle?" sorusu cevaplanır; kural yalnızca söylenmez, gerekçelendirilir.
+- Ders örneği görev çözümünün aynısı değildir (§1.4 aşağıda).
+Bir concept dersi bu denetimi geçtiğinde pratikte çoğunlukla 800–1.600 kelime tutar; 500 kelimenin altına düşen bir concept dersi neredeyse her zaman eksiktir, tekrar gözden geçir. **Var olan bir dersi yeniden yazarken** eski metindeki doğru ve değerli açıklamaları, iz tablolarını ve örnekleri **koru ve yeniden düzenle**; yalnızca konu yığmasını, tanımsız terimleri ve zorlama kalıbı çıkar.
 
-`minutes` ≈ kelime / 130 + her büyük kod bloğu için 1 dk. 2.200 kelimeyi aşan dersi ikiye böl. Uzunluk hedefi derinliğin sonucudur, amacı değil: sayıyı tutturmak için bölüm ekleme; kelime eksikse zihinsel modeli, iz sürmeyi ve sınır durumlarını derinleştir.
+`minutes` ≈ kelime / 130 + her büyük kod bloğu için 1 dk (yalnızca öğrenciye tahmini süre göstermek için).
 
-**Ders örneği ≠ görev çözümü.** Ders, sorularının cevabını birebir vermez. Derste kavramı **başka bir örnekle** öğret: görev `SearchTitle` bileşeniyse ders örneği başka ad, başka senaryo ve başka veriyle olsun (ör. görev film aramasıysa ders oyuncu listesini ya da tür filtresini kullanır). Görevin dosya/bileşen/fonksiyon adını ders kodunda tanımlama; görevin çözüm kodunu dersin "doğru örnek"i yapma. Öğrenci dersten yöntemi öğrenmeli, görevde kendisi uygulamalı.
+#### Referans aldığımız kurslar ve onlardan aldığımız teknik
+| Kaynak | Aldığımız teknik |
+|---|---|
+| react.dev "Learn" | Tanıdık örnekten başla; her bölüm tek fikir; kavramı önce küçük etkileşimli örnekle göster, sonra kuralı söyle; "Deep dive" bölümleri isteğe bağlı → bizde `:::info[Derinlemesine (isteğe bağlı)]`. |
+| Joy of React (Josh Comeau) | Tahmin et → çalıştır → açıkla; metafor ve görsel sezgi; terimi ilk geçtiği yerde tanımla. |
+| Epic React (Kent C. Dodds) | Kısa ders → hemen egzersiz; egzersizde asıl işi öğrenci yazar; üstüne "ekstra puan" adımları (kolay taban, yüksek tavan). |
+| Total TypeScript (Matt Pocock) | Tipi ihtiyaç anında öğret; önce editörde görülen gerçek hata mesajı, sonra çözüm; ileri tip ayrıntılarını React'ten önce yığma. |
+| The Odin Project / freeCodeCamp | Küçük adımlarla ilerleyen proje; her adım bir öncekinin üstüne tek yenilik ekler. |
+| Eğitim araştırması: çözümlü örnek → azalan iskele (faded worked examples), bilişsel yük kuramı | Önce tam çözümlü örnek, sonra kısmen boşaltılmış görev, sonra boş görev; aynı anda tek yeni fikir; alakasız bağlam değişikliğinden kaçın. |
+
+**Ders örneği ≠ görev çözümü.** Ders, sorularının cevabını birebir vermez: görevin fonksiyonunu/bileşenini derste yazıp "doğru örnek" yapma. Ama ders **aynı dünyada** kalır: Sinema'nın filmleri, oyuncuları, türleri, favorileri. Kavramı öğretmek için kitap, yazar, otel, etkinlik gibi alakasız alanlara geçme; bağlam değiştirmek öğrenciye ekstra yük bindirir. Ders film listesini sıralıyorsa görev tür listesini filtreleyebilir: aynı dünya, farklı iş.
+
+**Görev metni, starter ve test aynı dünyayı anlatır.** Prompt'ta geçen her ad, veri, UI metni ve erişilebilir ad; starter'daki kodla ve testlerin aradığı değerlerle **harfiyen** aynıdır. Prompt'u başka bir konuya taşıyıp starter/testi eski halinde bırakmak en ağır hatadır: öğrenci prompt'a uyduğu halde testten kalır.
 
 **Ders metni görevlerin iç yapısından söz etmez.** "Bu görevin testi şunu kontrol eder", "MSW ilk isteği 90 ms geciktiriyor", "prompt şunu söyler, ipucu şunu açıklar" gibi cümleler yazılmaz. Test yazmayı öğreten dersler (0.7, 3.10, 10–11. modüller) test tekniklerini genel örneklerle anlatır. Pekiştirme/proje/atölye derslerinin kısa girişleri görevlerin **ne ölçtüğünü** söyleyebilir, testlerin nasıl yazıldığını söylemez.
 
-Bir concept dersinde şunlar **bulunmak zorunda** (başlıklar konuya özgü olsun, "Kavram"/"Örnek" gibi jenerik başlık yazma):
-1. `:::pain` — somut belirti (ekranda ne görüldü, kaç istek, hangi hata mesajı).
-2. **Zihinsel model** — kuralların numaralı, kesin ve eksiksiz anlatımı (dokümantasyon ciddiyetinde); en az bir **diyagram** (§2.4).
-3. **Adım adım iz sürme** — kodu satır satır ya da zaman sırasıyla yürüt: hangi satır ne zaman çalışır, değişkenler hangi değerleri alır. Tablo bunun için iyidir.
-4. **Örnekler** — önce kırık hali (belirtiyi üreten kod), sonra düzeltilmiş hali; mümkünse `check`'li.
-5. **Sınır durumları ve sık hatalar** — her biri `belirti → neden → düzeltme` biçiminde, `:::mistake` kutularıyla.
-6. `:::sector` — sektörde bu nasıl kullanılır, ekip içinde hangi kural konur.
-7. **Özet** — 3–6 maddelik, dersin tamamını hatırlatan liste; ardından 1–2 "kendini yokla" sorusu (cevabı hemen altında, kısa).
+Bir concept dersinin **iskeleti** §1.0'daki akıştır (tanıdık başlangıç → en basit hal → adım adım büyüt → genelle). Başlıklar konuya özgü olsun, "Kavram"/"Örnek" gibi jenerik başlık yazma. Aşağıdakiler **araç kutusudur**, zorunlu bölüm listesi değildir; konuya yarayanı kullan:
+- **Zihinsel model** — kuralları, öğrenci örnekleri gördükten sonra kısa ve kesin biçimde topla. Bir diyagram gerçekten yardım ediyorsa ekle (§2.4); süs için ekleme.
+- **Adım adım iz sürme** — zamanlamanın önemli olduğu konularda (state, effect, async) kodu satır satır yürüt; tablo iyi çalışır. Basit konularda gerekmez.
+- **Kırık → doğru** — gerçek bir hatadan doğan konularda (§1.1).
+- **Sık hatalar** — en fazla 3 `:::mistake`: `belirti → neden → düzeltme`. Öğrencinin gerçekten düşeceği tuzaklar; uydurma değil.
+- `:::sector` — sektörde gerçekten farklı bir alışkanlık varsa, 2–3 cümle. Söyleyecek somut bir şey yoksa yazma.
+- **Özet** (zorunlu) — 3–5 madde + dersin **yeni terimleri** (her biri tek satır tanım) + 1–2 "kendini yokla" sorusu (cevabı hemen altında).
 
 ### 1.5 Zihinsel modeller ve tekrar
 Müfredatın taşıyıcı zihinsel modelleri §2.5'teki tabloda listelidir. Her model **bir kez**, tabloda gösterilen derste derinlemesine kurulur (ortak diyagramıyla). Sonraki derslerde bu modele dayanan her yerde `:::model[Model adı]` kutusuyla **hatırlatılır**: 2–5 cümlelik öz, gerekirse aynı ortak diyagram, ardından "bu yeni bağlamda ne değişiyor?" sorusunun cevabı. Hatırlatma, ilk anlatımın kopyası değildir; yeni bağlama uygulanmış halidir.
@@ -173,6 +201,10 @@ defineQuestion({
 })
 ```
 - `starter/` TÜM dosyaları içerir (düzenlenebilir + salt okunur yardımcılar). `files` dışındakiler salt okunur gösterilir.
+- **İskele azalır, asıl işi öğrenci yazar (v3):** Bir dersin görevleri kolaydan zora: quiz (kod okuma / "ne olur?" tahmini) → rehberli görev (iskelet var, dersin kavramını öğrenci yazar) → kendi görevi (yalnızca sözleşme; dosyanın gövdesini öğrenci kurar). Starter **dersin öğrettiği şeyi içermez**: tasarlanacak tip, generic imza, `extends` kısıtı, hook çağrısı, doğru state güncellemesi, düzeltilecek satırın yeri. Tip dersi görevlerinde tip davranışı `expectTypeOf` ile test edilir; öğrencinin yazdığı yalnızca düz JavaScript olan bir "tip görevi" yazma. Görevde öğrencinin yazacağı kod çoğu zaman 5–30 satırdır; 1–2 satırlık görev yalnızca ilk rehberli adımda kabul edilir. "Hatayı bul, düzelt" görevi bir derste en fazla bir tanedir ve prompt belirtiyi söyler, yerini söylemez.
+- **Görev yalnızca öğretileni kullanır:** Prompt, sözleşme, ipuçları, starter ve beklenen çözüm; yalnızca bu derse kadar (bu ders dahil) öğretilmiş dil özelliklerini, tipleri ve API'leri gerektirir. Ör. `Record` 2.2'de öğretiliyorsa 2.1'in görevi `Record` dönemez; `readonly` dizi öğretilmediyse imzada olmaz.
+- **Tekrar ≠ kopya:** Aynı dersteki iki görev aynı imzayı ya da aynı işi farklı isimle istemez (ör. `findById` ve `findOnPage`). Her görev yeni bir şey ekler: yeni bir durum, iki kavramın birleşimi, yeni bir kısıt.
+- **Tutarlılık (en ağır hata):** Prompt'taki her ad, export, dosya adı, örnek veri, UI metni ve erişilebilir ad; starter, testler ve çözümle harfiyen aynıdır. Prompt'u değiştirdiysen starter'ı ve testleri de aynı dünyaya getir (ve tersi). Bitirmeden önce her görevi prompt → starter → test → çözüm sırasıyla yan yana oku.
 - `solution/` yalnızca `files` listesindeki dosyaların çözümünü içerir (doğrulamada starter'ın üstüne kopyalanır).
 - `prompt.md` görev metni **LeetCode gibi** yazılır: ne istendiği net, nasıl yapılacağı yok. Testi geçmek için bilinmesi **zorunlu** olan her şey metinde; yönteme dair her şey ipuçlarında. Biçim:
   ```md
@@ -243,6 +275,8 @@ Ders metnindeki diyagramlar satır içi SVG olarak gösterilir ve platformun tem
 - Tek fikir, en fazla ~8 kutu. Renk anlam taşır: `d-danger` hata/bozulma, `d-success` doğru yol, `d-accent` odaktaki adım, `d-violet` dış sistem/yan etki.
 - Örnek ve stil referansı: `curriculum/diagrams/render-commit.svg`.
 
+**Diyagramları koru:** Bir dersi yeniden yazarken var olan diyagramları (ortak ve derse özgü) **kaldırma**; yeni metinde anlattıkları fikrin hemen yanına yerleştir. Diyagram artık metinle çelişiyorsa (çıkarılan bir konuyu gösteriyorsa) SVG'yi metne uydur. Bir ortak model diyagramı, §2.5 tablosunda modelin ilk kurulduğu derste **mutlaka** bulunur; sonraki derslerde `:::model` hatırlatmasıyla birlikte tekrar kullanılabilir. Zorlanan bir öğrenci için iyi bir görsel, bir paragraftan daha çok iş görür.
+
 **Kontrol zorunlu:** `pnpm preview:diagram <dosya ya da klasör>` iki şey yapar:
 1. **Yerleşim denetimi** (her ortamda çalışır): metnin kutudan ya da çizimden taşması, çizginin metnin üstünden ya da bir kutunun içinden geçmesi, metinlerin/kutuların üst üste binmesi. Sonuç **temiz** olmalı; `pnpm validate:content` derse özgü diyagramlarda bu sorunları hata sayar. Etiketleri çizgiden uzağa (çizginin üstüne/altına 12px+) koy; zaman çizelgesi çizgisini kutuların içinden geçirme, kutuların altından ya da üstünden geçir.
 2. **PNG** (yalnızca macOS `qlmanage` çalışabiliyorsa; sandbox'ta çalışmayabilir): iki temada `.cache/diagram-preview/` altına. Üretilebiliyorsa aç ve anlamı kontrol et: ok yönleri doğru mu, diyagram tek başına anlaşılıyor mu. Kendi rasterleştiricini yazma; PNG üretilemiyorsa yerleşim denetimi yeterlidir.
@@ -253,28 +287,28 @@ Ders metnindeki diyagramlar satır içi SVG olarak gösterilir ve platformun tem
 |---|---|---|
 | `ts-derleme-ve-calisma` | Tipler derleme anında vardır, çalışma anında silinir; dışarıdan gelen veri doğrulanmalıdır | 1.1 |
 | `ts-narrowing-akisi` | Kontrol akışı union tipini daraltır | 1.6 |
-| `render-commit` | Tetikleme → render (saf) → commit → effect | 3.1 |
+| `render-commit` | Tetikleme → render (saf) → commit → effect (effect kısmı 5.2'de) | 3.9 |
 | `state-snapshot` | Her render kendi props/state fotoğrafını görür; güncellemeler kuyruğa girer | 3.3 |
-| `agac-ve-kimlik` | State ağaçtaki konuma ve `key`'e bağlıdır | 3.6 |
-| `veri-akisi` | Props aşağı, olaylar yukarı; state ortak ebeveyne taşınır | 3.8 |
+| `agac-ve-kimlik` | State ağaçtaki konuma ve `key`'e bağlıdır | 3.5 |
+| `veri-akisi` | Props aşağı, olaylar yukarı; state ortak ebeveyne taşınır | 3.7 |
 | `test-anatomisi` | Hazırla → çalıştır → doğrula; test = çalıştırılabilir gereksinim; mutant yakalama | 0.7 |
 | `effect-yasam-dongusu` | setup → (deps değişti) cleanup → setup … → unmount'ta cleanup | 5.2 |
 | `closure-bayat-deger` | Callback, oluştuğu render'ın değerlerini yakalar | 5.3 |
 | `yaris-kosulu` | Yavaş eski cevap hızlı yeni cevabı ezer; iptal/yok sayma | 5.4 |
 | `context-yayilimi` | Provider değeri değişince tüm tüketiciler render olur | 5.9 |
-| `url-state` | URL tek doğru kaynak; iç içe route ağacı → `Outlet` | 6.3 |
+| `url-state` | URL tek doğru kaynak; iç içe route ağacı → `Outlet` | 6.4 |
 | `http-istek-cevap` | İstek/cevap anatomisi; `fetch` 4xx/5xx'te reddetmez | 7.1 |
 | `cors-preflight` | Tarayıcı → OPTIONS → izin başlıkları → asıl istek | 7.2 |
 | `http-onbellek-karari` | Taze mi? → kullan; bayat → ETag ile sor → 304/200 | 7.3 |
 | `state-kategorileri` | Server / client / URL / form state ve her birinin aracı | 9.1 |
 | `test-katmanlari` | Birim / entegrasyon / uçtan uca; neyi hangi katmanda test etmeli | 10.1 |
-| `msw-perdesi` | Uygulama `fetch` → MSW yakalar → handler → cevap | 11.5 |
-| `query-onbellek-yasam-dongusu` | fetching → fresh → stale → inactive → gc | 12.5 |
+| `msw-perdesi` | Uygulama `fetch` → MSW yakalar → handler → cevap | 11.4 |
+| `query-onbellek-yasam-dongusu` | fetching → fresh → stale → inactive → gc | 12.4 |
 | `mutation-ve-invalidation` | Mutation → (optimistic) → sunucu → invalidate/rollback → refetch | 13.2 |
 | `form-state` | RHF: alanlar kayıtlı, değerler form deposunda, abonelikle render | 14.2 |
 | `zod-sinir` | `unknown` → `parse` → tipli veri ya da hata; sınırlar: API, form, env | 15.1 |
 | `redux-veri-akisi` | dispatch → middleware → reducer → store → selector → UI | 16.3 |
-| `token-yenileme` | 401 → tek uçuşta refresh → bekleyen istekleri tekrar dene | 17.5 |
+| `token-yenileme` | 401 → tek uçuşta refresh → bekleyen istekleri tekrar dene | 17.7 |
 | `xss-akisi` | Güvenilmeyen girdi → tehlikeli çıkış noktaları → kaçış/doğrulama/CSP | 17.8 |
 | `render-nedenleri` | Render tetikleyicileri ve memo sınırları | 18.2 |
 | `web-vitals` | LCP / INP / CLS'in sayfa zaman çizelgesindeki yeri | 18.9 |
@@ -401,7 +435,7 @@ Bitti sayılması için:
 2. Aşağıdaki kalite kontrol listesinin tamamı.
 
 ### Kalite kontrol listesi
-- [ ] Modül ve her ders somut bir **acı** ile açılıyor; araç, acıdan SONRA geliyor.
+- [ ] Her ders öğrencinin bildiği bir şeyden açılıyor; `:::pain` yalnızca gerçek bir belirti varsa kullanılmış.
 - [ ] Planlanan soru sayısına yakın (±%20) ve karışım dengeli (~%40 quiz, ~%50 code, ~%10 project).
 - [ ] Her ders içinde zorluk artıyor; tekrarlar **yenilik** içeriyor (aynı sorunun kopyası yok).
 - [ ] Önceki modüllerin core kavramları yeni bağlamlarda kullanılmış ve `concepts`'e eklenmiş.
@@ -410,7 +444,7 @@ Bitti sayılması için:
 - [ ] Quiz şıklarının her birinin açıklaması öğretici.
 - [ ] Türkçe sade ve doğru; terimler tutarlı; §1.6'daki yasak kalıplar yok.
 - [ ] Ders örnekleri görevlerin çözümü değil (farklı ad, senaryo, veri); ders metni testlerden/ipuçlarından söz etmiyor.
-- [ ] Dersler §1.4 uzunluğunda ve zorunlu parçaları içeriyor; ilgili zihinsel modeller kurulmuş ya da `:::model` ile hatırlatılmış.
+- [ ] Dersler §1.0 akışında (tanıdık başlangıç → en basit hal → adım adım → genelle); her yeni terim ilk geçtiği yerde tanımlı; nadir ayrıntılar isteğe bağlı kutuda; ilgili zihinsel modeller kurulmuş ya da `:::model` ile hatırlatılmış.
 - [ ] Diyagramlar §2.4 kurallarına uyuyor ve `pnpm preview:diagram` çıktısı gözle kontrol edildi.
 - [ ] Sinema görevleri `docs/curriculum-plan.md`'deki sözleşmeye (dosya yolu, export) uyuyor.
 

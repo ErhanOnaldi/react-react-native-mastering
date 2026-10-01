@@ -1,173 +1,128 @@
 ---
-title: "İstemcide sırlar, açık yönlendirme ve bağımlılıklar"
-minutes: 13
+title: "İstemcide sırlar, yönlendirme ve bağımlılıklar"
+minutes: 15
 kind: concept
 ---
 
-# İstemcide sırlar, açık yönlendirme ve bağımlılıklar
+# İstemcide sırlar, yönlendirme ve bağımlılıklar
 
-:::pain[Tarayıcıya sızan anahtar ve sahte yönlendirme]
-Prodüksiyona çıkan paketi inceleyen bir güvenlik araştırmacısı, JavaScript dosyalarının içinde ödeme servisi gizli anahtarını bulduğunu bildiriyor. Aynı gün bir kullanıcı, platformun giriş bağlantısına tıklayıp başarıyla oturum açtıktan sonra kendini parolasını çalmaya çalışan sahte bir kopya sitede buluyor. İstemciye giden kodun sınırları bilinmediğinde hem gizli veriler açığa çıkar hem de yönlendirme akışları kötüye kullanılır.
-:::
+Bir React uygulamasında kullandığın kod, derlemeden sonra kullanıcının tarayıcısına gider. Bu yüzden ön yüzde bir değeri gizlemek ile sunucuda gizlemek aynı şey değildir. Giriş sonrası dönüş adresinde de benzer bir sınır var: uygulama, kullanıcının verdiği metni güvenli kabul edip doğrudan tarayıcıya yönlendirmemelidir.
 
-## Ön yüzde sır saklanamaz kuralı
+## Tarayıcıya giden kod herkese açıktır
 
-Modern React uygulamaları derlendiğinde (örneğin Vite ile `vite build` çalıştırıldığında), yazdığın TypeScript ve JSX kodları tarayıcının çalıştırabileceği statik JavaScript ve CSS dosyalarına dönüştürülür. Bu dosyalar, uygulamanı ziyaret eden her kullanıcının tarayıcısına indirilir.
+Önce bildiğin bir örnek: bileşen içinde kullandığın sabit bir metin tarayıcıda görünür. Vite'ın build işlemi de TypeScript ve JSX dosyalarını tarayıcının indirebildiği JavaScript dosyalarına dönüştürür. Bu JavaScript paketi (bundle), uygulamanın istemciye gönderilen kod dosyalarıdır.
 
-1. **`VITE_` öneki koda gömülür:** Vite yalnızca `VITE_` ile başlayan ortam değişkenlerini istemci tarafına aktarır (`import.meta.env.VITE_*`). Ancak bu aktarım çalışma zamanında sunucudan güvenli bir okuma değildir; derleme anında koddaki değişken referansının yerine metnin doğrudan yazılmasıdır.
-2. **Bundle herkese açıktır:** Tarayıcı geliştirici araçlarını (DevTools Network veya Sources sekmesi) açan ya da JavaScript dosyasını metin düzenleyicide aratan herhangi biri, paketin içine gömülmüş tüm değerleri anında görebilir.
-3. **Genel anahtar ile gizli anahtar farkı:** TMDB API okuma anahtarı ya da Firebase proje kimliği gibi değerler istemciden doğrudan istek atmak üzere tasarlanmış genel belirteçlerdir. Buna karşılık veritabanı parolaları, ödeme ağ geçidi özel anahtarları (`secret_key`), imzalama sertifikaları asla ön yüz paketinde yer alamaz.
-4. **Hassas işlemlerin yeri backend'dir:** Gizli anahtar gerektiren veya üçüncü taraf servislerle imtiyazlı iletişim kuran tüm operasyonlar sunucu tarafında (örneğin ASP.NET Core API veya sunucu fonksiyonları) yürütülür; ön yüz bu işlemleri kendi kimliği doğrulanmış API uç noktaları üzerinden tetikler.
+`ts title="src/config.ts"
+const apiBaseUrl = import.meta.env.VITE_API_URL
+`
 
-## Açık yönlendirme (Open Redirect) mekanizması
+`VITE_` ile başlayan ortam değişkenleri build sırasında bu pakete yazılır; `.env` dosyasının içinde olmaları onları gizli yapmaz. URL gibi herkese açık bir ayar burada bulunabilir. Özel API anahtarı veya veritabanı parolası burada bulunmamalıdır; bunları içeren kod sunucuda kalmalıdır.
 
-Kullanıcı oturum gerektiren bir sayfaya gitmek istediğinde, oturumu yoksa giriş sayfasına aktarılır. Kullanıcı deneyimini kesintisiz kılmak için giriş sayfasına genellikle bir dönüş hedefi (`from` veya `?redirect=/istenen-yol`) eklenir.
+Biraz farklı örnek: genel bir film API'si istemciden doğrudan çağrılmak üzere tasarlanmış bir public key (herkese açık anahtar) sunabilir. Böyle bir anahtarın açıkça istemci için üretildiği ve kullanımının kısıtlandığı varsayılır. Ödeme sağlayıcısının özel anahtarı ise para hareketi yapma yetkisi taşıyabilir; onu kullanacak işlem sunucuda yapılmalı, arayüz yalnızca senin API'ne istek göndermelidir.
 
-Giriş başarılı olduktan sonra uygulama bu adrese yönlendirme yapar. Eğer gelen adres filtrelenmeden doğrudan yönlendirme kütüphanesine veya tarayıcıya iletilirse, açık yönlendirme zafiyeti doğar.
+`ts
+// Hatalı: VITE_ değeri tarayıcıya giden pakette görünür.
+const paymentSecret = import.meta.env.VITE_PAYMENT_SECRET
+`
 
-Saldırgan şu bağlantıyı hazırlar ve kullanıcıya e-posta veya mesajla iletir:
+**Ne oldu, neden?** Gizli değişken adını `VITE_` yapmak onu korumaz. Build değeri istemci koduna koyar ve kullanıcı bu dosyayı indirebilir; gizlilik için yetki gerektiren işlemi sunucuya taşımalısın.
 
-```text
-https://sinema.example/login?redirect=https://saldirgan.example/sahte-profil
-```
+## Girişten sonra nereye dönüleceğini sınırla
 
-Kullanıcı adresi kontrol ettiğinde alan adının güvenilir `sinema.example` olduğunu görür. Parolasını girip oturum açar açmaz uygulama onu `saldirgan.example` sitesine yönlendirir. Kullanıcı hâlâ aynı sitede olduğunu sanarak ek bilgilerini paylaşabilir.
+Korumalı bir film detay sayfasına oturumu olmadan giden kullanıcıyı giriş sayfasına gönderebilirsin. Kullanıcı giriş yapınca da geldiği sayfaya döndürmek için adres çubuğundaki query parametresini, yani URL'nin `?` sonrasındaki ek bilgisini okuyabilirsin. Fakat bu değer dışarıdan geldiği için güvenilir değildir.
 
-### URL yorumlama kuralları ve tuzaklar
+En basit kontrol, yalnızca uygulama içi mutlak yolları kabul etmektir:
 
-Tarayıcıların URL yorumlama mantığı güvenlik sınırlarını belirlerken dikkat gerektirir:
-
-1. **Mutlak ve göreli yollar:** Uygulama içi rotalar tek bir eğik çizgiyle başlamalıdır (`/watchlists`). Başında eğik çizgi olmayan göreli yollar (`watchlists`) bulunulan rotaya göre beklenmeyen alt yollara gidebilir.
-2. **Protokolü devralan (protocol-relative) adresler:** İki eğik çizgiyle başlayan yollar (`//saldirgan.example`), tarayıcı tarafından mevcut protokolü (HTTPS) devralan mutlak bir harici adres olarak yorumlanır. Bu nedenle yalnızca `startsWith('/')` kontrolü yapmak yetersizdir; `//` başlangıcı mutlaka engellenmelidir.
-3. **Ters eğik çizgi normalizasyonu:** Bazı tarayıcılar ve ayrıştırıcılar ters eğik çizgiyi (`\`) otomatik olarak düz eğik çizgiye (`/`) çevirir. Örneğin `/\saldirgan.example` ifadesi tarayıcıda `//saldirgan.example` haline gelebilir.
-4. **Görünmeyen kontrol karakterleri:** Dizgi içindeki sekme (`\t`), yeni satır (`\n`) veya boş bayt karakterleri URL çözümleme motorlarını yanıltarak filtreleri atlatmak için kullanılabilir.
-
-| Gelen Değer | Neden Tehlikeli? | Güvenli Karar |
-| --- | --- | --- |
-| `"/movies?sort=top"` | Uygulama içi geçerli yol ve sorgu parametresi | Kabul et (`"/movies?sort=top"`) |
-| `"https://evil.example"` | Harici şema ve alan adı | Reddet → Varsayılan yol |
-| `"//evil.example/login"` | Protokol devralan harici mutlak adres | Reddet → Varsayılan yol |
-| `"/\\evil.example"` | Ters eğik çizgi normalizasyonu ile harici adrese dönüşebilir | Reddet → Varsayılan yol |
-| `"watchlists"` | Başında `/` olmayan göreli yol | Reddet → Varsayılan yol |
-| `null` / `undefined` | Tip dışı veya tanımsız girdi | Reddet → Varsayılan yol |
-
-## Önce kırık, sonra doğru: Dönüş adresini denetlemek
-
-Önce zafiyete neden olan dikkatsiz yönlendirme kodunu inceleyelim:
-
-```tsx title="src/features/navigation/UnsafeRedirect.tsx"
-import { useNavigate, useSearchParams } from 'react-router'
-
-export function UnsafeRedirectHandler() {
-  const [params] = useSearchParams()
-  const navigate = useNavigate()
-
-  function handleLoginSuccess() {
-    const target = params.get('returnUrl') ?? '/dashboard'
-    // TEHLİKE: target değeri "//evil.example" ise tarayıcı harici siteye çıkar!
-    void navigate(target, { replace: true })
-  }
-
-  return <button onClick={handleLoginSuccess}>Girişi Tamamla</button>
+`ts
+function isAppPath(value: string): boolean {
+  return value.startsWith('/') && !value.startsWith('//')
 }
-```
+`
 
-Bu kodda `returnUrl` sorgu parametresi doğrulanmadan `navigate` fonksiyonuna verilir. Harici bir etki alanı girildiğinde kullanıcı siteden dışarı yönlendirilir.
+`/films` uygulama içi yoldur. `https://fake.example` dış adrestir. `//fake.example` ise iki slash ile başladığı için tarayıcı tarafından harici adres gibi yorumlanabilir; bu yüzden sadece ilk karakteri denetlemek yetmez.
 
-Şimdi bu denetimi saf bir doğrulama fonksiyonuyla güvenli hale getirelim:
+**Ne oldu, neden?** İlk koşul uygulama içi yolları seçiyor; ikinci koşul protokolü devralan `//` adreslerini eliyor. Böylece kullanıcıya beklediği yerel sayfaya dönüş imkânı verilirken dış siteye kaçış engellenir.
 
-```ts check title="src/features/navigation/validateReturnPath.ts"
-export function validateReturnPath(target: unknown, fallbackPath = '/dashboard'): string {
-  if (typeof target !== 'string') {
-    return fallbackPath
-  }
+Şimdi aynı doğrulamaya bir kenar durum daha ekleyelim. URL ayrıştırıcıları bazı durumlarda ters eğik çizgiyi `/` gibi yorumlayabilir. `'/\\fake.example'` gibi bir değer ilk kontrollerden geçebilir ama adres yorumlanırken dış hedefe dönüşebilir. Kontrol karakterleri de URL'nin nasıl ayrıştırıldığını şaşırtabilir.
 
-  // Mutlak uygulama içi yol olmalı, ancak çift slash ile başlamamalı
-  if (!target.startsWith('/') || target.startsWith('//')) {
-    return fallbackPath
-  }
-
-  // Ters eğik çizgi ve kontrol karakterleri bulunmamalı
-  if (target.includes('\\') || /[\u0000-\u001f\u007f]/.test(target)) {
-    return fallbackPath
-  }
-
-  return target
-}
-```
-
-Doğrulayıcıyı kullanan güvenli yönlendirme bileşeni:
-
-```tsx title="src/features/navigation/SafeRedirectHandler.tsx"
-import { useNavigate, useSearchParams } from 'react-router'
-import { validateReturnPath } from './validateReturnPath'
-
-export function SafeRedirectHandler() {
-  const [params] = useSearchParams()
-  const navigate = useNavigate()
-
-  function handleSuccess() {
-    const rawTarget = params.get('returnUrl')
-    const safeTarget = validateReturnPath(rawTarget, '/dashboard')
-    void navigate(safeTarget, { replace: true })
-  }
-
+`ts
+function isSafeAppPath(value: string): boolean {
   return (
-    <button type="button" onClick={handleSuccess}>
-      Güvenle Devam Et
-    </button>
+    value.startsWith('/') &&
+    !value.startsWith('//') &&
+    !value.includes('\\') &&
+    !/[\u0000-\u001f\u007f]/.test(value)
   )
 }
-```
+`
 
-## Bağımlılık tedarik zinciri güvenliği
+**Ne oldu, neden?** Ters eğik çizgiyi ve görünmeyen kontrol karakterlerini reddederek, URL'nin tarayıcıda beklenmedik biçimde başka adrese dönüşmesini önledik. Geçersiz değer geldiğinde uygulama bilinen bir iç sayfayı, örneğin `/profile`, kullanmalıdır.
 
-Modern React projeleri yüzlerce üçüncü taraf `npm` paketi kullanır. Bu paketlerin her biri projenin çalışma anında ve derleme sürecinde kod çalıştırabilir. Kötü niyetli bir aktörün popüler bir paketin bakımcısının hesabını ele geçirip zararlı kod yayımlamasına tedarik zinciri (supply chain) saldırısı denir.
+## Giriş dönüşünü sırayla izle
 
-Tedarik zincirini güvenceye almak için dört temel savunma hattı kurulur:
+Aşağıdaki örnek `/films/42?tab=cast` yolunu korur; dışarıdan gelen veya bozuk bir değeri `/profile` ile değiştirir. `URLSearchParams` adres çubuğundaki parametreyi okumaya yarar. Bu örnek bir güvenli dönüş yolu seçer, yönlendirme bileşeninin kendisini yazmaz.
 
-1. **Lockfile bütünlüğü:** `pnpm-lock.yaml` dosyası her paketin tam sürümünü ve SHA-512 bütünlük özetini (integrity hash) saklar. Proje versiyon kontrolünde lockfile mutlaka tutulmalıdır.
-2. **CI ortamında dondurulmuş kurulum:** Sürekli entegrasyon (CI) sunucularında paketler yüklenirken lockfile'ın değiştirilmesini engellemek için `pnpm install --frozen-lockfile` çalıştırılır. Lockfile ile `package.json` uyumsuzsa işlem anında hata verir.
-3. **Kurulum script'lerini kısıtlamak:** Paketlerin `postinstall` veya `preinstall` aşamasında keyfi Node.js script'leri çalıştırması büyük bir risk kaynağıdır. `pnpm 10`, üçüncü taraf paketlerin kurulum script'lerini varsayılan olarak çalıştırmaz; yalnızca `pnpm.onlyBuiltDependencies` listesinde açıkça onay verilmiş paketlerin derleme script'lerine izin verir.
-4. **Gecikmeli sürüm kabulü (minimumReleaseAge):** Kötü amaçlı paket sürümleri genellikle ilk 24-48 saat içinde topluluk tarafından fark edilip geri çekilir. `pnpm config set minimumReleaseAge 48h` gibi bir ayar, çok yeni yayımlanmış paketlerin projeye anında indirilmesini engelleyerek inceleme süresi kazandırır.
-5. **Düzenli güvenlik taraması:** `pnpm audit` komutu bağımlılık ağacındaki bilinen güvenlik açıklarını listeler ve kritik yamaları uygulamanı sağlar.
+`ts
+function safeReturnPath(rawValue: unknown): string {
+  if (typeof rawValue !== 'string' || rawValue.length === 0) {
+    return '/profile'
+  }
 
-## Sık hatalar ve düzeltmeleri
+  const safe = isSafeAppPath(rawValue)
+  return safe ? rawValue : '/profile'
+}
 
-:::mistake[Ters eğik çizgi denetimini atlamak]
-**Belirti:** URL filtresi `startsWith('/')` ve `!startsWith('//')` kontrolü yaptığı halde kullanıcı harici bir siteye yönlendirilebiliyor.  
-**Neden:** `/\evil.example` girdisi tek eğik çizgiyle başlar ancak bazı tarayıcı motorları ters eğik çizgiyi düz çizgiye normalize ederek adresi `//evil.example` haline getirir.  
-**Düzeltme:** Yol içinde ters eğik çizgi (`\`) bulunup bulunmadığını açıkça denetle ve varsa girdiyi reddet.
+const requestedPath = new URLSearchParams(window.location.search).get('returnTo')
+const destination = safeReturnPath(requestedPath)
+`
+
+| Sıra | İşlem | `destination` |
+| --- | --- | --- |
+| 1 | `returnTo=/films/42?tab=cast` okunur | henüz atanmadı |
+| 2 | Değer metin mi ve güvenli uygulama yolu mu diye bakılır | `/films/42?tab=cast` |
+| 3 | Başarılı giriş sonrası uygulama bu yolu açar | film detay sayfası |
+| 4 | Değer `//fake.example` veya boşsa | `/profile` |
+
+**Ne oldu, neden?** Önce kullanıcı girdisini aldık, sonra tipini ve yol biçimini denetledik, en son güvenli sonucu seçtik. Denetimden önce navigasyona verirsen kullanıcının kendi linki onu Sinema'dan çıkarabilir; buna open redirect (açık yönlendirme) denir.
+
+:::mistake[Başında slash var diye adresi kabul etmek]
+**Belirti:** Girişten sonra adres `//fake.example` oluyor ve tarayıcı Sinema dışına çıkıyor. **Neden:** `//fake.example` de `/` ile başlar, ama dış adres olarak yorumlanabilir. **Düzeltme:** Tam olarak uygulama içi yolları kabul et; `//`, ters eğik çizgi ve kontrol karakterlerini reddet, diğer değerlerde sabit bir iç fallback kullan.
 :::
 
-:::mistake[.env dosyasını sır kasası sanmak]
-**Belirti:** Üçüncü taraf SMS veya ödeme servisinin bakiye ve işlem kayıtları çalınıyor; servis paneli API anahtarının kötüye kullanıldığını gösteriyor.  
-**Neden:** Gizli API anahtarı `VITE_PAYMENT_SECRET` adıyla `.env` dosyasına yazılmış ve bileşen içinde kullanılmıştır. Vite bu değeri üretim bundle'ına düz metin olarak yerleştirmiştir.  
-**Düzeltme:** Gizli anahtarı yalnızca sunucu tarafında tut. İstemciye yalnızca herkese açık genel anahtarları (`VITE_PUBLIC_*`) aç.
-:::
+## Paket sürümlerini tekrarlanabilir tut
 
-:::mistake[Lockfile dosyasını gitignore'a eklemek]
-**Belirti:** Geliştiricinin yerel makinesinde çalışan kod, sunucuda veya takım arkadaşının bilgisayarında derleme hatası veriyor ya da farklı paket sürümleri yükleniyor.  
-**Neden:** `pnpm-lock.yaml` veya `package-lock.json` dosyası repoya eklenmediği için her ortamda `^` ve `~` sembolleri en son yayımlanan sürümleri çekmiştir.  
-**Düzeltme:** Lockfile dosyasını mutlaka versiyon kontrolüne dahil et ve CI ortamında `--frozen-lockfile` bayrağını kullan.
-:::
+Bir React projesi doğrudan kullandığın paketlerin yanında, onların kullandığı başka paketlere de bağlıdır. Bu paketlerin tümüne bağımlılık ağacı denir. Bir paketin kötü amaçlı sürümü, uygulamaya güvenmediğin kod sokabilir; buna tedarik zinciri saldırısı denir.
 
-:::sector[Sektör standardı]
-Büyük ölçekli ön yüz projelerinde gizli API anahtarlarının koda sızmasını engellemek için CI hattında `git-secrets` veya `trufflehog` gibi statik gizli bilgi tarayıcıları çalıştırılır. Dış yönlendirmelerde ise serbest parametre almak yerine yalnızca önceden tanımlanmış rota anahtarlarını (`enum` veya literal union) eşleyen rota haritaları tercih edilir.
+Lockfile (kilit dosyası), kurulumda kullanılacak paket sürümlerini ve ilişkilerini kaydeder. Örneğin `pnpm-lock.yaml` dosyasını repoda tutarsan ekipte ve otomatik build ortamında aynı sürüm ağacı kurulabilir. Sürekli entegrasyon (CI), kodu sunucu ortamında otomatik kurup derleyen iş akışıdır; orada `pnpm install --frozen-lockfile` kullanmak, dosya ile `package.json` uyuşmadığında kurulumun farklı sürümler seçmesini engeller ve hata verir.
+
+**Ne oldu, neden?** Lockfile'ı repoya eklemek “paket tamamen güvenlidir” demek değildir. Bu, hangi sürümlerin kurulduğunu görünür ve tekrarlanabilir yapar. Bilinen açıklara karşı `pnpm audit` gibi taramalar da ek sinyal verir; bulguları inceleyip güncelleme kararı vermen gerekir.
+
+:::info[Derinlemesine (isteğe bağlı)]
+Paketlerin kurulum sırasında çalıştırdığı script'ler de bilgisayarda kod yürütebilir. Paket yöneticisinin güven ayarlarını gözden geçir, yalnızca gerçekten gereken paketlere izin ver ve otomatik güvenlik taramasının her bulguyu doğru yorumladığını varsayma. Yeni yayımlanan paket sürümünü hemen almak yerine kısa süre bekletmek de bazı saldırılara karşı ek inceleme zamanı sağlayabilir.
 :::
 
 ## Özet
 
-- İstemciye indirilen her JavaScript kodu herkese açıktır; `VITE_` değişkenleri derleme anında koda düz metin olarak gömülür, bu yüzden ön yüzde gerçek sır saklanamaz.
-- Hassas işlemler ve gizli anahtarlar daima backend üzerinde barındırılmalı, ön yüz bu işlemleri kendi API uç noktalarıyla yürütmelidir.
-- Açık yönlendirme (open redirect), giriş sonrası dönüş adresinin denetlenmemesinden kaynaklanır; saldırgan kullanıcıyı güvenilir bir siteden sahte bir platforma taşıyabilir.
-- Güvenli yönlendirme için girdinin tek `/` ile başlaması, `//` veya `\` içermemesi ve kontrol karakterlerinden arındırılmış olması gerekir; aksi halde bilinen bir varsayılan sayfaya dönülmelidir.
-- Bağımlılık güvenliği için lockfile versiyon kontrolünde tutulmalı, CI'da `--frozen-lockfile` kullanılmalı, kurulum script'leri kısıtlanmalı ve `pnpm audit` düzenli çalıştırılmalıdır.
+- Build ile tarayıcıya giden JavaScript kullanıcı tarafından incelenebilir; `VITE_` değişkenine özel sır koyma.
+- Yetki taşıyan gizli anahtarları sunucuda tut; istemci güvenli API üzerinden işlem istesin.
+- Giriş dönüş adresini dışarıdan gelen girdi say; yalnızca güvenli uygulama içi yolları kabul et, diğerlerinde sabit bir iç sayfaya dön.
+- Lockfile kurulan sürümleri kaydeder; CI'da dondurulmuş kurulum farklı paket sürümlerinin sessizce seçilmesini önler.
+- `pnpm audit` bilinen güvenlik açıkları için kontrol sağlar; sonuçları incelemek gerekir.
 
-### Kendini yokla
+**Yeni terimler**
 
-1. Bir geliştirici `.env` içine `VITE_STRIPE_SECRET_KEY=sk_live_...` yazıp bir React bileşeninde kullandı. Bu anahtar neden güvende değildir?
-*Cevap:* Çünkü Vite bu değişkeni derleme sırasında üretim JavaScript dosyalarının içine doğrudan metin olarak gömer. Tarayıcıda sayfayı açan herkes kaynak kodlardan bu anahtarı görebilir.
+- **Build / bundle:** Kaynak kodu tarayıcının indirebildiği dosyalara dönüştürme / bu istemci dosyaları.
+- **Open redirect:** Denetlenmeyen dönüş adresinin kullanıcıyı uygulama dışına yönlendirmesi.
+- **Lockfile:** Kurulumda kullanılacak paket sürümlerini kaydeden kilit dosyası.
+- **Bağımlılık ağacı:** Projenin kullandığı paketler ve onların kullandığı diğer paketler.
+- **Tedarik zinciri saldırısı:** Güvenilen paket veya dağıtım yoluna zararlı kod sokulması.
+- **CI:** Kodun sunucuda otomatik kurulup derlendiği iş akışı.
 
-2. `target.startsWith('/')` kontrolü açık yönlendirmeyi engellemek için neden tek başına yetersizdir?
-*Cevap:* Çünkü `//evil.example` gibi protokol devralan harici adresler de `/` ile başlar ancak tarayıcı tarafından harici bir etki alanı olarak çalıştırılır. Ayrıca `/\evil.example` gibi ters eğik çizgi varyasyonları da tek `/` ile başlar.
+**Kendini yokla**
+
+1. `VITE_PAYMENT_SECRET` neden `.env` içinde olsa da gizli kalmaz?  
+*Cevap:* Vite `VITE_` değerini build sırasında tarayıcıya gönderilen koda koyar; kullanıcı bu dosyayı indirebilir.
+
+2. Neden yalnızca `value.startsWith('/')` kontrolü güvenli yönlendirme için yetmez?  
+*Cevap:* `//fake.example` de `/` ile başlar ama dış siteye gidebilir; ters eğik çizgi gibi değerler de URL yorumunu şaşırtabilir.
+

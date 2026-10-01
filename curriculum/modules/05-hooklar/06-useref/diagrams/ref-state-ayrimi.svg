@@ -10,7 +10,7 @@
   <text class="d-title" x="190" y="70" text-anchor="middle">State</text>
   <rect class="d-success" x="80" y="100" width="220" height="70" rx="8"/>
   <text class="d-text" x="190" y="130" text-anchor="middle">ekranda görünen veri</text>
-  <text class="d-code" x="190" y="153" text-anchor="middle">query, title, loading</text>
+  <text class="d-code" x="190" y="153" text-anchor="middle">title, rating, loading</text>
   <line class="d-line" x1="190" y1="170" x2="190" y2="218" marker-end="url(#ref-ok)"/>
   <text class="d-text-accent" x="190" y="242" text-anchor="middle">değişince render ister</text>
 
@@ -18,7 +18,7 @@
   <text class="d-title" x="570" y="70" text-anchor="middle">Ref</text>
   <rect class="d-accent" x="460" y="100" width="220" height="70" rx="8"/>
   <text class="d-text" x="570" y="130" text-anchor="middle">render dışı işaretçi</text>
-  <text class="d-code" x="570" y="153" text-anchor="middle">input node, timer id</text>
+  <text class="d-code" x="570" y="153" text-anchor="middle">input, previous rating</text>
   <line class="d-line" x1="570" y1="170" x2="570" y2="218" marker-end="url(#ref-ok)"/>
   <text class="d-muted" x="570" y="242" text-anchor="middle">current değişir, render tetiklemez</text>
 </svg>

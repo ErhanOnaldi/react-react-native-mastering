@@ -1,2 +1,2 @@
 ## Neden böyle?
-Bileşen URL state’ini gerçek route bağlamından okur. Test Link’i tıklayıp router konumunu denetler; salt href assertion’ı navigasyonun çalıştığını tam göstermez. SearchPage projesinde aynı yöntemle `?q=` sınanacak.
+Test memory router içinde detay, id olmayan ve arama route’larını kurar. Görünür başlık URL id’sini doğrular; gerçek linke tıklamak hem yeni adresi hem arama ekranını sınar. Ayrı başlangıç adresi de id olmayan mesajı korur.

@@ -1,3 +1,3 @@
 ## Neden böyle?
 
-`data.pages` biriken sayfaların kaynağıdır; ayrıca `useState` dizisi tutmazsın. `maxPages` uzun kaydırmada belleği sınırlar; iki yönde gezinmek istendiğinde `getPreviousPageParam` da tasarlanmalı. Bu görev yalnız ileri yönde ilerler.
+`data.pages` biriken sayfaların kaynağıdır; ayrıca `useState` dizisi tutmazsın. `getNextPageParam` son sayfayı bulunca `undefined` döndürür ve devam düğmesi kapanır. Her istek `pageParam` kullandığı için ardışık sayfalar doğru sırada eklenir.

@@ -14,12 +14,14 @@ export default defineQuestion({
       explanation: 'Doğru. `?q=Matrix&page=2` aynı görünümü yeniden kurar.',
     },
     {
-      text: 'Hover edilen kartın kenarlık rengi.',
-      explanation: 'Geçici görsel durum paylaşılabilir ekranın parçası değildir.',
+      text: 'Aramanın yazı alanında klavye odağının hangi karakterde olduğu.',
+      explanation:
+        'Klavye odağı kısa süreli etkileşim durumudur; linki açan kişiye aynı film sonuçlarını seçmez.',
     },
     {
-      text: 'Yalnızca React bileşeninin adı.',
-      explanation: 'Bileşen adı kullanıcıya arama sonucunu yeniden açtırmaz.',
+      text: 'Listeyi ekrana basan `MovieCard` bileşeninin adı.',
+      explanation:
+        'Bileşen adı uygulamanın iç kodudur. Arama metni ve sayfa numarası ise hangi görünümün açılacağını anlatır.',
     },
   ],
 })

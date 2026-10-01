@@ -1,184 +1,131 @@
 ---
-title: "Generics: değişen tipi taşı"
-minutes: 16
+title: "Generics: tipi taşıyan yer tutucu"
+minutes: 14
 kind: concept
 ---
 
-# Generics: değişen tipi taşı
+# Generics: tipi taşıyan yer tutucu
 
-:::pain[Problem]
-Trend, popüler ve tür listelerinin cevaplarında `page`, `results`, `total_pages` ve `total_results` tekrar ediyor. Bir ekip arkadaşı sayfalama cevabına `total_results` alanını ekliyor; üç tipten yalnızca ikisini güncelliyor. Tür filtresi doğru çalışırken popüler filmler sayfası eski sözleşmede kalıyor.
-:::
+`string[]` yazdığında aslında `Array<string>` yazmış oluyorsun: “içinde metinler olan bir dizi.” React'te de `useState<number>(0)` ve `useState<Movie | null>(null)` kullandın. `<number>` ve `<Movie | null>`, React'in state tipini bilmesini sağlıyor. Yani generic kullandın; şimdi bir tane kendin yazacaksın.
 
-## Aynı yapının değişen parçası
+Bir **generic**, bir fonksiyonun veya tipin başka bir tip bilgisini alıp onu giriş ve çıkış arasında korumasını sağlayan yapıdır. İlk olarak, listedeki ilk filmi veren küçük bir fonksiyona bakalım.
 
-Bir tipteki her alan aynı hızda değişmez. Sayfalı bir cevabın sayfa numarası ve toplamı sabittir; `results` içindeki öğe ise endpoint'e göre film, tür ya da oyuncu olabilir. Her cevap için ayrı tip yazmak bu ortaklığı gizler. Tek bir generic tanım, ortak kabuğu tutar ve değişken parçanın tipini çağırandan alır.
+## İlk filmi alırken tipi kaybetme
 
-Generic parametre, tanım anında bilinmeyen ama kullanım anında bilinen bir tipi isimlendirir. Aşağıdaki `T`, JavaScript değeri değildir. Derleyicinin `Paginated<Movie>` örneğinde `Movie`, `Paginated<Genre>` örneğinde `Genre` olarak yerine koyduğu bir tip yer tutucusudur. Çıktı JavaScript'inde `T` diye bir değer bulunmaz.
-
-:::model[Tipler derleme anında kalır]
-Önceki modülde gördüğün sınır burada da geçerli: derleyici kaynak kodundaki tip ilişkisini denetler, çalışma anında gelen JSON'u incelemez. Generic, bir cevabın hangi tipte kullanılacağını bağlar; ağ cevabının bu şekle uyduğunu kanıtlamaz. Bu yeni bağlamda değişen, aynı ilişkiyi birden çok cevap tipi arasında taşıyabilmendir.
-:::
-
-## Tip parametresinin yolculuğu
-
-Generic'in akışını üç durakla düşün: tanımda parametre açılır, kullanımda somut tipe bağlanır, iç alanların tipi o bağdan çıkarılır.
-
-![Tip parametresinin tanımdan çağrıya ve sonuç alanına taşınması](diagrams/generic-akisi.svg)
-
-Kesin kurallar:
-
-1. Generic parametreyi tanımda `<T>` ile ilan edersin; bu isim yalnızca o tanımın kapsamındadır.
-2. Parametreyi kullanan her yerde aynı tip ilişkisi korunur. `T[]`, “bilinmeyen eleman tipi T olan dizi” demektir.
-3. Bir kullanım generic'i somutlaştırır: `Paginated<Movie>` içinde `T`, `Movie` olur.
-4. TypeScript çoğu fonksiyonda `T` değerini argümandan çıkarabilir. Çıkarım mümkün değilse tipi açıkça yazarsın.
-5. `T` hakkında yalnızca garanti edilen işlemleri yapabilirsin. Bir özelliği okumak gerekiyorsa o özelliği bir `extends` kısıtıyla şart koş.
-6. Generic tip uyumu sağlar; doğrulama, dönüşüm veya kopyalama yapmaz. Çalışma zamanındaki nesne aynı nesnedir.
+Sinema'da film başlığı ekranda görünecek. `first` fonksiyonuna film dizisi verip ilk filmi almak istiyorsun. Elindeki tipi koruyarak yazmak yerine her şeyi `any` yaparsan, TypeScript sonucu denetleyemez:
 
 ```ts check
-type Page<T> = {
+function first(items: any[]): any {
+  return items[0]
+}
+
+type Movie = { id: number; title: string }
+const movie = first([{ id: 550, title: 'Dövüş Kulübü' }])
+const title: string = movie.titel
+```
+
+`titel` yanlış yazılmış olsa da bu kod derlenir. Çünkü `any`, “bu değerin tipini denetleme” demenin kısa yoludur. `any` yerine `Movie` yazarsan yazım hatası yakalanır; ama bu kez fonksiyon yalnızca filmleri kabul eder:
+
+```ts check
+type Movie = { id: number; title: string }
+
+function firstMovie(items: Movie[]): Movie | undefined {
+  return items[0]
+}
+```
+
+Tür listesi verirsen bu fonksiyona uymaz. Aynı işi hem filmle hem türle yapacak bir fonksiyon istiyorsun; sonuç da hangi listeyi verdiysen o listenin öğe tipini korumalı.
+
+Bu ilişkiyi kurmak için fonksiyonun yanına bir **tip parametresi** (type parameter) koyarsın. Tip parametresi, çağıranın getirdiği tipi fonksiyonun içinde kullanmana yarayan bir isimdir; burada bu isim `T` olacak.
+
+```ts check
+type Movie = { id: number; title: string }
+
+function first<T>(items: T[]): T | undefined {
+  return items[0]
+}
+
+const movie = first([{ id: 550, title: 'Dövüş Kulübü' }])
+const title: string | undefined = movie?.title
+```
+
+`T[]`, “T tipindeki değerlerin dizisi” demektir. İlk çağrıda `T`, `{ id: number; title: string }` olur. Dizi boşsa ilk öğe bulunmadığı için `undefined` gelir; bu yüzden dönüş tipi `T | undefined`. `any` kullanmadık, o nedenle `movie.titel` yazsaydın TypeScript hata verirdi.
+
+`first` çağrısında `<Movie>` yazmadık. TypeScript argümandaki nesnelerin alanlarına bakıp `T`'nin ne olduğunu kendisi buldu. Bu bulmaya **çıkarım** (inference) denir; çıkarım, TypeScript'in verilen değerlerden tipi belirlemesidir. Bir fonksiyonun parametresinden tipi anlayabiliyorsa genellikle ayrıca yazman gerekmez.
+
+## Aynı sayfa kabuğu, farklı sonuçlar
+
+TMDB listelerinde sayfa bilgileri ortaktır: `page`, `total_pages` ve `total_results`. Değişen bölüm `results` içindeki öğelerdir. Popüler filmler için öğe `Movie`, tür listesindeyse `Genre`, oyuncu aramasındaysa `Person` olabilir. Her biri için sayfalama alanlarını baştan yazmak yerine bu kez bir generic type tanımlayalım.
+
+```ts check
+type Movie = { id: number; title: string }
+type Genre = { id: number; name: string }
+type Person = { id: number; name: string; known_for: string[] }
+
+type Paginated<T> = {
   page: number
-  entries: T[]
-  total: number
+  results: T[]
+  total_pages: number
+  total_results: number
 }
 
-type Author = { penName: string; books: number }
-type Category = { slug: string; label: string }
-
-const authors: Page<Author> = {
-  page: 1,
-  entries: [{ penName: 'A. Yılmaz', books: 4 }],
-  total: 1,
+const movies: Paginated<Movie> = {
+  page: 1, results: [{ id: 550, title: 'Dövüş Kulübü' }], total_pages: 4, total_results: 61,
 }
-const categories: Page<Category> = {
-  page: 1,
-  entries: [{ slug: 'bilim-kurgu', label: 'Bilim kurgu' }],
-  total: 1,
-}
-const firstAuthorName: string = authors.entries[0].penName
-const firstCategorySlug: string = categories.entries[0].slug
 ```
 
-`Page<T>` içindeki `entries` alanı, parametreyi görünür kılar. `Page<Author>` yazınca alan `Author[]` olur; `Page<Category>` yazınca `Category[]` olur. `page` ve `total` iki kullanımda da `number` kalır. Paylaşılan yapı ile değişen içerik birbirine karışmaz.
+`Paginated<Movie>` yazınca yalnızca `results` içindeki öğelerin tipi `Movie[]` olur; sayfa alanları hep sayı kalır. `Paginated<Genre>` ve `Paginated<Person>` de aynı kabuğu kendi öğe tipleriyle kullanır. Sonraki derslerde TMDB sayfalarını bu `Paginated<T>` şekliyle düşünebilirsin.
 
-## Değeri girdi tipinden çıktıya taşı
+![Tip parametresinin tanımdan çağrıya ve sonuç alanına taşınması](diagrams/generic-akisi.svg "Generic tipi girişten sonuca taşır")
 
-Generic fonksiyon, verdiğin değerin tipini dönüşte de koruyabilir. Aşağıdaki örnek, kitap rafından ilk kitabı seçer:
+## `id` alanını okumak için gereken bilgi
+
+`first` fonksiyonuna ne verirsen `T` o olabilir: film, tür, metin ya da sayı. Bu nedenle fonksiyon içinde `item.id` yazmak güvenli değildir. Mesela sayıların `id` alanı yok. TypeScript böyle bir satırda şuna benzer bir hata verir:
+
+```text
+Property 'id' does not exist on type 'T'.
+```
+
+Bu aramada her öğeden yalnızca bir şey istiyorsun: sayısal `id`. Bir **kısıt** (constraint), tip parametresine “şu özelliği taşımalı” şartı koyar; `extends { id: number }` bu şartı ifade eder.
 
 ```ts check
-type Page<T> = { page: number; entries: T[]; total: number }
-type Book = { isbn: string; title: string }
-
-function firstEntry<T>(page: Page<T>): T | undefined {
-  return page.entries[0]
+function findById<T extends { id: number }>(items: T[], id: number): T | undefined {
+  return items.find((item) => item.id === id)
 }
 
-const firstBook = firstEntry<Book>({
-  page: 1,
-  entries: [{ isbn: '978-1', title: 'Kıyıdaki Ev' }],
-  total: 1,
-})
-const title: string | undefined = firstBook?.title
+type Movie = { id: number; title: string }
+const found = findById([{ id: 550, title: 'Dövüş Kulübü' }], 550)
+const title: string | undefined = found?.title
 ```
 
-Çağrıda `Book` verildiği için dönüş `Book | undefined` olur. `undefined` önemlidir: boş sayfada ilk eleman yoktur. Dizi indeksi çalışma anında boş olabilir; generic bunu kendiliğinden ortadan kaldırmaz. Çağıran kod bu olasılığı ele almalıdır.
+Kısıt, filmi yalnızca `{ id: number }` haline getirmez. `findById` eşleşen nesnenin kendisini döndürür; `title` bilgisi de durur. Aradığın ID listede olmayabileceği için `undefined` olasılığı da durur.
 
-Tür parametresini her seferinde elle yazmak gerekmez. `firstEntry(page)` çağrısında TypeScript, argümanın `Page<Book>` biçiminden `T`'nin `Book` olduğunu çıkarır. Açık yazım, çıkarımın imkânsız ya da niyetin belirsiz olduğu yerde işe yarar; gereksiz tekrar okunabilirliği azaltır.
-
-## Bir özelliği kullanmak için kısıt koy
-
-`T` herhangi bir tip olabilir. Bu nedenle `item.id` gibi bir alanı kısıtsız generic içinde okumak güvenli değildir: metin veya sayı gönderilebilir ve bunlarda `id` bulunmayabilir. `T extends { key: string }` yazarak her geçerli tipin en azından bu alanı taşımasını şart koşarsın.
-
-```ts check
-type Author = { penName: string; books: number }
-type Category = { slug: string; label: string }
-type Page<T> = { page: number; entries: T[]; total: number }
-
-function findByKey<T extends { key: string }>(items: readonly T[], key: string): T | undefined {
-  return items.find((item) => item.key === key)
-}
-
-const result = findByKey([{ key: 'g-7', title: 'Gece' }], 'g-7')
-const resultTitle: string | undefined = result?.title
-```
-
-Kısıt, nesneyi yalnızca `{ key: string }` biçimine indirgemez. Dönüş hâlâ tam `T` olur; dolayısıyla `title` bilgisi korunur. `readonly T[]` girdisi de fonksiyonun listeyi değiştirmediğini sözleşmede belirtir ve değişmez dizileri kabul etmesini sağlar.
-
-## Çağrıdan dönüşe kadar iz sürelim
-
-`findByKey([{ key: 'g-7', title: 'Gece' }], 'g-7')` çağrısını sırayla yürüt:
-
-| Adım | TypeScript'in çıkardığı bilgi | Çalışma zamanı sonucu |
-| --- | --- | --- |
-| Nesne dizisi verilir | `T`, `{ key: string; title: string }` ile uyumludur | Bir dizi ve iki alanlı nesne vardır |
-| Kısıt denetlenir | Her öğede `key: string` bulunduğu görülür | Fonksiyon ilk öğenin `key` alanını okur |
-| `find` çalışır | Bulunan öğenin tipi hâlâ `T` | Eşleşen nesnenin kendisi döner |
-| Sonuç kullanılır | Dönüş tipi `T \| undefined` | Bulunmadıysa `undefined`, bulunduysa nesne gelir |
-| `result?.title` okunur | `T` içindeki `title` bilgisi korunmuştur | Başlık veya `undefined` elde edilir |
-
-Tip kontrolü ile çalışma zamanı işi paralel ilerler ama aynı şey değildir. Derleyici “öğede `key` alanı var” sonucunu tip sözleşmesinden bilir; JavaScript ise gerçek dizide karşılaştırma yapar. Dışarıdan gelen veride bu sözleşme doğrulanmamışsa yalnızca generic imzaya güvenmek hatalıdır.
-
-## Önce kırık, sonra doğru
-
-Ayrı cevap tiplerini kopyalamak kısa vadede çalışır, ama sayfalama alanları birbirinden ayrılır:
-
-```ts
-type AuthorPage = { page: number; entries: Author[]; total: number }
-type CategoryPage = { page: number; entries: Category[]; count: number }
-```
-
-Burada `total` ve `count` aynı kavramı farklı isimle anlatmaya başladı. Bir alan güncellendiğinde ikinci tipin unutulması kolaydır. Ortak kabuk doğru sözleşmeyi tek yerde tutar:
-
-```ts check
-type Author = { penName: string; books: number }
-type Category = { slug: string; label: string }
-type EntryPage<T> = { page: number; entries: T[]; total: number }
-type AuthorPage = EntryPage<Author>
-type CategoryPage = EntryPage<Category>
-```
-
-Derleyici şimdi her iki cevabın da aynı alan adlarını kullanmasını denetler. Buna rağmen dış JSON'u bu tiplerden biri olarak cast etmek, veri doğrulaması yapmış olmaz; yalnızca derleyiciye iddia sunar.
-
-## Sınırlar ve sık hatalar
-
-:::mistake[Belirti: Her alanı okuyabiliyormuşsun gibi kod yazarsın]
-Belirti → `T` üzerinde `item.id` yazınca derleyici hata verir.  
-Neden → Generic parametre henüz bir nesne tipi ya da `id` alanı taşıyan tip olarak sınırlandırılmamıştır.  
-Düzeltme → Gereken en küçük yapıyı `T extends { id: number }` gibi bir kısıtla belirt; nesneyi baştan sona belirli bir tipe sabitleme.
+:::mistake[Her şeyi any yapmak]
+Belirti → `movie.titel` yazım hatası derlenir. Neden → `any`, tip denetimini kapatır. Düzeltme → Girişteki tipi sonuçta da koruyan generic kullan.
 :::
 
-:::mistake[Belirti: Bulunamayan kayıt tipi yokmuş gibi ele alınır]
-Belirti → `find` sonucu kullanılınca “olası undefined” uyarısı alırsın.  
-Neden → Aranan kayıt listede bulunmayabilir.  
-Düzeltme → `T | undefined` dönüşünü koru ve çağıran yerde sonucu kontrol et; varsayılan nesne uydurma.
+:::mistake[Sonucun hep bulunduğunu varsaymak]
+Belirti → `first(items).title` boş liste ihtimali yüzünden hata verir. Neden → Dizi boş olabilir. Düzeltme → `undefined` durumunu `?.` veya bir koşulla ele al.
 :::
 
-:::mistake[Belirti: `T` her değeri kabul ediyor]
-Belirti → `any` ile alan yazım hatası da derlenir.  
-Neden → `any`, generic ilişkinin denetimini devre dışı bırakır.  
-Düzeltme → Bilinmeyen dış veriyi `unknown` tut, runtime kontrolü uygula ve doğrulanmış değeri generic tipe aktar.
-:::
-
-:::mistake[Belirti: Generic yazınca JSON güvenli sanılır]
-Belirti → İstek kodunda `getData<Book>()` var ama sunucu hata nesnesi döndürünce `title` okunurken uygulama çöker.  
-Neden → Generic yalnızca compile time bilgisidir; JSON gövdesini incelemez.  
-Düzeltme → HTTP başarısını kontrol et, gövdeyi `unknown` kabul et ve sınırda doğrula. Bu farkı bu modülün async dersinde tekrar kullanacağız.
-:::
-
-:::sector
-Frontend ekipleri sayfalama, sonuç zarfı ve API istemcisi tiplerini generic tanımlayarak ortak alanları tek yerde tutar. Kısıtı yalnızca fonksiyonun gerçekten kullandığı alanlarla sınırlı tutmak, aynı yardımcıyı film, kullanıcı ve içerik listelerinde kullanırken her modele ait ek alanları kaybetmemeni sağlar. API cevabının doğrulanması ise istemci tipinden ayrı bir adımdır.
+:::model[Tipler derleme sırasında vardır]
+TypeScript tipleri ve generics yalnızca kod yazarken hata bulmaya yarar; TMDB'den gelen JSON'u çalışırken incelemez veya doğrulamaz. Dış veriyi güvenle kullanmak için ayrıca kontrol etmek gerekir.
 :::
 
 ## Özet
 
-- Generic parametre, tanımda bilinmeyen tipi çağrıda somutlaştırır.
-- Aynı kabuğun sabit alanları ve değişken içeriği ayrı ifade edilir.
-- Fonksiyon generic'i argümanın tipini dönüşe taşıyabilir.
-- `extends` yalnızca gereken özelliklere erişim izni verir; tam `T` korunur.
-- Generic derleme zamanı sözleşmesidir, dış veri doğrulaması değildir.
+- Generic, `T` tip parametresiyle verilen öğenin tipini sonuçta korur; TypeScript bu tipi argümandan çıkarabiliyorsa `<Movie>` gibi ayrıca yazman gerekmez.
+- `Paginated<T>` sayfa alanlarını sabit tutar, `results` öğe tipini değiştirir. `any` kullanmak yanlış alan adlarını gizler.
+- Bir generic fonksiyonda `id` gibi bir alanı okumak için `extends { id: number }` kısıtını koyarsın; diğer alanlar `T` içinde korunur.
 
-**Kendini yokla:** `T extends { key: string }` kısıtı dönüş değerini neden yalnızca `{ key: string }` yapmaz?  
-*Cevap:* Kısıt, `T`'nin en az hangi özellikleri taşıması gerektiğini söyler; `T`'nin diğer alanları da korunur.
+**Yeni terimler:**
+- **Generic:** Girişteki tipi başka bir fonksiyon ya da tipe taşıyan yapı.
+- **Tip parametresi:** Generic içinde gelen tipi temsil eden ad; örneğin `T`.
+- **Çıkarım:** TypeScript'in verilen değerlerden tipi bulması.
+- **Kısıt:** Tip parametresinin taşıması gereken özelliği belirten şart.
 
-**Kendini yokla:** `Page<Book>` içinde `entries` hangi tiptedir, boş dizide ilk öğe ne olabilir?  
-*Cevap:* `Book[]`; ilk öğe bulunmadığında `undefined` olabilir.
+**Kendini yokla:** `first([{ id: 18, name: 'Dram' }])` sonucunun tipi nedir?  
+*Cevap:* `{ id: number; name: string } | undefined`.
+
+**Kendini yokla:** `T extends { id: number }` diğer alanları siler mi?  
+*Cevap:* Hayır. Her öğede sayısal `id` olmasını şart koşar; `T`'nin diğer alanları sonuçta korunur.

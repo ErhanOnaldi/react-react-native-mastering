@@ -3,7 +3,7 @@ Sinema uygulamasında aynı anda birden fazla bileşen korumalı kaynaklara iste
 ## Gereksinimler
 
 - `authClient` korumalı API isteklerine güncel erişim belirtecini yetkilendirme başlığı olarak eklemelidir.
-- Belirteç süresi dolduğunda gelen `401` yanıtları için ortak ve tek bir yenileme isteği (`POST /auth/refresh`) gönderilmelidir.
+- Belirteç süresi dolduğunda gelen `401` yanıtları için `https://dummyjson.com/auth/refresh` adresine ortak ve tek bir `POST` yenileme isteği gönderilmelidir.
 - Yenileme işlemi sürerken yetkilendirme hatası alan diğer tüm paralel istekler aynı yenileme sonucunu beklemelidir.
 - Yenileme tamamlandığında bekleyen tüm orijinal istekler yeni belirteçle **bir kez** tekrar denenmeli ve sonuçları döndürülmelidir.
 - Belirteç geçerli olduğunda gereksiz yenileme isteği atılmamalıdır.
@@ -26,6 +26,7 @@ Sinema uygulamasında aynı anda birden fazla bileşen korumalı kaynaklara iste
   - `{ get<T>(path: string): Promise<T> }`
 - Depo bağımlılığı:
   - `TokenStorage`: `{ getTokens: () => Tokens | null; setTokens: (tokens: Tokens) => void }`
+- `get(path)` içindeki `path` göreli bir DummyJSON yolu olmalıdır; örneğin `/auth/me` isteği `https://dummyjson.com/auth/me` adresine gider.
 
 ## Kısıtlar
 

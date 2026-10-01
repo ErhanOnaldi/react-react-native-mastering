@@ -2,32 +2,32 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'Vite SPA yayınında en sağlam önbellek kuralı hangisidir?',
+  title: '304 cevabında gövde nereden gelir?',
   difficulty: 'orta',
   concepts: ['web.http-cache'],
   question:
-    'Vite ile build aldığında `dist/assets/index-a1b2c3.js` gibi içerik hash’li dosyalar ve kökte `index.html` üretilir. Bu uygulamanın hem hızlı açılması hem de yeni deploy’larda anında güncellenmesi için hangi önbellek başlıkları kullanılmalıdır?',
+    'Tarayıcı bir film türü cevabını `ETag: "genres-v1"` etiketiyle sakladı. `Cache-Control: no-cache` nedeniyle sonraki kullanımda sunucuya sordu ve sunucu `304 Not Modified` döndürdü. Tarayıcı uygulamaya ne sunar?',
   options: [
     {
-      text: '`index.html` için `no-cache`; `/assets/*` dosyaları için `public, max-age=31536000, immutable`',
+      text: 'Daha önce sakladığı JSON gövdesini; 304 yalnızca içeriğin değişmediğini bildirir.',
       correct: true,
       explanation:
-        'Doğru. `index.html` her seferinde sunucuya doğrulatılmalıdır (böylece yeni deploy’daki hash’li dosya adları hemen fark edilir). Hash’li JS/CSS dosyaları ise içerik değiştikçe yeni ada kavuştuğu için 1 yıl boyunca sunucuya hiç sorulmadan önbellekten sunulabilir.',
+        'Doğru. 304 cevabının kendisi gövdesizdir. Tarayıcı daha önce sakladığı gövdeyi kullanır; değişmemiş veriyi yeniden indirmez.',
     },
     {
-      text: 'Hem `index.html` hem tüm `/assets/*` dosyaları için `max-age=31536000`',
+      text: 'Gövdesiz bir cevap; uygulama tür listesini boş dizi olarak görür.',
       explanation:
-        '`index.html` 1 yıl önbellekte kalırsa kullanıcılar yeni bir sürüm yayınlandığında bunu 1 yıl boyunca fark edemez.',
+        '304, başarılı doğrulamadır; boş bir yeni veri cevabı değildir. Eski gövde hâlâ kullanılabilir.',
     },
     {
-      text: 'Hem `index.html` hem tüm `/assets/*` dosyaları için `no-store`',
+      text: 'Tarayıcı ETag’i saklasa da veriyi baştan almak için sunucudan yeni bir JSON gövdesi ister.',
       explanation:
-        '`no-store` hiçbir şeyi saklamaz; uygulamanın her açılışında megabaytlarca JavaScript tekrar indirilir ve sayfa aşırı yavaşlar.',
+        'Sunucu 304 ile içeriğin değişmediğini zaten doğrulamıştır; tarayıcının yeni bir gövde istemesi gerekmez.',
     },
     {
-      text: 'Yalnızca `index.html` önbelleğe alınmalı, `/assets/*` dosyaları her zaman ağdan çekilmelidir.',
+      text: 'Tarayıcı eski gövdeyi siler ve 304 durum kodunu JSON olarak ayrıştırır.',
       explanation:
-        'Bu tam tersi bir felakettir: HTML değişmez ama altındaki JS dosyaları kaybolur ya da aşırı bant genişliği harcanır.',
+        '304 yanıtı gövde taşımaz; durum kodu JSON değildir ve saklanan eski gövdeyi silmek için neden oluşturmaz.',
     },
   ],
 })

@@ -5,21 +5,37 @@ export default defineQuestion({
   title: 'Hook neyi taşımalı?',
   difficulty: 'orta',
   concepts: ['arch.separation-of-concerns', 'react.custom-hooks', 'react.derived-state'],
-  question: 'SearchPage 300 satır. Hangisini custom hook’a taşımak anlamlı?',
+  question: `\
+\`SearchPage\` ve \`FavoritePage\` aynı film isteği için aynı durumları ayrı ayrı tutuyor:
+
+\`\`\`tsx
+const [movies, setMovies] = useState<Movie[]>([])
+const [loading, setLoading] = useState(false)
+const [error, setError] = useState<string | null>(null)
+useEffect(() => { /* sorguya göre isteği başlat */ }, [query])
+\`\`\`
+
+Yeni bir sayfada da aynı istek davranışı gerekecek. Hangi sınır tekrarı azaltırken görünümü sayfada bırakır?`,
   options: [
     {
-      text: 'Sorguya göre istek ve loading/error durumunu',
+      text: 'Sorgu, istek ve loading/error geçişlerini yöneten custom hook',
       correct: true,
-      explanation: 'Doğru. Bu tekrar kullanılan davranış; görünüm sayfada kalabilir.',
+      explanation:
+        'İki sayfada tekrar eden davranış bir hook sınırına uygundur; her sayfanın JSX’i kendi görünümünde kalır.',
     },
     {
-      text: 'Bütün JSX ağacını',
-      explanation: 'JSX’i hook içine saklamak görünüm sınırını belirsizleştirir.',
+      text: 'İki sayfanın JSX ağacını ve CSS class adlarını',
+      explanation:
+        'Hook görünüm markup’ı ve class adları taşımaz; yalnız tekrar eden state geçişini paylaşır.',
     },
     {
-      text: 'Sadece `movies.length` değerini state ve effect ile',
-      explanation: 'Uzunluk listeden türetilir; ayrı state/effect senkronizasyon hatası yaratır.',
+      text: 'Sonuç listesinin her öğesini ayrı component state’inde',
+      explanation:
+        'Liste zaten state olarak gelir; her öğeyi ayrı kopyalamak ek senkronizasyon yükü doğurur.',
     },
-    { text: 'CSS class adlarını', explanation: 'Stil değerleri veri çekme davranışı değildir.' },
+    {
+      text: 'Yalnız `movies.length` değerini',
+      explanation: 'Uzunluk mevcut listeden hesaplanabilir; yeni bir state gerekmez.',
+    },
   ],
 })

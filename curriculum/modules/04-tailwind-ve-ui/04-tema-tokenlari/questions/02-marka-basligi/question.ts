@@ -7,9 +7,9 @@ export default defineQuestion({
   concepts: ['tailwind.theme', 'tailwind.dark-mode', 'react.props'],
   files: ['BrandHeading.tsx'],
   hints: [
-    'Başlığın rengi sabit hex değil tema token adıyla anlatılmalı.',
-    'h2 için `font-display`, açık ve koyu tema renk class’larını birleştir.',
-    '`font-display text-brand-700 dark:text-brand-300` ile gelen className’i aynı h2 üzerinde kullan.',
+    '`BrandHeading` sabit tema class’larını kendi almalı; gelen class sonradan birleştirilmeli.',
+    '`cn` yardımcı fonksiyonunu kullan; JSX içinde template string ile boş değer ekleme.',
+    '`cn("font-display text-brand-700 dark:text-brand-300", className)` sonucunu h2’ye ver.',
   ],
   preview: {
     entry: 'Preview.tsx',

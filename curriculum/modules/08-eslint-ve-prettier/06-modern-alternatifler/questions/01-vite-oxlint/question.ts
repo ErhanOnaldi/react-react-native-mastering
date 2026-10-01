@@ -5,25 +5,24 @@ export default defineQuestion({
   title: 'Vite ve oxlint',
   difficulty: 'kolay',
   concepts: ['tooling.eslint', 'tooling.prettier'],
-  question:
-    'Yeni create-vite React TS template’inde oxlint var. Sinema’daki `react-hooks/exhaustive-deps` ihtiyacın için nasıl karar verirsin?',
+  question: `Sinema'nın ESLint config'i eksik effect bağımlılığını yakalıyor. Yeni bir lint aracı denemek istiyorsun. Geçişten önce en yararlı küçük deneme hangisi?`,
   options: [
     {
-      text: 'Mevcut kural kapsamını ve çıktısını karşılaştırır, gerekirse ESLint’i korurum.',
+      text: 'Aday aracı aynı eksik bağımlılık örneğinde çalıştırıp mesajları karşılaştırırım.',
       correct: true,
-      explanation: 'Araç seçimi somut kurallara ve projedeki hatalara dayanır.',
+      explanation: 'Aynı örnek, mevcut kontrolün kaybolup kaybolmadığını gösterir.',
     },
     {
-      text: 'Template oxlint getirdiyse ESLint artık hiçbir projede çalışmaz.',
-      explanation: 'ESLint 10 hâlâ geçerli ve geniş bir eklenti ekosistemine sahip.',
+      text: 'Aracın daha hızlı olduğunu varsayıp ESLint config’ini hemen silerim.',
+      explanation: 'Hız tek başına gerekli React Hook kuralının korunduğunu göstermez.',
     },
     {
-      text: 'Oxlint’i ekleyince Prettier otomatik olarak Hook bağımlılıklarını düzeltir.',
-      explanation: 'Formatter Hook mantığını düzeltmez.',
+      text: 'Aday aracın adını okuyup bütün React kurallarını desteklediğini kabul ederim.',
+      explanation: 'Araç adı kural kapsamını kanıtlamaz; örnek dosyada sınamak gerekir.',
     },
     {
-      text: 'Bütün lint kurallarını kapatıp yalnızca hız ölçerim.',
-      explanation: 'Hız, kaçırılan eski film hatasını telafi etmez.',
+      text: 'Yalnız geçerli bir dosyada çalıştırırım; hata örneğine gerek yoktur.',
+      explanation: 'Temiz dosya, aday aracın eksik bağımlılığı fark edip etmediğini göstermez.',
     },
   ],
   explanation: '',

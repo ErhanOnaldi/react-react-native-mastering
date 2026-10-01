@@ -6,16 +6,16 @@
     </marker>
   </defs>
   <rect class="d-box" x="28" y="58" width="150" height="66" rx="10" />
-  <text class="d-title" x="103" y="86" text-anchor="middle">Açan öğe</text>
+  <text class="d-title" x="103" y="86" text-anchor="middle">Fragmanı aç</text>
   <text class="d-muted" x="103" y="108" text-anchor="middle">focus saklanır</text>
   <rect class="d-lane" x="206" y="30" width="520" height="152" rx="14" />
   <text class="d-title" x="466" y="56" text-anchor="middle">Modal açık</text>
   <rect class="d-accent" x="238" y="84" width="130" height="58" rx="9" />
-  <text class="d-text" x="303" y="119" text-anchor="middle">İlk kontrol</text>
+  <text class="d-text" x="303" y="119" text-anchor="middle">Oynat</text>
   <rect class="d-box" x="402" y="84" width="130" height="58" rx="9" />
-  <text class="d-text" x="467" y="119" text-anchor="middle">Ara kontroller</text>
+  <text class="d-text" x="467" y="119" text-anchor="middle">Altyazı dili</text>
   <rect class="d-accent" x="566" y="84" width="130" height="58" rx="9" />
-  <text class="d-text" x="631" y="119" text-anchor="middle">Son kontrol</text>
+  <text class="d-text" x="631" y="119" text-anchor="middle">Kapat</text>
   <path class="d-line-accent" d="M 368 113 H 398" marker-end="url(#focus-arrow)" />
   <path class="d-line-accent" d="M 532 113 H 562" marker-end="url(#focus-arrow)" />
   <path class="d-line-accent" d="M 631 80 C 631 64 303 64 303 80" marker-end="url(#focus-arrow)" />

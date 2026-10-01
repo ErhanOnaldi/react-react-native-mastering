@@ -6,129 +6,136 @@ kind: concept
 
 # Üretimde hata izleme
 
-:::pain[Kullanıcı boş ekran görüyor, ekipte iz yok]
-Sinema’nın son yayını CI’dan geçti. Bir kullanıcı film kartına girince ekran boşalıyor; geliştiricinin bilgisayarında aynı film açılıyor. Konsol hatası yalnızca kullanıcının tarayıcısında kaldı. Ekip hangi sürümde, hangi bileşende ve hangi URL’de koptuğunu bilmiyor. Üretimde hatayı görmek için olayın uygulama dışına küçük, anlamlı bir kayıt olarak çıkması gerekir.
-:::
+Sinema’nın yerel sürümünde bir film sayfası açılıyor, ama yayındaki bir kullanıcı boş ekran görüyor. Geliştirici araçlarında hata o kullanıcının tarayıcısında kalıyor. Kullanıcının gördüğü sonucu düzeltmek ayrı, hatanın hangi yayında ve hangi bileşende olduğunu öğrenmek ayrı iştir. Burada küçük bir kayıtla ikinci soruya cevap arayacağız.
 
-## Hatanın çıktığı yer rapor kanalını belirler
+## Önce hatanın hangi yerde çıktığını bul
 
-React render hataları, Promise reddi ve sıradan `window` hataları aynı yoldan gelmez. Tek bir genel `try/catch` bütün sayfayı kapsamaz. İzleme kurulumunu, hatanın doğduğu sınırları açıkça ayırarak düşün:
+Bir React bileşeni render sırasında hata fırlatabilir. En yakın **Error Boundary**, yani alt bileşenlerinin render hatasını yakalayıp yedek arayüz gösterebilen sınır, bu hatayı kullanıcı ekranındaki boşluğun yerine bir hata görünümü koyarak karşılayabilir. React 19, bu olayı kök oluşturulurken verilen `onCaughtError` seçeneğine bildirir.
 
-1. **Boundary’nin yakaladığı React hatası:** Bileşen render sırasında hata verir, en yakın Error Boundary yedek UI gösterir. React 19 kökündeki `onCaughtError(error, errorInfo)` çağrılır. `errorInfo.componentStack`, bileşen zincirini tanı için verir.
-2. **Yakalanmayan React hatası:** Hiçbir Boundary durduramazsa `onUncaughtError(error, errorInfo)` çağrılır. Kullanıcı ekranı kaybedebilir; kayıt yine gönderilmeye çalışılır.
-3. **React’in kurtarabildiği hata:** `onRecoverableError(error, errorInfo)` ayrı bir kanaldır. Bu olayın önem derecesi yakalanmayan çökme ile aynı kabul edilmemelidir.
-4. **React dışı senkron hata:** `window` üzerindeki `error` olayı, örneğin bağımsız bir script’teki hata için kullanılabilir. React kök seçeneklerinin yerine geçmez.
-5. **İşlenmemiş Promise reddi:** `window` üzerindeki `unhandledrejection` olayı, cevapsız kalan Promise reddini bildirir. Bir fonksiyon zaten hatayı yakalayıp anlamlı UI gösteriyorsa aynı hatayı ikinci kez raporlamamaya dikkat et.
+İlk örnekte bir etkinlik kartında render hatası olduğunu düşün. Boundary yedek görünümü açar; `onCaughtError` ise hatanın bileşen zinciriyle rapora aktarılacağı yerdir. Kullanıcı hatayı yakalamamış gibi görmez, geliştirici de olayı yalnızca kullanıcının konsolunda bırakmaz. `componentStack`, React bileşenlerinin hataya giden sırasını gösterir; sunucudan gelen normal JavaScript stack’inden farklı bir ipucudur.
 
-![React ve tarayıcı hata kanallarının ortak rapora akması](diagrams/hata-kanallari.svg "Farklı hata kanalları aynı küçük kayıt biçimine dönüştürülür.")
-
-Bu kurallar “hangi olay nerede gözlenir?” sorusunu çözer. Raporlayıcı ise ayrı bir sorunu çözer: eldeki bilinmeyen hata değerini, kullanıcı akışını bozmadan göndermek. JavaScript’te `throw 'bozuldu'` mümkün olduğu için `error` değeri `unknown` kabul edilir. `instanceof Error` kontrolü olmadan `.message` okumak ikinci bir hata yaratabilir.
-
-Error Boundary’nin kapsamını da doğru çiz. Bir düğmenin olay işleyicisinde başlayan asenkron işin reddi, render sırasında Boundary’nin yakaladığı hata ile aynı yol değildir. O iş zaten `try/catch` ile ele alınıp kullanıcıya “Tekrar dene” gösteriyorsa raporu aynı noktada bilinçli olarak üretirsin. İşlenmemiş reddi ayrıca küresel dinleyicide görürsen çift kayıt üretmemeye dikkat edersin. Hatanın hangi kanalda izlendiği, ekibin gerçek çökme sayısını anlamasını etkiler.
-
-## Bir render hatasını zaman içinde izle
-
-Diyelim bir etkinlik kartı, eksik veride render sırasında `TypeError('Tarih eksik')` fırlattı. En yakın Boundary hatayı yakaladı.
-
-| An | Olay | Kaydın içeriği |
+| Sıra | Ne olur? | Neyi öğrenirsin? |
 | --- | --- | --- |
-| 1 | Kart render edilirken hata fırlatır | `TypeError`, `Tarih eksik` |
-| 2 | Boundary yedek UI gösterir | Kullanıcı tamamen boş ekranda kalmaz |
-| 3 | React `onCaughtError` çağırır | `componentStack` karta giden bileşen yolunu ekler |
-| 4 | Raporlayıcı endpoint’i kontrol eder | Adres yoksa konsola yazar; varsa JSON hazırlar |
-| 5 | Kayıt ağdan gönderilir | Release etiketi ve sınırlı bağlam tanıya yardım eder |
+| 1 | Kart render edilirken `TypeError('Tarih eksik')` fırlatır | Hata ve mesaj |
+| 2 | En yakın Boundary hatayı yakalar | Kullanıcı yedek UI görür |
+| 3 | React `onCaughtError` çağırır | React hatasının yakalandığını bilirsin |
+| 4 | Callback, `componentStack` bilgisini rapora ekler | Hatanın bileşen yolu görünür |
 
-Bu tabloda Boundary’nin kullanıcıya gösterdiği sonuç ile raporlayıcının gönderdiği kayıt farklıdır. Kullanıcıya teknik stack göstermek gerekmez; ekibe ise yalnızca “bir hata oldu” demek yetersizdir. Route ve release gibi kısa bağlamlar hatanın tekrar üretilmesini kolaylaştırır. Parola, access token ve tam kullanıcı verisi gibi sırları bağlama koyma.
+Bu sıra, yedek UI’nin gösterilmesiyle raporun gönderilmesinin aynı şey olmadığını gösterir. Boundary kullanıcı arayüzünü toparlar; izleme kaydı ekip için tanı bilgisi taşır. Raporlamazsan sayfa toparlanmış görünse bile üretimdeki hatadan haberin olmayabilir.
 
-## Önce kırık: Konsola bırakılan hata
+![React ve tarayıcı hata kanallarının ortak rapora akması](diagrams/hata-kanallari.svg "Farklı hata kanalları kısa bir hata kaydına dönüşür.")
 
-Aşağıdaki küçük örnek, React dışı bir Promise reddini sadece o tarayıcının konsoluna bırakır. Kod teknik olarak çalışır; ekip üretimde hatayı göremez:
+Kök seçeneklerini `createRoot` çağrısına verirsin. Hata callback’leri `.render(...)` çağrısına değil, kök oluşturma ayarlarına aittir:
 
-```ts check title="src/diagnostics/local-only.ts"
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('İşlenmemiş Promise', event.reason)
+```tsx title="src/main.tsx (ilgili bölüm)"
+const root = createRoot(container, {
+  onCaughtError(error, errorInfo) {
+    recordIssue('react-caught', error, errorInfo.componentStack)
+  },
+  onUncaughtError(error, errorInfo) {
+    recordIssue('react-uncaught', error, errorInfo.componentStack)
+  },
+  onRecoverableError(error, errorInfo) {
+    recordIssue('react-recoverable', error, errorInfo.componentStack)
+  },
 })
+
+root.render(<App />)
 ```
 
-Doğru örnekte aynı olay küçük bir kayıt olarak raporlayıcıya gider. Etkinlik bileti sayfası için bu örnek yalnızca `fetch` yolunu ve sabit bir uygulama endpoint’ini gösterir. Gerçek uygulamada sayfa kapanışında `sendBeacon` ve gerekirse `keepalive` yedeği de düşünülür.
+`errorInfo.componentStack` bileşen yolunu verir. Callback’lerin hepsini tek bir `window.error` dinleyicisine taşımak React’e özgü bu ayrımı kaybettirir; olayın nerede yakalandığını kayıt türünde koru.
 
-```ts check title="src/diagnostics/browser-errors.ts"
-type BrowserIssue = { kind: string; message: string; route: string }
+## React hatalarının üç farklı sonucu var
 
-function describeUnknown(value: unknown): string {
-  return value instanceof Error ? value.message : String(value)
-}
+`onCaughtError` yakalanan React hataları içindir. Hiçbir Boundary’nin yakalamadığı React hatası `onUncaughtError` ile bildirilir. React’in kurtarabildiği hatalar ise `onRecoverableError` seçeneğine gider. Üç callback’in adları birbirine benzer, ama olayın kullanıcıya etkisi aynı değildir; hata önceliğini değerlendirirken bunları ayrı tut.
 
-async function publishIssue(issue: BrowserIssue): Promise<void> {
-  try {
-    await fetch('/telemetry/browser', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(issue),
-      keepalive: true,
-    })
-  } catch {
-    console.error('Hata kaydı gönderilemedi', issue.kind)
+İkinci örnekte Boundary eklemediğin bir film detay bileşeni render hatası fırlatsın. Bu kez React hatayı yakalayan bir sınır bulamaz; `onUncaughtError` devreye girer. Yedek arayüz görünmeyebilir, ancak rapor yine de hangi React hatasının yakalanamadığını anlatabilir. Aynı hatayı ayrıca `window` dinleyicisinden de raporlarsan tek olay iki kayıt hâline gelebilir.
+
+React dışındaki hatalar için tarayıcının olayları vardır. `window` üzerindeki `error`, yakalanmamış senkron JavaScript hatalarına; `unhandledrejection`, kodun ele almadığı reddedilmiş Promise’lere işaret eder. Bunlar React kök callback’lerinin yerine geçmez. Düğme tıklamasındaki bir `try/catch` hatayı kullanıcıya “Tekrar dene” olarak gösteriyorsa, onu bilerek raporlamak için o yakalama noktasından raporlayıcıyı çağırırsın.
+
+## Hata değeri her zaman Error değildir
+
+JavaScript’te `throw new Error('Bozuk veri')` yanında `throw 'Bozuk veri'` de mümkündür. Bu yüzden bir callback’ten gelen hata değerini başlangıçta **`unknown`**, yani biçimini henüz güvenle bilmediğin değer, olarak ele al. `.message` alanını hemen okursan hata `Error` değilken raporlayıcının kendisi çöker.
+
+Üçüncü örnek, değeri önce ayırır:
+
+```ts check title="src/diagnostics/describe-failure.ts"
+export function describeFailure(value: unknown): { name: string; message: string } {
+  if (value instanceof Error) {
+    return { name: value.name, message: value.message }
   }
-}
 
-window.addEventListener('unhandledrejection', (event) => {
-  void publishIssue({
-    kind: 'promise',
-    message: describeUnknown(event.reason),
-    route: location.pathname,
-  })
-})
+  return { name: 'UnknownError', message: String(value) }
+}
 ```
 
-`keepalive`, sayfa kapanırken isteğin sürmesine yardımcı olur; kesin teslim garantisi vermez. `navigator.sendBeacon(url, body)` kısa tanı kayıtları için tasarlanmıştır ve `true` dönmesi isteğin kuyruğa alınabildiğini gösterir, sunucunun kabul ettiğini değil. Yedek `fetch` yolunda HTTP yanıtı kontrol edilebilir. Hata raporlayan kodun kendi hatası kullanıcı ekranını yeniden çökertecek şekilde dışarı fırlatılmamalıdır.
+Burada `TypeError('Bozuk veri')`, `TypeError` ve `Bozuk veri` olarak kayda geçer. Metin fırlatılırsa aynı kontrol geçmez; bu kez güvenli bir genel ad ve metne çevrilmiş değer elde edilir. Böylece tanı bilgisi kaybolmaz ve rapor hazırlarken ikinci bir hata çıkarmazsın.
 
-Küresel olay dinleyicilerini uygulama başlangıcında bir kez kur. Aynı dinleyiciyi her bileşen render’ında eklemek, tek hatanın birden fazla kez gönderilmesine yol açar. Eğer dinleyici bir bileşenin yaşamına bağlıysa kaldırma işini de üstlenmelisin. Kayıt sayısı ile gerçek hata sayısının aynı olmaması, hata oranını yorumlamayı zorlaştırır.
+## Kaydı gönderirken sırayı koru
 
-React kökünde seçenekler `createRoot(container, { onCaughtError, onUncaughtError, onRecoverableError })` nesnesine verilir; `.render(...)` içine değil. Her callback `(error, errorInfo)` alır. `componentStack` bilgisini mümkün olduğunca ham ve kısa tut; otomatik olarak bütün props veya form değerlerini rapora eklemek mahremiyet riski taşır.
+Bir rapor genellikle olay türü, mesaj, route ve sürüm gibi sınırlı bilgi taşır. Tam form verisini, token’ı veya parolayı ekleme. Bu veriler hatayı çözmeye yardım etmeyebilir ve kullanıcıya ait özel bilgileri açığa çıkarabilir.
 
-## Sıkıştırılmış stack’i kaynağa çevir
+Sayfa kapanırken normal bir ağ isteği yarıda kalabilir. `navigator.sendBeacon`, kısa bir kaydı tarayıcı kapanışına uygun biçimde gönderme kuyruğuna almayı dener. `true` dönmesi sunucunun kaydı aldığını garanti etmez; yalnızca tarayıcının göndermeyi kuyruğa alabildiğini söyler. Kuyruğa alamazsa `fetch` için `keepalive: true` yedeği kullanılabilir. Bu sırada yanıtın başarılı HTTP durumu kontrol edilir; ağ hatası veya başarısız durum kodu raporlamanın da başarısız olduğunu gösterir.
 
-Yayındaki hata `assets/index-a41c.js:1:9087` gibi görünebilir. Bu, sıkıştırılmış dosyanın konumudur; senin TSX satırın değildir. Build’e ait source map, bu konumu kaynak dosya ve satıra eşler. Önceki dersteki `build.sourcemap: 'hidden'` ayarı map üretir ama JS içine map bağlantısı koymaz. Map’i izleme servisine ilgili release kimliğiyle yükleyip halka açık statik dosya dağıtımından ayırmalısın.
+Gönderim sırasını küçük bir örnekle izle:
 
-Release etiketi kritik: `index-a41c.js` ile `index-b82d.js` farklı kaynak konumlarına sahip olabilir. En yeni map’i her eski rapora uygulamak yanlış satır gösterebilir. Sentry veya Datadog RUM gibi servisler hata toplama, sürüm eşleme, örnekleme ve kullanıcı bağlamı için hazır araçlar sunar. Burada amaç, bu servislerin iç API’sini ezberlemek değil, hangi verinin neden gerekli olduğunu anlamaktır.
+| Adım | Olay | Sonraki işlem |
+| --- | --- | --- |
+| 1 | Hata, `name`, `message`, `context` alanlarına çevrilir | JSON gövdesi hazırlanır |
+| 2 | `sendBeacon` kuyruğa alındığını söyler | İkinci istek atılmaz |
+| 3 | `sendBeacon` kuyruğa alamaz | JSON, `fetch` ile POST edilir |
+| 4 | Sunucu başarılı HTTP yanıtı verir | Çağırana `true` döner |
+| 5 | Sunucu başarısız yanıt verir veya ağ isteği çöker | Çağırana `false` döner |
 
-Kayıt içeriğini de tasarım kararı olarak ele al. Route, sürüm ve olay türü genellikle hatayı gruplamaya yeter; form alanlarının tamamı veya kişisel veriler gerekmez. Kullanıcı kimliğine ihtiyaç varsa, ham e-posta yerine erişimi sınırlı bir iç kimlik kullan. Üretimde görünürlük artarken kayıtların kopyalanması, saklanması ve kimlerin açabildiği de denetlenmelidir.
+İkinci örnekteki “aynı hatayı iki kanaldan kaydetme” riski gönderimde de önemlidir. Beacon başarılı göründükten sonra bir de `fetch` atarsan sunucuda iki kayıt oluşabilir. Önce beacon sonucunu değerlendir; yalnızca kuyruk başarısızsa yedek yola geç. `keepalive`, kapanışta isteğin sürme ihtimalini artırır ama teslim garantisi değildir.
 
-Gruplama için mesajı sonsuz değişken metinle doldurma. Örneğin her seferinde değişen bir kayıt numarasını hata başlığına eklersen aynı kök neden binlerce ayrı hata gibi görünür. Değişken değerleri sınırlı bağlam alanında tut; olay türü, hata sınıfı ve kararlı mesaj gruplama anahtarını oluşturabilir. Sıklık ve etkiyi değerlendirirken örnekleme oranını da hesaba kat: az örneklenen bir olayın görünmemesi, hatanın yaşanmadığını kanıtlamaz.
+## Sıkıştırılmış satırdan kaynak dosyaya dön
 
-:::mistake[Boundary hatası görünmüyor]
-Belirti → Yedek UI açılıyor ama izleme kaydı yok.  
-Neden → Yalnızca `window.error` dinleniyor; Boundary tarafından yakalanan React hatası bu kanala bırakılmadı.  
-Düzeltme → React köküne `onCaughtError` ekle ve `componentStack` bağlamını raporla.
+Üretim kaydında `assets/app-a41c.js:1:9002` görebilirsin. Bu, build sırasında küçültülmüş JavaScript dosyasındaki konumdur. **Source map**, bu konumu özgün TypeScript veya TSX dosyasındaki satıra eşleyen dosyadır. Yayındaki JavaScript’in map’i yüklenmiş ve erişilebilir olmalı; bazı ekipler map’i halka açık dosya sunucusu yerine izleme servisine yükler.
+
+Dördüncü örnekte aynı `app.js:1:9002` konumunun iki yayında farklı kaynak satırına denk geldiğini düşün. İlk yayın `app-a41c.js`, sonraki yayın `app-b82d.js` üretmiş olsun. Raporla birlikte hangi **release**’ten, yani hangi yayın/build sürümünden geldiğini tutarsın; izleme aracı o sürümün source map’ini seçer. En yeni map’i eski rapora uygularsan yanlış TSX satırına gidebilirsin.
+
+| Hata kaydı | Eşleştirilecek map | Sonuç |
+| --- | --- | --- |
+| `app-a41c.js:1:9002`, release `a41c` | `a41c` build’inin map’i | İlk build’in kaynak satırı |
+| `app-b82d.js:1:9002`, release `b82d` | `b82d` build’inin map’i | Sonraki build’in kaynak satırı |
+
+Önceki yayına alma dersindeki `build.sourcemap: 'hidden'` ayarı, build’in map üretmesini sağlar ama JavaScript’e map adresini eklemez. Map’i doğru build etiketiyle izleme servisine yüklemek gerekir. Sentry veya Datadog RUM gibi hizmetler bu eşleştirmeye yardımcı olabilir; önemli olan servis adı değil, raporun kendi build’inin map’ini kullanmasıdır.
+
+:::mistake[Üretim hatası yanlış satıra gidiyor]
+Belirti → İzleme kaydı eski bir TSX satırını işaret ediyor.
+
+Neden → Eski release’in hatası yeni build’in source map’iyle çözümleniyor.
+
+Düzeltme → Her raporu release ile etiketle ve o build’in map’ini kullan.
 :::
 
-:::mistake[Raporlayıcı ikinci kez çöktürüyor]
-Belirti → Asıl hatadan sonra `Cannot read properties of undefined (reading 'message')` çıkıyor.  
-Neden → Fırlatılan değerin mutlaka `Error` olduğu varsayıldı.  
-Düzeltme → Değeri `unknown` al; `instanceof Error` ile ayır, diğerlerini güvenli biçimde metne çevir.
-:::
+:::info[Derinlemesine (isteğe bağlı)]
+Çok değişken bir hata mesajını gruplama anahtarına koymak, aynı kök nedeni binlerce farklı hata gibi gösterebilir. Değişen kayıt numarası gibi değerleri sınırlı bağlam alanında tut; hata sınıfı ve kararlı mesaj gruplamayı kolaylaştırır. Örnekleme kullanılıyorsa, rapor sayısını yorumlarken yalnızca olayların bir bölümünün gönderildiğini hesaba kat.
 
-:::mistake[Yanlış kaynak satırı]
-Belirti → İzleme aracı hatayı değişmemiş bir TSX satırına bağlıyor.  
-Neden → Rapor eski release’den, yüklenen map yeni build’den.  
-Düzeltme → Raporu build/release kimliğiyle etiketle ve aynı build’in source map’ini yükle.
-:::
-
-:::sector[Sektörde]
-Ekipler hata kaydına sürüm, route ve sınırlı kullanıcı bağlamı ekler; sık tekrar eden hataları örnekleyerek gürültüyü azaltır. Yayın sonrası yeni release’de hata oranı artarsa aynı sürümün map’iyle kök nedeni bulur. Raporların içeriği kod incelemesinde gizli veri açısından da kontrol edilir.
+`window` üzerindeki `error` ve `unhandledrejection` dinleyicilerini uygulama başlarken bir kez kur. Her render’da tekrar eklemek aynı hatayı birden çok kez raporlayabilir. Bir bileşen ömrü için eklenen dinleyici ise o bileşen kapanırken kaldırılmalıdır.
 :::
 
 ## Özet
 
-- React 19 kökü yakalanan, yakalanmayan ve kurtarılabilir hataları ayrı callback’lerle bildirir.
-- `window.error` ve `unhandledrejection`, React dışı hata kanallarını tamamlar.
-- `unknown` hata değerini güvenle küçük JSON kaydına çevir; gönderim arızası UI’yi kırmasın.
-- `sendBeacon` ve `fetch` `keepalive` kapanış sırasında gönderime yardımcı olur, teslim garantisi vermez.
-- Source map ile release aynı build’e ait olmalıdır; gizli map dosyalarını halka açık yayınlama.
+- React’in yakalanan, yakalanmayan ve kurtarılabilir hataları farklı kök callback’lerine gider.
+- Error Boundary yedek UI gösterir; raporlama ekibe tanı bilgisi ulaştırır.
+- Hata değerini `unknown` kabul et ve `Error` olup olmadığını kontrol et.
+- Beacon kuyruğa alamazsa `fetch` yedeğine geç; HTTP ve ağ başarısını çağırana bildir.
+- Üretim konumunu kaynak dosyaya çevirmek için rapordaki release ile aynı build’in source map’i gerekir.
 
-**Kendini yokla:** Boundary yedek UI gösteriyorsa hangi kök callback’i çalışır?  
-*Cevap:* `onCaughtError`; `onUncaughtError` yakalanmayan React hataları içindir.
+**Yeni terimler:**
 
-**Kendini yokla:** Neden yalnızca `app.js:1:9000` konumu yeterli değil?  
-*Cevap:* Bu sıkıştırılmış konumdur; özgün TSX satırı için aynı release’in source map’i gerekir.
+- **Error Boundary:** Alt React bileşenlerinin render hatasını yakalayıp yedek UI gösterebilen sınır.
+- **`unknown`:** TypeScript’te biçimi kontrol edilmeden kullanılamayan değer tipi.
+- **`sendBeacon`:** Sayfa kapanırken kısa veri gönderimini kuyruğa almayı deneyen tarayıcı API’si.
+- **Source map:** Sıkıştırılmış kod konumunu özgün kaynak dosyaya eşleyen dosya.
+- **Release:** Bir uygulama build’ini/yayınını tanımlayan sürüm etiketi.
+
+**Kendini yokla:** Boundary hata yakalayıp yedek UI gösterirse React kökünde hangi seçenek çalışır?
+
+*Cevap:* `onCaughtError`; yakalanmayan React hataları `onUncaughtError` ile bildirilir.
+
+**Kendini yokla:** Neden `app.js:1:9002` konumuna en yeni source map’i doğrudan uygulamazsın?
+
+*Cevap:* Bundle konumları build’e göre değişebilir; doğru kaynak satırı için hatanın release’ine ait map gerekir.

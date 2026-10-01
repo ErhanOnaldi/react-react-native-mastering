@@ -1,0 +1,1 @@
+// getField fonksiyonunu burada tanımla.

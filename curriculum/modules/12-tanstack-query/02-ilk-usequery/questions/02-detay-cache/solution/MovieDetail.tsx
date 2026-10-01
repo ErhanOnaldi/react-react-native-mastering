@@ -12,7 +12,6 @@ export function MovieDetail({ id }: { id: number }) {
   const movie = useQuery({
     queryKey: ['movies', 'detail', id],
     queryFn: () => getMovie(id),
-    staleTime: 60_000,
   })
   if (movie.isPending) return <p>Yükleniyor</p>
   if (movie.isError) return <p>Hata: {movie.error.message}</p>

@@ -1,153 +1,176 @@
 ---
-title: "State'i mutasyonsuz güncelle"
-minutes: 15
+title: "State'i yeni dizi ve nesnelerle güncelle"
+minutes: 18
 kind: concept
 ---
 
-# State'i mutasyonsuz güncelle
+# State'i yeni dizi ve nesnelerle güncelle
 
-:::pain[Değişen nesne, değişmeyen ekran]
-Yemek planında bir tarifi “hazırlandı” diye işaretliyorsun. Konsolda tarifin alanı `true`, ama satırdaki etiket eski halinde. Diziye yeni kopya vermiş olsan da dizinin içindeki tarifi yerinde değiştirmiş olabilirsin. Böylece aynı nesne referansını hem eski hem yeni state diye kullanmış olursun.
-:::
+JavaScript'te bir diziye `map` uyguladığında yeni bir dizi elde edersin. State'teki bir listeyi güncellerken de eski değeri koruyup yenisini üretmek gerekir. **Mutasyon**, var olan bir dizi veya nesnenin içeriğini yerinde değiştirmektir; bu, React'in tuttuğu eski state'i de fark etmeden değiştirebilir.
 
-## State değeri ve referans ilişkisi
+## Yeni bir dizi üretmek ne demek?
 
-React state'i bir değer ve onun kimliği olarak düşün. Sayı veya string gibi ilkel değerlerde değişiklik yeni bir değer üretir. Dizi ve nesne gibi yapılarda ise değişken, içeriğin kendisi değil o içeriği gösteren bir referanstır. `push` veya alan ataması referansın gösterdiği içeriği yerinde değiştirir; yeni state değeri üretmez.
+Film adlarını tuttuğunu düşün. `push` mevcut diziyi değiştirir; spread (`...`) ise elemanları yeni bir diziye kopyalar. İlk küçük örnekte yalnızca JavaScript dizisine bakıyoruz:
 
-State güncellemesinde şu kurallar geçerlidir:
+```ts check
+const titles = ['Matrix']
+titles.push('Arrival')
+const nextTitles = [...titles, 'Dövüş Kulübü']
 
-1. **Önceki state'i değiştirme.** Eski render'lar, memo'lar ve başka bileşenler aynı nesneye referans tutuyor olabilir. Yerinde değişiklik bu gözlemcilerin geçmişini de değiştirir.
-2. **Değişen her seviyede yeni referans oluştur.** Nesne içindeki alan değişiyorsa yeni nesne gerekir; o nesneyi taşıyan dizi state ise yeni dizi de gerekir. Değişmeyen dalları paylaşmak güvenlidir.
-3. **Yeni state'i setter'a ver.** Yeni referans React'e farklı state değeri sağlar ve güncellemeyi görünür kılar. Aynı referansı geri vermek React'in `Object.is` karşılaştırmasında aynı değer olarak görülebilir.
-4. **Updater kullanırken aynı kurala uy.** Setter fonksiyon biçiminde çağrılsa bile `current.push(...)` veya `current.item.done = true` mutasyondur. Fonksiyonel biçim eski state'i değiştirme izni vermez.
-5. **Değişiklik kapsamını koru.** Yalnız bir satır güncellenecekse diğer satırları aynı bırak. Tüm listeyi yeniden oluşturabilirsin ama diğer öğelerin verisini sıfırlamamalısın.
+console.log(titles)     // ['Matrix', 'Arrival']
+console.log(nextTitles) // ['Matrix', 'Arrival', 'Dövüş Kulübü']
+```
+
+`push` sonrası `titles` artık değişmiştir; `nextTitles` ise ayrı bir dizidir. React önceki ve yeni nesne state'lerini `Object.is` ile karşılaştırır. Nesnelerde bu karşılaştırma aynı referansı mı gösterdiklerine bakar; listenin içindeki her alanı taramaz. Aynı diziyi yerinde değiştirip geri verirsen React değişikliği atlayabilir, ayrıca eski state'i de değiştirmiş olursun.
 
 ![Eski state'i mutasyona uğratmak ile değişen yolu yeni referanslarla üretmenin farkı](diagrams/referans-yolu.svg "Değişen referans yolu")
 
-Bu, “her nesne mutlaka derin kopyalanmalı” demek değildir. Değişen yolu kopyala; değiştirmediğin alt nesneleri paylaş. Böylece hangi değerlerin değiştiği hem React'e hem kodu okuyan kişiye görünür olur.
-
-Neden kimlik bu kadar önemli? React state değerlerini `Object.is` ile karşılaştırır. Aynı dizi referansını geri vermek değişiklik yok sinyali olabilir; yeni dizi üretmek ise yeni bir değer verir. Bu karşılaştırma nesnenin içeriğini derinlemesine taramaz, “içinde bir alan değişti mi?” diye bakmaz. React'in her state setter'da bütün uygulamayı yeniden hesaplamasını önleyen ucuz karşılaştırma budur.
-
-| İşlem | Dış dizi referansı | İç nesne referansı | Önceki state |
-| --- | --- | --- | --- |
-| `push` ile ekleyip aynı diziyi verme | Aynı | Aynılar | Değişmiş olur |
-| Yeni dizi, eski öğeler | Yeni | Aynılar | İçerik korunur |
-| Yeni dizi ve değişen öğeye yeni nesne | Yeni | Yalnız hedef yeni | Tamamı korunur |
-
-İkinci satır listeye yeni satır eklemek için yeterlidir; üçüncü satır mevcut satırın alanını değiştirmek için gerekir. Derin kopya her zaman “daha güvenli” değildir: tüm alt ağaçları gereksiz yere yenilersen React'in referans eşitliğinden yararlanmasını engeller ve iş yükünü büyütür. Hedefin yalnızca değişen yol için yeni kimlik üretmektir.
-
-## Dizi içinde bir nesneyi güncelle
-
-Kütüphane rafındaki kitapların okundu bilgisini tutalım:
-
-```ts check
-type Book = { id: number; title: string; read: boolean }
-
-function markRead(books: Book[], id: number): Book[] {
-  return books.map((book) =>
-    book.id === id ? { ...book, read: true } : book,
-  )
-}
-
-const shelf = [
-  { id: 1, title: 'Aylak Adam', read: false },
-  { id: 2, title: 'Kürk Mantolu Madonna', read: false },
-]
-const nextShelf = markRead(shelf, 2)
-void nextShelf
-```
-
-`map` yeni bir dizi üretir. Eşleşen kitap için object spread yeni nesne üretip `read` değerini değiştirir. Diğer kitap aynı nesne olarak kalır; ona dokunmadığımız için kopyalamaya gerek yoktur. Bu yapıda önceki `shelf` aynen `read: false` değerlerini taşır.
-
-Şimdi işlemi React state'e bağlayalım. Başlangıç kodu listeyi `push` ile değiştiriyor varsayalım:
-
-```tsx
-function addTag(tag: string) {
-  tags.push(tag)
-  setTags(tags)
-}
-```
-
-Görünen belirti, etiket sayısının tıklamadan sonra yenilenmemesi olabilir. `tags` referansı değişmedi; ayrıca önceki render'ın state'i de sessizce değiştirilmiş oldu. Doğru güncelleme yeni dizi oluşturur:
+Bir dizinin **referansı**, bellekteki o diziye ulaşmak için kullanılan kimlik gibidir. İki değişken aynı diziye bakıyorsa birinden yapılan yerinde değişiklik ötekinden bakıldığında da görünür. `useState`'ten aldığın ve `setTitles` gibi adlandırdığın state güncelleme fonksiyonuna setter denir. Şimdi bu fonksiyona yeni diziyi verelim:
 
 ```tsx check
 import { useState } from 'react'
 
-function TagList() {
-  const [tags, setTags] = useState(['doğa'])
-  function addTag(tag: string) {
-    setTags((current) => [...current, tag])
+function Watchlist() {
+  const [titles, setTitles] = useState(['Matrix'])
+
+  function addMovie(title: string) {
+    setTitles((current) => [...current, title])
   }
-  return <button onClick={() => addTag('macera')}>Etiket: {tags.length}</button>
+
+  return <button onClick={() => addMovie('Arrival')}>Listede {titles.length} film</button>
 }
 
-const list = <TagList />
-void list
+const shelf = <Watchlist />
+void shelf
 ```
 
-Updater'ın `current` değeri bir önceki state'tir; spread onu okur ama değiştirmez. `filter` silme için yeni dizi üretir, `map` dönüştürme için yeni dizi üretir. `sort` varsayılan olarak diziyi yerinde sıralar; state'te kullanacaksan önce kopyala (`[...items].sort(...)`) veya yeni dizi döndüren başka bir yaklaşım seç.
+Buradaki `current`, güncelleme sırası geldiğinde React'in en güncel state değeridir. **Updater**, setter'a verdiğin ve önceki değerden yeni değeri hesaplayan fonksiyondur. Updater içinde `current.push(title)` yazmak da mutasyon olur; fonksiyon biçimini seçmek eski diziyi değiştirme izni vermez. Spread eski elemanları okur, yeni diziyi döndürür.
 
-## Kopyalama derinliği: yalnız değişen yol
+Silmek için `filter` yeni bir dizi üretip yalnızca koşulu sağlayan elemanları alır. Ters çevirmek için dikkat et: `reverse` mevcut diziyi yerinde değiştirir. Önce kopya alırsan kaynak sıra korunur:
 
-Nesne içindeki nesneye erişiyorsan her üst seviyeyi kopyalaman gerekir. Örneğin `profile.preferences.theme` değişince yeni preferences, yeni profile gerekir:
+```ts check
+const titles = ['Matrix', 'Arrival']
+const withoutArrival = titles.filter((title) => title !== 'Arrival')
+const reversedTitles = [...titles].reverse()
 
-```ts
-const nextProfile = {
-  ...profile,
-  preferences: {
-    ...profile.preferences,
-    theme: 'dark',
-  },
+console.log(titles)         // ['Matrix', 'Arrival']
+console.log(withoutArrival) // ['Matrix']
+console.log(reversedTitles) // ['Arrival', 'Matrix']
+```
+
+`filter` başlığı çıkarılmış yeni dizi verir; `reverse` ise kopyaladığımız diziyi değiştirir, `titles` aynı sırada kalır. Bu yüzden bir filmi listeden çıkarırken `filter`, yalnız görünümü ters çevirmek için `[...titles].reverse()` uygundur.
+
+## Listedeki tek filmi değiştirmek
+
+Yeni dış dizi üretmek yetmeyebilir. Her film nesnesi dizinin içindedir; `map` dış diziyi yeniler ama döndürdüğün film nesnelerini kendiliğinden kopyalamaz. Sinema'da izleme listenin bir filmine puan notu eklediğini düşünelim:
+
+```ts check
+type Movie = { id: number; title: string; note: string }
+
+function setMovieNote(movies: Movie[], targetId: number, note: string): Movie[] {
+  return movies.map((movie) =>
+    movie.id === targetId ? { ...movie, note } : movie,
+  )
+}
+
+const movies = [
+  { id: 1, title: 'Matrix', note: '' },
+  { id: 2, title: 'Arrival', note: '' },
+]
+const updated = setMovieNote(movies, 2, 'Tekrar izlerim')
+void updated
+```
+
+`map` yeni bir dizi oluşturur. Yalnız id'si eşleşen film için `{ ...movie, note }` yeni nesne üretir; diğer film olduğu gibi kalır. Böylece hem eski dizi hem de eski Arrival nesnesi korunur. Spread, `title` ve `id` gibi değiştirmediğin alanları da yeni nesneye taşır.
+
+Bu ayrımı görmek için kırık biçime bakalım:
+
+```tsx
+function changeNote(targetId: number, note: string) {
+  movies.map((movie) => {
+    if (movie.id === targetId) movie.note = note
+    return movie
+  })
 }
 ```
 
-`{ ...profile }` yalnız üst nesneyi kopyalar; `preferences` referansı eskiyle aynı kalır. Sonra `nextProfile.preferences.theme = 'dark'` dersen eski `profile` da aynı iç nesneye baktığı için değişmiş olur. Bu nedenle “yeni dış nesne yaptım” tek başına yeterli değildir: değişen değere giden her seviyedeki referans yenilenmelidir.
+Bu kod yeni bir dış dizi oluştursa bile eşleşen `movie` nesnesini yerinde değiştirir ve aynı nesneyi geri verir. Belirti, eski state'i saklayan başka bir yerde filmin notunun da değişmiş görünmesi veya React'in beklediğin güncellemeyi göstermemesidir. Çözüm, değişen film için `{ ...movie, note }` ile yeni nesne döndürmektir.
 
-TypeScript'in `readonly` işaretleri yanlışlıkla mutasyon yazmanı engelleyebilir ama React update'inin yerini almaz. `readonly Book[]`, derleyiciye bu diziyi mutasyona uğratmama sözüdür; yeni array üretme ve setter çağırma sorumluluğu yine sende kalır. Ayrıca `readonly` yalnız derleme anında etkilidir, runtime veriyi dondurmaz.
+## Birden fazla güncelleme sıraya girdiğinde
 
-Değişiklik fonksiyonunu state dışında saf bir yardımcı olarak yazmak da güncelleme politikasını görünür kılar. Yardımcıya eski state ve hedef id verirsin, yeni değeri döndürür; böylece önceki değerle sonraki değeri yan yana karşılaştırabilirsin. State güncellemesi tek yerde toplanır ve event handler yalnız hangi id'nin değişeceğini bildirir. Yine de her update için yeni helper açmak gerekmez: tek satırlık `map` ifadesi daha açıksa onu doğrudan updater içinde bırak.
+Event handler çalışırken o render'ın state değerini görür. Aynı etkileşimde birden fazla artışı biriktirmek istiyorsan updater biçimi her hesaplamayı sıradaki son değerden yapar. Örneği oy sayısı yerine fragman görüntülenme sayacıyla izleyelim:
 
-Kopyalama sırasında alan silmek de güncelleme hatasıdır. Örneğin bir kitabı `read: true` yapmak için `{ id: book.id, read: true }` döndürürsen `title` alanını unutabilirsin; tsc bu nesne tipini reddeder. `{ ...book, read: true }` eski ve değişmeyen alanları taşır. Eğer alanı bilerek kaldırıyorsan bu başka bir domain güncellemesidir ve bütün çağıranların o yeni biçimi kabul etmesi gerekir.
+```tsx check
+import { useState } from 'react'
 
-## Sık hatalar
+function TrailerViews() {
+  const [views, setViews] = useState(4)
+  function replayTwice() {
+    setViews((current) => current + 1)
+    setViews((current) => current + 1)
+  }
+  return <button onClick={replayTwice}>İzlenme: {views}</button>
+}
 
-:::mistake[Önceki state'i `push` ile değiştirmek]
-Belirti → Yeni öğe bazen görünmüyor veya başka ekrandaki liste beklenmedik biçimde değişiyor.  
-Neden → Dizi yerinde değişti ve aynı referans setter'a geri verildi.  
+const counter = <TrailerViews />
+void counter
+```
+
+İki updater da sıraya girer; ilki 4'ü 5 yapar, ikincisi sıradaki 5'i 6 yapar. Handler içindeki `views` değişkeni kendiliğinden 6 olmaz: o, handler'ın başladığı render'dan gelen değerdir. State güncellemelerinin zamanlaması önceki dersten tanıdık; burada önemli olan updater'ın güncel değeri alıp her adımda yeni sayı üretmesidir.
+
+| Adım | Çalışan işlem | İşlemin gördüğü değer | Sonraki state |
+| --- | --- | ---: | ---: |
+| Başlangıç | Ekrandaki değer | — | 4 |
+| Tıklama | İlk updater | 4 | 5 |
+| Tıklama | İkinci updater | 5 | 6 |
+| Render | Yeni state ekrana gelir | — | 6 |
+
+Nesne veya dizi güncellemesinde de updater aynı nedenle yararlıdır: aynı etkileşimde sıraya giren değişiklikler son state üzerinden hesaplanır. Ama içerik için yeni dizi/nesne üretme kuralı değişmez.
+
+## İç içe nesnede kopya nereye kadar gider?
+
+Bir filmin `display` ayarındaki altyazı dilini değiştirelim. Değişen alana ulaşan her üst nesne yeni olmalıdır:
+
+```ts check
+type MovieSettings = { display: { subtitle: string }; title: string }
+
+function withSubtitle(movie: MovieSettings, subtitle: string): MovieSettings {
+  return {
+    ...movie,
+    display: { ...movie.display, subtitle },
+  }
+}
+
+const movie = { title: 'Arrival', display: { subtitle: 'Türkçe' } }
+const nextMovie = withSubtitle(movie, 'English')
+void nextMovie
+```
+
+`nextMovie` yeni bir nesnedir; içindeki `display` de yenidir. Sadece dış nesneyi kopyalayıp `nextMovie.display.subtitle = ...` deseydin, `display` eski nesneyle ortak kaldığı için eski `movie` de değişirdi. Değişmeyen alanlar için kopya gerekmez; yalnız değişen değere giden yolu yenilersin.
+
+:::mistake[Eski diziyi yerinde değiştirmek]
+Belirti → Yeni öğe görünmüyor ya da listeyi kullanan başka bir görünüm beklenmedik biçimde değişiyor.  
+Neden → `push` aynı diziyi değiştirdi; setter'a da aynı referans verildi.  
 Düzeltme → `setItems(current => [...current, item])` ile yeni dizi döndür.
 :::
 
-:::mistake[Dış nesneyi kopyalayıp iç nesneyi mutasyona uğratmak]
-Belirti → Bir güncelleme geçmiş render'da da görünmüş gibi veya memo'lu çocuk güncellenmemiş gibi davranıyor.  
-Neden → Yalnız dış nesne kopyalandı; değişen iç referans eskiyle ortak kaldı.  
-Düzeltme → Değişen alana giden her seviyeyi spread ederek yeni referans oluştur.
-:::
-
-:::mistake[State dizisini doğrudan `sort` etmek]
-Belirti → Sıralama ekranı değişirken başka yerde orijinal sıra da değişiyor.  
-Neden → `sort` aldığı diziyi yerinde düzenler.  
-Düzeltme → Önce `[...items]` kopyala ve kopyayı sırala; sıralama yalnız gösterim içinse state'e ikinci kopya yazmadan türet.
-:::
-
-:::mistake[Tüm öğeleri gereksiz yere kopyalayıp içeriği kaybetmek]
-Belirti → Tek bir tarif işaretlenince diğer tariflerin notları sıfırlanıyor.  
-Neden → Yeni nesne kurarken eski alanlar spread ile korunmadı.  
-Düzeltme → Değişen nesnede `{ ...book, read: true }` kullan; yeni dizi üretirken değiştirmediğin öğeleri aynen döndür.
-:::
-
-:::sector
-Ekiplerde immutable update kuralı, React render'ının yanında undo/redo, memoization ve state değişikliklerinin izlenmesini de kolaylaştırır. Kod incelemede “hangi seviyelerde yeni referans oluşuyor?” sorusu özellikle nested state'te işe yarar. State yapısı sürekli karmaşık kopyalar gerektiriyorsa veriyi normalize etmek veya bir reducer'a taşımak ayrı bir tasarım seçeneğidir.
+:::mistake[Yeni dizi içinde eski filmi değiştirmek]
+Belirti → Tek film güncellenince önceki state'i tutan kodda da yeni alan görünüyor.  
+Neden → `map` yeni dış dizi üretti ama eşleşen iç nesne aynı kaldı.  
+Düzeltme → Değişen filmde `{ ...movie, alan: yeniDeger }` döndür.
 :::
 
 ## Özet
 
-- State içindeki dizi ve nesneleri yerinde değiştirme; yeni değer üret.
-- İç içe yapıda değişen alana giden her seviyeyi kopyala.
-- `map`, `filter` ve spread yeni yapılar oluşturmaya yardım eder; `push` ve `sort` mutasyondur.
-- Değişmeyen dalları paylaş; değişen nesnenin diğer alanlarını spread ile koru.
+- State'teki dizi ve nesneleri yerinde değiştirmek yerine yeni değer üret.
+- `map` yeni bir dizi verir; içindeki değişen nesneyi ayrıca kopyalaman gerekir.
+- İç içe nesnede değişen alana giden her üst katmanı da kopyala.
+- Birden fazla güncelleme birikiyorsa updater, sıradaki son state'ten hesap yapar.
 
-**Kendini yokla:** Yeni bir dizi üretip içindeki bir nesnenin alanını yerinde değiştirirsen eski state korunmuş olur mu?  
-*Cevap:* Hayır. Dizi yeni olsa da iç nesne eski referanssa o nesne mutasyona uğramıştır.
+**Yeni terimler:** Mutasyon, var olan dizi veya nesnenin içeriğini yerinde değiştirmektir; referans, bir nesnenin bellekteki kimliğine ulaşmanı sağlayan değerdir; setter, state'i güncellemek için `useState`'in verdiği fonksiyondur; `Object.is`, iki değerin aynı değer veya nesnelerde aynı referans olup olmadığını karşılaştırır; updater, önceki state'i alıp yeni state'i hesaplayan fonksiyondur.
 
-**Kendini yokla:** Bir diziye tek eleman eklemek için updater içinde güvenli ifade nedir?  
-*Cevap:* `current => [...current, item]`; eski dizi okunur, yeni dizi döner.
+**Kendini yokla:** `[...movies]` yeni dizi üretir; içindeki bir `movie.title` alanını doğrudan değiştirirsen eski state korunur mu?  
+*Cevap:* Hayır. Yeni dizi eski film nesnesini paylaşabilir; alanı değiştirmek nesnenin kendisini mutasyona uğratır.
+
+**Kendini yokla:** İki artışın da sırayla birikmesi için setter'a ne verirsin?  
+*Cevap:* `current => current + 1` gibi updater; her hesaplama sıradaki güncel değeri alır.

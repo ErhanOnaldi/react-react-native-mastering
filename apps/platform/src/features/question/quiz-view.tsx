@@ -6,9 +6,12 @@ import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Html } from '@/components/ui/html'
 import { cn } from '@/lib/cn'
+import { shuffle } from '@/lib/shuffle'
 import { useAnswerQuiz } from './api'
 
 export function QuizView({ question }: { question: QuizQuestionDto }) {
+  // Display order is random per visit (and per retry); answers are still sent by original index.
+  const [options, setOptions] = useState(() => shuffle(question.options))
   const [selected, setSelected] = useState<number[]>([])
   const answer = useAnswerQuiz(question.code)
   const result = answer.data
@@ -28,6 +31,7 @@ export function QuizView({ question }: { question: QuizQuestionDto }) {
   const retry = () => {
     answer.reset()
     setSelected([])
+    setOptions(shuffle(question.options))
   }
 
   return (
@@ -40,7 +44,7 @@ export function QuizView({ question }: { question: QuizQuestionDto }) {
 
         <fieldset className="mt-4 space-y-2.5">
           <legend className="sr-only">Seçenekler</legend>
-          {question.options.map((option) => {
+          {options.map((option) => {
             const outcome = result?.options[option.index]
             const isSelected = selected.includes(option.index)
             return (

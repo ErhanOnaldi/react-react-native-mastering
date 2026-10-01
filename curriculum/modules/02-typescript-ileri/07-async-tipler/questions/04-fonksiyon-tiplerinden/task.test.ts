@@ -1,11 +1,14 @@
 import { expect, expectTypeOf, it } from 'vitest'
-import { describeLoad } from '@exercise/task'
-import type { LoadArgs, LoadPromise, LoadedMovie } from '@exercise/task'
-it('parametre ve async dönüş tiplerini fonksiyondan türetir', () => {
-  expectTypeOf<LoadArgs>().toEqualTypeOf<[id: number, token: string]>()
-  expectTypeOf<LoadPromise>().toEqualTypeOf<Promise<{ id: number; title: string }>>()
-  expectTypeOf<LoadedMovie>().toEqualTypeOf<{ id: number; title: string }>()
+import { loadMovie, movieLabel } from '@exercise/task'
+import type { Movie, MoviePromise, LoadedMovie } from '@exercise/task'
+it('Promise tipini film tipine bağlar', () => {
+  expectTypeOf<MoviePromise>().toEqualTypeOf<Promise<Movie>>()
+  expectTypeOf<MoviePromise>().not.toBeAny()
+  expectTypeOf<LoadedMovie>().toEqualTypeOf<Movie>()
+  expectTypeOf(loadMovie).returns.toEqualTypeOf<MoviePromise>()
 })
-it('ilk parametredeki film ID’sini açıklar', () => {
-  expect(describeLoad([550, 'test-token'])).toBe('550 için istek')
+it('filmi asenkron olarak yükler', async () => {
+  const movie = await loadMovie()
+  expect(movie).toEqual({ id: 550, title: 'Dövüş Kulübü' })
+  expect(movieLabel(movie)).toBe('Dövüş Kulübü (#550)')
 })

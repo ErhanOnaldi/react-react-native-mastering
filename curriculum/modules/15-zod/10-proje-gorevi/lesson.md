@@ -1,48 +1,33 @@
 ---
-title: "Sinema’da tek doğrulama kaynağı"
-minutes: 6
+title: "Sinema'da tek doğrulama kaynağı"
+minutes: 5
 kind: project
 ---
 
-# Sinema’da tek doğrulama kaynağı
+# Sinema'da tek doğrulama kaynağı
 
-:::pain[Problem]
-Detay sayfası kötü TMDB yanıtında hâlâ çökebiliyor; formlar ve env ayrı kurallar taşıyor. Şemaları gerçek Sinema sınırlarına yerleştirip bozuk veriyi uygulama içinde ilerlemeden yakalayacaksın.
-:::
+Projede Zod'u Sinema'nın üç gerçek girişinde kullanacaksın: TMDB'den gelen film verisi, kullanıcı formları ve uygulama ayarları. Her biri bir veri sınırıdır: uygulamanın henüz güvenmediği girdinin içeri girip kullanıldığı nokta.
 
 :::model[Tip derlemede, veri çalışma anında]
-TypeScript tipleri gerçek TMDB cevabını, form alanını veya env değerini incelemez. Her sınırda ham değeri çalışma zamanında doğrula ve sonraki katmana parse edilmiş çıktıyı ver. Bu projede modelin değişen yanı, aynı ilkenin API, form ve başlangıç ayarlarına uygulanmasıdır.
+TypeScript tipi gerçek TMDB yanıtını, form alanını veya environment değerini incelemez. Girdiyi geldiği yerde çalışma anında doğrula; uygulamanın sonraki kısmına yalnızca parse edilmiş sonucu ver. Projede değişen şey model değil, doğrulamanın hangi giriş noktasında yapıldığındır.
 :::
 
-## Sınırları sırayla kur
+## Üç girişi sırayla ele al
 
-Önce film verisinin şemalarını gerçek yanıt örneklerine göre tamamla. TMDB posterinin null olabildiğini koru; başlık null ya da boşsa reddet. Sonra API client'ta HTTP durumunu ve JSON şeklinin doğruluğunu ayrı ele al. Hata sınırda oluşursa React bileşeni bozuk veriyi normal kayıt gibi çizmez.
+İlk olarak film listesi ve detay yanıtlarının hangi alanları taşıdığını mevcut TMDB örnekleriyle karşılaştır. Görevdeki tam alan sözleşmesini dikkatle izle; örneğin poster yolu `null` olabilirken film başlığı olamaz.
 
-Form şemalarında iş kuralı tek kaynakta olmalı. RHF alan durumunu korurken resolver Zod kurallarını çalıştırır. Kullanıcıya label, alan hatası ve submit davranışı aynı şekilde görünmeye devam etmeli. Dönüşüm varsa ham form değeriyle callback'e giden sonucu karıştırma.
+Sonra API client, form ve config değişikliklerine geç. HTTP başarısı JSON'un doğru şekilli olduğu anlamına gelmez; form doğrulaması da mevcut label, hata ve gönderim davranışını korumalıdır. Ayarları uygulama açılırken kontrol et ve tarayıcıya giden `VITE_` değerlerini gizli bilgi sayma.
 
-Env ayarını uygulama açılırken parse et. Token gibi zorunlu değer boşsa açıklayıcı hata ver; başlık gibi opsiyonel değer için belirli bir varsayılan seç. Tarayıcıya gönderilen VITE_ değerlerinin gizli olmadığını unutma.
+İşe başlamadan önce `z.infer`, `zodResolver`, şemadan türetilen alanlar ve environment kurallarını ilgili derslerdeki model kutularından hatırla. Bir sorun çıktığında hangi giriş noktasından geldiğini belirle; o sınırı tek tek tamamlayıp mevcut ekran davranışlarıyla birlikte gözden geçir.
 
-| Sınır | Gözleyeceğin davranış |
-| --- | --- |
-| TMDB 200 ve title null | Client'tan veri hatası çıkar, UI bozuk başarı verisi almaz |
-| Poster null | Film şeması gerçek API değerini kabul eder |
-| Boş izleme listesi adı | Alan hatası görünür, kayıt oluşmaz |
-| Boş token | Uygulama başlangıcında env adıyla açıklayıcı hata |
+## Özet
 
-## Çalışma sırası
+- Proje film verisi, formlar ve uygulama ayarlarını kapsar.
+- Her girdiyi uygulamanın içine girdiği yerde doğrula.
+- Alan sözleşmelerini ve mevcut ekran davranışlarını birlikte koru.
 
-1. Şemaları küçük gerçekçi örneklerle doğrula: null poster geçsin, null başlık kalmalı.
-2. Client'ın HTTP ve veri hatası yollarını ayrı tut.
-3. Formlarda kural kopyalarını kaldır ve erişilebilir hata gösterimini koru.
-4. Env parse'ını uygulamanın tek config girişine taşı.
-5. Eski formların görünür davranışları ve dönüşen değer tipleri hâlâ tutarlı mı diye gözden geçir.
+**Kendini yokla:** HTTP 200 yanıtı, JSON'un geçerli film verisi olduğunu kanıtlar mı?
 
-Sorun gördüğünde önce sınırın hangisi olduğunu belirle. Hatalı JSON ise film şemasına, HTTP 404 ise client'ın durum kontrolüne, boş kullanıcı adı ise form sözleşmesine bak. Her şeyi ortak bir hata metnine indirmek kullanıcı deneyimini sadeleştirebilir; fakat geliştirici tanısında hata kökenini kaybetme.
+*Cevap:* Hayır. Yanıt gövdesi de şemaya göre doğrulanmalıdır.
 
-:::mistake[Sık hata]
-Belirti → Dönüş tipi değişmiş görünür ama bozuk gövde hâlâ ekrana ulaşır. Neden → JSON parse edilmeden yalnızca TypeScript tipi değiştirilmiştir. Düzeltme → Parse çağrısını API client'ın gerçek dönüş yoluna yerleştir.
-:::
-
-:::sector
-Bu sınırlar güvenilir olunca sonraki Redux ve kimlik doğrulama akışları bozuk TMDB verisini veya boş config'i state'e taşımak zorunda kalmaz. Takım incelemesinde hem şemanın kurallarını hem bu şemanın gerçek giriş noktasında çağrıldığını kontrol et.
-:::
+**Yeni terim:** Veri sınırı — dış girdinin uygulamaya girip kullanılmaya başladığı nokta.

@@ -2,28 +2,29 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'Staged dosyalar',
+  title: 'Yerel kontrol CI yerine geçer mi?',
   difficulty: 'kolay',
-  concepts: ['tooling.git-hooks', 'tooling.git'],
-  question:
-    'Bir commit’te yalnızca hazırlanan TSX dosyalarını lint etmek istiyorsun. `husky` ve `lint-staged` rollerini nasıl ayırırsın?',
+  concepts: ['tooling.git-hooks', 'tooling.scripts'],
+  question: `Geliştiricinin bilgisayarında pre-commit lint'i başarılı oldu. Pull request'te CI yine lint çalıştırmalı mı?`,
   options: [
     {
-      text: 'husky hook’u başlatır; lint-staged staged dosyalara komut uygular.',
+      text: 'Evet; yerel hook kurulmamış ya da atlanmış olabilir, CI ortak denetim yapar.',
       correct: true,
-      explanation: 'Hook tetikleyici, lint-staged dosya seçimidir.',
+      explanation:
+        'Yerel kolaylık her geliştiricide aynı biçimde çalışmayabilir; CI sunucu tarafında tekrarlar.',
     },
     {
-      text: 'husky tüm React bileşenlerini formatlar; lint-staged API isteği yapar.',
-      explanation: 'Bu paketler uygulama davranışını veya TMDB isteğini yönetmez.',
+      text: 'Hayır; başarılı hook bütün branch değişikliklerinin kontrol edildiğini kanıtlar.',
+      explanation: 'Hook yalnız yerelde çalışır ve atlanabilir; CI ortak sonucu verir.',
     },
     {
-      text: 'lint-staged hook’u kurar; husky yalnızca staged dosyaları seçer.',
-      explanation: 'Roller ters çevrildi: husky Git hook’unu bağlar.',
+      text: 'Hayır; TypeScript derlemesi lint kurallarının tümünü denetler.',
+      explanation: 'Tip kontrolü ESLint’in seçilmiş kuralları yerine geçmez.',
     },
     {
-      text: 'İkisi de CI’nın yerine geçer.',
-      explanation: 'Yerel hook atlanabilir; CI ortak son denetimdir.',
+      text: 'Hayır; editörde format on save açıksa ikinci kontrol gerekmez.',
+      explanation:
+        'Editör yerel biçimleme sağlar, ama Hook ve diğer lint kurallarını ortak şekilde doğrulamaz.',
     },
   ],
   explanation: '',

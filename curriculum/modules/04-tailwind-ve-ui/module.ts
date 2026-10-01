@@ -11,9 +11,9 @@ Sinema’da favori butonu, arama butonu ve filtre düğmesi aynı on iki class�
   outcomes: [
     'Tailwind CSS v4 kurulumunu ve utility class’ları okuyabilirsin',
     'Flex, grid ve responsive varyantlarla poster ızgarası kurabilirsin',
-    'Durum ve dark mode varyantlarını erişilebilir etkileşimlere uygulayabilirsin',
-    '@theme ile tekrar kullanılan tasarım token’ları tanımlayabilirsin',
     'clsx ve tailwind-merge ile çakışmayan cn() yazabilirsin',
+    '@theme ile tekrar kullanılan tasarım token’ları tanımlayabilirsin',
+    'Durum ve dark mode varyantlarını erişilebilir etkileşimlere uygulayabilirsin',
     'cva ile tipli Button varyantları ve tekrar kullanılabilir UI bileşenleri oluşturabilirsin',
   ],
 })

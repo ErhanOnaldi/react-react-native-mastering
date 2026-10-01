@@ -1,50 +1,44 @@
 ---
 title: "Test sınırlarını birlikte kullan"
-minutes: 7
+minutes: 6
 kind: practice
 ---
 
 # Test sınırlarını birlikte kullan
 
-:::pain[Sinema’da ne oldu?]
-Tek bir refactor’da sayfa dilimi, API hata ayrıntısı ve arama query’si bozuldu. “Çalışıyor” diyen tek test bu farklı regresyonların hiçbirini açıklamıyor.
-:::
-
-## Her belirtiye uygun assertion
-
-Bu pekiştirmede farklı test yaklaşımlarını bir arada uygulayacaksın. Sayfalama saf bir dönüşüm olarak incelenebilir; hata cevabı controlled network boundary gerektirir; arama akışında URL alanları ve boş girdi davranışı ayrı gereksinimlerdir. Her biri için testi kırabilecek farkı önce cümleye dök.
+Bu alıştırmalarda sayfalama, API hatası ve arama davranışları için test yazacaksın. Her soruda önce kullanıcının fark edeceği davranışı söyle; sonra o davranışı gözleyebileceğin en küçük sınırı seç.
 
 :::model[Test anatomisi]
-Arrange girdiyi kurar, Act gerçek fonksiyonu veya akışı çalıştırır, Assert görülen sonucu karşılaştırır. Bu üç adım değişmez; değişen, bağımlılıkların sayısı ve uygun sınırdır. Saf fonksiyonda fake gerekmez, dış HTTP çağrısında kontrol edilen fetch sınırı gerekebilir.
+Arrange girdiyi hazırlar, Act gerçek fonksiyonu çalıştırır, Assert beklenen sonucu karşılaştırır. Assertion, bu karşılaştırmayı yapan beklentidir. Testini bu üç adımda kur; her adımın neden orada olduğunu anlayabiliyorsan daha kolay fark edersin neyin bozulduğunu.
 :::
 
-## Çalışma sırası
-
-1. Hata hikâyesini tek cümleyle yaz: hangi girdi yanlış sonucu üretiyor?
-2. Bilinen doğru sonucu belirle ve buna en yakın test sınırını seç.
-3. Assertion’ın hangi yanlış uygulamada kırılacağını düşün.
-4. Gerçek dış etkileri yalnız testin kontrol alanına al ve her değişikliği geri yükle.
-5. Test adını başarısızlık raporunda yol gösterecek şekilde yaz.
-
-Örneğin “sayfa dilimi iki öğe döndürür” yanlış offset’i yakalamaz. İkinci sayfanın ilk öğesini ve son sayfanın içeriğini belirtmek gerekir. Hata yönetiminde de yalnız herhangi bir rejection değil, çağırana aktarılması gereken HTTP durumu ve servis mesajı önem taşıyabilir. Aramada boş metnin hiç istek atmaması, dolu aramanın doğru query’yi taşımasından farklı davranıştır.
-
-## Sınırları birbirine karıştırma
-
-İlk testte yalnız çağrı sayısına bakma; query parametresinin içeriğini çözümle. İkinci testte başarılı cevaptaki alanları genişçe karşılaştırmak yerine hata sözleşmesinin kritik alanlarını seç. Üçüncüde fake fetch’i her testten sonra geri al; aksi halde başka dosyadaki testler de sahte davranışa bağlanır.
-
-:::mistake[Bir testle üç davranışı belirsizleştirmek]
-Belirti: Hata raporu sayfalama mı, error mapping mi yoksa query mi bozuldu söylemez. → Neden: Bağımsız gereksinimler tek geniş senaryoya yüklenmiştir. → Düzeltme: Her davranışı ayrı, hedefli test adı ve assertion ile koru.
+:::model[Bir davranış, bir sınır]
+Saf bir hesaplamada girdiyi verip dönüş değerini karşılaştırırsın. `fetch` gibi dışarıyla konuşan bir sınırda sahte yanıt kullanabilirsin; uygulamanın URL kurma ve hata taşıma kodu gerçek çalışmaya devam eder. Böylece testi hızlı ve deterministic (aynı koşullarda her çalıştırmada aynı sonucu veren) tutarken gerçekten önemli kararı sınarsın.
 :::
 
-:::sector
-Regresyon testleri geçmişte görülen bir belirtiye bağlandığında en değerlidir. Mutation yaklaşımında da her testin gerçek hata varyantlarından en az birini yakalaması, assertion’ın yalnız satır çalıştırmadığını gösterir.
+## Üç farklı davranış
+
+Sayfalama testinde yalnızca sonuç sayısına bakmak, yanlış sayfanın aynı sayıda kayıt döndürmesini kaçırabilir. İkinci sayfanın başlangıcını ve son sayfada hangi kaydın kaldığını düşün; içerik beklentisi, yanlış offset’i görünür kılar.
+
+API hatasında istek reddedildi demek tek başına yeterli değildir. Çağıran kod HTTP durumunu, servis kodunu ve mesajı ayrı ayrı kullanabilir; testin bu bilgilerin taşındığını göstermesi gerekir.
+
+Arama testinde dolu sorgunun URL’ye ve yetkilendirme başlığına nasıl yansıdığını, boş sorgunun ise ağ çağrısı oluşturmamasını ayrı davranışlar olarak ele al. Çağrı yapıldı mı sorusu, doğru sorgunun gönderildiğini tek başına göstermez.
+
+## Nasıl ilerleyeceksin?
+
+Önce test adını davranış cümlesi yap: “ikinci sayfanın ilk kaydı doğru” gibi. Sonra küçük bir girdi kur, Arrange–Act–Assert sırasını izle ve assertion’ının hangi yanlış sonucu yakalayacağını sor. Birbirinden bağımsız davranışları ayrı testlerde tut; böylece başarısızlık sana hangi beklentinin bozulduğunu söyler.
+
+:::mistake[Her şeyi tek beklentide toplamak]
+Belirti: Test başarısız olur ama sayfalama mı, hata ayrıntısı mı yoksa arama mı bozuldu anlayamazsın. → Neden: Farklı davranışlar tek geniş senaryoya yüklenmiştir. → Düzeltme: Her davranış için ayrı, açık isimli test yaz.
 :::
 
 ## Özet
 
-- Saf hesapta dönüş değerini; dış çağrıda protokol sınırını ölç.
-- Çağrının varlığı kritik argümanın doğru olduğunu kanıtlamaz.
-- Farklı davranışlar için ayrı test adları kullan.
-- Fake global değerleri temizle ve testleri bağımsız tut.
+- Test adını, koruduğun davranışı anlatacak şekilde yaz.
+- Saf dönüş değerini ve dış çağrı sınırını uygun ayrı yöntemlerle gözle.
+- İstek sayısını değil, istek ayrıntılarını ve kullanıcıya dönen sonucu da düşün.
+- Her testte assertion’ın hangi yanlış davranışı yakalayacağını bil.
 
-**Kendini yokla:** İstek yapılmışsa arama testi tamam mıdır? Hayır; query, sayfa ve boş girdi gibi sözleşme davranışlarını da sınamalısın.
+**Terimler:** **assertion** — beklenen bir sonucu karşılaştıran test ifadesi. **Deterministic** — aynı koşullarda tekrarlandığında aynı sonucu veren.
+
+**Kendini yokla:** `fetch` çağrıldıysa aramanın doğru olduğunu biliyor musun? Hayır; URL, başlıklar ve dönen sonuç gibi davranış ayrıntılarını da kontrol etmelisin.

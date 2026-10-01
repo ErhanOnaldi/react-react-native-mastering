@@ -1,0 +1,15 @@
+import { createSlice } from '@reduxjs/toolkit'
+
+export const listSlice = createSlice({
+  name: 'watchlist',
+  initialState: { ids: [] as number[] },
+  reducers: {
+    addMany(state, action: { payload: number[] }) {
+      for (const id of action.payload) {
+        if (!state.ids.includes(id)) state.ids.unshift(id)
+      }
+    },
+  },
+})
+
+export const { addMany } = listSlice.actions

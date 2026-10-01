@@ -7,7 +7,7 @@
   </defs>
   <rect class="d-box" x="26" y="72" width="154" height="104" rx="10" />
   <text class="d-title" x="103" y="108" text-anchor="middle">Sayfa</text>
-  <text class="d-muted" x="103" y="136" text-anchor="middle">URL seçimi</text>
+  <text class="d-muted" x="103" y="136" text-anchor="middle">movieId seçimi</text>
   <rect class="d-accent" x="222" y="48" width="218" height="132" rx="10" />
   <text class="d-title" x="331" y="84" text-anchor="middle">Davranış hook'u</text>
   <text class="d-code" x="331" y="114" text-anchor="middle">loading / success</text>

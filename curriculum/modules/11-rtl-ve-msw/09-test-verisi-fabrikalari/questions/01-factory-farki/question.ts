@@ -14,12 +14,14 @@ export default defineQuestion({
         'Partial override gerçek TMDB nesnesinin diğer zorunlu alanlarını tek yerde sağlar.',
     },
     {
-      text: 'Her testte aynı id ve başlığı zorunlu kılar',
-      explanation: 'Override id ve title alanlarını da değiştirebilir.',
+      text: '16 alanlı fixture nesnesini her testte tekrar yazmak zorunda bırakır',
+      explanation:
+        'Factory tek yerde geçerli varsayılanları kurar; çağrı yalnız `poster_path` farkını belirtir.',
     },
     {
-      text: 'null alanını otomatik olarak undefined yapar',
-      explanation: 'null TMDB sözleşmesinde anlamlıdır; factory bunu korumalıdır.',
+      text: 'Verilen `null` değerini varsayılan poster yolu ile değiştirir',
+      explanation:
+        'Override’daki `null` anlamlı bir sınır durumudur ve factory sonucu aynen korumalıdır.',
     },
   ],
 })

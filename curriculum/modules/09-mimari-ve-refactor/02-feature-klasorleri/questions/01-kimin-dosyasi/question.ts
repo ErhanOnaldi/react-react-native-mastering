@@ -5,25 +5,27 @@ export default defineQuestion({
   title: 'Dosyanın sahibi',
   difficulty: 'kolay',
   concepts: ['arch.feature-folders', 'arch.colocation'],
-  question: 'Yalnız arama ekranının kullandığı `SearchBox.tsx` için ilk yer neresi olmalı?',
+  question: `Arama kutusu yalnız arama sayfasında kullanılıyor. Film detay ekranı da aynı genel input stilini kullanıyor ama kendi arama davranışına ihtiyaç duymuyor. Hangi dosya yerleşimi iki sorumluluğu da açık tutar?`,
   options: [
     {
-      text: 'features/search/components/',
+      text: 'SearchBox features/search içinde; genel input görünümü shared/ui içinde',
       correct: true,
-      explanation: 'Doğru. Tek tüketicisi arama feature’ı; yakınında tut.',
-    },
-    {
-      text: 'shared/ui/',
       explanation:
-        'shared/ gerçek ortak kullanımı anlatmalı; erken genelleme arama sorumluluğunu gizler.',
+        'SearchBox arama davranışına ait; yalnız ortak ve aynı işi yapan görsel parça shared olabilir.',
     },
     {
-      text: 'features/movies/api/',
-      explanation: 'Bu dosya UI bileşeni, film endpoint fonksiyonu değil.',
+      text: 'SearchBox ve input stilini features/search içine kopyala',
+      explanation:
+        'Ortak görünümün iki kopyası zamanla ayrışır; gerçek ortak parçayı paylaşabilirsin.',
     },
     {
-      text: 'Kök src/ dizini',
-      explanation: 'Kök, sahipliği anlatmadığı için dosya sayısı artınca aramayı zorlaştırır.',
+      text: 'SearchBox ve genel input bileşenini birlikte shared/ui içine koy',
+      explanation:
+        'Bu erken genelleme SearchBox’ın yalnız aramaya ait davranışını shared içine taşır.',
+    },
+    {
+      text: 'SearchBox’ı features/movies içinde tut',
+      explanation: 'Filmler özelliği arama alanının sahibi değildir.',
     },
   ],
 })

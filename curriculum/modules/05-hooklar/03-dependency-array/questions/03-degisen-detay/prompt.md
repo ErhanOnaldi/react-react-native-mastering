@@ -1,4 +1,4 @@
-Film detayı aynı bileşen açıkken farklı bir film kimliği alabilir. `MovieDetails`, prop değiştiğinde eski başlıkta takılı kalmadan yeni filmin başlığını göstermeli.
+Film detayı aynı bileşen açıkken farklı bir film kimliği alabilir. `MovieDetails`, her kimlik için doğru başlığı göstermeli ve yeni film beklenirken eski başlığı göstermemeli.
 
 ## Gereksinimler
 
@@ -6,6 +6,7 @@ Film detayı aynı bileşen açıkken farklı bir film kimliği alabilir. `Movie
 - Aynı bileşen `id={27205}` ile yeniden render edildiğinde `Başlangıç` başlığı görünür.
 - Yeni kimlik için `/movie/27205` isteği atılır.
 - TMDB yetkilendirme başlığı korunur.
+- Yeni film yüklenirken `Yükleniyor` görünür.
 
 ## Örnek
 

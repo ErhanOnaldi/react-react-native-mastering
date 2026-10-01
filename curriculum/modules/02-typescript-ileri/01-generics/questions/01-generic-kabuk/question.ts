@@ -2,23 +2,39 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'Generic neden gerekli?',
+  title: 'Çağrıda tipi çıkar',
   difficulty: 'kolay',
-  concepts: ['ts.generics', 'ts.api-types'],
-  question: '`Paginated<Movie>` ile `Paginated<Genre>` arasında değişen nedir?',
+  concepts: ['ts.generics', 'ts.inference'],
+  question: `Aşağıdaki kodda \`result\` değişkeninin tipi nedir?
+
+\`\`\`ts
+function first<T>(items: T[]): T | undefined {
+  return items[0]
+}
+
+const result = first([{ id: 18, name: 'Dram' }])
+\`\`\``,
   options: [
     {
-      text: '`results` öğesinin tipi; sayfalama alanları ortak kalır.',
+      text: '`{id: number; name: string} | undefined`',
       correct: true,
-      explanation: 'Doğru; `T` yalnızca değişken parça için kullanılır.',
+      explanation:
+        'TypeScript, verilen nesneden T tipini çıkarır; boş dizi olasılığı nedeniyle sonuçta undefined da vardır.',
     },
     {
-      text: 'Sayfa numarasının çalışma zamanı değeri.',
-      explanation: 'Generic tip parametresi çalışma zamanı sayısını değiştirmez.',
+      text: '`any`',
+      explanation:
+        'Generic fonksiyon any kullanmıyor. T, argümanın tipini koruduğu için alanlar denetlenmeye devam eder.',
     },
     {
-      text: 'HTTP isteğinin adresi.',
-      explanation: 'Tip parametresi istek göndermez veya adres seçmez.',
+      text: '`{id: number; name: string}`',
+      explanation:
+        'Bu, bir öğe bulunduğundaki tiptir. Dizi boş olabileceği için fonksiyon undefined da döndürebilir.',
+    },
+    {
+      text: '`unknown`',
+      explanation:
+        'T çağrıdan çıkarılır; sonuç bilinmeyen kalmaz. Burada nesnenin id ve name alanları korunur.',
     },
   ],
 })

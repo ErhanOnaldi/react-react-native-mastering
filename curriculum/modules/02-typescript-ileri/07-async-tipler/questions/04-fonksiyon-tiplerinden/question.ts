@@ -2,13 +2,13 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'code',
-  title: 'Fonksiyon imzasını yeniden yazma',
+  title: 'Promise sonucunu adlandır',
   difficulty: 'orta',
-  concepts: ['ts.return-parameters', 'ts.async-types', 'ts.generics'],
+  concepts: ['ts.async-types', 'ts.generics'],
   files: ['task.ts'],
   hints: [
-    'Örnek fonksiyonun argüman ve dönüş bilgilerini tekrar yazmadan nasıl çıkaracağını düşün.',
-    '`Parameters`, `ReturnType` ve `Awaited` yardımcı tipleri fonksiyon imzasını türetir.',
-    '`args[0]` tuple içindeki ID değeridir; bunu istenen metne ekle.',
+    'Önce filmin şeklini tanımla; sonra bu filmin gelecekte döneceği Promise tipini adlandır.',
+    '`Promise<Movie>` başarıyla çözüldüğünde Movie verir; `Awaited` bu Promise katmanını tipten açar.',
+    '`MoviePromise = Promise<Movie>` ve `LoadedMovie = Awaited<MoviePromise>` tiplerini yaz; `movieLabel` içinde başlıkla ID’yi kullan.',
   ],
 })

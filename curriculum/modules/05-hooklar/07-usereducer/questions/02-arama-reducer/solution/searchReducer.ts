@@ -24,9 +24,7 @@ export function searchReducer(state: State, action: Action): State {
       return { ...state, loading: false, error: action.message }
     case 'next':
       return { ...state, page: state.page + 1 }
-    default: {
-      const neverAction: never = action
-      return neverAction
-    }
+    default:
+      return state
   }
 }

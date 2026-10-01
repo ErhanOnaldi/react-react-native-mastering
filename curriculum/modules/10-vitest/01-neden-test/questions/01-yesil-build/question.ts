@@ -5,25 +5,35 @@ export default defineQuestion({
   title: 'Yeşil build neden yetmedi?',
   difficulty: 'kolay',
   concepts: ['test.what-to-test', 'tooling.type-check', 'arch.refactoring'],
-  question:
-    'Sayfalama refactor’undan sonra `page` tipi doğru, fakat ikinci sayfa yerine ilki geliyor. Hangi kontrol bu hatayı doğrudan yakalar?',
+  question: `Aşağıdaki kod için hangi beklenti ikinci sayfanın gerçekten istendiğini doğrular?
+
+\`\`\`ts
+const url = new URL('https://sinema.test/search?page=2')
+\`\`\``,
   options: [
     {
-      text: '`page=2` isteğinin URL’sini ve dönen sonucu sınayan davranış testi',
+      text: '`expect(url.searchParams.get("page")).toBe("2")`',
       correct: true,
-      explanation: 'Doğru. Test, tipin ötesinde görülen sayfa sözleşmesini ölçer.',
+      explanation:
+        'Sayfa numarası URL’de yanlışsa bu kontrol kırılır; kullanıcıya giden isteği ölçer.',
     },
     {
-      text: 'Yalnızca `tsc -b` çalıştırmak',
+      text: '`expect(url.searchParams.has("page")).toBe(true)`',
       correct: false,
       explanation:
-        'TypeScript sayı ile string karışmasını yakalar; doğru sayfanın istendiğini bilemez.',
+        'Bu yalnızca bir page parametresinin varlığını kanıtlar; yanlışlıkla `page=1` de geçer.',
     },
     {
-      text: 'Dosyaları Prettier ile biçimlendirmek',
+      text: '`expect(url.pathname).toBe("/search")`',
       correct: false,
       explanation:
-        'Biçimlendirme davranışı çalıştırmaz; yanlış query parametresi de düzgün biçimlenebilir.',
+        'Yol doğru olsa bile query içindeki sayfa yanlış olabilir; bu beklenti onu ölçmez.',
+    },
+    {
+      text: '`expect(url.search).not.toBe("")`',
+      correct: false,
+      explanation:
+        'Query dolu olabilir ama `page` değeri yanlış olabilir; gerekli değeri karşılaştır.',
     },
   ],
 })

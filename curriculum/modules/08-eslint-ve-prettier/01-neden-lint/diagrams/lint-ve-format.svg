@@ -3,13 +3,13 @@
   <rect class="d-accent" x="45" y="35" width="310" height="155" rx="10"/>
   <text class="d-title" x="200" y="68" text-anchor="middle">ESLint · anlamlı kod kalıbı</text>
   <text class="d-code" x="200" y="105" text-anchor="middle">eksik Hook bağımlılığı</text>
-  <text class="d-code" x="200" y="130" text-anchor="middle">kullanılmayan import</text>
+  <text class="d-code" x="200" y="130" text-anchor="middle">kullanılmayan değişken</text>
   <text class="d-text-accent" x="200" y="166" text-anchor="middle">mesaj üretir</text>
 
   <rect class="d-success" x="405" y="35" width="310" height="155" rx="10"/>
   <text class="d-title" x="560" y="68" text-anchor="middle">Prettier · görünüş</text>
   <text class="d-code" x="560" y="105" text-anchor="middle">tırnak · girinti · satır</text>
-  <text class="d-code" x="560" y="130" text-anchor="middle">Tailwind class sırası</text>
+  <text class="d-code" x="560" y="130" text-anchor="middle">boşluk ve satır düzeni</text>
   <text class="d-text-success" x="560" y="166" text-anchor="middle">kaynağı biçimler</text>
 
   <text class="d-muted" x="380" y="220" text-anchor="middle">Lint davranışı kanıtlamaz; format kod anlamını çözmez.</text>

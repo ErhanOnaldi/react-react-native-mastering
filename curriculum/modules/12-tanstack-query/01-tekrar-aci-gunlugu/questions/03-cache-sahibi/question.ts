@@ -4,21 +4,21 @@ export default defineQuestion({
   type: 'quiz',
   title: 'Favori ile TMDB cevabının sahibi',
   difficulty: 'orta',
-  concepts: ['redux.server-vs-client', 'query.useQuery'],
+  concepts: ['arch.state-categories', 'query.useQuery'],
   question:
-    'Sinema’da favori yıldızı ve TMDB film detayı var. Modül 16’da Redux da eklenecek. Detayı yenileyince yeni puan gelsin, favori seçimi ise yerel kalsın. Hangi sahiplik planı doğru?',
+    'Sinema’da kullanıcı bir filmi favoriliyor; TMDB’den gelen detay puanı ise zamanla değişebilir. Sayfa tekrar açıldığında güncel puan alınabilsin, favori seçimi korunabilsin. Hangi sahiplik planı bu iki davranışı destekler?',
   options: [
     {
-      text: 'TMDB detayı TanStack Query cache’inde, favori seçimi client state/Redux slice’ında kalır.',
+      text: 'TMDB detayı TanStack Query cache’inde, favori seçimi client state’te kalır.',
       correct: true,
       explanation:
-        'Doğru. Sunucudan gelen veri yeniden çekilir ve invalidation görür; kullanıcı tercihi ayrı yaşam döngüsüne sahiptir.',
+        'Sunucu cevabı yeniden alınabilir; favori ise kullanıcının seçimi olduğu için ayrı tutulur.',
     },
     {
-      text: 'İkisini de Redux’a kopyala; Query invalidation Redux kopyasını otomatik düzeltir.',
+      text: 'TMDB detayını `useState` içinde, favoriyi Query cache’inde tut.',
       correct: false,
       explanation:
-        'Query cache ile Redux store ayrı kaynaklardır; invalidation Redux kopyasını otomatik senkronlamaz.',
+        'Bu seçim sahipleri tersine çevirir: API cevabını tekrar kullanmak, kullanıcı tercihini de sunucu cache’ine koymayı gerektirmez.',
     },
     {
       text: 'İkisini de Query cache’ine koy; favori seçimini her refetch’te TMDB’den getir.',

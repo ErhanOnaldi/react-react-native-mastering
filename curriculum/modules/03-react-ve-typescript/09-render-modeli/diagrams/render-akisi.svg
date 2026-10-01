@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210">
+  <title>State güncellemesinden JSX hesabı ve DOM değişikliğine</title>
+  <defs>
+    <marker id="render-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path class="d-arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+  <rect class="d-box" x="35" y="48" width="190" height="100" rx="10"/>
+  <text class="d-title" x="130" y="82" text-anchor="middle">State güncellemesi</text>
+  <text class="d-text" x="130" y="111" text-anchor="middle">yeni bilgi gelir</text>
+  <rect class="d-accent" x="285" y="48" width="190" height="100" rx="10"/>
+  <text class="d-title" x="380" y="82" text-anchor="middle">Render</text>
+  <text class="d-text" x="380" y="111" text-anchor="middle">bileşen yeni JSX hesaplar</text>
+  <rect class="d-success" x="535" y="48" width="190" height="100" rx="10"/>
+  <text class="d-title" x="630" y="82" text-anchor="middle">Commit</text>
+  <text class="d-text" x="630" y="111" text-anchor="middle">gereken DOM değişir</text>
+  <line class="d-line" x1="225" y1="98" x2="281" y2="98" marker-end="url(#render-ok)"/>
+  <line class="d-line" x1="475" y1="98" x2="531" y2="98" marker-end="url(#render-ok)"/>
+  <text class="d-muted" x="380" y="185" text-anchor="middle">Render hesaplar; commit sonucu ekrana uygular.</text>
+</svg>

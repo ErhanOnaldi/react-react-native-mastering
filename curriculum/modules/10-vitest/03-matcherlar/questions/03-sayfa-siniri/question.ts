@@ -2,14 +2,20 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'code',
-  title: 'Geçersiz sayfayı açıkça reddet',
+  title: 'Sayfa sınırı için test yaz',
   difficulty: 'orta',
-  concepts: ['test.matchers', 'fetch.query-params', 'ts.functions'],
-  files: ['requirePage.ts'],
+  concepts: ['test.matchers', 'fetch.query-params'],
+  files: ['requirePage.test.ts'],
   hints: [
-    'Geçerli ve geçersiz girdileri testin istediği sınıflara ayır.',
-    'TMDB sayfaları 1’den başlar; 0, negatif, ondalık ve 500’den büyük değerler geçersiz.',
-    '`Number.isInteger(page)` ile tam sayı koşulunu denetle, sınır dışını `RangeError` ile bildir.',
-    'Geçersizde `throw new RangeError("Sayfa 1 ile 500 arasında olmalı")`; geçerlide gelen sayıyı döndür.',
+    'Geçerli sınırları ve reddedilmesi gereken değerleri ayrı senaryolar olarak ele al.',
+    'Hatalı çağrıyı doğrudan çalıştırmak yerine hata üreten fonksiyonu matcher’a ver.',
+    '`expect(() => requirePage(page)).toThrow(...)` biçimini kullan.',
+    'RangeError türünü ve `Sayfa 1 ile 500 arasında olmalı` mesajını aynı testte güvenceye al.',
   ],
+  testWriting: {
+    mutants: [
+      { id: 'fraction-allowed', label: 'ondalıklı sayfayı kabul eden sürüm' },
+      { id: 'wrong-error', label: 'hatalı sayfada beklenen hata sözleşmesini vermeyen sürüm' },
+    ],
+  },
 })

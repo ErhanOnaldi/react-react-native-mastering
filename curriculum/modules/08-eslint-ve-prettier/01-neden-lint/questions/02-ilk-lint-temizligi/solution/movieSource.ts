@@ -1,4 +1,5 @@
 export const movieSource = `
-const title = 'Dövüş Kulübü'
-export function MovieTitle() { return <h1>{title}</h1> }
+export function MovieTitle({ title }) {
+  return <h1>{title}</h1>
+}
 `

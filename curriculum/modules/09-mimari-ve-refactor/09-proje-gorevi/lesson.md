@@ -1,42 +1,61 @@
 ---
 title: "Sinema'nın sınırlarını kur"
-minutes: 7
+minutes: 9
 kind: project
 ---
 
 # Sinema'nın sınırlarını kur
 
-:::pain[Problem]
-Egzersizlerde ortak client ve feature API'sini ayırdın; Sinema v1'de token, URL ve hata kontrolü hâlâ sayfalara dağılmış durumda. Yeni endpoint eklerken aynı kuralı tekrar yazmak gerekiyor.
-:::
-
-Bu proje, öğrendiğin sınırları çalışan Sinema uygulamasına taşır. Ana sayfa, arama, tür filtresi, detay ve favori davranışı değişmeden kalmalı. Dosyaları taşıdıktan sonra import yollarını güncelle; ardından ortak HTTP kapısını kur ve son olarak filmlere ait anlamlı fonksiyonları feature katmanında topla.
+Bu projede Sinema v1'in ekran davranışını koruyarak dosyaların ve isteklerin sorumluluğunu düzenleyeceksin. Küçük egzersizlerde öğrendiğin feature sahipliği, ortak HTTP kapısı ve anlamlı API fonksiyonları şimdi çalışan uygulamada birlikte yer alıyor.
 
 :::model[Feature'dan shared'e bağımlılık]
-Feature kendi endpoint anlamını taşır ve ortak HTTP katmanını çağırır; shared geriye dönüp feature'ı bilmez. Bu projede yeni olan, bu yönü çalışan uygulamanın mevcut dosyalarına uygulamaktır.
+Feature, kendi alanına ait endpoint anlamını bilir ve ortak HTTP katmanını çağırır. `shared` ortak kuralları sağlar; feature dosyalarını import etmez. Böylece örneğin film ekranı `/movie/...` yolunu seçer, ortak client ise token, dil ve hata kuralını uygular.
 :::
 
-## Üç teslim
+## Önce dosyaların yerini belirle
 
-1. Feature ve shared sahipliklerini kur, ortak yardımcıları doğru yere taşı ve alias ayarlarını eşleştir.
-2. Bearer, Türkçe dil, ortak hata dönüşümü ve query kurallarını tek HTTP client'ta uygula.
-3. Trend, arama, tür, detay ve tür listesi endpoint'lerini isimli film API fonksiyonları olarak sun; sayfaları bu API'ye bağla.
+İlk adımda film, arama ve favori kodlarını özelliklerine göre grupla; gerçekten ortak kullanılan puan, tarih ve afiş yardımcılarını ortak alanda tut. Bu ayrımda bir dosyanın sahibi, dosyayı kullanan her ekran değil, onun temsil ettiği davranıştır.
 
-Her taşıma küçük tut: bir dosyayı taşı, importları düzelt, sonra diğerine geç. Arama ve sayfalama için URL seçimiyle ekrandaki içerik aynı kalmalı. `get<T>` bir type hint'tir; sunucudan gelen JSON'u runtime'da doğruladığını iddia etme.
+Örneğin aramanın URL seçimini okuyan kod `search` özelliğine yakın durur. Aynı afiş adresi üreticisini arama ve favori kullanıyorsa helper ortak alana taşınır. Bu dosyaları taşıyınca `@/` yollarını hem TypeScript hem Vite aynı `src/` köküne bağlamalı; aksi halde editör yolu tanırken uygulama derlemesi bulamayabilir.
 
-:::mistake[Sık hata]
-**Belirti →** Yeni client kullanılıyor ama sayfalarda eski `fetch` kopyaları da kalmış. **Neden →** Taşıma yarıda bırakılmış. **Düzeltme →** Her endpoint'in ortak client'tan geçtiğini ve eski uygulamanın kaldırıldığını gözden geçir.
-:::
+## Sonra ortak HTTP kuralını uygula
 
-:::sector
-Üretim uygulamalarında feature API ile protokol client'ının ayrılması, yeni backend veya cache katmanına geçişi yerel tutar. Dosya yolu ve export adları sonraki çalışmaların entegrasyon yüzeyidir.
+İkinci adımda ortak client'a TMDB kök adresi, `language=tr-TR` ve `Authorization: Bearer ...` başlığı gibi HTTP kuralları girer. Bearer, token'ı `Authorization` başlığında taşıyan yetkilendirme biçimidir; URL'ye eklenirse adres geçmişinde ve loglarda açığa çıkabilir.
+
+Bir çağrıyı sırayla izle:
+
+| Sıra | Nerede? | Ne olur? |
+|---|---|---|
+| 1 | Film feature API'si | Örneğin detay için endpoint yolunu ve film kimliğini seçer |
+| 2 | Ortak client | `/3` kökünü, Türkçe dili ve Bearer başlığını ekler |
+| 3 | Sunucu cevabı | Başarı verisi döner veya HTTP hatası oluşur |
+| 4 | Çağıran ekran | Veriyi gösterir ya da açıklanabilir hata durumunu sunar |
+
+Adımların bu sırada kalması, ekranların token ve URL kurallarını tekrar etmesini önler. HTTP hatasında status ve varsa TMDB hata bilgisini taşıyan `ApiError` kullanılabilir; hata mesajını tek bir kapıda biçimlendirmek ekran davranışını tutarlı tutar.
+
+`get<T>` içindeki `T`, TypeScript'e beklenen cevabın şeklini söyler. Bu bir type hint'tir; sunucudan gelen JSON'u çalışma anında kontrol etmez. Schema doğrulaması, gelen verinin çalışma sırasında beklenen alan ve türlere uyup uymadığını denetlemektir. Projede `get<T>` yazmak tek başına böyle bir doğrulama sağlamaz.
+
+## En son feature API'sini bağla
+
+Son adımda ekranlar ham endpoint adresi yerine `getTrendingMovies`, `searchMovies` veya `getMovieDetails` gibi anlamlı film fonksiyonlarını çağırır. Bu fonksiyonlar film endpoint'ini bilir ve ortak client'ı kullanır. Detay cevabında kadro ile videoyu birlikte istemek ya da aramada sorgu ve sayfayı geçirmek feature API'sinin anlamlı seçimleridir.
+
+Üç adımı sırayla uyguladığında önce import'lar toparlanır, sonra ortak HTTP politikası tek yere girer, ardından ekranlar feature API'ye bağlanır. Her taşıma sonrasında uygulama davranışını kontrol et: ana sayfa, arama, tür filtresi, detay, favori ve URL'den geri kurulan sayfalama aynı sonucu vermeli.
+
+:::mistake[Eski fetch yolunu bırakmak]
+**Belirti →** Bir ekran yeni client'ı kullanıyor ama başka bir endpoint hâlâ kendi `fetch` çağrısını yapıyor. **Neden →** Taşıma tamamlanmadan dosya düzeni bitti sayıldı. **Düzeltme →** Ekranların feature API fonksiyonlarını kullandığını, bu fonksiyonların da ortak client'a gittiğini uçtan uca izle.
 :::
 
 ## Özet
 
-- Önce sahipliği, sonra ortak HTTP politikasını, en son endpoint API'sini kur.
-- Dış davranışı koru; `@/` ayarını TypeScript ve Vite'ta aynı köke bağla.
-- `get<T>` runtime schema doğrulaması değildir.
+- Dosyayı temsil ettiği özelliğe göre yerleştir; gerçekten ortak yardımcıyı shared'e koy.
+- Ekran → feature API → ortak HTTP client sırasını koru.
+- Bearer token başlıkta taşınır; `get<T>` cevabı çalışma anında doğrulamaz.
+- Küçük taşımalardan sonra mevcut ekran davranışını yeniden kontrol et.
 
-**Kendini yokla:** Bir film endpoint'inin yolunu hangi katman bilmeli?  
+**Yeni terimler:** `Bearer`: Yetkilendirme token'ını `Authorization` başlığında taşıma biçimi. `Schema doğrulaması`: Gelen verinin çalışma sırasında beklenen şekle uyup uymadığını kontrol etme. `Type hint`: Derleme sırasında beklenen tipi anlatan ipucu; runtime kontrolü değildir.
+
+**Kendini yokla:** Film endpoint yolunu hangi katman seçer?
 *Cevap:* Film feature API'si; ortak client HTTP kurallarını uygular.
+
+**Kendini yokla:** `get<MovieListResponse>(...)` JSON'un biçimini çalışma anında garanti eder mi?
+*Cevap:* Hayır. Bu yalnız TypeScript'e tip ipucu verir; runtime schema doğrulaması gerekir.

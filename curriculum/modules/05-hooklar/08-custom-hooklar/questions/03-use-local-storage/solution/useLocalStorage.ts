@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { Dispatch, SetStateAction } from 'react'
-export function useLocalStorage<T>(key: string, initial: T): [T, Dispatch<SetStateAction<T>>] {
+export type ValueUpdater<T> = (value: T | ((current: T) => T)) => void
+export function useLocalStorage<T>(key: string, initial: T): [T, ValueUpdater<T>] {
   const [value, setValue] = useState<T>(() => {
     try {
       const saved = localStorage.getItem(key)
@@ -9,8 +9,13 @@ export function useLocalStorage<T>(key: string, initial: T): [T, Dispatch<SetSta
       return initial
     }
   })
+  function updateValue(nextValue: T | ((current: T) => T)) {
+    setValue((current) =>
+      typeof nextValue === 'function' ? (nextValue as (current: T) => T)(current) : nextValue,
+    )
+  }
   useEffect(() => {
     localStorage.setItem(key, JSON.stringify(value))
   }, [key, value])
-  return [value, setValue]
+  return [value, updateValue]
 }

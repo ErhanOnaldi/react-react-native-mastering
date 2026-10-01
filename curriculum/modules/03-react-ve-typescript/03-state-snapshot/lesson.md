@@ -1,196 +1,201 @@
 ---
-title: "State snapshot ve updater kuyruğu"
-minutes: 19
+title: "State snapshot ve updater"
+minutes: 20
 kind: concept
 ---
 
-# State snapshot ve updater kuyruğu
+# State snapshot ve updater
 
-:::pain[Üç artırma, ekranda bir artış]
-Alışkanlık sayacında “+3 adım” düğmesine basıyorsun; ekranda sayı 1 artıyor. Handler içinde setter üç kez çağrılmış, ama sonuç üç değil. Çünkü `count` bir sayaç hücresi gibi anında değişmiyor: handler, o render'da gördüğü tek bir değerin fotoğrafıyla çalışıyor.
-:::
+Sinema'da bir puan düğmesine tıkladığında `useState` ile tuttuğun sayı ekranda artar. **Render**, React'in bileşen fonksiyonunu çalıştırıp o anki ekrana uygun JSX'i hesaplamasıdır. `useState`, React'in render'lar arasında sakladığı bir değeri bileşene vermesini sağlar; bu saklanan değere **state** denir. **Setter**, state'i güncellemesini React'ten isteyen fonksiyondur. Ama setter'ı çağırınca o satırdaki değişken anında değişmez; bunu görmek için önce tek bir artışa bakalım.
 
-## Her render kendi fotoğrafını görür
-
-State, bileşen fonksiyonunun içinde sonradan değişen sıradan bir yerel değişken değildir. React state'i saklar ve bir render başlatırken bileşene o render'a ait değerleri verir. Handler fonksiyonları da oluşturuldukları render'ın props ve state değerlerini kapatır. Bu nedenle state setter çağrısı o closure içindeki değişkeni hemen değiştirmez.
-
-![Her render'ın snapshot'ı ve setter kuyruğu](diagram:state-snapshot "Snapshot ile güncelleme kuyruğu")
-
-Bu modelin kuralları nettir:
-
-1. **Render state'i okur, onu değiştirmez.** `const [count, setCount] = useState(0)` içindeki `count`, o render için sabit bir değerdir. Handler çalışırken setter çağırmak mevcut `count` değişkenine yeni değer atamaz.
-2. **Setter bir sonraki render için iş kuyruğa koyar.** React güncellemeleri uygun noktada işler ve yeni state'i kullanarak başka render başlatır. Bu, aynı event içindeki güncellemeleri toplamasına imkân verir.
-3. **Değerle verilen güncelleme o render'daki değeri kullanır.** `setCount(count + 1)` önce `count + 1` ifadesini hemen hesaplar. Aynı handler'da üç kez çağrılırsa üç çağrı da aynı `count` değerinden aynı sonucu üretir.
-4. **Fonksiyonel updater sıradaki state'i alır.** `setCount(current => current + 1)` çağrısında React fonksiyonu kuyruğa koyar. Kuyruktaki her updater, önceki updater'ın sonucunu alır.
-5. **Handler sonrasındaki render yeni bir closure üretir.** Yeni JSX ve yeni handler'lar güncel state değerini görür; eski handler ise oluşturulduğu render'ın fotoğrafına bağlı kalır.
-6. **Aynı değer için yeniden render atlanabilir.** React eski ve yeni state'i `Object.is` ile karşılaştırır. Sonuç eşitse güncellemeyi atlayabilir; bileşen işlevini bazı durumlarda yine çağırsa bile çocuklara ve DOM'a değişiklik taşımak zorunda değildir. Nesneyi yerinde değiştirmek bu yüzden güvenilir bir güncelleme değildir.
-
-Bu kurallar render'ın saflığıyla da tutarlıdır: state setter, mevcut hesaplamayı yerinde değiştirmez; React'e başka bir hesaplama gerektiğini bildirir. “Setter çağrıldı, değişken hemen değişti” diye düşünürsen aynı handler içinde eski değeri tekrar tekrar okuman şaşırtıcı gelir.
-
-## Kuyruğu satır satır izleyelim
-
-Başlangıç `steps = 0` olsun. Handler üç kez şu işlemi yapıyor:
-
-```tsx
-setSteps(steps + 1)
-setSteps(steps + 1)
-setSteps(steps + 1)
-```
-
-Handler'ın closure'ı `steps = 0` görür. JavaScript bu ifadeleri sırayla değerlendirir:
-
-| Satır | Closure'daki `steps` | Kuyruğa eklenen değer |
-| --- | ---: | ---: |
-| `setSteps(steps + 1)` | 0 | 1 |
-| `setSteps(steps + 1)` | 0 | 1 |
-| `setSteps(steps + 1)` | 0 | 1 |
-
-Sonraki state 1 olur; React aynı event içindeki üç değeri işlerken son değeri kullanır. Bu, `setSteps` çağrılarının yalnızca bir kez çalıştığı anlamına gelmez. Üç değer hesaplandı fakat hepsi aynı fotoğrafa dayanıyordu.
-
-Fonksiyonel updater ile ise kuyruğa üç hesaplama girer:
+## Setter çağrısı değişkeni anında değiştirmez
 
 ```tsx check
 import { useState } from 'react'
 
-function StepCounter() {
-  const [steps, setSteps] = useState(0)
-  const addThree = () => {
-    setSteps((current) => current + 1)
-    setSteps((current) => current + 1)
-    setSteps((current) => current + 1)
+function RatingButton() {
+  const [score, setScore] = useState(0)
+
+  function addPoint() {
+    setScore(score + 1)
+    console.log('Handler içindeki score:', score)
   }
-  return <button onClick={addThree}>Adım: {steps}</button>
+
+  return <button onClick={addPoint}>Puan: {score}</button>
 }
 
-const counter = <StepCounter />
-void counter
+const button = <RatingButton />
+void button
 ```
 
-| Kuyruktaki adım | Updater'ın aldığı değer | Ürettiği değer |
-| --- | ---: | ---: |
-| İlk fonksiyon | 0 | 1 |
-| İkinci fonksiyon | 1 | 2 |
-| Üçüncü fonksiyon | 2 | 3 |
+İlk görünümde `score` sıfırdır. Tıklayınca `setScore(1)` çağrılır; hemen ardından çalışan `console.log` yine `0` yazar. Setter, handler'ın elindeki `score` değişkenine yeni değer atamaz. React bu isteği işler ve yeni state ile bileşeni yeniden çalıştırınca düğmede `Puan: 1` görünür.
 
-React sırayı koruyarak fonksiyonları uygular. Burada `setSteps(current => current + 3)` de sonuca ulaşırdı; üç küçük updater örneği, her güncellemenin öncekinin sonucuna bağlandığını görünür kılar. Bir sonraki değeri mevcut state'e göre hesaplıyorsan updater formu güvenli varsayılandır.
+Bir **snapshot**, tek bir render'ın gördüğü state değeridir. Handler, oluşturulduğu render'ın snapshot'ını kullanır. Setter sonraki render için güncelleme ister; bu nedenle aynı handler içinde eski değişkeni tekrar okumak yeni değeri vermez.
 
-React bir event handler sırasında gelen güncellemeleri gruplayabilir; bu batching, her setter çağrısında ayrı ayrı render başlatmaktan kaçınır. Setter'ların çağrılması ile state'in yeni değerini ekranda görmek arasında bu yüzden bir sınır vardır. Fonksiyonel updater'lar aynı gruptaki güncellemeleri sırayla birleştirebilir. Bu davranış “state asenkron bir değişkendir” demek değildir; state değeri render'a aittir ve yeni render oluşmadan mevcut closure'ın fotoğrafı değişmez.
+![Bir renderın state fotoğrafı ve sıraya giren güncellemeler](diagram:state-snapshot)
 
-Updater fonksiyonunu yazarken dışarıdaki snapshot'ı okumamaya dikkat et. `setSteps(current => current + step)` içinde state için `current`, başka bir sabit `step` değeri için closure kullanılabilir; ama birden çok state değeri birbirine bağlı ve beraber güncellenecekse geçişi reducer veya tek bir nesne state'inde toplamak daha anlaşılır olabilir. Bu modül yalnız tek sayaç geçişini ele alıyor; bağlı durumların daha geniş tasarımını sonraki Hook dersinde göreceksin.
+## Uyarı penceresi de aynı render değerini okur
 
-### Snapshot bir closure içinde yaşar
-
-```tsx
-function showThenUpdate() {
-  console.log(steps)
-  setSteps((current) => current + 1)
-  console.log(steps)
-}
-```
-
-Her iki log da bu handler'ın oluşturulduğu render'daki `steps` değerini yazar. İkinci log'un yeni sayıyı göstermemesi setter'ın başarısız olduğu anlamına gelmez. React güncelleme kuyruğunu işleyip yeni render başlattıktan sonra, ekrandaki düğme yeni closure'ı kullanır.
-
-Bir `setTimeout` callback'i, Promise continuation'ı veya başka callback de oluşturulduğu render'ın değerini kapatabilir. Bu nedenle “biraz sonra çalışacak” olması tek başına callback'i güncel state'e bağlamaz. Güncel state'e dayalı güncelleme gerekiyorsa callback içinde updater kullan; yalnız değeri okumak gerekiyorsa güncel değer gereksinimini ayrıca tasarla. Ref gibi başka bir taşıyıcıya geçmek her zaman çözüm değildir; state güncellemesinin render üretmesi gerekiyorsa state doğru araçtır.
-
-## Önce kırık hesap, sonra doğru hesap
-
-Bir indirim kartında mevcut puana 5 bonus ekleyelim. Aşağıdaki kod tek tıklamada görünen değeri çoğu zaman 5 artırır; ancak aynı event'te iki ayrı kaynak aynı eski değere göre güncelleme gönderecekse bir güncelleme diğerinin üstüne yazabilir:
-
-```tsx
-function addBonus() {
-  setPoints(points + earnedBonus)
-  setPoints(points + referralBonus)
-}
-```
-
-İki değer de closure'ın eski `points` değerinden hesaplanır. İkinci setter ilk sonucu biriktirmez; o da eski puan ile referral bonus toplamını kuyruğa koyar. “Son yazan kazanır” sonucu kullanıcıya kaybolan puan olarak görünür.
-
-Şöyle yazınca her adım sıradaki state'i temel alır:
+Değerin daha sonra okunması da bu kuralı değiştirmez. Aşağıdaki örnekte `alert` setter çağrısından sonra açılır:
 
 ```tsx check
 import { useState } from 'react'
 
-function RewardPoints() {
-  const [points, setPoints] = useState(10)
-  const earnedBonus = 3
-  const referralBonus = 2
+function PreviewCount() {
+  const [views, setViews] = useState(0)
 
-  function addBonuses() {
-    setPoints((current) => current + earnedBonus)
-    setPoints((current) => current + referralBonus)
+  function recordView() {
+    setViews(views + 1)
+    window.alert(`Handler'ın gördüğü değer: ${views}`)
   }
 
-  return <button onClick={addBonuses}>Puan: {points}</button>
+  return <button onClick={recordView}>Önizleme: {views}</button>
 }
 
-const rewards = <RewardPoints />
-void rewards
+const preview = <PreviewCount />
+void preview
 ```
 
-Yeni sıra 10 → 13 → 15 olur. Updater fonksiyonu saf kalmalı: aynı `current` girdisinde aynı sonucu üretmeli. İçinden başka setter çağırma, ağ isteği başlatma veya dış sayaç değiştirme; React geliştirme kontrollerinde updater'ı tekrar çağırabilir.
+Pencere `Handler'ın gördüğü değer: 0` yazar. Bunun nedeni `alert`'in hızlı ya da yavaş olması değil; `views` bu handler'ın render'ından gelir ve handler çalışırken değişmez. Uyarı kapandıktan sonra React güncellemeyi işler, düğmede `Önizleme: 1` görünür.
 
-### Değer ve updater aynı kuyrukta
+Bir zamanlayıcı callback'i için de aynı şeyi düşün:
 
-Kuyruk yalnız üç aynı tür işlemi almak zorunda değil. `score = 4` iken önce `setScore(score + 1)`, ardından `setScore(current => current * 2)` çağrılırsa kuyruğun ilk öğesi hazır `5` değeridir; ikinci öğesi çalıştırılacak fonksiyondur. React önce state'i 5 yapar, sonra updater'a 5 verir ve sonuç 10 olur. Sırayı tersine çevirirsen updater 4'ü ikiye katlar, sonradan gelen hazır `5` değeri sonucu ezer; ekran 5 gösterir. Her adımın türü ile sırası birlikte sonucu belirler.
+```tsx check
+import { useState } from 'react'
 
-| Zaman | Handler'ın `score` snapshot'ı | Kuyruk / işlenen değer | DOM'da görünen |
-| --- | ---: | --- | --- |
-| Render 1 ve commit | 4 | Boş | “Puan: 4” |
-| Tıklama, ilk setter | 4 | Hazır değer `5` | “Puan: 4” |
-| Aynı handler, ikinci setter | 4 | `5`, ardından `current => current * 2` | “Puan: 4” |
-| Render 2'nin hesaplaması | Yeni state 10 | Fonksiyon 5 alıp 10 döndürdü | Henüz “Puan: 4” |
-| Commit | 10 | Kuyruk işlendi | “Puan: 10” |
-| Varsa effect | 10 | Yeni render'ın değerini görür | “Puan: 10” |
+function DelayedPreview() {
+  const [views, setViews] = useState(0)
 
-Bu tablo, “React setter'ları rastgele sırada çalıştırıyor” yorumunu da düzeltir. Sıra korunur; yalnız handler içindeki `score` sabit kalır. Updater fonksiyonları render sırasında işlenebilir ve React geliştirmede saflığı kontrol etmek için onları birden fazla çağırabilir. Updater'ın içine bildirim göndermemenin nedeni budur.
+  function recordLater() {
+    setViews(views + 1)
+    setTimeout(() => {
+      console.log('Zamanlayıcıdaki değer:', views)
+    }, 100)
+  }
 
-### Aynı değer, nesne kimliği ve bekleyen işler
+  return <button onClick={recordLater}>Önizleme: {views}</button>
+}
 
-`setOpen(false)` çağrısında `open` zaten `false` ise `Object.is(false, false)` doğrudur. React yeni görünümü commit etmeyebilir. Bu, “setter hiç çağrılmadı” anlamına gelmez; amaçlanan sonraki değer mevcut değerle aynıdır. Buna karşılık `setProfile({ name: 'Ada' })` her çağrıda yeni nesne üretir; alanlar aynı olsa bile iki nesne `Object.is` açısından farklıdır.
+const delayed = <DelayedPreview />
+void delayed
+```
 
-Nesneyi yerinde değiştirmek daha ciddi bir sorundur. `profile.name = 'Ece'; setProfile(profile)` eski referansı yeniden gönderir. React içerideki alanı karşılaştırmaz; güncellemeyi atlayabilir, ekranda eski isim kalabilir. Yeni nesne oluştur: `setProfile(current => ({ ...current, name: 'Ece' }))`. Bu kopya yalnız değişen yol için yenidir; büyük iç içe yapılarda her seviyeyi bilinçli kopyalaman gerekir.
+Tıklama anında handler `views = 0` değerini görür ve zamanlayıcıya da o render'dan gelen değeri kullanacak bir fonksiyon verir. 100 ms sonra konsolda yine `0` görünür; ekrandaki yeni render ise `Önizleme: 1` gösterebilir. “Biraz sonra çalışıyor” olması fonksiyona kendiliğinden yeni snapshot vermez.
 
-Başka bir sınır, birbiri ardına gelen kullanıcı olaylarıdır. Ayrı iki tıklamada React normalde ilk tıklamanın güncellemesini sonraki tıklamadan önce işler; her tıklama yeni render'ın handler'ına ulaşır. Tek handler içindeki çoklu setter'lar ise aynı snapshot'ı paylaşır. Geciken Promise callback'i eski closure'ı elinde tutuyorsa farklı zamanlarda çalışması yine eski değeri okumayacağı garantisini vermez. Önceki state'e dayalı geçişi updater'la ifade etmek bu iki durumda da sonucu açık tutar.
+İki durumda da sıralama aynı fikri gösterir; timer yalnızca callback'in çalışmasını geciktirir:
 
-Bir state geçişi başka bir state'in mevcut değerine de bağlıysa iki ayrı updater'ın hangi snapshot'ları kullandığını dikkatle incele. Örneğin sepet toplamı ile ürün sayısı birbirinden hesaplanıyorsa toplamı ayrı state'te saklamak yerine kalemlerden render sırasında türetmek genellikle daha güvenlidir. Böylece iki kuyruğu senkron tutma sorumluluğu ortadan kalkar.
+| An | Handler veya callback'in gördüğü `views` | Ekran / çıktı |
+| --- | ---: | --- |
+| Render ve ilk görünüm | 0 | `Önizleme: 0` |
+| Tıklama: `setViews(views + 1)` | 0 | Setter yeni render ister; mevcut ekran henüz 0 |
+| Aynı handler: `alert(views)` | 0 | Uyarıda 0 görünür |
+| Handler tamamlanınca yeni render | Yeni state 1 | Düğmede `Önizleme: 1` |
+| Timer callback'i çalışınca | Timer'ın bağlı olduğu değer 0 | Konsolda 0 yazar |
 
-### Sonraki modüllerde bu fotoğraf
+## Üç çağrı neden bir artış eder?
 
-Effect içindeki callback bir render'ın `query` değerini yakaladığında dependency listesinin niçin önemli olduğunu bu fotoğrafla anlayacaksın. Formda iki alan aynı event'te güncellenirse yeni değeri handler'ın eski değişkeninde aramak yerine event'ten ya da updater'dan alacaksın. Query cache güncellendiğinde de cache verisinin ekranda görünmesi ayrı render ve commit gerektirir. Performans bölümünde aynı state değeriyle gelen güncellemelerin neden görünür DOM işi üretmeyebildiğini `Object.is` üzerinden yorumlayacaksın.
+Şimdi bir tıklamada üç puan eklemek istediğini varsay. Her satır `score + 1` ifadesini handler'ın gördüğü değerle hesaplar. Başlangıç `score = 0` iken satırlar şöyle ilerler:
 
-## Sınır durumları ve sık hatalar
+```tsx
+setScore(score + 1)
+setScore(score + 1)
+setScore(score + 1)
+```
 
-:::mistake[Setter'dan hemen sonra eski değeri okumak]
-Belirti → Setter'dan sonra yazdırılan değer bir render boyunca geride kalıyor.  
-Neden → Setter closure'daki snapshot'ı değiştirmez; sonraki render için güncelleme kuyruğa ekler.  
-Düzeltme → Yeni değeri hesaplayıp ihtiyaç duyduğun yerde kullan veya güncel değeri sonraki render'da göster; setter'ı senkron atama gibi kullanma.
+| Handler'daki satır | Snapshot'taki `score` | Hesaplanan yeni değer | Kuyruktaki istek |
+| --- | ---: | ---: | ---: |
+| İlk `setScore(score + 1)` | 0 | 1 | 1 değerini kullan |
+| İkinci `setScore(score + 1)` | 0 | 1 | 1 değerini kullan |
+| Üçüncü `setScore(score + 1)` | 0 | 1 | 1 değerini kullan |
+| Handler bittikten sonra | 0 | — | Sonraki state 1 olur |
+
+Üç çağrı da çalıştı; ama her biri aynı snapshot'tan `1` hesapladı. React aynı kullanıcı olayı sırasında gelen state güncellemelerini **batching** ile gruplar: her setter arasında ekranı yeniden çizmek yerine, güncellemeleri işler ve ardından yeni görünümü hazırlar. Burada aynı hazır değer üç kez istendiği için sonraki state `1` olur.
+
+## Updater sıradaki değeri alır
+
+Önceki state'e göre bir değer hesaplaman gerekiyorsa setter'a bir fonksiyon verebilirsin. Bu fonksiyona **updater** denir; React onu sıradaki state değeriyle çağırır.
+
+```tsx check
+import { useState } from 'react'
+
+function RatingButton() {
+  const [score, setScore] = useState(0)
+
+  function addThreePoints() {
+    setScore((previous) => previous + 1)
+    setScore((previous) => previous + 1)
+    setScore((previous) => previous + 1)
+  }
+
+  return <button onClick={addThreePoints}>Puan: {score}</button>
+}
+
+const button = <RatingButton />
+void button
+```
+
+Bu kez kuyruğa üç sayı değil, üç küçük hesaplama girer. React her updater'a bir öncekinin ürettiği değeri verir:
+
+| Kuyruktaki adım | Updater'ın aldığı `previous` | Updater'ın ürettiği değer |
+| --- | ---: | ---: |
+| İlk updater | 0 | 1 |
+| İkinci updater | 1 | 2 |
+| Üçüncü updater | 2 | 3 |
+
+Sonraki render'da düğme `Puan: 3` gösterir. Fonksiyon biçimi burada gerekli, çünkü her artış bir öncekinin sonucuna bağlı. Tek artışta `setScore(score + 1)` de anlaşılırdır; artışları biriktirirken `setScore(previous => previous + 1)` doğru bağı kurar.
+
+React bu istekleri grupladığı için tek handler içindeki üç çağrı arasında üç ayrı ara ekran görmezsin. Kullanıcı tek tıklamada eski görünümden yeni görünüme geçer. Batching, handler'daki değişkenleri canlı ve değişken hale getirmez; yalnızca ekran güncellemesini toplu işler.
+
+## Zamanlayıcıda güncel değerden artış
+
+Önceki örnekteki zamanlayıcı yalnızca eski değeri yazdırıyordu. Eğer gecikmeli iş mevcut sayıya artış eklemeli ise, zamanlayıcının tuttuğu `views` değerinden toplama yapmak yerine updater kullan:
+
+```tsx check
+import { useState } from 'react'
+
+function DelayedPreview() {
+  const [views, setViews] = useState(0)
+
+  function recordLater() {
+    setTimeout(() => {
+      setViews((previous) => previous + 1)
+    }, 100)
+  }
+
+  return <button onClick={recordLater}>Önizleme: {views}</button>
+}
+
+const delayed = <DelayedPreview />
+void delayed
+```
+
+Zamanlayıcı çalıştığında updater'a state'in sıradaki güncel değeri verilir. Böylece artış eski `views` değişkeninden hesaplanmaz. Updater içinde yalnızca yeni değeri hesapla; `console.log`, uyarı gösterme veya başka bir işlem başlatma. React hesabı tekrar kontrol edebileceğinden updater'ın aynı girdide aynı sonucu vermesi gerekir.
+
+## Sık rastlanan iki belirti
+
+:::mistake[Setter'dan sonra eski sayıyı görmek]
+Belirti → `setScore(score + 1)` sonrasındaki log veya uyarı eski sayıyı gösterir.
+Neden → Setter mevcut handler'ın snapshot'ını değiştirmez; sonraki render için güncelleme kuyruğa koyar.
+Düzeltme → Yeni değere aynı handler'da ihtiyacın varsa onu kendin hesapla; yeni state'in ekranda görünmesini istiyorsan sonraki render'ı kullan.
 :::
 
-:::mistake[Biriken güncellemeyi değer formuyla yazmak]
-Belirti → Aynı tıklamada alınması gereken bonuslardan yalnız sonuncusu görünüyor.  
-Neden → Her `setPoints(points + bonus)` eski snapshot'tan hesaplanıp birbirini eziyor.  
-Düzeltme → `setPoints(current => current + bonus)` kullanarak işlemleri kuyruğa sırayla bağla.
+:::mistake[Biriken artışı değerle tekrar etmek]
+Belirti → Üç artış isteyen düğme yalnız bir puan ekler.
+Neden → Üç `setScore(score + 1)` ifadesi aynı snapshot'tan aynı `1` değerini hesaplar.
+Düzeltme → Her artışı `setScore(previous => previous + 1)` olarak sıraya koy.
 :::
 
-:::mistake[Updater içinde yan etki çalıştırmak]
-Belirti → Geliştirmede ödül bildirimi iki kez gönderiliyor.  
-Neden → Updater saf state hesabı yerine yan etki de çalıştırıyor; React bu fonksiyonu kontrol amacıyla tekrar çağırabilir.  
-Düzeltme → Updater yalnız yeni state'i döndürsün; bildirimi açık kullanıcı olayı ya da uygun dış sistem katmanında yönet.
-:::
+## Aklında tut
 
-:::sector
-Üretim kodunda bir state değeri üzerinden artış, ekleme veya sayaç azaltma yapılıyorsa ekipler genellikle updater biçimini tercih eder. Bu, event batching ve eşzamanlı güncellemelerde “hangi snapshot kullanıldı?” sorusunu ortadan kaldırır. Updater'ı küçük ve saf tutmak, birim test etmeyi ve kod incelemesini de kolaylaştırır.
-:::
+- Her render kendi state snapshot'ını verir; o render'dan gelen handler içindeki değişken sabit kalır.
+- Setter çağrısı mevcut değişkeni atama gibi değiştirmez; React'ten sonraki render için güncelleme ister.
+- `setValue(value + 1)` hazır bir değer hesaplar; updater biçimi sıradaki state'i alıp üzerine hesap yapar.
+- Batching aynı kullanıcı eylemindeki güncellemeleri birlikte işler; updater'lar birbirinin sonucunu sırayla görebilir.
 
-## Özet
+**Yeni terimler:** Render, bileşen fonksiyonunun o anki JSX'i hesaplamasıdır; snapshot, tek bir render'ın gördüğü state değeridir; updater, sıradaki state'i alarak yeni değeri hesaplayan fonksiyondur; batching, aynı eylemdeki state güncellemelerini birlikte işleme yöntemidir.
 
-- Her render'ın state'i sabittir; event handler o render'ın değerlerini kapatır.
-- Setter anlık değişken ataması değildir; sonraki render için güncelleme kuyruğa koyar.
-- Değer formu closure'daki değerden, updater formu sıradaki state'ten hesaplar.
-- Biriken veya önceki state'e bağlı değişikliklerde updater kullan; updater içinde yan etki çalıştırma.
+**Kendini yokla:** `score` sıfırken aynı handler'da üç kez `setScore(score + 1)` çağrılırsa sonraki değer kaç olur?
+*Cevap:* `1`; üç satır da snapshot'taki `0` değerinden `1` hesaplar.
 
-**Kendini yokla:** `n` sıfırken aynı handler'da üç kez `setN(n + 1)` çağrılırsa sonraki değer kaçtır?  
-*Cevap:* 1; üç ifade de aynı snapshot'taki sıfırdan 1 üretir.
-
-**Kendini yokla:** `setN(current => current + 1)` üç kez kuyruğa girerse updater'lar ne görür?  
-*Cevap:* Sırayla 0, 1 ve 2; sonuç 3 olur.
+**Kendini yokla:** Üç `setScore(previous => previous + 1)` çağrısında updater'lar hangi değerleri alır?
+*Cevap:* Sırayla `0`, `1`, `2`; sonuç `3` olur.

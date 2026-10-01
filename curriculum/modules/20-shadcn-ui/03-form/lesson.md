@@ -1,154 +1,139 @@
 ---
 title: "Formda stil, veri ve hata bir arada"
-minutes: 12
+minutes: 15
 kind: concept
 ---
 
 # Formda stil, veri ve hata bir arada
 
-:::pain[Problem]
-Bir üyelik formunda alanın adı görünür, ama ekran okuyucu odaklandığında hata metniyle ilişkisi yoktur. Form sayfaya iki kez eklendiğinde elle yazılmış id'ler de çakışır; ilk label artık ikinci alanı işaret edebilir.
-:::
+React Hook Form (RHF) alan değerlerini ve doğrulama durumunu yönetir; Zod verinin kurallarını tanımlar. shadcn tarzı form parçaları bu ikisinin yerine geçmez. Onları hazır parçalar gibi düşün: aynı görünümü korurken her alanın label'ını, kontrolünü ve varsa hata mesajını birlikte kurmana yardım eder.
 
-## Alanın verisiyle DOM kimliğini ayır
+## Bir alanı önce HTML ile doğru bağla
 
-14. modülde React Hook Form'un (RHF) alan değerlerini ve durumlarını yönettiğini öğrendin; 15. modülde Zod ile doğrulamayı tek şemada topladın. shadcn form parçaları bu iki kaynağın üstüne ince bir bağlantı katmanı koyar. Kendi başına yeni form state'i üretmez ve Zod'un yerine geçmez. Her parçanın görevi bir bağı taşımaktır.
-
-1. **Form**, `FormProvider` görevi görür; form kontrol nesnesini Context'ten erişilebilir kılar.
-2. **FormField**, RHF alanını kaydeder ve `name` değerini alan Context'ine koyar.
-3. **FormItem**, DOM için benzersiz bir kök id üretir ve kendi alt bileşenlerine aktarır.
-4. **useFormField**, alan adını, kök id'yi ve RHF'in alan hatasını birleştirir.
-5. **FormLabel**, kontrol id'sini `htmlFor` ile referans eder.
-6. **FormControl**, Slot davranışıyla id ve ARIA özelliklerini gerçek kontrol elementine geçirir.
-7. **FormMessage**, hata varsa hata metnini doğru id ile render eder.
-
-![RHF alan adı ve DOM kimliğinin hata mesajı ile kontrol arasında kurduğu bağları gösteren diyagram](diagrams/form-baglari.svg)
-
-Bu iki Context bilgisini birbirine karıştırma. `name="email"` form verisindeki alanı belirtir; `id="radix-:r1:-control"` sayfadaki DOM öğesini ayırt eder. Aynı field adı farklı form örneklerinde tekrar kullanılabilir; DOM id'leri ise her render edilen örnekte benzersiz olmalıdır.
-
-## Hata ekran okuyucuya nasıl ulaşır?
-
-E-posta alanında hata oluştuğunu düşün. Zod şeması `email` için hata üretir. RHF bu hatayı kayıtlı alanın durumunda tutar. `FormField` alan adını bağlamda tuttuğundan `useFormField` doğru hatayı `getFieldState(name, formState)` ile bulabilir. `useFormState({ name })` aboneliği de yalnız ilgili alan durumu değiştiğinde parçaların güncellenmesini sağlar.
-
-FormItem'ın ürettiği id'den iki alt id türetilir: kontrol için `-control`, mesaj için `-message`. Label'ın `htmlFor` değeri kontrol id'sidir. FormControl gerçek input'a `id`, hata varsa `aria-invalid="true"` ve `aria-describedby` verir. FormMessage aynı hata id'siyle metni gösterir. Tarayıcının erişilebilirlik ağacı böylece label ve hata bilgisini input ile ilişkilendirir.
-
-| An | RHF durumu | Render edilen bağ |
-| --- | --- | --- |
-| İlk görünüm | `email` hatası yok | Label → kontrol id; input'ta `aria-invalid` yok |
-| Boş gönderim | `email` hatası var | Input `aria-invalid`; `aria-describedby` mesaj id'sini gösterir |
-| Düzeltme | hata temizlenir | `aria-invalid` kalkar; artık var olmayan mesaja referans verilmez |
-| İkinci form örneği | aynı `name`, ayrı FormItem | Farklı DOM id; label yanlış input'a gitmez |
-
-## Kırık bağ, doğru bağ
-
-Kırık kullanımda Slot'un tek çocuğu bir sarmalayıcıdır:
+Sinema'da ziyaretçi izleme listesine kısa bir not eklesin. Alanın etiketi ve kontrolü şu kadar basit olabilir:
 
 ```tsx
-<FormControl>
-  <div className="field-frame">
-    <input value={value} onChange={onChange} />
-    <span>{value.length}/120</span>
-  </div>
-</FormControl>
+<label htmlFor="watch-note">İzleme notu</label>
+<textarea id="watch-note" name="note" />
 ```
 
-FormControl, `id` ve ARIA özelliklerini doğrudan `div` öğesine verir. Div label ile ilişkilendirilmiş olur; gerçek input ise hata açıklamasını almaz. Sayaç görsel olarak yerinde dursa da erişilebilirlik ağacındaki alan bağlantısı kopmuştur.
+`htmlFor` ile `id` aynı değeri gösterdiği için etikete tıklayınca doğru textarea focus alır. `name` ise form verisindeki alanın adıdır. `name` ve `id` benzer görünse de farklı işler yapar: biri RHF/Zod tarafındaki `note` alanını, diğeri ekrandaki belirli DOM öğesini bulur.
 
-Doğru düzende FormControl gerçek kontrolü sarar; ek görsel öğe FormItem içinde kardeş olabilir:
+Şimdi hatayı alana bağlayalım:
 
-```tsx check
-import { useId } from 'react'
-import { Slot } from 'radix-ui'
-
-type FieldBindings = { id: string; messageId: string; error?: string }
-
-function ContactField({ bindings }: { bindings: FieldBindings }) {
-  const hintId = useId()
-  const describedBy = bindings.error
-    ? `${bindings.messageId} ${hintId}`
-    : hintId
-
-  return (
-    <div>
-      <label htmlFor={bindings.id}>E-posta</label>
-      <Slot.Root
-        id={bindings.id}
-        aria-invalid={Boolean(bindings.error)}
-        aria-describedby={describedBy}
-      >
-        <input type="email" />
-      </Slot.Root>
-      <span id={hintId}>Onay bağlantısı bu adrese gönderilir.</span>
-      {bindings.error ? <p id={bindings.messageId}>{bindings.error}</p> : null}
-    </div>
-  )
-}
-
-export function ContactCard() {
-  const id = useId()
-  return <ContactField bindings={{ id: `${id}-control`, messageId: `${id}-message` }} />
-}
+```tsx
+<label htmlFor="watch-note">İzleme notu</label>
+<textarea id="watch-note" name="note" aria-invalid="true" aria-describedby="watch-note-error" />
+<p id="watch-note-error">Not boş olamaz</p>
 ```
 
-Buradaki `Slot.Root` tek çocuğu olan input'a özellikleri aktarır; yeni bir wrapper DOM elementi oluşturmaz. Gerçek shadcn form katmanında alan adı Context'ten ve hata RHF'ten gelir. `useId` ise her form örneğine ayrı DOM id üretir. `aria-describedby` hem yardım hem hata metnini gösterecekse iki id boşlukla birleştirilebilir; hata yokken geçersiz bir message id eklenmez.
+`aria-invalid` kontrolün geçersiz olduğunu, `aria-describedby` ise açıklama metninin id'sini söyler. Tarayıcının **accessibility tree**'si, görsel DOM'dan ayrı olarak ekran okuyucu gibi yardımcı teknolojilere rol, ad ve açıklama sunan yapıdır. Hata mesajı yalnızca piksel olarak görünür olmamalı; bu ağaçta da ilgili kontrolün açıklaması olarak yer almalıdır.
 
-Bu bağlantıyı tarayıcıda kontrol ederken yalnızca görsel hataya bakma. Accessibility panelinde kontrolün adını, rolünü ve açıklamasını ayrı ayrı oku. Klavyeyle label'a tıkladığında doğru input focus almalı; hatalı gönderimden sonra mesajın DOM'da görünmesi kadar input'un açıklamasına eklenmiş olması da gerekir. `aria-invalid` boolean değer olarak false yazılabilir, ancak hata yokken attribute'u hiç vermemek çoğu bileşende daha temiz ve beklentisi açık bir DOM üretir.
+RHF doğrulama hatasını kaydettiğinde bu bağ koşullu olur: hata yokken `aria-invalid` verme ve henüz DOM'da olmayan hata id'sini `aria-describedby` içine yazma. Hata oluşunca metin görünür, id DOM'da bulunur ve kontrol o id'yi açıklar. Mesaj temizlenince bu referans da kalkar.
 
-Bir alan hem yardımcı metin hem hata taşıyabilir. Bu durumda `aria-describedby` birden fazla id içerebilir; id'ler aralarında boşlukla ayrılır. Yardım metnini hata mesajı geldiğinde kaldırmak zorunlu değildir, ama her iki id de aynı input'a ait olmalıdır. Eğer formda özet hata listesi de varsa, alan seviyesindeki mesajı ve özet bağlantısını tekrar etmeden nasıl sunacağını tasarla. Ekran okuyucunun aynı cümleyi arka arkaya duyması kullanıcıyı yavaşlatır.
+| An | Hata durumu | Kontrolün bağlantısı |
+| --- | --- | --- |
+| İlk görünüm | Hata yok | Label kontrolü adlandırır; hata açıklaması yoktur. |
+| Boş gönderim | Hata var | Kontrol geçersiz olur ve hata id'sini açıklar. |
+| Düzeltme | Hata temizlenir | Geçersizlik ve hata açıklaması bağlantısı kalkar. |
 
-Compound parça yapısının katkısı yalnız tekrar azaltmak değildir. `FormField` alan adını, `FormItem` DOM kimliğini, `FormControl` gerçek elementi taşır; tek bir bileşen hem doğrulama, hem id üretme, hem layout hem submit yapmaya kalkmaz. Bu ayrım farklı kontrol türlerine uyum sağlar. Bir text input, textarea veya radio group aynı `FormItem` bağlamında kalabilir; Control'un çocuğu ise her zaman gerçek form kontrolü olmalıdır.
+![RHF alan adı ve DOM id'si, kontrolü hata mesajına bağlar](diagrams/form-baglari.svg)
 
-## Doğrulama mesajı kullanıcıya aittir
+## Form parçaları neyi birlikte tutar?
 
-Şema teknik olarak doğru bir sayıyı reddedebilir; kullanıcıya “Invalid input: expected number, received undefined” göstermek iyi geri bildirim değildir. Zod 4'te `error` seçeneği tip hatası ve kurallara özel metin sağlar. Örneğin bir etkinlik başvurusunda:
+Aynı fikri tekrar kullanılabilir parçalara taşıdığında görünüş ve bağlar aynı grupta kalır:
+
+```tsx
+<FormField name="note" control={form.control} render={({ field }) => (
+  <FormItem>
+    <FormLabel>İzleme notu</FormLabel>
+    <FormControl><Textarea {...field} /></FormControl>
+    <p>Bu notu daha sonra yalnızca sen görürsün.</p>
+    <FormMessage />
+  </FormItem>
+)} />
+```
+
+Burada `FormField` RHF alanını belirtir. `FormItem` tek alanın parçalarını bir arada tutar; `FormLabel` etiketi, `FormControl` gerçek input'u, `FormMessage` varsa hatayı gösterir. Yardım metni de aynı grupta durduğu için formu okuyan kişi hangi açıklamanın hangi alana ait olduğunu anlayabilir. Projedeki hazır parçalarda bulunmayan bir isim kullanmak zorunda değilsin; normal bir `p` öğesi de yardımcı metin olabilir.
+
+Bu parçaları ayrı kullanmak, örneğin hata için ikinci bir elle yazılmış label id'si üretmek zorunda kalmamanı sağlar. Her FormItem'a özgü DOM kimliği, sayfada aynı formdan iki tane olsa bile etiketlerin çakışmasını önler. İki formun RHF alan adı `note` olabilir; fakat ekrandaki iki `textarea` farklı öğelerdir ve ayrı id'lere ihtiyaç duyar.
+
+Bir hata metni uzunsa düzeni de içeriğe göre kur. Alanı ve hata mesajını aynı FormItem içinde bırak; dar ekranda düğmelerin satır kırmasına izin ver. Hata metnini gizlemek veya düğmeleri `absolute` konumlandırmak sorunu çözmez: kullanıcı mesajı okuyamaz ya da uzun metinle düğmeler üst üste gelir.
+
+## Şema, kullanıcı metnini nasıl temizler?
+
+Form kontrolünden gelen değer kullanıcı girdisidir. Şema bunu doğrulayabilir ve gerektiğinde temizleyebilir:
 
 ```ts check
 import { z } from 'zod'
 
-export const signupSchema = z.object({
-  email: z.email({ error: 'Geçerli bir e-posta yaz' }),
-  guests: z.number({ error: 'Katılımcı sayısı gerekli' })
-    .int({ error: 'Katılımcı sayısı tam sayı olmalı' })
-    .min(1, { error: 'En az bir katılımcı gerekli' })
-    .max(8, { error: 'En fazla sekiz katılımcı ekleyebilirsin' }),
+const noteSchema = z.object({
+  note: z.string().trim().min(1, { error: 'Bir not yaz' }),
 })
-
-export type SignupInput = z.input<typeof signupSchema>
-export type SignupData = z.output<typeof signupSchema>
 ```
 
-Şema `transform` veya `coerce` kullanırsa kullanıcı girişinin tipi ile doğrulanmış verinin tipi ayrılabilir. O zaman RHF'in input ve output tiplerini ayrı ver; `z.infer` tek başına çıktı tipine karşılık gelir. Zod 4, eski `required_error` ve `invalid_type_error` seçeneklerini `error` altında toplar.
+`trim()` baştaki ve sondaki boşlukları kaldırır; `.min(1)` temizlenmiş metnin boş kalmasını engeller. **Transform**, doğrulanan girdiyi başka bir değere dönüştürme işlemidir. Bu örnekte şema boşlukları silerek temiz bir `note` üretir; form gönderildiğinde callback'e ham `'  Güzel film  '` değil `'Güzel film'` gider. Dönüşüm, yalnızca hatayı yakalamak değil sonraki koda düzenli veri vermek için yararlıdır.
 
-## Sınır durumları ve sık hatalar
+Kurallar sayı alanında da art arda uygulanabilir:
 
-:::mistake[Hata görünür ama alana bağlı değil]
-Belirti → Hata metni var, ekran okuyucu alanı okurken duyurmuyor. Neden → `FormControl` tek çocuğu olan div'e id ve `aria-describedby` aktardı. Düzeltme → Slot'u gerçek input ya da RadioGroup üzerinde kullan; sayaç gibi öğeleri onun dışına al.
-:::
+```ts check
+import { z } from 'zod'
 
-:::mistake[İki formda label yanlış yere gidiyor]
-Belirti → Tıklayınca sayfadaki diğer form alanı odaklanıyor. Neden → Elle yazılmış id'ler kopyalandı. Düzeltme → Her FormItem'da `useId` üretip kontrol ve mesaj id'lerini ondan türet.
-:::
+const screeningSchema = z.object({
+  screenings: z.number({ error: 'Seans sayısı gerekli' })
+    .int({ error: 'Seans sayısı tam sayı olmalı' })
+    .min(1, { error: 'En az bir seans seç' })
+    .max(12, { error: 'En fazla 12 seans seç' }),
+})
+```
 
-:::mistake[Boş hata id'sine açıklama bağlı]
-Belirti → Hata yokken accessibility panelinde bulunmayan id uyarısı görülüyor. Neden → `aria-describedby` her durumda message id'sini tutuyor. Düzeltme → Hata yoksa hata id'sini çıkar; varsa kontrol ve mesajı açıkça bağla.
-:::
+`z.number` sayının kendisini bekler; `.int`, `.min` ve `.max` farklı geçersiz durumlara kendi mesajlarını verir. HTML number input'u ise kullanıcı girdisini metin olarak sunabilir. RHF'in `valueAsNumber` seçeneği bu değeri JavaScript sayısına çevirir; boş alanı da ayrıca ele almak gerekir, çünkü boş değer geçerli bir seans sayısı değildir. **Coerce**, girdiyi hedef tipe çevirmeyi deneyen dönüşümdür; Zod tarafında sayısal metni sayıya çevirebilir ama boş girdinin ne anlama geldiği kararını yine sen vermelisin.
 
-:::mistake[İlk karakter hatası düzelmiyor]
-Belirti → Alan geçerli olduktan sonra eski mesaj kalıyor. Neden → Parçalar RHF field state değişimini izlemiyor ya da FormItem sabit hata prop'u tutuyor. Düzeltme → Hata bilgisini kayıtlı alandan oku ve doğru form durumuna abone ol.
-:::
+Zod'da dönüşüm öncesi giriş tipi ile doğrulamadan sonraki çıktı tipi ayrılabilir; bu nedenle RHF'e hangi tipi verdiğini, callback'in hangi temizlenmiş tipi alacağını bilerek eşleştir. Bir alanın kurallarını tek yerde tutmanın nedeni de budur. Aynı `screenings` için bir yerde 1–12, başka yerde 0–20 kuralı yazarsan kullanıcı aynı değeri bir ekranda geçerli, diğerinde geçersiz görür. Şema sınırı ortaklaştırır; form parçaları bu kuralların sonucunu doğru alanda gösterir.
 
-:::sector
-Ekiplerde form bileşen kütüphanesi görsel tutarlılığın yanında label, error ve helper text ilişkisini de standartlaştırır. Bir tasarım sistemi değiştiğinde geliştirici önce accessibility tree'de gerçek kontrolün adını ve açıklamasını kontrol eder; sınıf adlarının doğru görünmesi tek başına yeterli sayılmaz.
+Şemadan tip çıkarırken `z.infer<typeof noteSchema>` doğrulanmış çıktı tipini verir. Dönüşümün öncesi ve sonrasını ayrı ayrı adlandırman gerekiyorsa `z.input<typeof noteSchema>` girdi tipini, `z.output<typeof noteSchema>` çıktı tipini verir. Böylece formun kabul ettiği değeri callback'in aldığı temizlenmiş değerle karıştırmazsın.
+
+## FormControl'ün çocuğu gerçek kontrol olmalı
+
+Kopyalanmış shadcn formunda `FormControl`, Radix `Slot` kullanan bir parçadır. **Slot**, kendi başına yeni bir DOM öğesi çizmek yerine özelliklerini tek çocuğuna aktaran yardımcıdır. `FormControl` id ve ARIA özelliklerini `Textarea`'ya veya `Input`'a verir; bu yüzden sarmalayıcı `div` değil, gerçek form kontrolü onun doğrudan çocuğu olmalıdır.
+
+Gerçek bir hata şöyle görünür:
+
+```tsx
+<FormControl>
+  <div className="relative">
+    <textarea />
+    <span>120 karakter</span>
+  </div>
+</FormControl>
+```
+
+Hata mesajı ekranda görünür ama ekran okuyucu alana geldiğinde etiketi veya hatayı okumaz. `FormControl` özellikleri `div`'e aktarılmıştır; textarea bu özellikleri almamıştır. Çözüm: `FormControl`'ü doğrudan `textarea` etrafına koy, sayaç gibi görsel yardımcıları aynı `FormItem` içinde kardeş öğe olarak bırak.
+
+Birden çok açıklama olduğunda `aria-describedby` id'leri boşlukla ayırarak listeleyebilir. Her id gerçekten DOM'da bulunan metni göstermeli. Ayrıca renk tek başına hata belirtisi olmamalı; metin veya simge de kullan. **WCAG**, web erişilebilirliği için yönergeler bütünüdür; erişilebilir ad, hata ilişkisi ve yeterli kontrast bu kullanıcı deneyiminin parçalarıdır.
+
+:::info[Derinlemesine (isteğe bağlı)]
+shadcn form parçalarının iç implementasyonunda `Context`, bir üst bileşenin bilgisini alt bileşenlere vermek için kullandığı React mekanizmasıdır. `useFormState({ name })` yalnızca ilgili alanın durum değişimini izlemek için bir subscription (abonelik) kurar; `getFieldState` de hata bilgisini okur. Bu bağlantıların içini bilmek, bir form parçasını geliştirirken yararlıdır. Hazır parçaları kullandığında senin ana işin doğru alanı ve gerçek kontrolü doğru FormField/FormControl içinde birleştirmektir.
 :::
 
 ## Özet
 
-- RHF alan adı ile DOM id'si farklı kaynaklardır; ikisi de doğru bağlama taşınır.
-- Her FormItem benzersiz id üretir; label ve hata bu id ailesini kullanır.
-- Slot, ARIA özelliklerini gerçek input'a geçirir; araya wrapper koymak bağı koparır.
-- `aria-describedby` yalnız var olan açıklamaları göstermelidir.
-- Zod 4 `error` mesajları teknik varsayılanları kullanıcı diline çevirir.
+- RHF alan değerini ve hata durumunu, Zod doğrulama ve dönüşüm kurallarını yönetir.
+- Her alanın `name`'i form verisini, `id`'si DOM öğesini bulur; ikisi aynı görevde değildir.
+- Label, gerçek kontrol ve hata mesajını aynı FormItem içinde tut; hata id'sini yalnızca gerçekten varsa bağla.
+- FormControl'e doğrudan gerçek input veya textarea ver; sayaç gibi öğeleri kardeş olarak tut.
+- Şema girdiyi doğrulayabilir ve `trim` gibi transform ile temizlenmiş çıktı üretebilir.
 
-Kendini yokla: FormField `name` bilgisini, FormItem ise id bilgisini neden ayrı taşır? Cevap: Biri form state'indeki alanı, diğeri DOM'daki belirli öğeyi işaret eder.
+**Yeni terimler**
 
-Kendini yokla: FormControl içine sayaç sarmalayıcısı konursa ne bozulabilir? Cevap: Slot ARIA bağlarını wrapper'a geçirir; gerçek input hata açıklamasını alamaz.
+- **Accessibility tree:** Ekran okuyucu gibi araçların kullandığı rol, ad ve açıklama ağacı.
+- **Transform:** Şema içindeki doğrulanmış girdiyi başka bir değere dönüştürme.
+- **Coerce:** Girdiyi hedef tipe çevirmeyi deneyen dönüşüm.
+- **Slot:** Özellikleri tek çocuğuna aktaran, ek DOM öğesi üretmeyen yardımcı.
+- **Context:** React'te üst bileşenin bilgisini alt bileşenlere ulaştıran mekanizma.
+- **Subscription:** Bir durum değişince ilgili kodun haberdar edilmesini sağlayan abonelik.
+- **WCAG:** Web erişilebilirliği için yönergeler bütünü.
+
+Kendini yokla: Aynı form iki kere görünürken `name="note"` aynı olabilir mi? Cevap: Evet. Form verisi alan adı aynı olabilir; DOM öğelerini ayırmak için `id` değerleri farklı olmalıdır.
+
+Kendini yokla: Hata mesajı görünüyor ama kontrol hata açıklamasını almıyorsa önce neye bakarsın? Cevap: `aria-describedby` kontrolün kendisinde mi ve gerçekten var olan hata id'sini mi gösteriyor diye bakarım.

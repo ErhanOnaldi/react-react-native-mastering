@@ -6,72 +6,97 @@ kind: practice
 
 # Reducer ve UI bağlantısını sınamak
 
-:::pain[Sinema’da sorun]
-Testte `useSelector` mock’ladın; buton etiketi doğru çıktı. Gerçek uygulamada tıklayınca store değişmedi, çünkü test Provider, action dispatch’i ve reducer bağlantısını hiç çalıştırmamıştı.
-:::
+Bir Redux testi yazarken önce şu soruyu seç: state kuralını mı, yoksa kullanıcıdan ekrana uzanan bağlantıyı mı kanıtlıyorsun? Reducer testi ilkini; gerçek store ve React Testing Library (RTL) ile yazılan test ikincisini gösterir. Aynı testte her katmanı kurmak gerekmez.
+
+Test yazarken bazen sana bilerek hatalı bir uygulama sürümü verilir. Bu sürüme `mutant` denir; yazdığın test doğru sürümde geçmeli, davranış bozulduğunda mutant’ta kalmalıdır.
 
 :::model[Redux veri akışı]
-Action reducer’dan geçip store’u günceller; selector yeni değeri bileşene taşır. Testte reducer’ı doğrudan çağırmak state kuralını, gerçek store ve Provider kullanmak ise React bağlantısını kanıtlar. Bu iki kanıt farklı sorulara yanıt verir.
+Bileşen bir action dispatch eder; reducer yeni state üretir; selector gereken değeri bileşene verir. Reducer’ı tek başına çağırmak state geçişini, gerçek store’u Provider altında kullanmak bu geçişin arayüze ulaşmasını sınar.
 :::
 
-![Redux dispatch'ten UI seçimine uzanan akış](diagram:redux-veri-akisi)
+![Redux dispatch’ten UI seçimine uzanan akış](diagram:redux-veri-akisi)
 
-## İki katmanda düşün
+## Önce state kuralını küçült
 
-Reducer testinde başlangıç state’i ve action bellidir. Sonuçta yeni state’i kontrol et; eski state’in değişmediğini de doğrula. Bu, React render etmeden saf kuralı hızlıca sınar.
+Bir watchlist’te aynı film ikinci kez eklenmemeli. Bunu görmek için React’e gerek yok; başlangıç state’ini ve action’ı verip çıkan state’i karşılaştırırsın.
 
-```ts title="Reducer geçişini doğrudan ölç"
-const previous = { ids: [4, 7] }
-const next = readingSlice.reducer(previous, readingSlice.actions.openArticle(12))
-expect(next.ids).toEqual([12, 4, 7])
-expect(previous.ids).toEqual([4, 7])
+```ts title="Saf state geçişi"
+const previous = { ids: [8] }
+const next = watchlistReducer(previous, addMovie(15))
+
+expect(next.ids).toEqual([8, 15])
+expect(previous.ids).toEqual([8])
 ```
 
-Bileşen entegrasyonunda yeni store kur, `<Provider store={store}>` altında render et, kullanıcı etkileşimi yap ve görünür sonucu sorgula. Testin önceden store’u değiştirdiğini görmek istiyorsan action’ı sen dispatch et; yoksa düğmeye tıklayıp gerçek zincirin çalıştığını kanıtla.
+Reducer doğrudan çalıştı ve yeni listeyi verdi. İkinci beklenti, eski state’in de değişmeden kaldığını gösterir; böylece test yalnızca doğru sonucu değil, immutable güncellemeyi de korur.
 
-```tsx title="Kullanıcı davranışını gerçek store ile ölç"
-const store = setupStore({ reading: { ids: [] } })
-render(<Provider store={store}><ReadingCount /></Provider>)
-await user.click(screen.getByRole('button', { name: 'Makaleyi sıraya ekle' }))
-expect(screen.getByText('1 kayıt')).toBeInTheDocument()
-expect(store.getState().reading.ids).toEqual([12])
+## Sonra kullanıcı bağlantısını sınamaya geç
+
+Bir başlık sayacı, store’daki kayıt sayısını gösteriyor olsun. Burada asıl soru butona basınca gerçek action’ın store’a ulaşıp başlığı güncelleyip güncellemediğidir.
+
+```tsx title="Gerçek bağlantı için test akışı"
+const store = setupStore({ watchlist: { ids: [] } })
+render(<Provider store={store}><WatchlistCount /></Provider>)
+
+await user.click(screen.getByRole('button', { name: 'Listeye ekle' }))
+expect(screen.getByText('1 film')).toBeInTheDocument()
 ```
 
-### İz sürme
+Bu testte bileşen gerçek Provider’a ve yeni store’a bağlı. Tıklama dispatch’e, dispatch reducer’a, yeni state selector’a gider; ekrandaki metin kullanıcıya ulaşan sonucu doğrular.
 
-1. Her test için yeni store oluştur; singleton state önceki testten sızmasın.
-2. Gerekiyorsa `preloadedState` ile başlangıç koşulunu açıkça ver.
-3. Bileşeni Provider altına yerleştir; selector ve dispatch gerçek store’a bağlansın.
-4. `userEvent` ile kullanıcı eylemini yap; test ID yerine rol ve erişilebilir adla kontrol et.
-5. Kullanıcının göreceği metni doğrula. Store içini kontrol edeceksen bunu UI davranışını desteklemek için yap.
+## Bir başlangıç durumu daha ekle
 
-Bu modülden önceki RTL derslerinde `render`, `screen`, `userEvent` ve davranış odaklı sorguları gördün. Burada yeni bağlam Redux bağlantısıdır: hook’ları taklit etmek testin ölçmesi gereken Provider/store hattını kaldırır.
+Aynı bağlantıyı dolu bir store ile açınca sayaç ilk render’da da doğru olmalı. Buna başlangıç state’i test vererek bakabilirsin.
 
-:::mistake[Belirti → UI testi action’ı görmüyor]
-Belirti → Mock selector doğru değeri verir ama tıklama sonrası etiket değişmez.  
-Neden → `dispatch` mock’u gerçek reducer’a bağlı değil.  
-Düzeltme → Bileşeni gerçek, teste özel store ile Provider altında çalıştır.
+```tsx title="Başlangıç görünümünü ayrıca kontrol et"
+const store = setupStore({ watchlist: { ids: [8, 15] } })
+render(<Provider store={store}><WatchlistCount /></Provider>)
+
+expect(screen.getByText('2 film')).toBeInTheDocument()
+```
+
+`setupStore` test için yeni store kurar; `preloadedState`, store oluşturulurken verilen başlangıç state’inin adıdır. Bu sayede testi action sırasına bağımlı kılmadan belirli bir görünümden başlatırsın.
+
+## Bir etkileşimi adım adım izle
+
+Entegrasyon testindeki sıra önemlidir: önce başlangıç görünümü, sonra kullanıcı eylemi, en son gözlenebilir sonuç. Testi bu sırayla kurduğunda hangi davranışın bozulduğunu daha rahat anlarsın.
+
+| Adım | Ne çalışır? | Ne görürsün? |
+| --- | --- | --- |
+| 1 | `setupStore` boş başlangıç state’i kurar | Store’da kayıt yoktur |
+| 2 | RTL bileşeni `<Provider>` altında render eder | Sayaç `0 film` gösterir |
+| 3 | Kullanıcı düğmeye basar | Gerçek action dispatch edilir |
+| 4 | Reducer state’i günceller, selector yeni değeri okur | Sayaç `1 film` olur |
+
+## Gerçekçi bir test hatasını düzelt
+
+Bazen test, selector hook’unu mock’layıp ekranda `1 film` gösterir. Sonra tıklama hiçbir şeyi değiştirmez. Belirti şudur: ilk görüntü doğru görünür ama Redux bağlantısındaki hata saklı kalır. Nedeni, mock’un gerçek store, reducer ve dispatch yolunu devreden çıkarmasıdır; bağlantıyı sınayacağın testte gerçek Provider ve yeni store kullan.
+
+`singleton`, uygulama boyunca paylaşılan tek bir nesnedir. Her test aynı store singleton’ını kullanırsa bir testin eklediği film ötekine sızabilir; `setupStore()` çağrısını her testte yeniden yapmak bu karışmayı önler.
+
+:::tip[Test türünü seç]
+State geçişini sınamak için reducer’ı doğrudan çağır. Kullanıcının tıklamasıyla görünen sonucun değiştiğini sınamak için gerçek store, Provider ve erişilebilir adı olan bir düğme kullan. UI testinde rol ve görünen metin, test ID’sinden daha iyi bir kullanıcı davranışı tarif eder.
 :::
 
-:::mistake[Belirti → Test sırası değişince sonuç bozuluyor]
-Belirti → Bir test tek başına geçiyor, tüm dosyada kalıyor.  
-Neden → Birden çok test aynı store singleton’ını kullanıyor.  
-Düzeltme → Her test için `setupStore()` çağır; başlangıç state’ini açıkça kur.
-:::
-
-:::sector
-Ekipler reducer kurallarını saf testlerle, kullanıcıya görünen kritik bağlantıları entegrasyon testleriyle sınar. Her action için ağır UI testi yazmak gerekmez; her component hook’unu mock’lamak da gerçek entegrasyon hatalarını kaçırır. Test katmanını kanıtlamak istediğin davranışa göre seç.
+:::info[Derinlemesine (isteğe bağlı)]
+Çok sayıda test aynı başlangıç biçimini kullanıyorsa küçük bir `renderWithProviders` yardımcısı tekrarları azaltabilir. Yardımcı, her çağrıda yeni store üretmeli; paylaşılan singleton store’u gizlice kullanmamalıdır.
 :::
 
 ## Özet
 
-- Reducer testi geçiş kuralını ve eski state’in korunduğunu gösterir.
-- UI testi gerçek store, Provider ve kullanıcı etkileşimi kullanır.
-- Her testte yeni store kur; mock hook’lar Redux bağlantısını kanıtlamaz.
-- RTL’de erişilebilir rol ve adla görünen davranışı ölç.
+- Reducer testi state kuralını ve eski state’in korunmasını ölçer.
+- Gerçek UI bağlantısı için Provider altında yeni store kullan.
+- Etkileşimi başlangıç görünümü → kullanıcı eylemi → görünür sonuç sırasıyla izle.
+- Selector hook’unu mock’lamak Redux bağlantısını sınamaz.
 
-**Kendini yokla:** Reducer testi Provider gerektirir mi?  
-*Cevap:* Hayır; reducer saf fonksiyon gibi doğrudan çağrılabilir.
+**Yeni terimler:**
+- `preloadedState`: Store kurulurken verilen başlangıç state’i.
+- `singleton`: Uygulama boyunca paylaşılan tek bir nesne.
+- `Provider`: React ağacına store’u sunan bileşen.
+- `mutant`: Beklenen davranışı bozacak şekilde değiştirilmiş uygulama sürümü.
 
-**Kendini yokla:** Gerçek kullanıcı tıklamasının store’u güncellediğini nasıl kanıtlarsın?  
-*Cevap:* Provider altında gerçek store kullanır, etkileşim yapar ve görünür sonucu doğrularsın.
+**Kendini yokla:** Reducer testi için Provider gerekir mi?  
+*Cevap:* Hayır; reducer doğrudan çağrılarak state geçişi sınanabilir.
+
+**Kendini yokla:** Tıklamanın ekrandaki sayacı değiştirdiğini hangi test gösterir?  
+*Cevap:* Gerçek store’u Provider’a verip kullanıcı etkileşimi sonrası görünen metni kontrol eden RTL testi.

@@ -1,219 +1,151 @@
 ---
 title: "Her değişim effect istemez"
-minutes: 16
+minutes: 15
 kind: concept
 ---
 
 # Her değişim effect istemez
 
-:::pain[Problem]
-Kullanıcı film kadro listesinde oyuncu ararken, filtrelenmiş liste bileşende ayrı bir `filteredCast` state'i olarak saklanıyor. Kullanıcı kutudaki metni değiştirdiği render'da ekranda bir an hâlâ eski liste kalıyor; ardından effect tetiklenip state güncelleyince ikinci bir render ile yeni liste geliyor. Bu gecikme arayüzde rahatsız edici bir takılma ve tutarsızlık hissi yaratıyor.
-:::
+Sinema'da puanı `8` olan bir filmi göstereceksek, yıldız sayısını puandan hesaplayabiliriz. Bir değeri başka elimizdeki değerlerden hesaplıyorsak, önce onu render sırasında üretmeyi düşünürüz.
 
-## Effect değil, saf türetme
+## Elindeki değerden yeni bir değer çıkar
 
-`useEffect`'in tek bir temel varlık sebebi vardır: **Bileşeni React dışındaki sistemlerle (ağ, DOM, tarayıcı API'leri) senkronize tutmak.**
-
-Eğer bir bilgi elindeki mevcut `props` veya `state` değerlerinden saf bir JavaScript ifadesiyle hesaplanabiliyorsa, o bilgiyi saklamak için asla yeni bir state açmamalı ve bir `useEffect` yazmamalısın. İki state aynı bilginin kopyasını taşıdığında kaçınılmaz olarak senkronizasyon kopar: `props` bir şey söylerken, kopyalanmış `state` bir önceki render'ın değerini fısıldar.
-
-Kurallar:
-
-1. **Önce render içinde hesapla:** Props veya state'ten türetilebilen her değer için ilk tercihin doğrudan render gövdesinde hesaplama yapmak olmalıdır.
-2. **Kullanıcı eylemlerini event handler'da tut:** Bir işlem kullanıcının butona tıklaması veya formu göndermesi sonucu gerçekleşiyorsa, o mantık `onClick` veya `onSubmit` içinde çalışmalıdır; effect içinde değil.
-3. **Dış sistem yoksa effect'e şüpheyle bak:** Kodunda bir ağ isteği, timer, abonelik veya manuel DOM müdahalesi yoksa, büyük olasılıkla `useEffect` yanlış bir tercihtir.
-4. **Yerel state'i sıfırlamak için kimliği (`key`) değiştir:** Farklı bir öğeye geçildiğinde bir alt bileşenin tüm yerel form state'ini sıfırlamak istiyorsan effect ile setter çağırmak yerine `key` prop'u ver.
-5. **Erken `useMemo` tuzağına düşme:** Küçük ve orta boyutlu dizileri filtrelemek saniyenin binde biri kadar sürer; ölçüm yapmadan `useMemo` eklemek kodu karmaşıklaştırmaktan başka işe yaramaz.
-
-:::model[Veri akışı]
-React'te tek yönlü veri akışı esastır. Props yukarıdan aşağıya akar. Bir değerin tek bir gerçek kaynağı (single source of truth) olmalıdır. Filtrelenmiş liste, orijinal liste ve arama metninin sahibinden hesaplanan anlık bir yansımadır; bağımsız bir veri kaynağı değildir.
-:::
-
-## Çift render gecikmesini izleyelim
-
-Diyelim ki elimizde oyuncu listesini filtreleyen bir bileşen var. Ayrı bir state ve effect kullanırsak neler olur?
-
-| An | `query` Prop'u | `filteredCast` State'i | Kullanıcının Gördüğü Ekran | Değerlendirme |
-| --- | --- | --- | --- | --- |
-| Başlangıç | `""` | `["Bale", "Caine"]` | Bale, Caine | Uyumlu |
-| Kullanıcı yazar | `"cai"` | `["Bale", "Caine"]` (Eski) | **Bale, Caine (GECİKME!)** | 1. Render: Arayüz ve prop tutarsız! |
-| Effect çalışır | `"cai"` | `setFiltered(["Caine"])` | - | State değişti, 2. render planlandı |
-| 2. Render | `"cai"` | `["Caine"]` | Caine | Arayüz nihayet düzeldi |
-
-Bu akışta kullanıcı her tuşa bastığında React gereksiz yere iki kez render çalıştırır ve ilk render'da kullanıcıya eski veriyi gösterir. Çözüm, kopyayı tamamen silip değeri render anında hesaplamaktır.
-
-## Kırık örnek
-
-Aşağıdaki kodda hem gereksiz bir state açılmış, hem de bu state'i senkronize etmek için effect kurulmuştur:
-
-```tsx
-import { useEffect, useState } from 'react'
-
-export function CastFilter({ castMembers, query }: { castMembers: string[]; query: string }) {
-  // HATA 1: castMembers ve query zaten elimizdeyken ayrı state açmak
-  const [visibleMembers, setVisibleMembers] = useState(castMembers)
-
-  // HATA 2: Reaktif değerleri kopyalamak için effect çalıştırmak
-  useEffect(() => {
-    setVisibleMembers(castMembers.filter((name) => name.includes(query)))
-  }, [castMembers, query])
-
-  return (
-    <ul>
-      {visibleMembers.map((name) => (
-        <li key={name}>{name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Bu bileşende fazladan bir state, fazladan bir effect ve her tuş vuruşunda fazladan bir render vardır.
-
-## Doğru örnek
-
-Gereksiz state ve effect'i atıp değeri doğrudan render anında türetiyoruz:
+Şu küçük bileşen verilen puanı ekrana yazar:
 
 ```tsx check
-export function CastFilter({ castMembers, query }: { castMembers: string[]; query: string }) {
-  // Doğrudan render anında türetme:
-  const normalizedQuery = query.trim().toLocaleLowerCase('tr')
-  const visibleMembers = castMembers.filter((name) =>
-    name.toLocaleLowerCase('tr').includes(normalizedQuery),
-  )
+export function RatingLabel({ rating }: { rating: number }) {
+  const stars = '★'.repeat(rating)
 
-  return (
-    <ul>
-      {visibleMembers.map((name) => (
-        <li key={name}>{name}</li>
-      ))}
-    </ul>
-  )
+  return <p>{stars} ({rating}/10)</p>
 }
 ```
 
-Artık `query` değiştiği anda `visibleMembers` aynı render döngüsünde anında yeni değeri alır. Tek bir render yapılır, arayüzde milisaniyelik bir bayatlık dahi yaşanmaz ve kod yarı yarıya kısalır.
+`stars`, `rating` değerinden hemen hesaplanır. Puan `8` ise aynı render'da sekiz yıldız görünür; yıldızları ikinci bir `state` içinde saklamaya gerek yoktur.
 
-Türkçe karakter aramasında `toLocaleLowerCase('tr')` kullanılmasına dikkat et: Türkçedeki `I` ve `İ` harflerinin küçük harf karşılıkları (`ı` ve `i`), İngilizce standart dönüşümde bozulur.
+Burada `state`, React'in render'lar arasında sakladığı ve değişince ekranı yeniden hesapladığı bileşen verisidir. `props` ise üst bileşenin bu bileşene verdiği girdilerdir. İkisi de render sırasında okunabilir.
 
-## Key ile yerel state'i sıfırlamak
+Şimdi puan etiketine filmin izlenip izlenmediği bilgisini de ekleyelim. Yeni fikir yalnızca bir koşuldur:
 
-Bazen hesaplanamayan, gerçekten kullanıcının girdiği yerel bir state vardır. Örneğin kullanıcının belirli bir film için yazdığı inceleme taslağı (`ReviewDraft`).
+```tsx check
+export function RatingLabel({ rating, watched }: { rating: number; watched: boolean }) {
+  const stars = '★'.repeat(rating)
+  const status = watched ? 'İzlendi' : 'İzleme listesinde'
 
-Kullanıcı film A'dan film B'ye geçtiğinde input kutusundaki taslağın sıfırlanmasını isteriz. Bunu bir `useEffect` ile yapmaya çalışmak sık yapılan bir hatadır:
-
-```tsx
-// YANLIŞ YOL:
-function ReviewDraft({ movieId }: { movieId: number }) {
-  const [text, setText] = useState('')
-
-  useEffect(() => {
-    setText('') // Gecikmeli sıfırlama! Önce eski filmde yeni film ID'siyle render olur
-  }, [movieId])
-
-  return <textarea value={text} onChange={(e) => setText(e.target.value)} />
+  return <p>{stars} ({rating}/10) · {status}</p>
 }
 ```
 
-Bu kodda film değiştiğinde bileşen önce eski filmin taslak metniyle render edilir, ardından effect çalışıp metni boşaltır. Bu ara durumda kullanıcı bir önceki filme yazdığı notun yeni filmde göründüğünü fark edebilir.
+`status` da iki `props` değerinden türetilir. `watched` değişirse React bileşeni yeniden çalıştırır ve yeni durum metnini hesaplar; üçüncü bir state alanı bilgiyi kopyalamış olurdu.
 
-### Doğru yol: Ağaç ve kimlik (`key`) modeli
+### Aynı girdiden aynı görünüm
 
-React'te bir bileşenin yerel state'i, onun arayüz ağacındaki konumuna ve sahip olduğu `key` değerine bağlıdır.
+Bir fonksiyon, aynı girdiler verildiğinde aynı sonucu üretip dışarıda bir şeyi değiştirmiyorsa **saf** deriz. Bu kuralı render'daki hesaplamalara uygularız: `rating` ve `watched` aynı kaldıkça bileşen aynı metni üretir.
 
-:::model[Ağaç ve kimlik]
-React bileşenin kimliğini `key` ile takip eder. Bir bileşenin `key` değeri değiştiğinde React o bileşeni DOM'dan tamamen kaldırır (unmount) ve sıfırdan yeni bir örnek oluşturur (mount). Bileşenin tüm yerel state'i en doğal şekilde ilk varsayılan değerine döner.
+Sinema'nın film kadrosunda arama yapmak biraz daha gerçekçi bir örnek. Bir render sırasında listeyi süzüp ekranda gösterebiliriz:
+
+```tsx check
+export function CastPanel({ cast, search }: { cast: string[]; search: string }) {
+  const query = search.trim().toLocaleLowerCase('tr')
+  const visibleCast = cast.filter((name) =>
+    name.toLocaleLowerCase('tr').includes(query),
+  )
+
+  return <ul>{visibleCast.map((name) => <li key={name}>{name}</li>)}</ul>
+}
+```
+
+`visibleCast` her render'da `cast` ile `search` değerlerinden hesaplanır. Kullanıcı aramayı değiştirince yeni render doğrudan yeni eşleşmeleri gösterir; Türkçe küçük harfe çevirme de `I` ve `İ` harflerini doğru ele alır.
+
+Önceki bir sürümde filtrelenmiş liste ayrı state'te tutuluyordu. `useEffect` ise React bileşeni dışındaki bir sistemle, örneğin ağ isteği veya tarayıcı API'siyle, eşzamanlama kuran Hook'tur. Filtreleme yalnızca elimizdeki iki değerin hesabı olduğu için burada effect gerekmez.
+
+| An | `search` | Kopya `visibleCast` state'i | Ekran |
+| --- | --- | --- | --- |
+| İlk render | `""` | `Bale, Caine` | Bale, Caine |
+| Aramaya `cai` yazılır | `"cai"` | hâlâ `Bale, Caine` | Bir render boyunca eski kadro |
+| Effect state'i günceller | `"cai"` | güncelleme kuyruğunda | İkinci render planlanır |
+| İkinci render | `"cai"` | `Caine` | Caine |
+
+İlk render'da arama prop'u yenidir ama kopya state eskidir; effect çalıştıktan sonra ikinci render gerekir. Hesabı doğrudan render'da yapmak hem bu ara görüntüyü hem de fazladan güncellemeyi kaldırır.
+
+:::mistake[Filtreyi effect ile kopyalamak]
+**Belirti:** Arama kutusuna yeni harf yazınca eski film adları kısa süre daha görünür. **Neden:** Filtre sonucu ayrı state'te tutulur ve effect ancak ilk render'dan sonra o state'i günceller. **Düzeltme:** Filtreyi mevcut liste ve sorgudan render sırasında hesapla.
 :::
 
-Doğru tasarım şöyle kurulur:
+## Kullanıcı eylemi başka, görünüm hesabı başka
+
+Bir işlemin kullanıcı bir şey yaptığı için mi, yoksa ekranda bir durum bulunduğu için mi çalışması gerektiğini sor. Kullanıcı fragman düğmesine bastıysa oynatmayı o düğmenin event handler'ı başlatır. **Event handler**, tıklama veya form gönderme gibi kullanıcı olayına bağlanan fonksiyondur.
+
+```tsx
+function TrailerButton() {
+  function handlePlay() {
+    // Kullanıcı düğmeye bastığında fragmanı başlat.
+  }
+
+  return <button onClick={handlePlay}>Fragmanı oynat</button>
+}
+```
+
+Burada düğme tıklaması zaten sebebi açıklar. Tıklamayı önce `state` içine yazıp ardından effect'in bu state'i görmesini beklemek işi dolambaçlı yapar; ayrıca tekrar çalışmaya yol açabilir. Buna karşılık URL değişince yeni film verisini istemek React dışındaki ağ sistemiyle eşzamanlama olduğundan effect için uygun bir iş olabilir.
+
+## Yerel durumu film kimliğine bağla
+
+Şimdi film ayrıntısında kullanıcının seçtiği oynatma kalitesini düşün. Bu seçimden başka bir değer hesaplanmıyor; kullanıcının yaptığı tercih olduğu için bileşenin yerel state'idir. Farklı filme geçince seçimin başa dönmesini istiyoruz.
 
 ```tsx check
 import { useState } from 'react'
 
-export function MovieReviewSection({ movieId }: { movieId: number }) {
-  // key={movieId} vererek her film değişiminde ReviewForm'u sıfırdan kuruyoruz:
-  return <ReviewForm key={movieId} movieId={movieId} />
+export function MoviePlayback({ movieId }: { movieId: number }) {
+  return <PlaybackOptions key={movieId} />
 }
 
-function ReviewForm({ movieId }: { movieId: number }) {
-  const [comment, setComment] = useState('')
+function PlaybackOptions() {
+  const [quality, setQuality] = useState('Otomatik')
 
   return (
-    <div>
-      <h4>Film #{movieId} İncelemesi</h4>
-      <textarea
-        aria-label="Yorum yaz"
-        value={comment}
-        onChange={(event) => setComment(event.target.value)}
-      />
-    </div>
+    <label>
+      Görüntü kalitesi
+      <select value={quality} onChange={(event) => setQuality(event.target.value)}>
+        <option>Otomatik</option>
+        <option>Yüksek</option>
+      </select>
+    </label>
   )
 }
 ```
 
-`MovieReviewSection` bileşeninde `ReviewForm`'a `key={movieId}` verildiğinde, `movieId` değiştiği an React eski formu imha eder ve yeni film için tertemiz, boş state'li yeni bir form başlatır. Hiçbir effect yazmadan, sıfır gecikmeyle mükemmel bir sıfırlama elde edilir.
+`key` React'e bir bileşenin hangi örnek olduğunu ayırt etmeye yarayan kimlik bilgisidir. `movieId` değişince `PlaybackOptions` yeni kimlikle kurulur ve kalite seçimi ilk değeri olan `Otomatik` olur. Aynı film yeniden render edilirse key aynı kalır; kullanıcının seçimi korunur.
 
-## Event handler mı, effect mi?
+Bunu effect içinden `setQuality('Otomatik')` çağırarak yapsaydık, yeni filmin ilk render'ında eski seçim görünür; effect'ten sonra temizlenirdi. Kimlik değişimi ise bileşenin yerel state'ini yeni örnek için en baştan kurar.
 
-Bir eylemin nereye yazılacağına karar verirken şu temel soruyu sor: **"Bu kod kullanıcı belirli bir eylem yaptığı için mi çalışmalı, yoksa bileşen ekranda bu durumda olduğu için mi?"**
-
-| Olay / Durum | Doğru Yer | Neden? |
-| --- | --- | --- |
-| Kullanıcı "Sepete Ekle" butonuna bastı | `onClick` handler | Butona basılma niyetini taşır |
-| Form "Gönder" butonuna basıldı | `onSubmit` handler | Kullanıcı etkileşiminin sonucudur |
-| Kullanıcı belirli bir URL'ye girdi ve veri yüklenecek | `useEffect` | Sayfa görüntülendiğinde dış sistemle eşleşir |
-| Arama metnine göre liste süzülecek | Doğrudan render gövdesi | Mevcut değişkenlerden anında türetilir |
-
-Kullanıcının satın alma butonuna basmasını bir state'e (`isPurchased = true`) kaydedip, ardından bir `useEffect` içinde "eğer `isPurchased` true ise API'ye sipariş gönder" yazmak çok tehlikeli bir anti-pattern'dir. Sayfa yenilendiğinde veya beklenmeyen bir prop değişiminde siparişin mükerrer gitmesine yol açabilir. Kullanıcı eylemleri her zaman doğrudan event handler içinde işlenmelidir.
-
-## Karar matrisi: State mi, türetme mi, effect mi?
-
-Kararsız kaldığında bu kontrol listesini kullan:
-
-```mermaid
-flowchart TD
-  Q1["Değer mevcut props veya state'ten hesaplanabiliyor mu?"]
-  Q1 -- Evet --> A1["Render içinde türet (State ve Effect KULLANMA)"]
-  Q1 -- Hayır --> Q2["Kullanıcı bunu doğrudan bir form veya butonla mı değiştiriyor?"]
-  Q2 -- Evet --> A2["useState kullan"]
-  Q2 -- Hayır --> Q3["React dışındaki bir sistemle (Ağ, DOM, Timer) senkronizasyon var mı?"]
-  Q3 -- Evet --> A3["useEffect kullan"]
-  Q3 -- Hayır --> A4["Alt bileşenin kimliğini değiştirmek mi istiyorsun? key prop'u ver"]
-```
-
-## Sınır durumları ve sık hatalar
-
-:::mistake[Sık hata: Her dizi işlemine panikle useMemo eklemek]
-Belirti → `const visible = useMemo(() => list.filter(...), [list, query])` satırlarıyla kodun dolması.  
-Neden → "Render'da hesaplamak performansı düşürür" yanılgısı.  
-Düzeltme → JavaScript motorları 100-200 öğelik dizileri mikrosaniyeler içinde filtreler. `useMemo`'nun kendi bağımlılık kontrolü ve bellek maliyeti bazen filtrenin kendisinden daha pahalıdır. Profiler ile somut bir darboğaz ölçmediğin sürece sade türetme yap.
+:::mistake[Her film bilgisini state'e kopyalamak]
+**Belirti:** Listeden silinen film hâlâ seçili ayrıntıda görünür. **Neden:** Seçili filmin tüm nesnesi ayrı state olarak tutulur ve listeyle eşzamanlı güncellenmez. **Düzeltme:** Seçili kimliği sakla; ayrıntıyı güncel film listesinden render sırasında bul.
 :::
 
-:::mistake[Sık hata: Prop değişimini effect ile dinleyip yerel state sıfırlamak]
-Belirti → Formda eski değerin bir kare (frame) boyunca görünüp sonra kaybolması (flicker).  
-Neden → Yerel state'i temizlemek için `useEffect(() => { resetForm() }, [id])` kullanılması.  
-Düzeltme → Form bileşenini saran ebeveyn bileşende `<Form key={id} />` kullanarak kimlik sıfırlaması yap.
-:::
+## Karar verirken soracağın soru
 
-:::mistake[Sık hata: Seçili öğenin detayını ayrı state yapmak]
-Belirti → Listeden bir öğe silindiğinde detay kutusunda silinen öğenin kalması.  
-Neden → `selectedItem` nesnesinin tamamının ayrı bir state olarak kopyalanması.  
-Düzeltme → Yalnızca `selectedId` değerini state olarak tut; detay nesnesini `items.find(i => i.id === selectedId)` ile render anında türet.
-:::
+Örneklerden çıkan ayrım basittir: hesaplanan görünüm, kullanıcı tercihi ve dış sistemle eşzamanlama farklı işlerdir. Filtre gibi değerleri eldeki props/state'ten hesapla; kullanıcının değiştirdiği seçimleri state'te tut; ağ, timer veya tarayıcıyla eşzamanlamayı effect'e bırak. Effect'in görevi her değişikliği izlemek değildir.
 
-:::sector
-Kıdemli mühendislerin kod incelemelerinde ilk baktığı şeylerden biri "gereksiz effect temizliği"dir. Bir kod tabanında effect sayısı ne kadar azsa, kod o kadar öngörülebilir, hata ayıklaması o kadar kolay ve React sürüm güncellemelerine o kadar dayanıklıdır. React resmi dokümantasyonu "You Might Not Need an Effect" başlığı altında bu konuya geniş bir bölüm ayırmıştır.
-:::
+`useMemo`, hesaplanan değeri render'lar arasında yeniden kullanmaya yarayan bir Hook'tur. Basit filtrelerde varsayılan olarak gerekmez; ölçülmüş bir performans sorunu varsa sonra değerlendirilir. Küçük bir dizi için erken eklemek yalnızca kodu karmaşıklaştırır.
 
 ## Özet
 
-- Props veya state'ten hesaplanabilen hiçbir değer için ayrı state açılmaz ve effect yazılmaz.
-- Doğrudan render gövdesinde hesaplama yapmak fazladan render'ı önler ve anlık güncellik sağlar.
-- Kullanıcı etkileşimlerinin tetiklediği işler `useEffect`'e değil, ilgili event handler'a aittir.
-- Alt bileşenin yerel state'ini sıfırlamanın en temiz ve hatasız yolu `key` prop'u değiştirmektir.
-- `useMemo`, doğruluk aracı değil yalnızca somut performans ölçümlerine dayanan bir optimizasyon aracıdır.
+- Props ve state'ten hesaplanabilen görünür değerleri render sırasında üret; kopya state ve effect ekleme.
+- Saf hesaplama aynı girdilerle aynı sonucu verir ve dışarıda değişiklik yapmaz.
+- Kullanıcı olayını event handler'da, React dışındaki sistemle eşzamanlamayı effect'te ele al.
+- Alt bileşenin yerel state'ini yeni öğede başlatmak için ona öğe kimliğinden gelen `key` ver.
 
-**Kendini yokla:** Arama kutusundaki metne göre filtrelenen dizi neden state'e kaydedilmemelidir?  
-*Cevap:* Çünkü orijinal liste ve arama metni zaten elimizdedir; filtrelenmiş liste bu iki değerden her render'da sıfır gecikmeyle türetilebilir.
+**Yeni terimler:**
 
-**Kendini yokla:** Bir formun tüm girdi alanlarını prop değiştiğinde temizlemek için neden `useEffect` yerine `key` tercih edilir?  
-*Cevap:* Çünkü effect ara bir render gecikmesi ve görsel titreme (flicker) üretirken, `key` değişimi React'in bileşeni anında unmount edip temiz state ile yeniden mount etmesini sağlar.
+- **Saf fonksiyon:** Aynı girdilerden aynı sonucu üretir ve dış durumu değiştirmez.
+- **Effect:** React bileşenini ağ veya tarayıcı gibi dış sistemlerle eşzamanlar.
+- **Event handler:** Tıklama gibi kullanıcı olayına çalışan fonksiyon.
+- **Key:** React'in listedeki veya ağaçtaki bileşen kimliğini ayırt etmesini sağlayan değer.
+- **useMemo:** Hesaplanmış değeri yeniden kullanmaya yarayan, ölçümden sonra düşünülen Hook.
+
+**Kendini yokla:** Arama sonucunu neden ayrı state'te tutmuyoruz?
+
+*Cevap:* Çünkü sonuç mevcut listeyle sorgudan render sırasında hesaplanabilir; kopya state eski kalabilir ve ikinci güncelleme gerektirir.
+
+**Kendini yokla:** Film değişince seçim sıfırlansın ama aynı film render edilince korunsun. Ne kullanırsın?
+
+*Cevap:* Seçimi tutan alt bileşene `key={movieId}` veririm; aynı kimlik state'i korur, yeni kimlik yeni state başlatır.

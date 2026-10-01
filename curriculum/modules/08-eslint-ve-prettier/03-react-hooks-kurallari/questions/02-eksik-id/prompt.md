@@ -1,11 +1,11 @@
 # Effect’in film kimliğini izle
 
-Sinema detayında route kimliği değiştiğinde tarayıcı başlığı ve sayfadaki film kimliği güncellenmeli. Var olan bileşende bu ilişkiyi düzelt.
+Sinema detayında film kimliği değiştiğinde tarayıcı sekmesinin başlığı da güncellenmeli. `MovieDetails` bileşenini bu davranışı sağlayacak biçimde tamamla.
 
 ## Gereksinimler
 
-- Effect içindeki güncelleme render’dan gelen `id` değerini kullanmaya devam etmelidir.
-- `id` değiştiğinde effect’in yeniden çalışacağı doğru biçimde bildirilmelidir.
+- Bileşen her render’da bir Effect çağırmalıdır.
+- Effect `document.title` değerini `Film {id}` biçiminde güncellemeli ve `id` değiştiğinde yeniden çalışmalıdır.
 - Lint hatası kalmamalı; `<h1>` içindeki `Film {id}` çıktısı korunmalıdır.
 
 ## Örnek
@@ -19,4 +19,4 @@ Sinema detayında route kimliği değiştiğinde tarayıcı başlığı ve sayfa
 
 ## Kısıtlar
 
-- Effect içindeki `document.title` atamasını ve `<h1>` çıktısını kaldırma.
+- Başlık `Film {id}` olmalı; JSX çıktısı `<h1>Film {id}</h1>` kalmalıdır.

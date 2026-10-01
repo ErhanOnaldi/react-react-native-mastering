@@ -5,25 +5,34 @@ export default defineQuestion({
   title: 'Eski film neden kaldı?',
   difficulty: 'kolay',
   concepts: ['react.useEffect.deps', 'router.params', 'tooling.eslint'],
-  question:
-    '`useEffect` içinde `id` kullanılıyor ama dependency array `[]`. `/movie/550` → `/movie/155` geçişinde doğru adım nedir?',
+  question: `ESLint bu effect için \`react-hooks/exhaustive-deps\` mesajı verdi. Mesajın nedeni nedir?
+
+\`\`\`tsx
+useEffect(() => {
+  document.title = 'Film ' + id
+}, [])
+\`\`\``,
   options: [
     {
-      text: 'Effect’in bağımlılığına `id` ekleyip eski isteği cleanup ile iptal etmek.',
+      text: 'Effect `id` değerini okuyor, ama boş dependency array React’e bu girdiyi bildirmiyor.',
       correct: true,
-      explanation: '`id` değişince yeni istek gerekir; cleanup yarışan eski yanıtı engeller.',
+      explanation:
+        'Lint bu kaynak ilişkisindeki eksik bildirimi saptar; mesaj kendiliğinden kodu düzeltmez.',
     },
     {
-      text: '`id`’yi dependency array’den silmek.',
-      explanation: 'Zaten yok; boş array effect’i yeni route parametresi için yeniden çalıştırmaz.',
+      text: '`id` string olduğu için effect içinde okunması yasaktır.',
+      explanation:
+        'String prop effect içinde kullanılabilir; okunan değer bağımlılık olarak bildirilmelidir.',
     },
     {
-      text: 'Bileşeni her render’da `fetch` çağıracak şekilde değiştirmek.',
-      explanation: 'Render yan etkisi gereksiz tekrar isteklere yol açar.',
+      text: 'Dependency array’i kaldırmak, böylece React her render’da effect’i çalıştırır.',
+      explanation:
+        'Lint’in istediği, okunan girdiyi doğru bildirmektir; her render’da çalıştırmak gereksiz olabilir.',
     },
     {
-      text: 'Sadece Prettier çalıştırmak.',
-      explanation: 'Prettier kod biçimini düzeltir, effect bağımlılığını analiz etmez.',
+      text: 'Effect’in içindeki `id`-den bağımsız sabit metni değiştirmek.',
+      explanation:
+        'Başlık metnini değiştirmek, effect’in `id` okuması ile dependency array’i arasındaki farkı çözmez.',
     },
   ],
   explanation: '',

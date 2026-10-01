@@ -14,10 +14,10 @@ export default defineQuestion({
         'Her verinin ömrü farklıdır: paylaşılabilir URL, geçici form, kalıcı tercih, sunucu cache’i.',
     },
     {
-      text: 'Redux, Redux, Redux, Redux',
+      text: 'URL, Redux client slice, TanStack Query, RHF',
       correct: false,
       explanation:
-        'Her şeyi store’a taşımak URL paylaşımını ve sunucu cache özelliklerini kaybettirir.',
+        'Sıra karışmış: form taslağı URL’de, tema ise RHF içinde yaşamaz. Her alan kendi yaşam döngüsüne göre seçilir.',
     },
     {
       text: 'Query, RHF, Query, URL',

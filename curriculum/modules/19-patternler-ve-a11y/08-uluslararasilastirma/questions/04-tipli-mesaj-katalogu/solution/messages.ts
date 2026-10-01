@@ -1,23 +1,13 @@
 export type Locale = 'tr' | 'en'
 
-const messages = {
-  tr: {
-    movieCount: (params: { count: number }) => `${params.count} film`,
-    welcome: (params: { name: string }) => `Merhaba, ${params.name}`,
-  },
-  en: {
-    movieCount: (params: { count: number }) => {
-      const category = new Intl.PluralRules('en').select(params.count)
-      return `${params.count} ${category === 'one' ? 'movie' : 'movies'}`
-    },
-    welcome: (params: { name: string }) => `Welcome, ${params.name}`,
-  },
-} as const
+export type Message = { key: 'movieCount'; count: number } | { key: 'welcome'; name: string }
 
-type MessageKey = keyof typeof messages.tr
-type MessageParams<K extends MessageKey> = Parameters<(typeof messages.tr)[K]>[0]
+export function t(message: Message, locale: Locale): string {
+  if (message.key === 'movieCount') {
+    const noun = locale === 'en' && message.count !== 1 ? 'movies' : 'movie'
+    const turkishNoun = 'film'
+    return `${message.count} ${locale === 'tr' ? turkishNoun : noun}`
+  }
 
-export function t<K extends MessageKey>(key: K, params: MessageParams<K>, locale: Locale): string {
-  const formatMessage = messages[locale][key] as (value: MessageParams<K>) => string
-  return formatMessage(params)
+  return locale === 'tr' ? `Merhaba, ${message.name}` : `Welcome, ${message.name}`
 }

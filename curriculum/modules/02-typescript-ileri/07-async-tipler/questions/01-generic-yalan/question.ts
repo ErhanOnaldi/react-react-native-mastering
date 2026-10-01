@@ -13,12 +13,14 @@ export default defineQuestion({
       explanation: 'Doğru; generic tip iddiası ağ sınırında kanıt değildir.',
     },
     {
-      text: 'Sunucu hatalarını Movie’ye dönüştürür.',
-      explanation: '401 JSON’u ayrı bir hata cevabıdır; response.ok kontrolü gerekir.',
+      text: '`response.json()` değerinin alanlarını çağrıdaki Movie ile karşılaştırır.',
+      explanation:
+        'TypeScript tipi JSON içeriğini incelemez; response.json() dış veriyi çalışma zamanında döndürür.',
     },
     {
-      text: 'Zod şemasını otomatik çalıştırır.',
-      explanation: 'Şema açıkça kurulup parse edilmedikçe doğrulama yoktur.',
+      text: 'Yanlış şekilli JSON gelirse Promise otomatik reddedilir.',
+      explanation:
+        'Promise JSON parse edilememeyi reddedebilir; Movie alanlarının doğruluğu ayrı kontrol edilmelidir.',
     },
   ],
 })

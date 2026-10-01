@@ -1,142 +1,148 @@
 ---
 title: "Yazma işleminin yaşamı"
-minutes: 12
+minutes: 14
 kind: concept
 ---
 
 # Yazma işleminin yaşamı
 
-:::pain[Problem]
-Atölye arşivinde bir kaydı yıldızladın. Düğme yıldızı dolu gösteriyor ama sayfayı yenileyince kayıt eski haline dönüyor. Network panelinde `POST` yok; değişiklik yalnızca o anki bileşen state’indeydi.
-:::
+Sinema’da film listesini `useQuery` ile okuyabiliyorsun. Şimdi bir kullanıcı filmine favori verdiğinde sunucuya değişiklik göndermen gerekiyor. Bu tür sunucuya yazma isteğine **mutation** denir; mutation’ı ayrı bir araçla yönetiriz çünkü bir okuma tekrar edilebilirken yazmanın tekrarı yeni kayıt oluşturabilir veya mevcut değeri yeniden değiştirebilir.
 
-## Bir okuma ile bir yazma aynı sözleşme değildir
+## Önce bir tıklamayı sunucuya ulaştıralım
 
-Bir query, sunucudan bir kaynağın görünümünü okur. Aynı query key’iyle gelen veri cache’te tutulabilir, birden fazla bileşen tarafından paylaşılabilir ve ihtiyaç olduğunda yeniden alınabilir. Mutation ise sunucuda değişiklik talep eder: kayıt oluşturur, alan günceller veya kaydı siler. Bu iki işin tekrar davranışı farklı olduğu için Query onları ayrı araçlarla temsil eder.
-
-Bir okuma çoğu zaman aynı parametrelerle tekrar yapılabilir. Bir yazmayı gelişigüzel tekrar etmek ise aynı kaydı iki kere oluşturabilir, ikinci puanı birincinin üstüne yazabilir veya iki ödeme başlatabilir. Bu yüzden mutation, render sırasında değil kullanıcının açık bir eylemiyle başlar. React’in render, commit ve effect sırasını daha önce kurdun; burada yeni kural şudur: render yalnızca mutation durumunu okur, olayı ise event handler başlatır.
-
-Bir mutation üç parçadan oluşur: neyin gönderileceğini taşıyan değişkenler, işi yapan asenkron fonksiyon ve bu işin kullanıcıya yansıyan durumu. `useMutation` bu parçaları bir araya getirir. Hook’u çağırmak isteği başlatmaz; dönen `mutate` veya `mutateAsync` fonksiyonunu çağırmak başlatır.
-
-## İşlem hangi sırayla ilerler?
-
-![Mutation, optimistic update ve invalidation sırasını gösteren ortak model](diagram:mutation-ve-invalidation)
-
-Modelin kuralları:
-
-1. `useMutation({ mutationFn })` bileşene bir mutation gözlemcisi verir; bu satır tek başına ağ isteği atmaz.
-2. `mutate(variables)` çağrısı kullanıcı olayı sırasında mutation’ı başlatır ve değişkenleri `mutationFn`’e iletir.
-3. `mutationFn` Promise’i çözülene kadar durum `pending` olur. Promise çözülürse `success`, reject olursa `error` olur.
-4. Render, `isPending`, `isSuccess`, `isError` ve `error` değerlerini okuyup uygun arayüzü üretir. Bu değerler yeni render’larda değişebilir.
-5. Mutation sonucu query cache’ini kendiliğinden değiştirmez. Başarılı yazmanın etkilediği okumalar için ayrıca invalidation veya kesin cache güncellemesi gerekir.
-6. Hata halinde arayüz başarısızlığı saklamaz. Kullanıcıya tekrar deneyebileceği veya girdiyi düzeltebileceği bir durum gösterilir.
-
-`mutate` hata Promise’ini çağırana taşımadan mutation durumuna yazar. `mutateAsync` ise Promise döndürür; onu `await` edebilir, ama reddedilebileceği için `try/catch` gerekir. Bileşende yalnızca pending ve hata görünümü gerekiyorsa `mutate` genellikle daha yalındır.
-
-## Yazmayı yetkili ve geçerli hale getir
-
-Bir API yazması yalnız doğru mutation hook’uyla tamamlanmaz. Sinema’daki TMDB puan akışında guest session önce bir kez alınır ve session kimliği tarayıcıda saklanır; sonraki istekler aynı session’ı kullanır. Session id query parametresinde taşınır, API token’ı ise `Authorization: Bearer ...` başlığındadır. Token’ı URL’ye koymak loglarda ve geçmişte görünmesine yol açabilir.
-
-Puan API’si yalnız 0,5 ile 10 arasındaki yarım puanları kabul eder. Bu kuralı isteği göndermeden önce doğrulamak, kullanıcı hatasında gereksiz POST’u önler; sunucu doğrulaması yine de asıl güvenlik sınırıdır. Her iki istekte de `response.ok` kontrol edilir: guest session alınamazsa puan isteği başlamamalı, puan POST’u başarısızsa başarı UI’ı gösterilmemelidir. Session kimliği saklanmış olsa bile bozulmuş veya süresi dolmuş olabilir; hata yolu bunu da kullanıcıya anlaşılır biçimde yansıtmalıdır.
-
-Bu tür adımlar mutation’ın `mutationFn` içinde sıralanır. Arayüz yalnızca tek bir `mutate` çağrısı görür; içeride session okuma, gerekirse session alma ve puanı yazma tek Promise zincirinde tamamlanır. Böylece butonun pending durumu yalnız POST’u değil, işlem için zorunlu olan ön hazırlığı da kapsar.
-
-## Bir tıklamayı izleyelim
-
-Örnekte başka bir alana ait koleksiyon kaydını sabitleyelim. Fonksiyonun imzası `pinEntry({ entryId, pinned })` olsun.
-
-| An | Mutation durumu | Arayüzün kararı |
-| --- | --- | --- |
-| İlk render | `isPending === false` | “Sabitle” düğmesi etkin |
-| Tıklama | `mutate({ entryId: 42, pinned: true })` | İstek başlar; gövdeye `entryId` ve `pinned` gider |
-| İstek sürüyor | `isPending === true` | Düğme kilitlenir, “Kaydediliyor…” görünür |
-| Cevap başarılı | `isSuccess === true` | “Kaydedildi” görünür |
-| Cevap başarısız | `isError === true` | Hata görünür; düğme tekrar kullanılabilir |
-
-Burada arayüzün gösterdiği “Kaydedildi” metni ancak `mutationFn` gerçekten hata durumunda reject ederse güvenilirdir. `fetch`, 404 veya 500 cevaplarında kendiliğinden reject olmaz; yalnızca bağlantı hatalarında reject eder. Sunucu 500 döndürdüğünde `response.ok` kontrol edilip hata fırlatılmazsa mutation başarı koluna gider.
-
-## Önce yanıltıcı, sonra dürüst örnek
-
-Kırık örnekte buton metni değişiyor, fakat sunucuya yazma yapılmıyor:
+İlk olarak yalnızca isteği başlatan satıra bakalım. `saveFavorite`, sunucuya yazan ve tamamlandığında Promise döndüren hazır bir fonksiyon olsun:
 
 ```tsx
-import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 
-export function PinControl() {
-  const [pinned, setPinned] = useState(false)
-  return (
-    <button onClick={() => setPinned(true)}>
-      {pinned ? 'Kaydedildi' : 'Sabitle'}
-    </button>
-  )
+declare function saveFavorite(movieId: number): Promise<void>
+
+function FavoriteButton({ movieId }: { movieId: number }) {
+  const favorite = useMutation({ mutationFn: saveFavorite })
+  return <button onClick={() => favorite.mutate(movieId)}>Favoriye ekle</button>
 }
 ```
 
-Görüntü, sunucunun onayladığını iddia ediyor ama yalnızca tarayıcı belleğini değiştirdik. Doğru örnekte isimler ve senaryo görevlerden ayrıdır; `saveBookmark` sunucu fonksiyonunun hata cevabında reject ettiği varsayılır.
+`useMutation` hook’u burada bir mutation hazırlar; henüz istek göndermez. Tıklama handler’ı `mutate(movieId)` çağırınca `saveFavorite` çalışır. Bu ayrım önemli: render sırasında bir yazma başlasaydı React her render’da aynı isteği yeniden başlatabilirdi.
+
+Buradaki `mutationFn`, işi gerçekten yapan fonksiyondur. `mutate` ona hangi film için çalışacağını iletir; bu girdiye mutation’ın **variables** değeri denir. Yani `movieId`, tıklama anında belirlenir ve `saveFavorite` fonksiyonuna ulaşır.
+
+`mutate` bir kez çağrılır ve bu örnekte tek bir `movieId` taşır. İşlem için film kimliğiyle birlikte başka veri de gerekiyorsa, bunları tek bir object içinde verebilirsin; fonksiyonun parametresi de aynı object’i alır. Böylece hangi değerlerin bu yazma işlemini tarif ettiği açık kalır.
+
+## Beklerken arayüze ne söyleyelim?
+
+Bir ağ isteği hemen dönmeyebilir. Mutation’ın **state**’i, isteğin hangi aşamada olduğunu tutar. `pending` beklediğini, `success` tamamlandığını, `error` ise başarısız olduğunu anlatır. Şimdi önceki düğmeye tek bir yenilik ekleyelim: beklerken onu kilitleyelim.
+
+```tsx
+const favorite = useMutation({ mutationFn: saveFavorite })
+
+return (
+  <button
+    disabled={favorite.isPending}
+    onClick={() => favorite.mutate(movieId)}
+  >
+    {favorite.isPending ? 'Kaydediliyor…' : 'Favoriye ekle'}
+  </button>
+)
+```
+
+`mutate` çalıştıktan sonra `isPending` true olur; istek sonuçlanınca false’a döner. Düğmenin disabled olması, beklerken ikinci bir tıklamayla aynı işlemi göndermeyi zorlaştırır. Bu tek başına sunucuda tekrarları güvenli hale getirmez, ama arayüzde yanlışlıkla çift gönderimi önler.
+
+## Sinema’da başarı ve hatayı ayrı göster
+
+Şimdi aynı düğmeye iki sonuç görünümü ekleyelim. Sinema’nın favori servisi HTTP hatasında Promise’i reddediyor varsayalım. Bu örnek film puanlama kodundan farklıdır ama aynı film dünyasında kalır.
 
 ```tsx check
 import { useMutation } from '@tanstack/react-query'
 
-type BookmarkInput = { articleId: number; folder: string }
-declare function saveBookmark(input: BookmarkInput): Promise<void>
+declare function addFavorite(movieId: number): Promise<void>
 
-export function BookmarkButton({ articleId }: { articleId: number }) {
-  const save = useMutation({ mutationFn: saveBookmark })
+export function FavoriteButton({ movieId }: { movieId: number }) {
+  const favorite = useMutation({ mutationFn: addFavorite })
+
   return (
     <section>
       <button
-        disabled={save.isPending}
-        onClick={() => save.mutate({ articleId, folder: 'okunacaklar' })}
+        disabled={favorite.isPending}
+        onClick={() => favorite.mutate(movieId)}
       >
-        {save.isPending ? 'Ekleniyor…' : 'Okuma listesine ekle'}
+        {favorite.isPending ? 'Ekleniyor…' : 'Favoriye ekle'}
       </button>
-      {save.isSuccess && <p>Listeye eklendi.</p>}
-      {save.isError && <p role="alert">Kayıt yapılamadı. Yeniden deneyebilirsin.</p>}
+      {favorite.isSuccess && <p>Favorilere eklendi.</p>}
+      {favorite.isError && <p role="alert">Favoriye eklenemedi.</p>}
     </section>
   )
 }
 ```
 
-Pending sırasında düğmeyi devre dışı bırakmak, aynı tıklamanın beklerken tekrar gönderilmesini önler. Bu tek başına sunucu tarafında idempotency sağlamaz; ağ kopması sonrası istemci cevabı alamamış olabilir. Önemli yazmalarda API’nin tekrarları güvenli işleyecek bir sözleşmesi de gerekir.
+Bir tıklamadan sonra `pending` görünür; Promise başarılıysa `success`, reddedilirse `error` görünür. Her yeni `mutate` çağrısı yeni bir işlem başlatır ve arayüz sonraki render’da ilgili durumu okur. Hata mesajını kullanıcıya uygun bir cümleyle gösteriyoruz; ham hata metni URL ya da teknik ayrıntı içerebilir.
 
-Mutation state’ini query state’iyle karıştırma. Query, `isFetching` ile arka planda okuma yaparken eski veriyi koruyabilir; mutation ise çoğunlukla kullanıcı eyleminin tekil ömrünü anlatır. Mutation’ın `isPending` olması, ilgili query’nin yenilendiği anlamına gelmez. Başarı mesajı göstermek yazmanın kabul edildiğini söyler; ilişkili ekranda son durumun güncel olduğunu söylemez. O ikinci iş için invalidation veya cache güncellemesi gerekecek.
+Başarı ve hata burada kalıcı kayıt bilgisi değildir; yalnızca mutation’ın en son çağrısının sonucunu yansıtır. Örneğin başarıdan sonra düğme tekrar tıklanırsa yeni işlem `pending` olur. Bu yüzden “en son işlem başarılı” bilgisiyle “favori listesinde film kesin var” bilgisini birbirine karıştırma; listeyi cache üzerinden ayrıca ele almak gerekir.
 
-Bir mutation’ın değişkenleri çoğu zaman tıklama anında oluşur. Kullanıcı iki ayrı kartta işlem başlatabiliyorsa her kartın pending görünümünü yalnız tek bir üst mutation nesnesine bağlamak yanıltıcı olabilir. Her satır kendi mutation sonucunu tutabilir veya ortak bekleyen işlemler `mutationKey` ile izlenebilir. Tasarım, kullanıcının aynı anda kaç işi başlatmasına izin verdiğine dayanmalıdır.
+State değişince React bileşeni yeniden render eder ve metinler yeni duruma göre seçilir. Sen elle bir “bekliyor” boolean’ı yönetmezsin; Query bunu mutation Promise’inin sonucuna göre tutar.
 
-`reset()` mutation durumunu başlangıç görünümüne döndürür; sunucuda yapılmış işi geri almaz. Örneğin başarı metnini bir süre sonra temizlemek için reset kullanabilirsin, fakat bu bir undo değildir. Undo isteniyorsa sunucuya ters bir mutation gönderilmesi gerekir. Bu ayrım özellikle silme ve ödeme gibi geri dönüşü olmayan işlemlerde önemlidir.
+İşlemin zaman sırasını izleyelim. İlk durumda henüz tıklama yok:
 
-## Değer ve hata sınırları
+| An | Olan | Arayüz |
+| --- | --- | --- |
+| İlk render | Hook mutation’ı hazırlar; istek başlamaz | “Favoriye ekle” etkin |
+| Tıklama | Handler `mutate(movieId)` çağırır | İstek başlar |
+| Yanıt beklenirken | Promise hâlâ çözülmedi | `isPending` true, düğme kilitli |
+| Sunucu kabul eder | Promise çözülür | `isSuccess` true, başarı metni görünür |
+| Sunucu reddeder | Promise reject olur | `isError` true, hata metni görünür |
 
-Mutation değişkenlerini tek bir nesnede taşımak birden fazla girdinin yanlış sırayla verilmesini önler. TypeScript `mutationFn` tipinden parametreyi çıkarır; `mutate` çağrısı da aynı şekli ister. Değişkenler yalnızca tıklama anında biliniyorsa state’e kopyalamak gerekmez.
+Bu tablo, `useMutation` çağrısıyla isteğin başladığını sanma hatasını önler. Hook yalnızca React’e durum bilgisini bağlar; kullanıcı eylemi `mutate` çağrısını yapar.
 
-Hata nesnesini doğrudan kullanıcıya basmak yerine anlaşılır bir mesaj seç. `error.message` sunucu yanıtı, URL veya hassas veri içerebilir. Bir form hatası alanın yanında; geçici bağlantı hatası tekrar deneme olanağıyla gösterilebilir. Mutation hatası route değişince bile hatırlanacaksa, bildirimin sahibi bileşenden daha üst bir katmanda olmalıdır; bunun sınırını 6. derste kuracağız.
+## `fetch` hatasını mutation’a bildir
 
-:::mistake[Başarı gibi görünen başarısız cevap]
-Belirti → Sunucu 500 verdiği halde “Kaydedildi” çıkıyor. Neden → `fetch` cevabının `ok` özelliği kontrol edilmeden Promise çözülüyor. Düzeltme → `if (!response.ok) throw new Error(...)` ile `mutationFn`’i reject et.
+Gerçek `fetch` kullanırken sık rastlanan bir tuzak var: HTTP 500 cevabı `fetch` Promise’ini otomatik reddetmez. `mutationFn` 500 cevabını kontrol etmeden normal dönerse Query işlemi başarılı sanır.
+
+```ts
+async function markFavorite(movieId: number): Promise<void> {
+  const response = await fetch(`/api/favorites/${movieId}`, { method: 'POST' })
+  if (!response.ok) throw new Error('Favori kaydedilemedi')
+}
+```
+
+Burada `response.ok` false ise hata fırlatılır ve mutation `error` durumuna geçer. Böylece “Favorilere eklendi” yalnızca sunucu isteği gerçekten başarılı olduğunda görünür.
+
+:::mistake[Sunucu hata verdi ama başarı çıktı]
+Belirti → Network’te POST 500, ekranda “Favorilere eklendi.” görüyorsun. Neden → `fetch` cevabında `response.ok` kontrol edilmeden fonksiyon normal tamamlandı. Düzeltme → Hata cevabında `throw` et; mutation’ın Promise’i reddedilsin.
 :::
 
-:::mistake[Render sırasında yazma]
-Belirti → Aynı kayıt için peş peşe POST istekleri görünüyor. Neden → `mutate` bileşen gövdesinde veya render edilen bir ifade içinde çağrılıyor. Düzeltme → Çağrıyı `onClick` gibi kullanıcı olayı handler’ına taşı.
-:::
+## Neyi yönetir, neyi yönetmez?
 
-:::mistake[Pending sonsuza kadar sürüyor]
-Belirti → Düğme hep “Kaydediliyor…” kalıyor. Neden → `mutationFn` çözülmeyen bir Promise bekliyor veya callback içinde Promise tamamlanmıyor. Düzeltme → Her başarı ve hata yolunun Promise’i tamamladığından emin ol; iptal edilebilir ağ işlerinde iptal politikasını ayrıca belirle.
-:::
+Mutation’ın kendi state’i yalnızca bu yazma işleminin durumunu anlatır. POST’un başarılı olması, daha önce okuduğun favori listesinin cache’te kendiliğinden değiştiği anlamına gelmez. Query cache’ini mutation sonrasında güncellemek ayrı bir adımdır; sıradaki derste bunu yapacağız.
 
-:::sector
-Ekipler yazma akışını code review’da üç soruyla inceler: olay gerçekten kullanıcı eyleminde mi başlıyor, HTTP hata cevabı Promise’i reddediyor mu, pending ve error kullanıcıya açık mı? Bu kurallar puanlama, favori ekleme ve form kaydetme gibi tüm sunucu yazmalarında tekrar kullanılabilir.
+Şemadaki optimistic update ve invalidation adımlarını sonraki derslerde açacağız.
+
+![Mutation, optimistic update ve invalidation sırasını gösteren ortak model](diagram:mutation-ve-invalidation)
+
+`mutate` sonucu bekleyen Promise’i çağırana vermez; sonucu mutation state’inde görürsün. `mutateAsync` Promise döndürür ve `await` edilebilir, ancak hata durumunda `try/catch` gerekir. Şu an için durum metinlerini göstermek istediğinde `mutate` yeterlidir.
+
+:::info[Derinlemesine (isteğe bağlı)]
+Bazı API’ler aynı yazma isteğinin tekrar gelmesini sunucu tarafında tek işlem sayan bir **idempotency** anahtarı destekler. Bu, istemci cevap alamadığı için tekrar denediğinde çift kayıt oluşmasını önlemeye yardımcı olur. Mutation’daki `reset()` ise yalnızca arayüzdeki mutation state’ini temizler; sunucuda yapılan işi geri almaz. Çok sayıda bileşenin bekleyen mutation’ları birlikte izlemesi gerektiğinde `mutationKey` ve `useMutationState` gibi araçlar da vardır.
 :::
 
 ## Özet
 
-- Query okur ve cache’ler; mutation sunucuda değişiklik ister.
-- `useMutation` isteği başlatmaz; `mutate(variables)` başlatır.
-- Render mutation durumunu gösterir; event handler işlemi başlatır.
-- HTTP 4xx/5xx cevabında `response.ok` kontrolü yapılmazsa sahte başarı oluşabilir.
-- Mutation, etkilenmiş query cache’lerini otomatik güncellemez.
+- Mutation, sunucuda değişiklik isteyen işlemdir; `useMutation` işlemi hazırlar, `mutate` başlatır.
+- `mutationFn` işi yapar; `variables` çağrı anındaki girdidir.
+- `pending`, `success` ve `error` state’leri arayüzün bekleme, başarı ve hata görünümünü seçmesini sağlar.
+- `fetch` HTTP hatasında otomatik reject etmez; başarısız cevapta hata fırlat.
+- Başarılı yazma, ilişkili query cache’ini kendiliğinden güncellemez.
 
-**Kendini yokla:** `useMutation` hook’unu çağırmak neden POST atmaz?  
-Cevap: Hook gözlemciyi kurar; yazma ancak kullanıcı olayı `mutate` çağırınca başlar.
+**Yeni terimler**
 
-**Kendini yokla:** `fetch` 500 döndürdüğünde mutation neden `success` olabilir?  
-Cevap: `fetch` HTTP hata durumlarında da Response ile çözülür. `response.ok` kontrol edip hata fırlatmak gerekir.
+- **Mutation:** Sunucuda veri oluşturan, değiştiren veya silen yazma işlemi.
+- **Mutation state:** Yazma işleminin bekliyor, başarılı veya hatalı olduğunu tutan durum.
+- **`mutationFn`:** Mutation’ın asıl işini yapan Promise döndüren fonksiyon.
+- **Variables:** Mutation’a `mutate` çağrısında verilen girdi.
+
+**Kendini yokla:** Hook render olurken neden favori POST’u göndermez?
+
+Cevap: Hook yalnız mutation’ı hazırlar; POST, kullanıcı tıklayıp `mutate` çağırınca başlar.
+
+**Kendini yokla:** HTTP 500’de neden `isSuccess` görebilirsin?
+
+Cevap: `fetch` 500 cevabında Promise’i çözebilir. `response.ok` false iken hata fırlatmalısın.

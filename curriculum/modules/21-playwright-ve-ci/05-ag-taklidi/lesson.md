@@ -1,156 +1,152 @@
 ---
 title: "Ağ taklidi: page.route"
-minutes: 14
+minutes: 16
 kind: concept
 ---
 
-# Ağı tarayıcıda kontrol etmek
+# Tarayıcı isteğine test cevabı ver
 
-:::pain[Problem]
-Etkinlik arama E2E testi kendi bilgisayarında geçiyor, CI’da katalog servisi yanıt vermiyor. Başka gün program sırası değişiyor. `server.use` ile yazdığın MSW taklidi Vitest sürecinde çalışır; Playwright’ın açtığı browser’daki istekleri otomatik yakalamaz.
-:::
+Sinema’da `/program` sayfasını açınca tarayıcı dış film servisine istek gönderebilir. Vitest’te MSW ile sahte yanıt verdiğini hatırlarsın. Playwright ise uygulamayı gerçek bir browser’da açar; Vitest sürecindeki MSW bu browser’ın isteklerini otomatik yakalamaz. Playwright’ın `page.route` metodu, tek bir sayfanın ağ isteğine test içinde yanıt vermeni sağlar.
 
-## Önce isteği gözle
+## Önce tek bir yanıt dön
 
-:::model[MSW perdesi]
-Vitest içinde MSW, uygulamanın yaptığı fetch isteğini yakalar ve tanımlı handler cevabını döndürür. Playwright ise uygulamayı ayrı bir tarayıcı sürecinde açar; Node test sürecindeki MSW handler’ı tarayıcıya otomatik geçmez. Tarayıcı ağını test başında page veya context rotasıyla karşıla.
+Bir **endpoint**, servisteki belirli bir iş için kullanılan adres yoludur. Diyelim ki Sinema’nın sayfası `https://api.sinema.test/program` adresinden programı alıyor. İlk olarak bu endpoint’e giden isteği yakalayıp bir **response** (sunucudan geri gelen HTTP yanıtı) verebilirsin:
 
-![Uygulama fetch çağrısı MSW tarafından yakalanıp handler yanıtına döner](diagram:msw-perdesi)
-:::
-
-Bu modelde değişen yer, isteği kimin yakaladığıdır. RTL testinde MSW, jsdom içindeki uygulama sürecine yakın durur. Tarayıcı E2E’de Playwright route, browser context’in dış ağ isteğini yakalar. İkisinde de uygulama aynı fetch API’sini çağırır; test ağı, cevabın gerçek servisten gelmesini engeller.
-
-Kesin kurallar:
-
-1. Route’u ilk gezinmeden önce kur; uygulama açılırken istek atıyorsa sonradan eklenen kural geç kalır.
-2. Adres eşleşmesini dar tut; yalnızca hedef origin ve endpoint yakalansın.
-3. Cevap gövdesi uygulamanın beklediği veri sözleşmesine uysun. Liste yanıtı tek kayıt değil, sonuç dizisi ve sayfalama alanları taşır.
-4. İstek metodunu, query değerlerini ve gerekli başlıkları talep olduğunda kontrol et.
-5. Bilinmeyen ya da yetkisiz istek başarı gibi görünmemeli; gerçek hata koşulunu açıkça döndür.
-6. Yeni sekme açılabilen senaryoda page yerine context rotası kur; tüm sekmeler ortak bağlamdan geçer.
-
-## Yanıtı zaman sırasıyla izle
-
-Kullanıcı bir etkinlik arar. UI fetch yapar; tarayıcı Playwright route kuralına ulaşır; test URL ve Authorization bilgisini okuyup cevabı hazırlar; uygulama HTTP yanıtını JSON’a çevirir; bileşen listeyi gösterir. E2E bu zincirde gerçek tarayıcı, UI ve router’ı bırakır, yalnızca dış servisin yanıtını sabitler.
-
-| Sıra | Olay | Testin sağladığı kanıt |
-| --- | --- | --- |
-| 1 | Route kaydı eklenir | Uygulama başlamadan önce kural hazır |
-| 2 | Uygulama isteği yollar | İstek browser’dan çıkar |
-| 3 | URL ve başlık okunur | Doğru query ve kimlik başlığı var |
-| 4 | JSON cevap döner | Uygulama gerçek servis olmadan devam eder |
-| 5 | UI güncellenir | Kullanıcının gördüğü sonuç test edilir |
-
-Kırık örnek sadece query parametresini yakalar, ama yanıt gövdesini yanlış şekillendirir:
-
-~~~ts
-await page.route('https://api.etkinlik.example/program**', (route) =>
-  route.fulfill({ json: [{ title: 'Film gecesi' }] }),
-)
-~~~
-
-Uygulama `{ items: [...] }` bekliyorsa bu yanıt doğru veriye benzese bile sözleşmeye uymaz. Düzeltilmiş route aynı senaryoda liste zarfını ve yetki kontrolünü verir:
-
-~~~ts check
+```ts check
 import { expect, test } from '@playwright/test'
 
-test('program listesi test verisiyle açılır', async ({ page }) => {
-  await page.route('https://api.etkinlik.example/program**', async (route) => {
-    const authorized = route.request().headers().authorization === 'Bearer demo'
-    if (!authorized) return route.fulfill({ status: 401, json: { message: 'Oturum gerekli' } })
-    await route.fulfill({ json: { items: [{ id: 4, title: 'Film gecesi' }] } })
+test('program kartları örnek veriyle görünür', async ({ page }) => {
+  await page.route('https://api.sinema.test/program', async (route) => {
+    await route.fulfill({
+      json: { items: [{ id: 21, title: 'Film gecesi' }] },
+    })
   })
+
   await page.goto('/program')
   await expect(page.getByRole('link', { name: 'Film gecesi' })).toBeVisible()
 })
-~~~
+```
 
-Üretimdeki hata sayfasını da sınamak istiyorsan route’u bilerek 500 veya 401 cevabı verecek şekilde değiştir. Aynı testte başarı ve hata davranışını karıştırmak yerine ayrı senaryolar kurmak, birinin kanıtını diğerinin etkisinden ayırır.
+`page.goto` öncesi kuralı kurduk. Böylece uygulamanın açılış isteği de test yanıtını alır. Uygulama `items` alanını okuyup kartı gösterir; test gerçek browser ve UI davranışını korurken dış servisin erişilebilir olmasına bağlı kalmaz.
 
-DevTools Network sekmesinde arama, `GET https://api.etkinlik.example/program?query=...` isteği atıyor. Testte gerçek servise bağımlı kalırsan sonuç, süre ve 401 durumunu denetleyemezsin. Playwright’ın `page.route` metodu tarayıcının isteğini yakalar; `route.fulfill` yanıtı verir.
+## Arama değerine göre yanıtı seç
 
-```ts check title="e2e/search.spec.ts"
-import { test, expect } from '@playwright/test'
+Sabit bir liste bazen yeterlidir, ama arama kutusu farklı sonuçlar göstermeli olabilir. URL’nin `?` işaretinden sonraki bölümüne **query string** denir; burada kullanıcı aramasını taşır. Route callback’i bu adresi okuyarak farklı yanıt verebilir:
 
-test('program araması sabit katalogla çalışır', async ({ page }) => {
-  await page.route('https://api.etkinlik.example/program?**', async (route) => {
+```ts check
+import { expect, test } from '@playwright/test'
+
+test('program araması sorguya göre sonuç verir', async ({ page }) => {
+  await page.route('https://api.sinema.test/filmler?**', async (route) => {
     const url = new URL(route.request().url())
-    const results = url.searchParams.get('query') === 'seramik'
-      ? [{ id: 42, title: 'Seramik atölyesi' }]
-      : []
-    await route.fulfill({ json: { items: results } })
+    const title = url.searchParams.get('query') === 'matrix'
+      ? 'Matrix'
+      : 'Sonuç yok'
+
+    await route.fulfill({ json: { items: [{ id: 7, title }] } })
   })
-  await page.goto('/program')
-  await page.getByRole('searchbox', { name: 'Etkinlik ara' }).fill('seramik')
-  await expect(page.getByRole('link', { name: 'Seramik atölyesi' })).toBeVisible()
+
+  await page.goto('/search')
+  await page.getByRole('searchbox', { name: 'Film ara' }).fill('matrix')
+  await expect(page.getByRole('link', { name: 'Matrix' })).toBeVisible()
 })
 ```
 
-Route’u **`page.goto` öncesi** kur. Uygulama açılışta istek atarsa sonradan kurulan route geç kalır. Yanıt, uygulamanın beklediği liste biçimine uymalı; burada `items` alanı bir dizi taşır.
+`new URL(...)` adresi parçalara ayırır; `searchParams.get('query')` ise arama değerini güvenilir biçimde okur. Aramadaki Türkçe karakterler URL içinde kodlanabileceği için ham metinde `query=dövüş` aramak kırılgandır. Parametre okuyucu kodlanmış değeri çözer.
 
-## Aynı fikir, yeni durum
+Bu örnek, boş sonuç için de aynı veri biçimini kullanabilir. Örneğin sorgu `bilinmeyen` ise `items: []` dön. Böylece uygulamanın arama tamamlandı durumunu ve boş ekranını ayrı test edebilirsin; yanlış biçimde `null` veya film dizisinin kendisini döndürmek UI’nin beklediği veri yapısını bozabilir.
 
-Modül 11’de `server.use` ile tek teste 500 yanıtı veriyordun. Tarayıcıda karşılığı:
+## İstek başlığını da kontrol et
 
-```ts
-await page.route('https://api.etkinlik.example/venues/42/sessions', (route) =>
-  route.fulfill({ status: 500, json: { message: 'Program geçici olarak kapalı' } }),
-)
-await page.goto('/mekan/42')
-await expect(page.getByRole('alert')).toContainText('Program yüklenemedi')
+Bazı servisler istekte kimlik bilgisi bekler. HTTP **header**’ı, isteğe eklenen küçük bir bilgidir; Authorization header hangi kullanıcı yetkisiyle istek gittiğini taşır. Eksik başlığı başarıyla yanıtlamak, oturum hatasını saklar.
+
+```ts check
+import { expect, test } from '@playwright/test'
+
+test('seans listesi yalnızca oturumla gelir', async ({ page }) => {
+  await page.route('https://api.sinema.test/seanslar?**', async (route) => {
+    const authorized = route.request().headers().authorization === 'Bearer test-token'
+
+    if (!authorized) {
+      await route.fulfill({ status: 401, json: { message: 'Oturum gerekli' } })
+      return
+    }
+
+    const url = new URL(route.request().url())
+    const items = url.searchParams.get('film') === 'matrix'
+      ? [{ id: 8, title: 'Matrix — 20:30' }]
+      : []
+
+    await route.fulfill({ json: { items } })
+  })
+
+  await page.goto('/seanslar')
+  await expect(page.getByRole('alert')).toHaveText('Oturum gerekli')
+})
 ```
 
-Bu kez hata sayfasını ve erişilebilir `alert` rolünü birlikte sınarsın. Gerçek uygulamada hata metni farklıysa assertion’ı kendi UI sözleşmene göre yaz.
+Bu kez route başlığı okuyor. Yetki yoksa `401` (kimlik doğrulama gerekiyor) döner; izin varsa sorguya göre liste verir. Arayüz de gerçekçi hata yolundan geçer. Başarılı akışta test token’ı bulunan bir oturum kurulur; başka senaryoda eksik token ile bu hata görünür.
 
-## Girişte farklı servis
+## İsteğin yolculuğunu sırayla izle
 
-Bir üyelik akışında `POST /session` isteğini de taklit edebilirsin. `route.request().method()` ve `route.request().postDataJSON()` ile e-posta alanını denetle; geçerli kayıt için kullanıcı kimliği döndür, geçersiz kayıt için 400 yanıtı ver. Böylece form ve yönlendirme gerçek browser’da çalışırken dış servis deterministik kalır.
+Route’u geç kurarsan ilk isteği kaçırabilirsin. Ekranda görünen “İlk istekte TMDB’ye bağlandı” ya da gerçek ağ trafiği, bunun belirtisidir. Sıra şöyle işler:
 
-:::mistake[Sık hata]
-**Belirti:** İlk sayfa isteği gerçek ağa çıkar. → **Neden:** Route gezinmeden sonra kurulmuştur. → **Düzeltme:** Route kaydını page.goto öncesine taşı.
-:::
+| Sıra | Olay | Ne olur? |
+| --- | --- | --- |
+| 1 | Route kaydı eklenir | Eşleşme kuralı hazırdır. |
+| 2 | `page.goto` sayfayı açar | Browser uygulama kaynaklarını yükler. |
+| 3 | Uygulama dış servise istek yollar | İstek Playwright route’una gelir. |
+| 4 | Route URL/header okur ve yanıt verir | Gerçek servise çıkmadan test verisi döner. |
+| 5 | Uygulama yanıtı işler | UI listeyi veya hata mesajını gösterir. |
 
-:::mistake[Yanlış yanıt gövdesi]
-**Belirti:** UI boş kalır veya parse hatası verir. → **Neden:** Taklit, API’nin veri zarfını taşımamıştır. → **Düzeltme:** Uygulamanın okuyacağı alanları ve türleri yanıt gövdesinde koru.
-:::
+Bu nedenle ilk gezinmeden önce route kur. Route’u `page.goto` sonrasına alırsan uygulama açılış isteğini kuraldan önce gönderebilir. Geçmiş bir istek için route sonradan yanıt üretmez.
 
-:::mistake[Başlık hatasını gizlemek]
-**Belirti:** Eksik Authorization ile bile başarılı liste gösterilir. → **Neden:** Route her isteğe aynı olumlu cevabı verir. → **Düzeltme:** Yetkisiz dal için 401 döndür ve en az bir akışta başlığı doğrula.
-:::
+Başarı ve hata durumunu da farklı testlerde görünür tut. Başarılı bir senaryoda liste bağlantısını beklersin; yetkisiz senaryoda `401` cevabıyla gelen hata mesajını beklersin. Aynı testte önce başarı verip sonra hata cevabı üretmek sonucu belirsizleştirir: hangi yanıtın ekranda kaldığını anlamak güçleşir. Ayrı testler, her birinin hangi koşulu kanıtladığını açık eder.
 
-## Route kapsamı ve senaryo ayrımı
+Route kuralı da olabildiğince hedefe yakın olsun. Sadece `/seanslar` isteğini yakalıyorsan, `https://api.sinema.test/**` gibi tüm API’yi kapsayan desen kullanma. Geniş bir desen film aramasını veya profil isteğini yanlışlıkla aynı yanıtla karşılayabilir. Dar eşleşme, ilgisiz isteklerin gerçek uygulama yolunda kalmasını sağlar.
 
-Bir sayfa birden fazla dış origin’e bağlanıyorsa her servis için ayrı cevap sözleşmesi kur. Arama servisi liste zarfı, kimlik servisi ise oturum alanları döndürebilir; aynı genel JSON yanıtını tüm adreslere vermek uygulamanın gerçek sınırlarını örtemez. Testte önemli olan bütün API şemasını kopyalamak değil, senaryoda UI’nin kullandığı alanları doğru tür ve anlamla sağlamaktır.
+Route callback’inde `route.request()` ile gelen isteği inceler, `route.fulfill()` ile kendi yanıtını verirsin. Her istekte başarılı kod varsayılan olabilir; ancak hata senaryosunda `status: 500` gibi bir HTTP durumu açıkça belirtmek gerekir. Gövde metni kullanıcıya gösterilen hatayla uyuşsun. Böylece test hem neden isteğin başarısız olduğunu hem de UI’nin bu durumu nasıl anlattığını doğrular.
 
-Route callback’i istek metodu, URL ve header’ları okuyabilir. Böylece yanlışlıkla POST bekleyen bir akış GET göndermişse ya da Authorization eksikse test bunu başarılı cevapla örtmez. Sabit veride de gerçekçi başarısızlık dalını tut: 401 kimlik bilgisini, 500 geçici servis arızasını, boş liste ise başarılı ama sonuçsuz aramayı temsil eder. Bunlar kullanıcıya farklı UI durumları gösterir.
+## Yanıtın biçimi de davranışın parçası
 
-Page route ile context route arasındaki seçim testin kurulumuna bağlıdır. Tek page açıyorsan page.route kolaydır; yeni sekme, popup veya birden fazla page kullanılıyorsa context.route daha geniş kapsamdadır. Route eşlemesini gereğinden fazla geniş tutarsan ilgisiz endpoint’leri de yanlış yanıtlayıp testi geçirebilirsin. Kuralın kapsadığı URL kalıbını ve metodunu senaryo ihtiyacına göre daralt.
+Kırık bir örnek film dizisini doğrudan verir:
 
-Service worker tarafından yakalanan ağ trafiği normal route akışından farklı davranabilir. Bir uygulamada service worker varsa test ortamında cache ve intercept davranışını ayrıca düşün; her istek doğrudan page.route’a ulaşmayabilir. Bu ayrıntı route taklidinin yanlış olduğu anlamına gelmez, ama tarayıcıda hangi katmanın isteği önce gördüğünü bilmek gerekir.
+```ts
+await route.fulfill({ json: [{ id: 21, title: 'Film gecesi' }] })
+```
 
-Kırık örnekte tüm istekler koşulsuz başarılıdır:
+Bu cevap JSON’dur, ama uygulama `{ items: [...] }` bekliyorsa doğru yanıt değildir. Belirti olarak liste boş kalabilir ya da uygulama veri okurken hata verir. Cevabı uygulamanın gerçekten kullandığı alanlarla düzelt:
 
-~~~ts
-await page.route('https://api.etkinlik.example/**', (route) =>
-  route.fulfill({ json: { items: [] } }),
-)
-~~~
+```ts
+await route.fulfill({ json: { items: [{ id: 21, title: 'Film gecesi' }] } })
+```
 
-Bu kural arama, oturum ve ayrıntı isteklerini aynı gövdeye indirger. Düzeltilmiş tasarım her endpoint’in ihtiyacını ayrı karşılar; yetkisiz istek de ayrı bir yanıt alır. Testin uygulama kodunu değil, dış servis sınırını kontrol etmesi korunur.
+Her endpoint’in sözleşmesini korumak önemlidir. Arama yanıtı film sonuçlarını, oturum yanıtı kullanıcı bilgisini bekleyebilir; her URL’ye aynı genel JSON’u vermek hataları gizler.
 
-:::sector[Sektörde]
-Fikstürleri küçük ve amaca uygun tut. Ana akışı sabit veriyle, hata durumunu ayrı testle kontrol et. Her şeyi taklit etmek yerine gerçekten görmek istediğin katmanı (router, UI, form) açık bırak. MSW ve Playwright route aynı dış sistem sınırını farklı test çalışma alanlarında kontrol eder.
+MSW ve Playwright route aynı işi farklı çalışma yerlerinde yapar. MSW Vitest’in test sürecindeki uygulama isteğini yakalar; Playwright route browser’dan çıkan isteği yakalar. E2E’de sayfanın kendisini, gerçek tarayıcı etkileşimini ve uygulamanın yanıtı işleme şeklini sınarsın; dış servisin o an çalışıp çalışmamasını sabitlersin.
+
+:::info[Derinlemesine (isteğe bağlı)]
+Tek sayfa için `page.route` yeterlidir. Popup veya yeni sekme de aynı testin parçasıysa `browserContext.route` ile aynı browser context’indeki sayfaları kapsayabilirsin. Bir service worker isteği route’tan önce ele alıyorsa normal interception davranışı değişebilir; bu, özel test ortamında ayrıca incelenmesi gereken ileri bir durumdur.
 :::
 
 ## Özet
 
-- MSW, Vitest tarafındaki ağ perdesidir; Playwright route tarayıcının dış isteklerini yakalar.
-- Route’u ilk istekten önce kur ve endpoint’i dar eşleştir.
-- Yanıt gövdesi gerçek veri sözleşmesine uysun; yetkisiz ve hata yanıtlarını başarı gibi gizleme.
-- Gerçek tarayıcı ve uygulama UI’si testte kalır; dış API cevabı kontrol edilir.
+- `page.route` browser isteğini yakalar; route’u ilk gezinmeden önce kur.
+- URL ve query parametrelerini okuyarak farklı sorgulara farklı yanıtlar verebilirsin.
+- Yanıt gövdesi uygulamanın beklediği alanları taşımalı.
+- Kimlik gerektiren isteklerde yetkisiz durumu başarı cevabıyla gizleme.
 
-**Kendini yokla:** Vitest MSW handler’ı Playwright tarayıcısının isteğini neden kendiliğinden yakalamaz?  
-*Cevap:* Tarayıcı farklı süreçtedir; Playwright network route’u ayrı bağlanır.
+**Yeni terimler:**
 
-**Kendini yokla:** Route’u sayfa açıldıktan sonra kaydetmek neden risklidir?  
-*Cevap:* Açılış isteği kural kurulmadan çıkmış olabilir.
+- **Endpoint:** Serviste belirli bir iş için çağrılan adres yolu.
+- **Response:** İsteğe geri dönen HTTP yanıtı ve gövdesi.
+- **Query string:** URL’de `?` sonrasında taşınan parametreler.
+- **Header:** İsteğe veya yanıta eklenen HTTP bilgisi.
+
+**Kendini yokla:** Neden route’u `page.goto` öncesinde kaydediyoruz?
+
+*Cevap:* Uygulama açılışta istek gönderebilir; sonradan eklenen kural bu isteği yakalayamaz.
+
+**Kendini yokla:** `items` bekleyen uygulamaya neden yalnızca film dizisi döndürmek yetmez?
+
+*Cevap:* Uygulama yanıtın `{ items: [...] }` biçiminde olacağını varsayar.

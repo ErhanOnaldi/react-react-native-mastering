@@ -1,4 +1,4 @@
-Seçili kayıt sayısını ve yeni kayıt ekleme etkileşimini tek bir arayüzde sun.
+`WatchCounter` bileşeninin gerçek store bağlantısını sınayan RTL testlerini yaz. Testler başlangıç görünümünü ve kullanıcı tıklamasının store ile ekrana etkisini doğrulasın.
 
 ## Gereksinimler
 
@@ -13,6 +13,7 @@ Başlangıç boş → ilk tıklama: `1 film` → ikinci tıklama: hâlâ `1 film
 
 ## Sözleşme
 
-- Dosya ve export: `WatchCounter.tsx` → `WatchCounter`
+- Test dosyası: `WatchCounter.test.tsx`
+- Test edilecek export: `@impl/WatchCounter` içinden `setupStore(ids?: number[])` ve `WatchCounter`.
 - Çıktı HTML `<output>` öğesinde; düğmenin erişilebilir adı `550 ekle`.
-- Bileşen Provider altındaki store’u kullanır.
+- `WatchCounter` Provider altındaki store’u kullanır.

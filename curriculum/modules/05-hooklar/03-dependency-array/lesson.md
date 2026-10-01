@@ -1,272 +1,129 @@
 ---
 title: "Değişen veri ve dependency array"
-minutes: 19
+minutes: 18
 kind: concept
 ---
 
 # Değişen veri ve dependency array
 
-:::pain[Problem]
-Kullanıcı film detay sayfasında gezinirken aktör kartına tıklıyor. Kart önce `Christian Bale` (id: 389) bilgilerini gösteriyor. Sayfa açıkken başka bir aktöre (id: 520) geçiliyor; prop değişiyor ama ekranda inatla eski aktörün biyografisi kalıyor. Render yeni prop değerini gördü, ancak effect eski aktörle kurduğu dış ilişkiyi yenilemedi.
-:::
+Bir film kartı ilk açıldığında `movieId` değerinin `550` olduğunu düşün. Önceki derste, ağ isteğini `useEffect` içine alarak render sırasında tekrar tekrar başlamasını önledin. Şimdi aynı kart başka filme geçtiğinde effect'in hangi bilgiyi takip etmesi gerektiğine bakalım.
 
-## Dependency listesi doğruluk sözleşmesidir
+## Prop değişti, istek neden yenilenmedi?
 
-`useEffect`'in ikinci parametresi olan bağımlılık dizisi (dependency array), yalnızca "bu kod kaç kez çalışsın?" ayarı değildir. Effect'in dış dünya ile senkronize olurken bileşenin hangi reaktif değerlerine dayandığını beyan eden bir **doğruluk sözleşmesidir**.
-
-Effect gövdesinde bileşene gelen bir prop (`actorId`), bir state (`query`) ya da bileşen gövdesinde türetilmiş bir değişken okunuyorsa, o değer değiştiğinde dış sistemle kurulmuş olan mevcut senkronizasyon artık geçersiz hale gelmiştir.
-
-![Effect içinde okunan değişkenlerin dependency listesinde sözleşmeye dönüşmesi](diagrams/dependency-sozlesmesi.svg "Dependency listesi effect'in hangi render değerlerine bağlı olduğunu açıklar.")
-
-Modelin kesin kuralları:
-
-1. **Reaktif değer tanımı:** Effect içinde okunan tüm `props`, `state` ve bileşen gövdesinde tanımlı değişkenler reaktif (reactive) değerdir.
-2. **Eksiksiz beyan kuralı:** Effect'in sonucunu ya da davranışını değiştiren her reaktif değer, bağımlılık listesinde yer almak zorundadır.
-3. **Boş dizi sözleşmesi:** `[]` yazmak effect'in reaktif değer okumadığını söyler. Normal bir mount'ta kurulur; unmount'ta temizlenir. Geliştirme `StrictMode`'unda ilk mount için ek setup ve cleanup denemesi olabilir. Yeniden mount da yeniden kurulumdur.
-4. **Referans eşitliği (`Object.is`):** React bağımlılıkları yüzeysel referans kontrolüyle (`Object.is`) karşılaştırır. İçeriği aynı olsa bile her render'da yeniden üretilen nesneler ve fonksiyonlar "farklı değer" sayılır.
-5. **Eksik liste bayat değer üretir:** Bağımlılık dizisini bilinçli olarak küçültmek performans sağlamaz; arayüzde bayat (stale) verilerin kalmasına yol açar. Dependency'ler kodun okuduğu değerlere göre belirlenir; dizi bir zamanlama düğmesi değildir.
-
-:::model[State snapshot]
-React'te her render kendi `props` ve `state` fotoğrafına sahiptir. Effect callback'i de belirli bir render anında oluşturulur. Bağımlılık dizisine `[]` yazarsan, o mount'taki effect ilk render'da yakaladığı `actorId` değerini kullanmayı sürdürür. Sonraki render'lar yeni bir `actorId` getirse bile bu effect yeniden kurulmaz.
-:::
-
-## Closure: Callback hangi render'ı hatırlar?
-
-JavaScript'te bir fonksiyon, tanımlandığı lexical kapsamdaki değişkenleri belleğinde hapseder (closure). React'in render modelinde her render bağımsız bir fonksiyon çağrısıdır.
-
-![Callback'in oluşturulduğu render'ın değerlerini yakalaması](diagram:closure-bayat-deger)
-
-Bunu bir zamanlayıcı üzerinden adım adım izleyelim:
+Bir effect'in ikinci argümanındaki **dependency array** (bağımlılık dizisi), effect'in hangi render değerlerine bağlı olduğunu React'e bildirir. `id` gibi bileşene her render'da gelen değer değiştiğinde, dış sistemle kurduğun ilişkinin de yenilenmesi gerekiyorsa onu bu diziye koyarsın.
 
 ```tsx
 useEffect(() => {
-  const timer = setInterval(() => {
-    console.log(statusText)
+  fetch(`/api/movies/${movieId}`)
+}, [])
+```
+
+Bu kod ilk bağlanmada isteği başlatır. Ama aynı bileşen `movieId={550}` değerinden `movieId={27205}` değerine geçtiğinde effect çalışmaz; React'e boş diziyle “bu effect'in sonucu render değerlerine bağlı değil” demiş olduk. Ekranda eski filmin bilgisi kalabilir.
+
+```tsx
+useEffect(() => {
+  fetch(`/api/movies/${movieId}`)
+}, [movieId])
+```
+
+Şimdi liste, isteğin kullandığı `movieId` ile eşleşiyor. İlk değerde effect kurulur; `movieId` değişince React eski effect'i temizler ve yeni değerle effect'i tekrar kurar. Dependency listesi “kaç kez çalışsın?” düğmesi değil, effect'in doğru kalması için verdiğin listedir.
+
+![Effect içinde okunan değişkenlerin dependency listesinde sözleşmeye dönüşmesi](diagrams/dependency-sozlesmesi.svg "Dependency listesi effect'in hangi render değerlerine bağlı olduğunu açıklar.")
+
+## Her render kendi değerlerini taşır
+
+Bir render'da `movieId` 550, sonraki render'da 27205 olabilir. Bu render'ları React'in bileşeni ayrı değerlerle çağırdığı iki ayrı an gibi düşün. JavaScript'te bir fonksiyonun tanımlandığı yerdeki değişkenleri kullanmaya devam etmesine **closure** denir; bu, callback'in hangi render değerini gördüğünü anlamana yardım eder.
+
+Örneğin, Sinema'da güncel seçimi konsola yazan bir timer kuralım:
+
+```tsx
+useEffect(() => {
+  const timerId = setInterval(() => {
+    console.log(selectedGenre)
   }, 1000)
-  return () => clearInterval(timer)
-}, []) // TEHLİKE: statusText okunuyor ama bağımlılık boş!
+
+  return () => clearInterval(timerId)
+}, [])
 ```
 
-Eğer ilk render'da `statusText = "Yükleniyor"` ise, `setInterval` callback'i sonsuza dek `"Yükleniyor"` dizesini hatırlar. Kullanıcı daha sonra veriyi alsa ve `statusText = "Tamamlandı"` olsa bile, interval konsola hâlâ `"Yükleniyor"` yazdırmaya devam eder. Çünkü React'e eski zamanlayıcıyı yok edip yeni `statusText` ile yenisini kurması gerektiğini söyleyen bağımlılık bildirilmemiştir.
+Burada callback, kurulduğu render'daki `selectedGenre` değerini kullanır. İlk render'da tür `Dram` ise, kullanıcı türü `Bilim Kurgu` yaptığında timer hâlâ `Dram` yazabilir; boş liste effect'i yeni değerle kurmadı. `selectedGenre`'ı listeye eklemek, tür değişince eski timer'ı temizler ve yeni değerle yenisini kurar.
 
-## İki render arasındaki geçişi izleyelim
-
-Biyografi kartımızda `actorId` prop'unun 389'dan 520'ye değiştiği senaryoyu karşılaştıralım:
-
-| Aşama | Render Değeri | Bağımlılık Listesi | React'in Karşılaştırması | Sonuç |
-| --- | --- | --- | --- | --- |
-| 1. Render | `actorId = 389` | `[389]` | İlk çalıştırma (mount) | `/person/389` isteği atılır, Bale gelir |
-| 2. Render | `actorId = 520` | `[520]` | `Object.is(389, 520) === false` | **Bağımlılık değişti:** Eski ilişki kapatılır, `/person/520` isteği atılır |
-| Hatalı Kod | `actorId = 520` | `[]` | `[]` ile `[]` aynı | **Effect tetiklenmez!** Ekranda Bale biyografisi çakılı kalır |
-
-Eksik bağımlılık kodu "daha hızlı" yapmaz, sadece "yanlış" yapar.
-
-## Kırık örnek
-
-Aşağıdaki bileşende `actorId` değeri effect içinde okunmakta, ancak dependency dizisi boş bırakılmaktadır:
-
-```tsx
-import { useEffect, useState } from 'react'
-
-type Actor = { name: string; biography: string }
-
-export function ActorBio({ actorId }: { actorId: number }) {
-  const [bio, setBio] = useState('Yükleniyor...')
-
-  useEffect(() => {
-    fetch(`/api/people/${actorId}`)
-      .then((res) => res.json() as Promise<Actor>)
-      .then((data) => setBio(data.biography))
-  }, []) // HATA: actorId bağımlılığı eksik!
-
-  return <p>{bio}</p>
-}
-```
-
-Bileşen ilk açıldığında çalışır. Ancak ebeveyn bileşen yeni bir aktör seçtiğinde bu bileşene yeni bir `actorId` gelir; effect ise hiçbir tepki vermez. Kullanıcı ekranda yanlış biyografiyi okur.
-
-## Doğru örnek
-
-Sözleşmeyi dürüstçe tamamlıyoruz:
-
-```tsx check
-import { useEffect, useState } from 'react'
-
-type Actor = { name: string; biography: string }
-
-export function ActorBio({ actorId }: { actorId: number }) {
-  const [bio, setBio] = useState('Yükleniyor...')
-
-  useEffect(() => {
-    let ignore = false
-    setBio('Yükleniyor...')
-    fetch(`/api/people/${actorId}`)
-      .then((res) => res.json() as Promise<Actor>)
-      .then((data) => {
-        if (!ignore) setBio(data.biography)
-      })
-    return () => { ignore = true }
-  }, [actorId])
-
-  return <p>{bio}</p>
-}
-```
-
-Artık `actorId` her değiştiğinde React eski effect'i temizler ve yeni değerle yeni bir istek başlatır. `ignore` bayrağı eski yanıt geç gelse bile yeni kartın metnini ezmesini önler; eski ağ isteği yine tamamlanabilir. İstek maliyeti önemliyse aynı cleanup içinde `AbortController` ile iptal de eklenebilir.
-
-## Nesne ve fonksiyon bağımlılığı tuzağı
-
-Geliştiricilerin en sık düştüğü tuzaklardan biri, bileşen gövdesinde oluşturulan nesne veya fonksiyonları dependency dizisine koymaktır. JavaScript'te iki nesnenin içeriği birebir aynı olsa dahi bellekteki referansları farklıdır:
-
-```ts
-// JavaScript referans kuralı:
-{ id: 1 } === { id: 1 } // false!
-(() => {}) === (() => {}) // false!
-```
-
-Şu hatalı koda bakalım:
-
-```tsx
-export function FilmRatings({ filmId }: { filmId: number }) {
-  // TEHLİKE: options nesnesi HER render'da yeni bir bellek adresiyle üretilir!
-  const options = { id: filmId, includeAdult: false }
-
-  useEffect(() => {
-    fetch(`/api/ratings?film=${options.id}`)
-  }, [options]) // Her render'da options referansı değişir; effect gereksiz tekrarlar.
-
-  return null
-}
-```
-
-Bu gereksiz tekrarları önlemek için `[options]` yerine iki doğru yaklaşımdan birini seçmelisin. Effect state güncelleyip yeni render başlatıyorsa bu referans değişimi gerçek bir döngüye de dönüşebilir:
-
-1. **Primitif parçalara indirgemek:** Effect'in gerçekten okuduğu ilkel değeri (`filmId`) kullan:
-   ```tsx
-   useEffect(() => {
-     fetch(`/api/ratings?film=${filmId}`)
-   }, [filmId])
-   ```
-2. **Nesneyi effect içine taşımak:** Nesne yalnızca effect içinde kullanılıyorsa, onu doğrudan effect callback'inin içinde tanımla:
-   ```tsx
-   useEffect(() => {
-     const options = { id: filmId, includeAdult: false }
-     fetch(`/api/ratings?film=${options.id}`)
-   }, [filmId])
-   ```
-
-Her iki durumda da dependency listesi sadeleşir ve yalnızca gerçek ilkel reaktif değer olan `filmId`'ye bağlanır.
-
-## Fonksiyon bağımlılıkları nasıl çözülür?
-
-Eğer effect içinde bileşende tanımlı bir fonksiyon çağrılıyorsa, o fonksiyon da her render'da yeni bir referansla üretilir:
-
-```tsx
-export function SearchBox({ query }: { query: string }) {
-  // Bu fonksiyon her render'da sıfırdan oluşturulur:
-  function getUrl() {
-    return `/api/search?q=${encodeURIComponent(query)}`
-  }
-
-  useEffect(() => {
-    fetch(getUrl())
-  }, [getUrl]) // getUrl sürekli değiştiği için gereksiz tetiklenir!
-
-  return null
-}
-```
-
-Bu durumda kodun kullanımına göre şu yollardan birini seç:
-
-- **1. Fonksiyonu effect içine taşımak (En sade yol):** Fonksiyon bileşenin başka hiçbir yerinde kullanılmıyorsa, doğrudan effect callback'inin içine yaz. Böylece `getUrl` reaktif bir dış bağımlılık olmaktan çıkar; tek bağımlılık `query` olur.
-- **2. Bileşen dışına taşımak:** Fonksiyon props veya state okumuyorsa, onu bileşen fonksiyonunun dışına al. Dışarıdaki fonksiyonun referansı hiçbir zaman değişmez.
-- **3. `useCallback` ile sarmalamak:** Fonksiyon referansı gerçekten paylaşılıyorsa `useCallback` kullanılabilir; callback'in kendi dependency'lerini de eksiksiz yaz. Tek amaç linter'ı susturmaksa bu ek katman gereksizdir.
-
-### Yakalanan değer ve ekranda görünen değer aynı anda değişmez
-
-Bir canlı skor paneli `statusText = 'Bekliyor'` ile mount olsun. Effect içinde interval kurulsun, callback her saniye bu metni yazdırsın. Kullanıcı bir düğmeyle status'u `'Başladı'` yapınca yeni render farklı metni hesaplar. Eski interval callback'i ise ilk render'ın lexical kapsamını taşır; yeni render'ın değişkenine sihirli bir bağlantısı yoktur.
-
-| An | Yeni render'ın `statusText` değeri | Interval'in yakaladığı değer | Ekranda görünen |
+| Olay | Render'ın `selectedGenre` değeri | Effect / timer | Konsol |
 | --- | --- | --- | --- |
-| Render 1 ve commit | `Bekliyor` | İlk effect henüz kurulacak | “Bekliyor” |
-| İlk effect setup | `Bekliyor` | `Bekliyor` | “Bekliyor” |
-| Tıklama ve state kuyruğu | Eski handler'da `Bekliyor` | Hâlâ `Bekliyor` | “Bekliyor” |
-| Render 2 | `Başladı` | Hâlâ eski callback | Commit'e dek “Bekliyor” |
-| Commit 2, dependency `[]` | `Başladı` | `Bekliyor`; cleanup yok | “Başladı”, log yanlış |
-| Commit 2, dependency `[statusText]` | `Başladı` | Eski timer temizlenir, yenisi `Başladı` yakalar | “Başladı”, log doğru |
+| İlk render | `Dram` | Timer kurulur, callback bu değeri kullanır. | — |
+| 1 saniye sonra | `Dram` | İlk timer çalışır. | `Dram` |
+| Kullanıcı türü değiştirir | `Bilim Kurgu` | Dependency boşsa timer aynı kalır. | — |
+| Sonraki tik | `Bilim Kurgu` | Eski callback hâlâ ilk render'ı hatırlar. | `Dram` |
+| `[selectedGenre]` ile | `Bilim Kurgu` | Eski timer temizlenir, yeni timer kurulur. | `Bilim Kurgu` |
 
-Bu örnekte `[statusText]` yazmak timer'ı her status değişiminde yeniden başlatır. Gereksinim “timer aynı kalsın, yalnız log güncel metni okusun” ise ilişkiyi yeniden kurmak istenmeyebilir. React 19'da `useEffectEvent`, effect içindeki reaktif olmayan bildirim mantığının en yeni değeri okumasına yarar; effect'in senkronize olduğu değerleri gizlemek için kullanılmaz. Hangi değer değişince dış ilişkinin yenilenmesi gerektiğine önce karar ver.
+![Callback'in oluşturulduğu render'ın değerlerini yakalaması](diagram:closure-bayat-deger)
 
-### Yarışan yanıtları dependency tek başına çözmez
+Closure hatası sadece timer'da olmaz. Effect'teki bir istek `query` değerini okuyorsa, sorgu değiştiğinde yeni istek açılması için `query` listede olmalıdır. React'in render sırasında ürettiği her `props`, `state` ve bileşen içi değişken için kullanılan **reactive value** (reaktif değer) adı, render değişince değeri de değişebilecek girdileri anlatır. Effect bunlardan hangisini okuyorsa onu dependency olarak belirt.
 
-Doğru dependency listesi yeni prop için effect'i yeniden başlatır; önceki isteğin ağ yanıtını otomatik iptal etmez. `actorId = 389` isteği yavaş, `actorId = 520` isteği hızlıysa ikinci yanıt önce gelebilir. Sonra ilk yanıt gelip `setBio` çalıştırırsa yeni aktör kartında eski biyografi görünür. Doğru örnekteki `ignore` değişkeni her setup'a özgüdür. Yeni prop commit edilince eski setup'ın cleanup'ı kendi `ignore` değerini `true` yapar.
+## Metni izlemek kolay, nesneyi izlemek farklı
 
-| Aşama | Aktif prop | Eski isteğin durumu | Ekran |
-| --- | ---: | --- | --- |
-| İlk commit ve effect | 389 | 389 isteği başladı | “Yükleniyor…” |
-| Prop değişimi ve render | 520 | 389 hâlâ bekliyor | Eski commit görünür |
-| Yeni commit ve cleanup | 520 | 389 callback'i artık yok sayılır | Yeni kart yükleniyor |
-| 520 yanıtı | 520 | 389 bekleyebilir | 520 biyografisi |
-| 389 geç yanıtı | 520 | `ignore === true`, state yazılmaz | 520 biyografisi kalır |
+String ve number gibi basit değerlerde değişikliği takip etmek kolaydır. Peki her render'da yeni oluşturulan bir nesne dependency olursa ne olur?
 
-`AbortController` ağ işini iptal etmek için eklenebilir; yine de tamamlanmış veya iptal edilemeyen işler için sonuç sahipliğini düşünmek gerekir. Sunucu verisini ileride TanStack Query ile yönettiğinde de sorgu kimliği, cache ve ekranda gösterilen veri arasındaki ilişkiyi ayıracaksın. Formda gecikmeli doğrulama callback'i eski input değerini yakalayabilir; performans bölümünde nesne dependency'sinin gereksiz effect tekrarına yol açtığını ölçebilirsin.
-
-## Sınır durumları ve sık hatalar
-
-:::mistake[Sık hata: Linter uyarısını yorum satırıyla susturmak]
-Belirti → `// eslint-disable-next-line react-hooks/exhaustive-deps` yazarak uyarı kapatılmış.  
-Neden → Geliştirici effect'in birden fazla kez çalışmasını önlemek istemiştir.  
-Düzeltme → Linter uyarısını susturma. Kural sana "bu effect bayat değer yakalayacak" demektedir. Çözüm bağımlılığı gizlemek değil, gereksiz bağımlılığı oluşturan nesneyi/fonksiyonu yukarıda açıklandığı gibi sadeleştirmektir.
-:::
-
-:::mistake[Sık hata: State setter fonksiyonlarını bağımlılığa yazmak]
-Belirti → `[count, setCount]` şeklinde `setCount`'un da listeye yazılması.  
-Neden → Kuralı "okunan her şey" diye ezberlemek.  
-Düzeltme → React, `useState`'ten dönen `setCount` ve `useReducer`'dan dönen `dispatch` fonksiyonlarının referansının yaşam döngüsü boyunca hiçbir zaman değişmeyeceğini garanti eder. Listeye yazsan da zarar vermez, ancak yazılması zorunlu değildir.
-:::
-
-:::mistake[Sık hata: Boş metin veya tanımsız değer sınırını atlamak]
-Belirti → Kullanıcı arama kutusundaki tüm metni sildiğinde API'ye `/search?q=` şeklinde anlamsız istek gitmesi.  
-Neden → "İlişki yok" durumunun effect içinde kontrol edilmemesi.  
-Düzeltme → Effect içinde erken dönüş (early return) uygula:
-```tsx check
-import { useEffect, useState } from 'react'
-
-export function SearchPreview({ query }: { query: string }) {
-  const [results, setResults] = useState<string[]>([])
+```tsx
+function MovieScore({ movieId }: { movieId: number }) {
+  const options = { movieId, language: 'tr' }
 
   useEffect(() => {
-    const trimmed = query.trim()
-    if (!trimmed) {
-      setResults([])
-      return
-    }
+    console.log(options.movieId, options.language)
+  }, [options])
 
-    // Yalnızca dolu sorguda istek at
-    fetch(`/api/search?q=${encodeURIComponent(trimmed)}`)
-      .then((res) => res.json() as Promise<{ items: string[] }>)
-      .then((data) => setResults(data.items))
-  }, [query])
-
-  return <div>{results.length} sonuç bulundu</div>
+  return null
 }
 ```
+
+`options` nesnesinin alanları aynı kalsa bile bileşen her render'da yeni nesne kurar. React dependency'leri **`Object.is`** adlı JavaScript karşılaştırmasıyla kontrol eder; iki ayrı nesneyi içeriklerine bakıp eşit saymaz. Başka bir state güncellemesi bile effect'i gereksiz yere çalıştırabilir.
+
+Bu effect'in ihtiyacı gerçekten `movieId` ve sabit dil değeridir. Nesneyi effect'in içine taşıyınca dependency listesinde değişen `movieId` yeterli olur:
+
+```tsx
+function MovieScore({ movieId }: { movieId: number }) {
+  useEffect(() => {
+    const options = { movieId, language: 'tr' }
+    console.log(options.movieId, options.language)
+  }, [movieId])
+
+  return null
+}
+```
+
+Burada yeni nesne her effect çalıştığında kurulsa da onu başka bir render girdisi olarak izlemiyoruz; effect'in gerçekten değişen girdisi `movieId`. Böylece her render için yeni nesne oluşturmak tek başına effect'i tekrar çalıştırmaz.
+
+:::mistake[Her render'da yeni nesne dependency yapmak]
+Belirti → Ekrandaki alakasız bir state değişince istek veya effect tekrar çalışıyor.
+Neden → Bileşen gövdesinde kurulan `{ movieId }` her render'da yeni bir nesne; `Object.is` eski nesneyle yenisini farklı görüyor.
+Düzeltme → Effect yalnızca `movieId` kullanıyorsa nesneyi effect içinde kur ve dependency olarak `[movieId]` yaz. Dependency'yi silmek doğru çözüm değildir.
 :::
 
-:::sector
-Ekipte `exhaustive-deps` uyarısını kod incelemesinde ele almak, “bu effect hangi değerle kuruluyor?” sorusunu açık tutar. Uyarı geldiğinde dependency'yi gizlemek yerine okunan değeri doğru listeye koy; gereksiz nesne veya fonksiyon bağımlılığı varsa kodun sınırını değiştir. Sunucu verisi için Query cache kullanıldığında yeniden isteği elle yazmak azalır, fakat callback'lerin hangi render'ı yakaladığı kuralı aynı kalır.
+## Okuduğun değeri gizleme
+
+Dependency listesini elle küçültmek kısa vadede “effect bir daha çalışmasın” gibi görünebilir. Fakat effect'in kullandığı prop veya state değiştiğinde eski render'da oluşturulmuş callback çalışmayı sürdürür. Bu yüzden önce effect'in hangi değerleri okuduğuna bak; sonra gereksiz nesne veya fonksiyonları effect'in içine alarak listenin gerçekten değişen girdilerden oluşmasını sağla.
+
+:::info[Derinlemesine (isteğe bağlı)]
+React 19.2 ve sonrasında `useEffectEvent`, effect içindeki bazı callback'lerin en güncel props ve state değerlerini okumasını sağlar. Onu, effect'in gerçekten hangi değişime tepki vermesi gerektiğini dependency listesinden saklamak için kullanma.
 :::
 
 ## Özet
 
-- Dependency array, effect'in dış dünya ile senkronizasyon sözleşmesidir.
-- Effect içinde okunan tüm reaktif değerler (`props`, `state`, türetilmiş değişkenler) diziye yazılmalıdır.
-- React bağımlılıkları `Object.is` ile kontrol eder; nesneler ve fonksiyonlar referansla karşılaştırılır.
-- Her render'da yeni oluşan nesneler dependency yapılırsa sonsuz döngü veya gereksiz çalışma doğar.
-- Çözüm bağımlılığı silmek değil; nesneyi effect içine almak ya da primitif parçalara (`id`, `query`) indirgemektir.
+- Dependency array, effect'in okuduğu render değerlerini ve hangi değişimde yeniden kurulacağını bildirir.
+- `[]` effect'in render'dan gelen değişen değerleri takip etmediği anlamına gelir; içine prop veya state okuyup listeyi boş bırakmak eski değer bırakabilir.
+- Closure, callback'in tanımlandığı render'daki değerleri neden kullanabildiğini açıklar.
+- React bağımlılıkları `Object.is` ile karşılaştırır; her render'da kurulan nesne yeni nesnedir.
+- Nesne sadece effect'te gerekiyorsa onu effect içine kur; dependency listesine gerçek girdiyi yaz.
 
-**Kendini yokla:** Dependency dizisine `[]` yazmak neden her zaman "yalnızca sayfa açılışında çalış" garantisi vermez?  
-*Cevap:* Kod ilk açılışta çalışsa bile, effect içinde bir prop okunuyorsa o prop ileride değiştiğinde effect güncellenmez ve kullanıcı bayat veriye kilitlenir.
+**Yeni terimler**
 
-**Kendini yokla:** `const config = { active: true }` bileşen içinde tanımlanıp dependency'ye verilirse ne olur?  
-*Cevap:* `config` her render'da yeni bir bellek adresi alacağından, `Object.is` her render'da `false` döner ve effect her seferinde yeniden tetiklenir.
+- **Dependency array:** Effect'in kullandığı ve değişince effect'in yeniden kurulmasını sağlayan değerler listesi.
+- **Closure:** Fonksiyonun tanımlandığı yerdeki değişkenleri kullanmaya devam etmesi.
+- **Reactive value:** Render'da değişebilecek ve effect'in sonucunu etkileyen prop, state veya yerel değer.
+- **`Object.is`:** React'in dependency değerlerinin aynı kalıp kalmadığını kontrol etmekte kullandığı karşılaştırma.
+
+**Kendini yokla:** Effect `movieId` okuyor ama dependency listesi `[]` ise aynı bileşen başka filme geçtiğinde ne olur?
+*Cevap:* Effect yeni `movieId` ile kurulmaz; eski isteğin sonucu ekranda kalabilir.
+
+**Kendini yokla:** `{ movieId }` her render'da yeniden kuruluyorsa, neden `[options]` effect'i sık çalıştırabilir?
+*Cevap:* Her render yeni bir nesne üretir; `Object.is` ayrı nesneleri aynı kabul etmez.

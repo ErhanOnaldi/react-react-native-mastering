@@ -1,16 +1,20 @@
-Kontrollü arama alanı, kullanıcının yazdığı değeri güncel tutmalı ve form gönderimini doğru değerle iletmeli.
+Sinema arama kutusunun kullanıcı etkileşimlerini sınayan testler yaz.
 
 ## Gereksinimler
-- Etiket “Film ara”, düğme adı “Ara” olmalı.
-- Yazılan değer input’ta görünmeli ve `onChange` ile dışarı iletilmeli.
-- Enter veya düğme gönderimi aynı submit davranışını çalıştırmalı.
-- Submit değeri baş/son boşluklardan arındırılmalı; boş değer gönderilmemeli.
-- Form gönderimi sayfa yenilememeli.
+- “Film ara” adlı arama alanına yazılan metin input’ta görünmeli ve `onChange` callback’ine iletilmeli.
+- “Ara” düğmesine tıklamak ve Enter’a basmak aramayı göndermeli.
+- Gönderilen metnin başındaki ve sonundaki boşluklar kaldırılmalı.
+- Boş metin gönderilmemeli.
 
 ## Örnek
-Input değeri ` Matrix ` → gönder → `onSubmit('Matrix')`.
+` Matrix ` yazıp Enter’a basıldığında `onSubmit('Matrix')` çağrılır.
 
 ## Sözleşme
-- `SearchBox.tsx` dosyasında `SearchBox` export et.
+- `SearchBox.test.tsx` dosyasına test yaz.
+- Bileşen `@impl/SearchBox` yolundan import edilir.
 - Props: `{ value: string; onChange(value: string): void; onSubmit(value: string): void }`.
-- Input searchbox rolü ve “Film ara” adıyla; submit düğmesi “Ara” adıyla bulunabilmeli.
+- Arama alanı searchbox rolü ve “Film ara” adıyla; gönderme düğmesi “Ara” adıyla bulunur.
+
+## Kısıtlar
+
+- Her iki verilen mutant da en az bir testte kalmalıdır.

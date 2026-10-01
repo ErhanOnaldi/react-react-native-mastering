@@ -1,122 +1,156 @@
 ---
 title: "Hata mesajını doğru alana bağla"
-minutes: 14
+minutes: 16
 kind: concept
 ---
 
 # Hata mesajını doğru alana bağla
 
-:::pain[Ekran okuyucu hangi alanı söylemeli?]
-Kurs başlığı boş bırakılınca kırmızı “Başlık gerekli” metni görünüyor. Görsel olarak başlığın altında; ama ekran okuyucu input'a geldiğinde alanın adını söylemiyor ve hata metnini onunla ilişkilendirmiyor. Renk ve yakınlık tek başına programatik bilgi değildir.
-:::
+Sinema'da oyuncu adına göre arama alanı yaptığını düşün. Ekranda “Oyuncu adı” yazısı görünür, ama input'un kendisiyle ilişkili değilse ekran okuyucu bu adı kullanıcıya vermeyebilir. Ekran okuyucu, sayfanın içeriğini sesle veya braille ekranla aktaran yardımcı teknolojidir. Görsel yakınlık tek başına HTML içinde bir ilişki kurmaz.
 
-## Alanın adı ve hata ilişkisi
+Önceki doğrulama dersinde gördüğün kısa ilişkiyi hatırla: görünür label alanı adlandırır, `aria-invalid` geçersiz durumu söyler, `aria-describedby` hata metnini alana bağlar. Bu derste aynı bağı daha dikkatli kuracağız; çünkü kullanıcı yalnızca hatanın varlığını değil, hangi alanı nasıl düzelteceğini de bilmelidir.
 
-Erişilebilir form üç ayrı bilgiyi taşır: alanın adı, geçerli/geçersiz durumu ve açıklaması. Görünür `<label>` input'u adlandırır. `aria-invalid` geçersizliği belirtir. `aria-describedby` yardım veya hata metninin id'sine bağlanır. RHF hata nesnesini üretir; bu ARIA ilişkilerini otomatik olarak kurmaz.
+## Görünür yazıyı input'un adına bağla
 
-:::model[Form deposu ve abonelik]
-Değer ve alan hatası RHF form deposundadır; UI bu hata değişimini okuyup uygun ARIA özelliklerini DOM'a yazar. Yeni bağlamda erişilebilirlik durumu, form verisini ikinci state'e kopyalamadan semantik HTML ile açıklanır.
-:::
+Bir input'un **accessible name**'i, yardımcı teknolojilerin o kontrolü tanıtmak için kullandığı addır. Görünür `<label>` bunu sağlamanın en anlaşılır yoludur. Etiketteki `htmlFor` ile input'un `id` eşleşir. `name` ise form verisindeki anahtardır; kendi başına input'u adlandırmaz.
 
-Alan/hata eşleşmesi için kurallar:
+### 1. örnek: Etiketi gerçek alana bağla
 
-1. Her input'un kalıcı ve görünür etiketi olsun. Placeholder etiketin yerini tutmaz; yazı girilince kaybolur.
-2. `<label htmlFor="id">` ile input `id` değerini eşleştir. `name`, erişilebilir adın otomatik karşılığı değildir.
-3. Hatalı durumda `aria-invalid="true"` ver; geçerliyken attribute'u kaldır veya false kullan.
-4. Hata metnine bir `id` ver ve input'un `aria-describedby` değerini buna bağla. Yardım metni de varsa birden çok id'yi boşlukla ayır.
-5. Hata metnini kısa ve düzeltilebilir yaz. Alan başına hata tercih et; form seviyesi sunucu hatasını ayrı göster.
-6. Hata ilk kez göründüğünde `role="alert"` duyurmayı sağlayabilir; çok sayıda hatayı aynı anda alert yapmak gürültülüdür. Gerekiyorsa submit'te ilk hatalı alana focus taşı.
-7. Ekran okuyucu adını RTL testinde `getByRole` veya `getByLabelText` ile aramak, semantik bağlantının kullanıcıya görünen karşılığını doğrular.
-
-## Odak ve hata sırasını takip et
-
-Bir bilet rezervasyonunda “Katılımcı adı” boş gönderildi:
-
-| Sıra | DOM/form değişimi | Yardımcı teknolojiye giden bilgi |
-|---|---|---|
-| 1 | Label ve input id eşleşir | “Katılımcı adı, düzenleme” |
-| 2 | Submit sonrası alan hatası oluşur | Form bu alanı geçersiz işaretler |
-| 3 | Hata paragrafı DOM'a eklenir | “Ad gerekli” duyurulabilir |
-| 4 | Input `aria-describedby` ile hata id'sine bağlanır | Alan odağına dönünce hata açıklaması bulunur |
-| 5 | Kullanıcı ad yazar, hata temizlenir | Geçersiz durumu kalkar, açıklama bağlantısı kaldırılır |
-
-İlişki DOM kimlikleri üzerinden kurulur. İki form aynı sayfadaysa sabit `participant-error` id'sini iki kez üretmemelisin; her örnek için benzersiz id üretmek adına `useId` kullanabilirsin. `useId` veri id'si değildir; list key'i veya sunucu kayıt anahtarı yerine kullanılmaz.
-
-## Önce görsel ama kopuk, sonra bağlı
-
-Aşağıdaki kodda placeholder alanın tek adı, hata metni de ilişkisizdir:
-
-```tsx
-<input placeholder="Katılımcı adı" aria-invalid={Boolean(errors.name)} />
-{errors.name && <p className="text-red-600">{errors.name.message}</p>}
+```tsx check
+export function ActorSearch() {
+  return (
+    <form>
+      <label htmlFor="actor-query">Oyuncu adı</label>
+      <input id="actor-query" name="query" />
+      <button type="submit">Ara</button>
+    </form>
+  )
+}
 ```
 
-Label, geçersizlik ve hata id'sini açıkça bağla:
+Etikete tıklamak input'a odaklanır ve yardımcı teknoloji input'u “Oyuncu adı” diye tanıtabilir. `name="query"` form gönderiminde okunacak anahtarı belirler. Label metnini yalnızca `placeholder` olarak vermek aynı işi yapmaz: kullanıcı yazmaya başlayınca placeholder kaybolur ve alanın kalıcı adı olmaz.
+
+## Geçersiz durumu ve açıklamayı ekle
+
+**ARIA** (Accessible Rich Internet Applications), HTML öğelerinin anlamını ve durumunu yardımcı teknolojilere aktaran özellikler kümesidir. `aria-invalid` alanın geçersiz olduğunu bildirir. `aria-describedby` ise input için ek açıklama olan metnin `id` değerini söyler. Bunlar görünür label'ın yerine geçmez; farklı bilgileri taşır.
+
+### 2. örnek: Hata metnine bir bağlantı kur
+
+Bu kez arama metni en az iki karakter olmalı. Basit React state'iyle hata olup olmadığını gösterelim:
+
+```tsx check
+import { useState, type FormEvent } from 'react'
+
+export function ActorSearch() {
+  const [query, setQuery] = useState('')
+  const [showError, setShowError] = useState(false)
+  const errorId = 'actor-query-error'
+  const invalid = showError && query.trim().length < 2
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setShowError(true)
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <label htmlFor="actor-query">Oyuncu adı</label>
+      <input
+        id="actor-query"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        aria-invalid={invalid || undefined}
+        aria-describedby={invalid ? errorId : undefined}
+      />
+      {invalid && <p id={errorId} role="alert">En az iki karakter yaz</p>}
+      <button type="submit">Ara</button>
+    </form>
+  )
+}
+```
+
+Submit'ten sonra metin kısa kalırsa `aria-invalid` true olur ve input, `aria-describedby` üzerinden hata paragrafına bağlanır. Hata yokken bu özellikleri kaldırıyoruz; böylece input artık görünmeyen bir hata metnine işaret etmez. `role="alert"` yeni hata mesajının hemen duyurulmasını isteyebilir, ama alanla bağ kuran özellik `aria-describedby`'dir.
+
+## RHF hatasını DOM ilişkisine çevir
+
+RHF `errors` içinde doğrulama sonucunu verir; bu nesneyi okumak erişilebilir HTML'i otomatik üretmez. Bileşen, hata varken doğru ARIA özelliklerini ve hata metnini DOM'a yazmalıdır. **DOM**, tarayıcının sayfayı oluşturan HTML öğeleri ağacıdır.
+
+### 3. örnek: RHF hatasını erişilebilir göster
+
+Şimdi aynı fikri, film gösteriminden sonra yönetmenin adını alan küçük bir formda kullanalım. Bu örnek alan hatasının nereye bağlanacağını gösterir:
 
 ```tsx check
 import { useId } from 'react'
 import { useForm } from 'react-hook-form'
 
-type GuestValues = { guestName: string }
+type DirectorFields = { director: string }
 
-export function GuestForm() {
+export function DirectorCreditForm() {
   const errorId = useId()
-  const { register, handleSubmit, formState: { errors } } = useForm<GuestValues>({
-    defaultValues: { guestName: '' },
-  })
-  const hasError = Boolean(errors.guestName)
-  return <form onSubmit={handleSubmit((values) => console.log(values))}>
-    <label htmlFor="guest-name">Katılımcı adı</label>
-    <input id="guest-name" aria-invalid={hasError || undefined}
-      aria-describedby={hasError ? errorId : undefined}
-      {...register('guestName', { required: 'Ad gerekli' })} />
-    {errors.guestName && <p id={errorId} role="alert">{errors.guestName.message}</p>}
-    <button type="submit">Devam et</button>
-  </form>
+  const { register, handleSubmit, formState: { errors } } = useForm<DirectorFields>()
+  const invalid = Boolean(errors.director)
+
+  return (
+    <form onSubmit={handleSubmit(() => {})}>
+      <label htmlFor="director-name">Yönetmen</label>
+      <input
+        id="director-name"
+        aria-invalid={invalid || undefined}
+        aria-describedby={invalid ? errorId : undefined}
+        {...register('director', { required: 'Yönetmen adını yaz' })}
+      />
+      {errors.director && (
+        <p id={errorId} role="alert">{errors.director.message}</p>
+      )}
+      <button type="submit">Devam et</button>
+    </form>
+  )
 }
 ```
 
-Input her zaman aynı id ile etikete bağlı kalır. Yalnız hata varken `aria-invalid` ve açıklama ilişkisi kurulur; hata elementi yokken kırık id referansı oluşmaz. `role="alert"` hatayı duyurur, ama focus yönetimi ayrı karardır. Birkaç hata aynı anda beliriyorsa form başında hata özeti ve alanlara bağlantı da sunabilirsin.
+`useId` her component örneğine uygun, kararlı bir id üretir; iki form aynı sayfadaysa hata açıklamalarının id'leri birbirine karışmaz. `id` ve `htmlFor` label-input çiftini kurar; hata için ayrı bir id vardır. Submit geçersizse RHF `errors.director` üretir ve üç şey birlikte görünür: geçersiz durumu, açıklamaya giden bağlantı ve metnin kendisi.
 
-## Checkbox, seçim ve hata metni
+## Hata anını sırayla izle
 
-Checkbox'ta `<label>` yine gereklidir; seçilmiş durumunu `checked`/RHF alanı verir. Özel seçim bileşeninde uygun native semantiği kullan: tek tercih için radio grubu, aç/kapa için checkbox, birkaç bağımsız tercih için checkbox grubu. Sadece `div`'e click handler eklemek klavye erişimi sağlamaz.
+Yönetmen alanı boşken kullanıcı Devam et'e basarsa şu değişiklikler olur:
 
-Hata mesajını yalnız renk ile anlatma. Hata metninde neyin yanlış ve nasıl düzeltileceği yazsın: “Geçersiz değer” yerine “Başlangıç tarihi bugünden sonra olmalı.” `aria-describedby` yardım metnini de gösterebilir; ekran okuyucu metni tekrarlıyorsa açıklama alanlarını sadeleştir.
+| Sıra | Form/DOM değişikliği | Kullanıcıya aktarılan bilgi |
+|---|---|---|
+| 1 | Label ile input id eşleşir | Alanın adı “Yönetmen” |
+| 2 | RHF required kuralı çalışır | Alan geçersiz bulunur |
+| 3 | Hata paragrafı DOM'a eklenir | “Yönetmen adını yaz” metni görünür/duyurulur |
+| 4 | Input `aria-invalid` alır ve `aria-describedby` hata id'sini gösterir | Alanın hatalı olduğu ve düzeltme mesajı bilinir |
+| 5 | Kullanıcı ad yazar, hata silinir | Geçersizlik kalkar; artık görünmeyen hata referansı kalmaz |
 
-:::mistake[Hata görünür ama input ile ilişkisiz]
-**Belirti:** Ekran okuyucu input adını söyler, hata hakkında bilgi vermez. → **Neden:** Hata DOM'da var ama input'un `aria-describedby` değeri hata id'sine işaret etmiyor. → **Düzeltme:** Hata id'sini input'a bağla ve hata yokken bağlantıyı kaldır.
+İlişki id değerleriyle kurulur. Paragrafın id'si `actor-error`, input'un `aria-describedby` değeri ise `name-error` olursa bağ kopuktur. Belirti: hata ekranda görünür, ama input'a geldiğinde ekran okuyucu bu metni açıklama olarak bulamaz. İki değeri aynı kaynaktan üret veya bir kez tanımlayıp ikisinde de kullan.
+
+## Sık görülen kopukluklar
+
+Placeholder'ı label yerine koyma. Kullanıcı metin yazınca ipucu kaybolur; ekran okuyucu adı da her durumda sağlanmış olmaz. Görünür label'ı tut ve `<label htmlFor>` değerinin input `id` değeriyle eşleştiğini kontrol et.
+
+Hata paragrafını ekleyip alana bağlamayı unutma. Görsel olarak hemen altında durması ekran okuyucuya ilişkisini bildirmez. Hata id'sini `aria-describedby`'ye koy; hata yokken o bağlantıyı kaldır. Yardım metni sürekli görünüyorsa onun id'si açıklama listesinde kalabilir.
+
+Bir ekranda hata sayısı çoksa her mesajı aynı anda `role="alert"` yapmak fazla duyuru üretebilir. Alan mesajlarını `aria-describedby` ile ilişkilendir; gerekiyorsa submit sonrası kısa bir hata özeti göster ve ilk hatalı alana odaklan. Görsel hata renginin yanında metin de kullan; anlamı yalnız renge bırakma.
+
+Formdaki başka kontrollerde de native HTML öğelerini seç. Onay kutusunda gerçek `<input type="checkbox">`, tek seçimde `<input type="radio">` kullanmak klavye etkileşimini ve seçili durumu tarayıcıya bırakır. Bunları tıklanabilir `div` ile taklit edersen Space/ok tuşu gibi beklenen davranışları ayrıca yazman gerekir. Label bağlantısı ve açıklama ilişkisi aynı şekilde bu kontroller için de önemlidir.
+
+:::info[Derinlemesine (isteğe bağlı)]
+`useId` component kopyaları için DOM id üretir; film veya oyuncu kaydının veri id'si değildir, liste `key` değeri olarak da kullanılmaz. `jsdom` test ortamı DOM davranışını taklit eder ama ekran okuyucu değildir. Otomatik testler label ve id bağlantısını denetleyebilir; gerçek klavye ve ekran okuyucu deneyimini manuel olarak da kontrol et.
 :::
-
-:::mistake[Placeholder etiket gibi kullanılıyor]
-**Belirti:** Kullanıcı yazmaya başlayınca alanın adı kayboluyor. → **Neden:** Placeholder geçici ipucudur; label değildir. → **Düzeltme:** Her input için görünür `<label>` ve eşleşen `htmlFor`/`id` ekle.
-:::
-
-:::mistake[Sayfada aynı hata id'si çoğalıyor]
-**Belirti:** İki formun ilk alanı aynı hata metnini duyuruyor. → **Neden:** Kopyalanmış sabit DOM id'leri benzersiz değil. → **Düzeltme:** `useId` ile instance başına id üret veya benzersiz kayıt anahtarı ekle.
-:::
-
-:::sector
-Ekiplerde form bileşenlerinin API'sine label, yardım metni, hata metni ve `aria-*` bağlantıları dahil edilir. Tasarım QA'sında klavye ile alanları gezmek, submit etmek ve hata bağlarını ekran okuyucuyla kontrol etmek gerekir. Otomatik testler semantik bağlantıyı yakalar; gerçek yardımcı teknoloji deneyimini tek başına kanıtlamaz.
-:::
-
-## Bir formu klavyeyle ve semantik sorguyla kontrol et
-
-Formu sadece mouse ile kullanma. Tab ile alanlar ve düğmeler arasında ilerle; label'ların odağı doğru input'a taşıdığını, Enter/Space'in beklenen submit veya seçim davranışını verdiğini ve hata sonrası focus'un kaybolmadığını gör. Yıldız gibi bir seçim kontrolü butonlardan oluşuyorsa her buton adı ve seçili durumu anlaşılır olmalı. Tek bir `div`'e click handler yazmak bu davranışları sağlamaz.
-
-Birden fazla alan hatası varsa hepsini `role="alert"` olarak işaretlemek ekran okuyucuya art arda bildirim yağdırabilir. Tasarımına göre submit sonrası hata özeti duyurup odaklayabilir, alan mesajlarını da `aria-describedby` ile ilişkilendirebilirsin. Hata özeti her mesajı tekrarlıyorsa ya özetin içeriğini kısalt ya da canlı duyuru davranışını düzenle. Ekran okuyucuda mesaj sırasının formdaki alan sırasıyla tutarlı olması da kullanıcının hataları düzeltmesini kolaylaştırır.
-
-Hata düzeldiğinde `aria-invalid` değerini kaldır. Eski hata id'sini `aria-describedby` içinde tutarsan ekran okuyucu artık görünmeyen açıklamaya bağlantı verebilir. Yardım metni sürekli görünüyorsa hata temizlense de onun id'si kalabilir; birden çok açıklama varsa boşlukla ayrılmış id listesi kur. ID oluştururken `useId` kullanmak aynı component'in iki kopyasında benzersizlik sağlar; listelerde her öğe için key'in yerine geçmez.
-
-RTL'de `getByRole('textbox', { name: 'Katılımcı adı' })` kullanmak, input'un erişilebilir adını da görev davranışının parçası yapar. `getByTestId` DOM'un kullanıcıya görünmeyen ayrıntısına bağlanır; yalnız rol/ad sorgusu mümkün olmadığında tercih et. Buna rağmen jsdom'un ekran okuyucu olmadığını unutma: otomatik test aria ilişkisinin varlığını doğrular, gerçek odak ve duyuru deneyimini manuel kontrol de tamamlar.
-
-Form tasarımı uzun label metinlerinde de anlaşılır kalmalı. Yardım metnini placeholder'a sıkıştırma; mobilde input dolunca ipucu kaybolur. Hata mesajını alanın altına koymak görsel hiyerarşiyi destekler, ama DOM sırası ve `aria-describedby` bağı da aynı alanı göstermeli. Renk kullanıyorsan ikon veya metinle anlamı tekrar et.
 
 ## Özet ve kendini yokla
 
-- Görünür label alanın adını belirler; placeholder kalıcı ad değildir.
-- `aria-invalid` durumu, `aria-describedby` yardım/hata açıklamasını taşır.
-- Hata elementi görünürken benzersiz id ile input'a bağlanmalı; hata yokken kırık bağlantı kalmamalıdır.
-- Semantik native elementleri seçmek klavye ve ekran okuyucu davranışını kolaylaştırır.
+- Görünür `<label>` input'u adlandırır; `name` ve `placeholder` label yerine geçmez.
+- `aria-invalid` geçersizliği, `aria-describedby` ise yardım/hata açıklamasını bildirir.
+- Hata metni görünürken id'si input'a bağlanmalı; hata kalkınca eski referans kaldırılmalıdır.
+- `role="alert"` duyuruyu başlatabilir; alan-hata ilişkisini `aria-describedby` kurar.
 
-**Kendini yokla:** Input'ta yalnız `name="email"` olması ekran okuyucuya “E-posta” adını verir mi? Hayır, label veya erişilebilir ad gerekir. İki formda hata id'leri aynı olabilir mi? Hayır, id DOM'da benzersiz olmalıdır.
+**Yeni terimler:**
+
+- **Accessible name:** Yardımcı teknolojinin bir kontrolü tanıtmak için okuduğu ad.
+- **ARIA:** HTML durum ve ilişkilerini yardımcı teknolojilere aktaran özellikler.
+- **DOM:** Tarayıcının sayfayı temsil ettiği HTML öğeleri ağacı.
+- **`aria-invalid`:** Bir kontrolün geçersiz olduğunu bildiren ARIA özelliği.
+- **`aria-describedby`:** Kontrole ek açıklama bağlayan ARIA özelliği.
+
+**Kendini yokla:** Yalnız `name="email"` input'a “E-posta” adını verir mi? Hayır; görünür label veya başka bir erişilebilir ad gerekir. Hata paragrafı hangi özellikle input'a bağlanır? `aria-describedby` ile paragrafın id'si eşleştirilir.

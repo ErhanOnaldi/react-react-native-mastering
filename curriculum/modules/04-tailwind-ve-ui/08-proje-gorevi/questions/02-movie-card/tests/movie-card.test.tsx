@@ -18,8 +18,7 @@ describe('UI kit ile MovieCard', () => {
   it('favori düğmesi erişilebilir ad ve basılı durumu bildirir', () => {
     render(<MovieCard movie={movie} isFavorite={true} onToggleFavorite={vi.fn()} />)
     const button = screen.getByRole('button', { name: 'Favorilerden çıkar', pressed: true })
-    const buttonClass = buttonVariants({ variant: 'ghost' }).split(' ')[0]
-    expect(button).toHaveClass(buttonClass)
+    expect(button).toHaveClass(...buttonVariants({ variant: 'ghost' }).split(/\s+/))
   })
 
   it('favori düğmesi filmi değiştirmek için callback çağırır', async () => {

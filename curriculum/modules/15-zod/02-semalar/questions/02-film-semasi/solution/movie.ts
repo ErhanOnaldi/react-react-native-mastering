@@ -5,6 +5,6 @@ export const movieSchema = z.object({
   title: z.string().min(1, { error: 'Başlık gerekli' }),
   poster_path: z.string().nullable(),
 })
-export function parseMovie(raw: unknown): z.infer<typeof movieSchema> {
+export function parseMovie(raw: unknown) {
   return movieSchema.parse(raw)
 }

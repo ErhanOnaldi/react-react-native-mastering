@@ -7,7 +7,7 @@
   </defs>
   <rect class="d-box" x="18" y="76" width="150" height="100" rx="12" />
   <text class="d-title" x="93" y="108" text-anchor="middle">Kaynak tip</text>
-  <text class="d-code" x="93" y="138" text-anchor="middle">Article</text>
+  <text class="d-code" x="93" y="138" text-anchor="middle">Movie</text>
   <text class="d-muted" x="93" y="159" text-anchor="middle">tüm alanlar</text>
   <path class="d-line-accent" d="M178 126 H198" marker-end="url(#utility-arrow)" />
   <rect class="d-accent" x="207" y="76" width="150" height="100" rx="12" />

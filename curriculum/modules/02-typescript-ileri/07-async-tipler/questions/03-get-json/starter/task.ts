@@ -1,3 +1,3 @@
-export async function getJson<T>(url: string, token: string): Promise<T> {
+export async function getJson<T>(text: string): Promise<T> {
   return {} as T
 }

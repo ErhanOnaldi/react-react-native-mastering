@@ -5,21 +5,33 @@ export default defineQuestion({
   title: 'Generic sınırda ne yapar?',
   difficulty: 'kolay',
   concepts: ['ts.generics', 'ts.api-types', 'zod.api-validation'],
-  question:
-    '`getJson<MovieDetails>()` 200 dönen JSON içindeki `title: null` değerini nasıl ele alır?',
+  question: `Bu fonksiyon \`title\` alanının string olduğunu doğrular mı?
+
+\`\`\`ts
+async function getJson<T>(url: string): Promise<T> {
+  const response = await fetch(url)
+  return (await response.json()) as T
+}
+const movie = await getJson<{ title: string }>('/movie/550')
+movie.title.toUpperCase()
+\`\`\`
+
+Sunucu { title: null } döndürürse ne olur?`,
   options: [
     {
-      text: 'Derlenir; çalışma zamanında null kalır.',
+      text: 'Kod derlenir; çağrıda null kalır ve toUpperCase hata verir.',
       correct: true,
-      explanation: 'Doğru. Generic yalnızca TypeScript’e bir iddia verir; JSON’u parse etmez.',
+      explanation:
+        'Doğru. Assertion yalnızca TypeScript’i ikna eder. Sunucu null gönderirse aynı null döner ve metot çağrısı çalışma anında hata verir.',
     },
     {
-      text: 'Fetch isteğini reddeder.',
+      text: 'Fetch yanıtı 200 olsa da JSON türü uyuşmadığı için Promise reddedilir.',
       correct: false,
-      explanation: 'Fetch yalnızca HTTP sonucunu bilir; JSON alanlarını generic ile denetlemez.',
+      explanation:
+        'Fetch JSON alanlarının biçimini denetlemez; HTTP 200 yanıtı çözümlenir ve assertion hatayı gizler.',
     },
     {
-      text: 'Null değerini boş stringe çevirir.',
+      text: 'TypeScript null değerini çalışma anında boş stringe çevirir.',
       correct: false,
       explanation: 'Generic dönüşüm yapmaz; dönüşüm için gerçek çalışma zamanı kodu gerekir.',
     },

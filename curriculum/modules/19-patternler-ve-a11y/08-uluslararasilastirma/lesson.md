@@ -1,170 +1,137 @@
 ---
-title: "Yerel biçimlendirme ve tipli mesajlar"
-minutes: 18
+title: "Sinema arayüzünü farklı dillere uydurmak"
+minutes: 16
 kind: concept
 ---
 
-# Yerel biçimlendirme ve tipli mesajlar
+# Sinema arayüzünü farklı dillere uydurmak
 
-:::pain[Problem]
-Sinema'da bir biletin fiyatı `1234.5` diye, gösterim tarihi `2026-09-28` diye görünüyor. Türkçe aramada “Işık” bulunmuyor; başlıklar da Türk alfabesindeki sırayı izlemiyor. Bu değerler makine için geçerli, ama ekranda kullanıcının diline ait kuralları taşımıyor.
-:::
+Sinema'da bir biletin fiyatı `1234.5` olarak gelir. Bu sayı hesap için kullanışlıdır; ekranda ise Türkçe kullanıcı `₺1.234,50` görmeyi bekler. Aynı veri farklı dillerde farklı gösterilebilir, o yüzden makine değerini koruyup ekranda ayrı biçim üretiriz.
 
-## Makine değeri ile kullanıcı metnini ayır
+## Sayı aynı kalır, gösterimi değişir
 
-Uygulamanın içinde `1234.5`, ISO tarih metni veya bir film başlığı gibi değerleri saklamak ile onları kullanıcıya göstermek farklı işlerdir. Makine değeri hesaplama ve ağ iletişimi için sabit kalır. Görünen metin ise dile, ülkeye ve bazen kullanıcının tercihlerine göre biçimlenir.
+Bir **locale**, dil ve bölge için sayı, tarih, metin karşılaştırması gibi yazım kurallarının adıdır; örneğin `tr-TR` Türkçe ve Türkiye kurallarını seçer. JavaScript'in **Intl** API'si bu kuralları kullanarak ekrana hazır metin üretir.
 
-:::model[Locale bir görüntüleme kuralıdır]
-Locale, sayı veya metin için tek bir “çeviri” değildir. `tr-TR`, ondalık ayırıcı, para birimi gösterimi, harf dönüşümü ve sıralama gibi ayrı işlemlere kendi kurallarını verir. Kaynak değeri değiştirmez; ekranda kullanacağın gösterimi üretir.
-:::
-
-![Locale girdisinin farklı Intl araçlarına ve kullanıcıya gösterilen sonuca akışını anlatan diyagram](diagrams/intl-akisi.svg "Makine değeri korunur; gösterim locale kurallarından geçer.")
-
-Kesin kurallar:
-
-1. **Ham değeri makine biçiminde tut.** Fiyatı sayı, zamanı `Date` ya da standart tarih değeri, kimliği değişmez bir string olarak sakla. Görünen `₺1.234,50` metnini tekrar sayıya çevirmeye çalışma.
-2. **Her gösterim için uygun aracı seç.** Sayı ve para için `Intl.NumberFormat`, takvim tarihi için `Intl.DateTimeFormat`, “dün” gibi göreli süreler için `Intl.RelativeTimeFormat` kullan.
-3. **Dil kuralını çağrı noktasında belirt.** Uygulamanın dili açıkça `tr-TR` ise, tarayıcının varsayılan dilinin aynı olduğunu varsayma. `Intl` seçenekleri bu kararı görünür kılar.
-4. **Harf ve sıralama kurallarını da locale'e bağla.** Arama için `toLocaleLowerCase('tr-TR')`; sıralama için `Intl.Collator('tr-TR')` kullan. Normal `toLowerCase()` ve varsayılan `sort()` Türkçe I ayrımını ya da alfabe sırasını bilmez.
-5. **Mesajın dilbilgisini sayıya göre seç.** `Intl.PluralRules` dilin çoğul kategorisini seçer. Her dilde tekil-çoğul kuralı `n === 1` değildir.
-6. **Belge dilini ve yönünü ayrı bildir.** HTML kökünde `lang="tr"` ekran okuyucu ve tarayıcıya dili söyler; `dir="rtl"` yazı yönünü belirtir. Biri diğerinin yerini tutmaz.
-
-## Bir fiyat ve tarih ekranda nasıl biçimlenir?
-
-Bir bilet servisinden `price = 1234.5` ve `startsAt = new Date('2026-10-03T18:30:00Z')` geldiğini düşün. Ham para birimi sayı olarak kalır. Tarih de tarih nesnesidir. Görünen metni render sırasında üretirsin:
+İlk örnekte yalnızca fiyatı biçimlendiriyoruz:
 
 ```ts check
 const price = 1234.5
-const startsAt = new Date('2026-10-03T18:30:00Z')
-
 const priceText = new Intl.NumberFormat('tr-TR', {
   style: 'currency',
   currency: 'TRY',
 }).format(price)
 
+console.log(price, priceText)
+```
+
+`price` hâlâ `1234.5`; `priceText` ise `₺1.234,50` gibi görünür. Hesap yaparken veya API'ye veri gönderirken ham sayıyı kullan, kullanıcıya gösterirken biçimlendirilmiş metni üret. Görünen metni tekrar sayıya çevirmeye çalışırsan binlik ve ondalık ayırıcıları yüzünden `NaN` alabilirsin.
+
+İkinci örnekte aynı yaklaşımı gösterim tarihine uygulayalım. Yeni olan, sayıya uygun sınıf yerine tarihe uygun sınıf seçmek:
+
+```ts check
+const startsAt = new Date('2026-10-03T18:30:00Z')
 const dateText = new Intl.DateTimeFormat('tr-TR', {
   dateStyle: 'long',
   timeStyle: 'short',
   timeZone: 'Europe/Istanbul',
 }).format(startsAt)
 
-const relativeText = new Intl.RelativeTimeFormat('tr-TR', {
-  numeric: 'auto',
-}).format(-1, 'day')
-
-console.log(priceText, dateText, relativeText)
+console.log(dateText)
 ```
 
-`NumberFormat` için `style: 'currency'` tek başına yeterli değildir; para birimi kodunu da vermelisin. Bir oran göstereceksen `style: 'percent'`, kısa büyük sayılar için `notation: 'compact'` seçeneği kullanılabilir. `DateTimeFormat` ise kullanıcının diline uygun sırayı, ay adını ve noktalama işaretini üretir. Saat dilimini belirtmek, aynı anın farklı makinelerde başka gün görünmesini önler.
+Ham tarih aynı anı temsil eder; `Intl.DateTimeFormat` ise ay adını ve sıra düzenini Türkçe gösterir. Saat dilimini de seçtik, çünkü aynı an bir şehirde başka bir saate, hatta başka bir güne denk gelebilir. “Dün” gibi göreli metin için ayrıca `Intl.RelativeTimeFormat` vardır; her görünüm türü için uygun biçimlendiriciyi seçmek gerekir.
 
-Bir sayıdan mesajın hangi biçimini seçeceğini `PluralRules` belirler. Örneğin Türkçede `1` için kategori `one`, `3` için `other` olur; iki cümlede de “film” kelimesi değişmeyebilir. İngilizcede `1 movie` ve `3 movies` ayrımı gerekir. Kategorileri tahmin edip if zincirine gömmek yerine Intl'den sor:
+![Makine değeri locale ve Intl biçimlendirmesinden geçerek kullanıcıya gösterilir](diagrams/intl-akisi.svg "Makine değeri korunur; gösterim locale kurallarından geçer.")
 
-```ts check
-const englishPlural = new Intl.PluralRules('en').select(3)
-const turkishPlural = new Intl.PluralRules('tr-TR').select(3)
-const englishText = englishPlural === 'one' ? 'movie' : 'movies'
-const turkishText = turkishPlural === 'one' ? 'film' : 'film'
+## Türkçe arama ve sıralama ayrı işler
 
-console.log(englishText, turkishText)
-```
-
-## Türkçe I harfini izleyelim
-
-Bir ziyaretçi arama kutusuna `ipek` yazdı; katalogdaki başlık `İpek`. Genel küçük harf dönüşümüyle iki taraf da aynı değere inmez. Locale'i ekleyince dönüşüm Türkçe kurala göre yapılır.
+Bir film başlığı `İpek`, arama kutusundaki sorgu `ipek` olsun. JavaScript'in `toLowerCase()` metodu her zaman Türkçe kuralları uygulamaz. Türkçe için `toLocaleLowerCase('tr-TR')` kullanınca noktalı ve noktasız I harfleri beklenen biçimde dönüşür.
 
 | Adım | Başlık | Sorgu | Sonuç |
 | --- | --- | --- | --- |
-| 1. Başlangıç | `İpek` | `ipek` | Farklı karakter kodları var |
-| 2. `toLowerCase()` | `i̇pek` | `ipek` | İlk değer birleşik noktalı biçimde kalır; eşit değiller |
-| 3. `toLocaleLowerCase('tr-TR')` | `ipek` | `ipek` | Türkçe locale iki tarafı eşler |
+| Başlangıç | `İpek` | `ipek` | Metinler aynı değil |
+| `toLowerCase()` | `i̇pek` | `ipek` | Başlığın ilk harfi farklı birleşik karakterlerle temsil edilir |
+| `toLocaleLowerCase('tr-TR')` | `ipek` | `ipek` | Türkçe kurala göre eşleşir |
 
-Sıralama başka bir işlemdir. `['Şule', 'İpek', 'Çetin', 'Işık'].sort()` karakter kodlarına göre hareket eder; Türk alfabesinin sırasını uygulamaz. `new Intl.Collator('tr-TR').compare(a, b)` ise karşılaştırma sonucunu locale'e göre verir. `filter` ve `sort` aynı yardımcıda kullanılabilir; ama sıralama kaynak diziyi değiştirmesin diye `toSorted` ya da kopya üzerinde `sort` kullan.
+Bu dönüşüm yalnızca harf karşılaştırmasına yarar; `ş` ile `s` harfini aynı saymaz. Aksanları yok saymak isteniyorsa bu ürünün bilinçli bir kararı olmalı, çünkü bu harfler bazı adlarda anlamı değiştirir.
 
-## Önce kırık, sonra doğru
-
-Bu örnek İngilizce başlıkların yerel alfabetik sırasını umursamadan sıralar ve Türkçe I harflerini aramada eşleştiremez:
+Şimdi üçüncü örnekte bu aramaya sıralama ekleyelim. **`Intl.Collator`**, metinleri seçtiğin locale'in alfabetik kurallarıyla karşılaştıran araçtır. Varsayılan `sort()` ise metinleri UTF-16 kod birimlerine göre karşılaştırır; **UTF-16** JavaScript'in string karakterlerini temsil etmek için kullandığı kodlama biçimidir, alfabe sırası değildir.
 
 ```ts check
-type Event = { name: string }
+type Screening = { title: string; room: string }
+const collator = new Intl.Collator('tr-TR')
 
-function findEvents(events: Event[], query: string): Event[] {
-  const result = events.filter((event) => event.name.toLowerCase().includes(query.toLowerCase()))
-  return result.sort((a, b) => a.name.localeCompare(b.name))
-}
-```
-
-Burada locale verilmediği için aynı kod kullanıcının beklediği Türkçe kuralları garanti etmez. Karşılaştırma ve sıralama için locale'i açıkça verir, sıralamadan önce kopya üretiriz:
-
-```ts check
-type Event = { name: string }
-const turkishCollator = new Intl.Collator('tr-TR')
-
-function findEvents(events: Event[], query: string): Event[] {
+function searchScreenings(items: Screening[], query: string): Screening[] {
   const needle = query.trim().toLocaleLowerCase('tr-TR')
-  return events
-    .filter((event) => event.name.toLocaleLowerCase('tr-TR').includes(needle))
-    .toSorted((a, b) => turkishCollator.compare(a.name, b.name))
+  return items
+    .filter((item) => item.title.toLocaleLowerCase('tr-TR').includes(needle))
+    .toSorted((a, b) => collator.compare(a.title, b.title))
 }
 ```
 
-Buradaki örnek yalnızca dil duyarlı harf eşleştirir; `s` ile `ş` harfini aynı yapmaz. Aksanları yok saymak ürün kararıdır. Her karakterden birleşik işaretleri gelişigüzel silmek, kullanıcıların gerçekten ayırt ettiği adları da birbirine karıştırabilir.
+Arama ve sıralama iki ayrı adımdır: `filter` sorguyu başlıklarda bulur, `Collator` bulunanları Türk alfabesine göre dizer. `toSorted` yeni dizi verir; kaynak liste değişmeden kalır. Böylece aynı film listesini başka ekranda farklı sırayla göstermek istediğinde asıl veriyi bozmazsın.
 
-## Mesaj kataloğunda anahtar ve parametre
+## Mesajların da farklı bilgileri olabilir
 
-`Intl` sayı ve tarihleri biçimlendirir, ama arayüz cümlelerini çevirmeyi üstlenmez. “Merhaba, Ada” ile “Welcome, Ada” gibi metinler için dil bazlı bir katalog gerekir. Katalog anahtarlarını tek yerden türetmek yazım hatalarını ve eksik çevirileri görünür yapar.
+Fiyat veya tarih biçimlendirici, “Seans ertelendi” gibi arayüz cümlelerini çevirmeyi üstlenmez. Bu metinleri dil bazlı bir mesaj kataloğunda tutabilirsin. **Discriminated union**, nesneleri ayırt edici bir alanın değerine göre farklı şekillere ayıran TypeScript tipidir; her mesaj çeşidinin yalnızca ihtiyacı olan bilgiyi taşımasını sağlar.
+
+Örneğin bir duyuru ya seansın açıldığını ya da salon değişikliğini anlatabilir:
 
 ```ts check
-const messages = {
-  tr: { greeting: (name: string) => `Merhaba, ${name}` },
-  en: { greeting: (name: string) => `Welcome, ${name}` },
-} as const
+type Notice =
+  | { kind: 'opened'; filmTitle: string }
+  | { kind: 'roomChanged'; room: string }
 
-type MessageKey = keyof typeof messages.tr
-
-function greet(key: MessageKey, name: string, locale: keyof typeof messages): string {
-  return messages[locale][key](name)
+function noticeText(notice: Notice): string {
+  if (notice.kind === 'opened') return `${notice.filmTitle} için seans açıldı`
+  return `Yeni salon: ${notice.room}`
 }
-
-const greeting = greet('greeting', 'Ada', 'tr')
 ```
 
-Bu küçük örnek sabit parametre imzasını gösteriyor. Gerçek kataloglarda her mesajın parametresi farklı olabilir; `keyof`, generics ve `Parameters` ile seçilen anahtardan doğru parametre tipini çıkarabilirsin. Bu yaklaşımda `'greting'` gibi yanlış anahtar ve yanlış veri derleme aşamasında yakalanır. Katalog büyüdüğünde bu yapıyı kendin sürdürmek yerine FormatJS, Lingui veya react-i18next gibi kütüphaneler çeviri dosyası yükleme, plural mesajı ve biçimlendirmeyi yönetebilir. Bu repoda bu paketler kurulu değil; burada önemli olan deseni tanımak.
+`kind` değerini kontrol edince TypeScript doğru dala ait alanları tanır: `opened` dalında `filmTitle`, diğerinde `room` vardır. Bu yaklaşım hatalı karışımları azaltır; örneğin salon değişikliği mesajına film başlığı vermek zorunda kalmazsın. Bir katalogda aynı fikirle her mesaj anahtarının parametrelerini doğru dilde üretebilirsin.
 
-## Dil yönü ve CSS yerleşimi
+## Dil, yazı yönü ve boşluk
 
-Sayfanın dili ekranda görünmeyen ama tarayıcının ihtiyaç duyduğu bilgidir. Türkçe belge `<html lang="tr">` taşır. Sağdan sola bir Arapça sayfa için `lang="ar"` ve `dir="rtl"` kullanılır. CSS'te `margin-left` gibi fiziksel yön yerine `margin-inline-start` ve `padding-inline-end` gibi mantıksal özellikler seçersen aynı bileşen iki yönde de doğru yerleşir. Tailwind'de bunların `ms-*`, `me-*`, `ps-*` karşılıkları vardır.
+HTML'deki `lang` niteliği belge dilini belirtir; örneğin Türkçe sayfanın kökünde `lang="tr"` bulunur. `dir` ise yazı yönünü belirtir; sağdan sola bir dilde `dir="rtl"` kullanılır. Bunlar ayrı bilgilerdir: dil Türkçe olsa da yön soldan sağadır, Arapça için dil ve yön ayrı ayrı bildirilir.
+
+CSS'te `margin-left` gibi **fiziksel özellikler** ekranın soluna bağlanır. **Mantıksal CSS özellikleri**, boşluğu ekranın yönüne değil metnin akışına göre tarif eder; `margin-inline-start` başlangıç tarafındaki boşluktur ve sağdan sola düzende uygun tarafa geçer. Böylece yeni bir dil için her component'te sol ve sağı elle tersine çevirmen gerekmez.
+
+```css
+.film-meta {
+  margin-inline-start: 0.75rem;
+  padding-inline-end: 1rem;
+}
+```
+
+`dir="rtl"` verilince bu boşluklar metnin akışına göre yer değiştirir. Sadece yatay düzeni değil, ikonların ve okların anlamını da kontrol et; her görsel yön tersine çevrilmek zorunda değildir.
 
 :::mistake[Belirti: Fiyatı tekrar sayıya çeviremiyorsun]
-Belirti → Arayüzde `₺1.234,50` var; hesap kodu bu metni `Number(...)` ile okuyup `NaN` üretiyor.  
-Neden → Biçimlendirilmiş görünüm ham veri olarak saklanmış.  
-Düzeltme → `1234.5` sayısını state/API verisinde koru, yalnızca render sırasında `Intl.NumberFormat` kullan.
+Belirti → Ekrandaki `₺1.234,50` değerini `Number(...)` ile okuyunca `NaN` çıkıyor.  
+Neden → Kullanıcıya gösterilen metni ham veri yerine saklamışsın.  
+Düzeltme → Sayıyı state veya API verisinde tut, yalnızca gösterirken `Intl.NumberFormat` çağır.
 :::
 
-:::mistake[Belirti: Türkçe isim yanlış sırada]
-Belirti → `Çetin`, `Işık`, `İpek`, `Şule` yerine İngilizce ya da kod sırası görünüyor.  
-Neden → Varsayılan `sort()` locale seçimi yapmıyor.  
-Düzeltme → `Intl.Collator('tr-TR')` ile karşılaştır; farklı ekranlarda başka dil kullanılıyorsa locale'i o dilin tercihiyle belirle.
+:::mistake[Belirti: Türkçe film adları yanlış sırada]
+Belirti → `Çetin`, `Işık`, `İpek`, `Şule` Türk alfabesindeki sırayı izlemiyor.  
+Neden → Varsayılan `sort()` locale seçmez.  
+Düzeltme → `Intl.Collator('tr-TR')` ile karşılaştır.
 :::
 
-:::mistake[Belirti: Dil değişince bazı mesajlar kayboluyor]
-Belirti → İngilizce ekranda selamlama çevriliyor ama sonuç sayacı Türkçe kalıyor.  
-Neden → Metinler bileşenlere dağılmış ve katalog anahtarları iki dilde karşılaştırılmıyor.  
-Düzeltme → Mesajları dil bazlı katalogda tut; TypeScript ile anahtar kümesinin ve parametre imzalarının eşleşmesini sağla.
-:::
-
-:::sector
-Ürün ekipleri kod incelemesinde “bu string hangi locale ile biçimleniyor?” sorusunu sorar. API'den gelen ISO tarihini saklar, arayüzde kullanıcının seçtiği saat dilimi ve locale ile gösterirler. Büyük uygulamalarda çeviri anahtarlarını çeviri yönetim sisteminden alır, `Intl` biçimlendiricilerini ortak bir katmanda sunar ve ekran okuyucu için belge dilini de güncel tutarlar.
+:::info[Derinlemesine (isteğe bağlı)]
+`Intl.PluralRules` sayıya göre dilin çoğul kategorisini seçer; örneğin bazı dillerde İngilizcedeki `movie`/`movies` ayrımını üretmeye yardım eder. Kategoriler dile göre değiştiği için `count === 1` kuralını her dilde doğru varsayma. Büyük projelerde FormatJS, Lingui veya react-i18next mesaj kataloglarını yönetebilir.
 :::
 
 ## Özet
 
-- Makine değerini biçimlenmiş kullanıcı metninden ayrı tut.
-- Sayı, tarih, göreli zaman ve çoğul seçiminde uygun `Intl` sınıfını kullan.
-- Türkçe harf dönüşümü ile sıralamaya locale ver; varsayılan string metotlarının dil kuralını bildiğini varsayma.
-- Mesaj kataloğunda anahtar ve parametreleri tipli tut; belge `lang` ve `dir` bilgisini de doğru ayarla.
+- Ham fiyatı ve tarihi koru; kullanıcıya gösterilecek metni uygun `Intl` sınıfıyla üret.
+- Türkçe küçük harf dönüşümünde `toLocaleLowerCase`, sıralamada `Intl.Collator` kullan.
+- Arama ve sıralama farklı işlerdir; sıralarken kaynak diziyi değiştirme.
+- Belgenin dilini `lang`, yönünü `dir` ile bildir; CSS'te mantıksal özellikleri kullan.
 
-**Kendini yokla:** Para metnini neden uygulama state'inde saklamazsın?  
-*Cevap:* Çünkü bu gösterim locale'e bağlıdır; ham sayı kalırsa başka dilde yeniden biçimlendirmek ve hesap yapmak mümkündür.
+**Yeni terimler:** Locale — dil/bölge yazım kuralları seçimi; Intl — yerel biçimlendirme ve karşılaştırma API'leri; Collator — metni dile göre karşılaştıran araç; UTF-16 — JavaScript string'lerini temsil eden kodlama biçimi; mantıksal CSS özelliği — boşluğu yazı akışının başlangıç/bitiş tarafına göre tarif eden özellik.
 
-**Kendini yokla:** `Intl.Collator` ile `Intl.NumberFormat` neyi farklı çözer?  
-*Cevap:* Collator metinleri dile göre karşılaştırır; NumberFormat sayısal değerleri yerel yazım kuralıyla gösterir.
+**Kendini yokla:** Fiyatı neden önce `₺1.234,50` metnine çevirip state'te saklamazsın?  
+*Cevap:* Çünkü bu gösterim dil ve ülkeye bağlıdır; ham sayı hesaplama ve başka biçimde gösterme için gereklidir.
+
+**Kendini yokla:** `Intl.Collator` ile `toLocaleLowerCase` neyi farklı yapar?  
+*Cevap:* Collator sıralama karşılaştırmasını, locale duyarlı lowercase ise harf dönüşümünü yapar.

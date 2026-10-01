@@ -1,226 +1,207 @@
 ---
-title: "Dört kat aşağı inen veri ve Context"
-minutes: 14
+title: "Ortak veriyi Context ile taşı"
+minutes: 17
 kind: concept
 ---
 
-# Dört kat aşağı inen veri ve Context
+# Ortak veriyi Context ile taşı
 
-:::pain[Problem]
-Karanlık/Aydınlık tema seçimi `App` bileşeninde tutuluyor. Sayfanın en derinindeki kullanıcı menüsünde bir tema değiştirme butonu, kartlarda ise tema renkleri gerekiyor. Aradaki dört ara bileşen (`App → Shell → MainLayout → Header → ThemeToggle`) tema bilgisini zerre kadar kullanmadığı halde sırf taşımak için prop zinciri oluşturuyor. Bir prop adı değiştiğinde aradaki tüm bileşenler kırılıyor.
-:::
+`props` ile veriyi üst bileşenden alt bileşene gönderdiğini biliyorsun. Sinema uygulamasında seçili dil bir sayfa başlığında, filtre düğmelerinde ve film kartlarında görünebilir. Aradaki her bileşene sadece bu bilgiyi aşağı aktarmak için prop eklemek mümkün; ama o bileşenler dili hiç kullanmıyorsa kodda gereksiz taşıma oluşur.
 
-## Context yayılım modeli
+Bir veriyi aradaki ilgisiz bileşenlerden geçirmeye **prop drilling** denir. React'in **Context** özelliği, üst bileşenin verdiği değeri alt ağaçtaki bileşenlere doğrudan ulaştırır. İlk olarak props ile nasıl göründüğünü görelim.
 
-Normalde React'te veri akışı yukarıdan aşağıya `props` ile ilerler. Ancak bazı veriler (tema tercihi, kullanıcı oturumu, dil seçimi gibi) uygulamanın hemen her köşesinde gereklidir. Bu verileri aradaki ilgisiz bileşenlerin içinden geçirmeye **prop drilling** denir.
+## Props zincirinde ara bileşenler
 
-**Context API**, bir ağacın tepesindeki bir sağlayıcıdan (Provider) aşağıdaki tüm tüketicilere (Consumers), aradaki bileşenleri hiç rahatsız etmeden doğrudan veri ulaştırmayı sağlar.
-
-![Provider değeri değişince tüketicilere yayılan context güncellemesi](diagram:context-yayilimi)
-
-Kesin kurallar:
-
-1. **Provider kapsamı belirler:** Bir verinin ağacın hangi dalında geçerli olduğunu Provider bileşeni belirler.
-2. **Hook ile tüketim:** Tüketici bileşenler değeri `useContext` veya bunu saran güvenli bir custom hook ile okur.
-3. **Sessiz varsayılan değer tuzağıdır:** `createContext`'e sahte bir varsayılan değer vermek, sağlayıcı (provider) unutulduğunda hatayı gizler.
-4. **Güvenli sınır: Nullable Context:** Context'i `createContext<T | null>(null)` ile başlatıp, saran custom hook içinde `null` kontrolü yaparak sert hata fırlatmak en iyi endüstri pratiğidir.
-5. **Context küresel önbellek değildir:** Sık sık değişen karmaşık veriler veya sunucu önbelleği için Context tek başına yeterli değildir; çünkü provider değeri her değiştiğinde bu context'i okuyan **tüm tüketiciler yeniden render edilir**.
-6. **React 19 sözdizimi:** React 19'da `<ThemeContext value={...}>` yazımı doğrudan desteklenir; geleneksel `<ThemeContext.Provider value={...}>` yazımı da tamamen geçerlidir.
-
-:::model[Veri akışı]
-Prop'lar hâlâ React'in en şeffaf, en takip edilebilir veri taşıma yoludur. Yalnızca bir alt bileşene buton aktarmak istiyorsan önce component composition (`children`) düşün. Alt ağacın birbirinden bağımsız birçok farklı noktasında aynı ortak duruma anlık ihtiyaç varsa Context'e geç.
-:::
-
-## Prop drilling zincirini kıyaslayalım
-
-Geleneksel prop zincirinde ara bileşenler sadece kuryelik yapar:
-
-```text
-App (tema burada)
-└─ Shell (prop taşır)
-   └─ MainLayout (prop taşır)
-      └─ Header (prop taşır)
-         └─ ThemeToggle (temayı kullanır ve değiştirir)
-```
-
-Context Provider kurulduğunda zincir kırılır:
-
-```text
-ThemeProvider (Provider sınırı)
-└─ App
-   └─ Shell
-      └─ MainLayout
-         └─ Header
-            └─ ThemeToggle ───► useTheme() doğrudan okur!
-```
-
-`Shell`, `MainLayout` ve `Header` bileşenleri artık tema prop'undan tamamen kurtulur; kodları temizlenir ve bağımsızlaşır.
-
-## Kırık yaklaşım: Sessiz varsayılan değer
+Burada `App` dil bilgisini `Page`'e verir; `Page` de yalnızca başka bileşene aktarmak için `Header`'a iletir:
 
 ```tsx
-// TEHLİKE: Sahte varsayılan değer vermek
-const ThemeContext = createContext<{ theme: string }>({ theme: 'dark' })
+function App() {
+  return <Page language="tr" />
+}
 
-export function useTheme() {
-  return useContext(ThemeContext)
+function Page({ language }: { language: string }) {
+  return <Header language={language} />
+}
+
+function Header({ language }: { language: string }) {
+  return <h1>Dil: {language}</h1>
 }
 ```
 
-Bu kodda bir geliştirici `ThemeProvider` sarmalamasını unuttuğunda React hiçbir hata fırlatmaz. Butonlar tıklandığında tema değişmez ama uygulama "çalışıyor" gibi görünür. Geliştirici hatanın kaynağını saatlerce aramak zorunda kalır.
+`Page` dili kullanmıyor ama prop adını ve tipini biliyor. Zincir birkaç kat uzarsa her ara bileşenin imzası da değişir. Birkaç prop geçişi olağandır; sorun, ilgisiz ara bileşenlerin ortak bilgiyi sürekli taşımasıdır.
 
-## Doğru yaklaşım: Tipli Context ve sert hata sınırı
+## Context ile doğrudan okuma
 
-Context'i `null` ile başlatıp özel bir custom hook ile sarmalıyoruz:
+Context'i oluşturan `createContext`, paylaşılacak değerin kanalını tanımlar. Değeri ağaca veren bileşene **Provider** denir; değeri okuyan alt bileşen ise tüketicidir. `useContext` ile tüketici, kendisini saran en yakın Provider'ın değerini alır.
 
-```tsx check
+```tsx
+import { createContext, useContext } from 'react'
+
+const LanguageContext = createContext<string | null>(null)
+
+function App() {
+  return (
+    <LanguageContext.Provider value="tr">
+      <Page />
+    </LanguageContext.Provider>
+  )
+}
+
+function Page() {
+  return <Header />
+}
+
+function Header() {
+  const language = useContext(LanguageContext)
+  return <h1>Dil: {language}</h1>
+}
+```
+
+`Page` artık dili alıp ileri taşımaz; `Header` ağacın yukarısındaki Provider'dan okur. Bu, bütün prop'ları Context'e çevirmek gerektiği anlamına gelmez: yalnızca bir üst bileşenden bir alt bileşene giden değerde `props` daha açık kalır.
+
+## Değer değişince tüketiciler güncellenir
+
+Context yalnızca sabit ayar vermez; Provider'ın değeri state'ten gelebilir. Örneğin üst bileşen arayüz dilini değiştirirken başlık ve menü aynı seçimi göstermelidir:
+
+```tsx
 import { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
 
-type Theme = 'light' | 'dark'
+const LanguageContext = createContext<string | null>(null)
 
-type ThemeContextValue = {
-  theme: Theme
-  toggleTheme: () => void
-}
-
-// 1. Context'i null başlatarak tipini kilitliyoruz:
-const ThemeContext = createContext<ThemeContextValue | null>(null)
-
-// 2. Provider bileşeni:
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
-
-  function toggleTheme() {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
-  }
+function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguage] = useState('tr')
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <LanguageContext.Provider value={language}>
+      <button type="button" onClick={() => setLanguage('en')}>English</button>
       {children}
-    </ThemeContext.Provider>
+    </LanguageContext.Provider>
   )
 }
 
-// 3. Güvenli Tüketici Hook'u:
-export function useTheme(): ThemeContextValue {
-  const context = useContext(ThemeContext)
-  if (context === null) {
-    throw new Error('useTheme must be used within a ThemeProvider')
-  }
-  return context
+function LanguageLabel() {
+  const language = useContext(LanguageContext)
+  return <p>Seçili dil: {language}</p>
 }
 ```
 
-### Neden bu desen bu kadar güçlüdür?
-- **TypeScript güvencesi:** `useTheme()` fonksiyonunun dönüş tipi `ThemeContextValue | null` değil, kesin olarak `ThemeContextValue`'dur. Tüketici bileşende asla `context?.theme` şeklinde null kontrolü yapmak zorunda kalmazsın.
-- **Erken uyarı sistemi:** Eğer bir bileşen `ThemeProvider` ağacının dışında çağrılırsa uygulama o anda açık ve net bir hata fırlatır: `"useTheme must be used within a ThemeProvider"`. Hatanın nerede olduğu anında anlaşılır.
+`LanguageProvider` içindeki düğmeye basınca state `en` olur. Provider'ın değeri değiştiği için `LanguageContext` okuyan tüketiciler yeni dili alıp yeniden render edilir; ara bileşenlere `language` prop'u eklemek gerekmez. Context veri paylaşımını kolaylaştırır, tüketicilerin güncellenmesini engellemez.
 
-## Tüketici bileşende kullanım
-
-Artık ağacın neresinde olursa olsun bir buton temayı tek satırda değiştirebilir:
+Provider altına iki tüketici yerleştirirsen ikisi de aynı seçimi gösterir:
 
 ```tsx
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme()
-
+function LanguagePanel() {
   return (
-    <button type="button" onClick={toggleTheme}>
-      Mevcut tema: {theme === 'dark' ? 'Karanlık' : 'Aydınlık'}
-    </button>
+    <LanguageProvider>
+      <LanguageLabel />
+      <LanguageLabel />
+    </LanguageProvider>
   )
 }
 ```
 
-## Context ne zaman gereksizdir? (Composition alternatifi)
-
-Context güçlü bir araçtır ancak her prop geçişinde Context'e sarılmak mimariyi hantallaştırır. Yalnızca tek bir bileşeni birkaç kat aşağı indirmek istiyorsan, **bileşen kompozisyonu** (`children` veya slot) çoğunlukla daha temizdir:
-
-```tsx
-// Context yerine Composition:
-function PageLayout({ userMenu }: { userMenu: ReactNode }) {
-  return (
-    <div className="layout">
-      <header>{userMenu}</header>
-      <main>İçerik</main>
-    </div>
-  )
-}
-
-// App seviyesinde doğrudan vermek:
-function App() {
-  return <PageLayout userMenu={<UserMenu user={currentUser} />} />
-}
-```
-
-Burada `PageLayout` aradaki bir kurye olmaktan çıkar; `UserMenu`'ye prop doğrudan en tepeden aktarılır.
-
-## Context yayılımının performans maliyeti
-
-Bir Context'in `value` değeri değiştiğinde, o Context'i okuyan (`useTheme` çağıran) tüm bileşenler istisnasız yeniden render edilir.
-
-Bu yüzden:
-- **İlgisiz verileri aynı Context'te birleştirme:** Örneğin `UserAuthContext` ile `ThemeContext`'i tek bir devasa context yaparsan; kullanıcı tema değiştirdiğinde oturumla ilgili tüm bileşenler gereksiz yere render edilir.
-- **Provider değerini stabil tut:** Provider içinde nesne oluştururken gereksiz referans değişimlerinden kaçın.
-
-## Provider sınırında değerin izini sürelim
-
-Context bir değişkenin uygulamanın her yerine sihirli biçimde kopyalanması değildir. React tüketici bileşenin bulunduğu ağaç dalında en yakın üst Provider'ı bulur. Aynı Context için iç içe iki Provider varsa, içteki Provider altındaki tüketiciler iç değeri okur; kardeş dal ise dış değeri okumaya devam eder.
-
-| Ağaç noktası | En yakın Provider | useContext sonucu |
+| Adım | Değer | Ne görür `LanguageLabel`? |
 |---|---|---|
-| Header, üst Provider altında | App | App'in değeri |
-| Preview, iç Provider altında | Preview | Preview'in değeri |
-| Footer, iç Provider'ın dışında | App | App'in değeri |
-| Provider ağacının dışı | yok | createContext varsayılanı |
+| İlk render | `tr` | `Seçili dil: tr` |
+| Düğmeye basıştan sonra | state `en` olur | React Provider'ı yeni değerle işler |
+| Güncelleme ekrana uygulanır | Provider değeri `en` | `Seçili dil: en` |
 
-Son satırdaki varsayılan yalnızca hiçbir eşleşen Provider bulunamadığında kullanılır. Bu nedenle null başlangıç değeri ve açık hata veren hook, yanlış ağacı sessizce çalıştırmak yerine sorunu ilk tüketimde gösterir. Provider'ı tüketicinin kendisiyle aynı seviyeye koyarsan o bileşen kendi Provider değerini okuyamaz; Provider yalnızca altındaki render ağacını kapsar.
+Tabloda tüketici eski değerde takılı kalmaz. Aynı Provider altında iki `LanguageLabel` varsa ikisi de değişikliği görür; çünkü ikisi de aynı Context değerini okur.
 
-Value karşılaştırması referans üzerinden yapılır. Provider her render'da yeni bir nesne üretirse, alanlar aynı görünse bile referans değişebilir ve tüketiciler güncellenir. Önce gerçek güncelleme sıklığını ölç; sonra value nesnesini gerekli olduğunda stabilize et veya sık değişen state ile seyrek değişen komutları ayrı Context'lere böl. Bu, yeniden render'ı sihirli biçimde yok etmez; hangi tüketicinin hangi değişikliği dinlediğini sınırlar.
+![Provider değeri değişince tüketicilere yayılan context güncellemesi](diagram:context-yayilimi)
 
-:::mistake[Provider'ı tüketen bileşenin içine koymak]
-**Belirti:** Bileşen Provider eklediği halde varsayılan değeri okumaya devam ediyor. **Neden:** Bileşenin kendi hook çağrısı, döndürdüğü Provider'ın alt ağacında değildir. **Düzeltme:** Provider'ı tüketici bileşenin üst ebeveynine taşı; tüketici yalnızca altındaki değeri okuyabilir.
+## Provider sınırını izleyelim
+
+Bir Context'in değeri tüm uygulamaya sihirli biçimde yayılmaz. Tüketici, kendi bulunduğu dalda yukarı doğru bakar ve **en yakın** aynı Context Provider'ını kullanır. İç içe Provider'lar farklı alt alanlar için farklı değerler sunabilir:
+
+```tsx
+<LanguageContext.Provider value="tr">
+  <Header />
+  <LanguageContext.Provider value="en">
+    <MovieDetails />
+  </LanguageContext.Provider>
+  <Footer />
+</LanguageContext.Provider>
+```
+
+`MovieDetails`, içteki Provider nedeniyle `en` okur; `Header` ve `Footer` dıştaki Provider nedeniyle `tr` okur. Provider yalnızca altındaki ağacı kapsar. Bir bileşen kendi döndürdüğü Provider'ın değerini okuyamaz; kendi hook çağrısı Provider'ın altındaki ağaçta değildir.
+
+| Ağaçtaki bileşen | En yakın Provider | Okuduğu değer |
+|---|---|---|
+| `Header` | Dıştaki | `tr` |
+| `MovieDetails` | İçteki | `en` |
+| `Footer` | Dıştaki | `tr` |
+| Hiçbir Provider altında olmayan bileşen | Yok | Context'in varsayılanı |
+
+Son satırdaki varsayılan değer, eşleşen Provider yokken kullanılır. Başlangıçta gerçek bir değer verilirse Provider'ı unutmak sessizce yanlış görünüm üretebilir. Bu nedenle ortak veride `null` kullanıp eksik Provider'ı açıkça bildirmek çoğu zaman daha güvenlidir.
+
+## Eksik Provider'ı erken yakala
+
+`null` başlangıç değerinin tipi, Context'in henüz bir gerçek değer almadığını söyler. Özel bir hook içine kontrol koyunca bütün tüketiciler aynı açık hatayı alır:
+
+```tsx check
+import { createContext, useContext } from 'react'
+
+type Locale = 'tr' | 'en'
+const LocaleContext = createContext<Locale | null>(null)
+
+function useLocale(): Locale {
+  const locale = useContext(LocaleContext)
+  if (locale === null) {
+    throw new Error('useLocale must be used inside LocaleContext.Provider')
+  }
+  return locale
+}
+```
+
+Provider'ın dışında `useLocale()` çağırınca hata hemen o noktada anlaşılır. Kontrolden sonra TypeScript de `locale` değerinin `null` olamayacağını bilir; tüketen bileşen her kullanımda ayrı null kontrolü yapmak zorunda kalmaz.
+
+:::mistake[Yanlış varsayılanı gerçekmiş gibi göstermek]
+**Belirti:** Bir tüketici Provider'ın dışında da çalışıyor görünür ama beklenen değer değişmez. **Neden:** Sahte varsayılan, eksik Provider hatasını gizlemiştir. **Düzeltme:** `null` başlangıç değeri kullan; özel hook'ta Provider yoksa anlamlı hata fırlat.
 :::
 
-## Sınır durumları ve sık hatalar
+## Her prop için Context gerekmez
 
-:::mistake[Sık hata: Provider dışında hook çağrıldığında sessizce null dönmek]
-Belirti → Bileşen içinde `const theme = useTheme()` yazıldığında `theme.toggleTheme` undefined hatasıyla patlıyor.  
-Neden → Custom hook içinde hata fırlatılmamış, `null` döndürülmüş.  
-Düzeltme → `if (context === null) throw new Error(...)` yazarak geliştiriciyi doğrudan eksik Provider konusunda bilgilendir.
-:::
+Yalnızca tek bir alt bileşene içerik taşımak istiyorsan **composition** (bileşenleri içerik olarak birleştirme) kullanabilirsin. Örneğin `PageLayout` hangi kullanıcı menüsünün çizileceğini bilmek zorunda değildir; üst bileşen hazır menüyü `children` ya da bir prop olarak verebilir.
 
-:::mistake[Sık hata: Provider'ı ağacın çok aşağısına koymak]
-Belirti → Header içindeki bileşen Provider'ı bulamıyor ve hata veriyor.  
-Neden → Provider yalnızca `Main` alanını sarmalamış, `Header` dışarıda kalmış.  
-Düzeltme → Ortak veriyi tüketecek tüm bileşenleri kapsayan en yakın ortak üst ebeveyne (genelde `App` veya `RootLayout`) Provider'ı yerleştir.
-:::
+```tsx
+function PageLayout({ menu }: { menu: React.ReactNode }) {
+  return <header>{menu}</header>
+}
 
-:::mistake[Sık hata: Yüksek frekanslı verileri Context ile yönetmek]
-Belirti → Fare hareketi veya klavye girişi sırasında tüm sayfanın donması.  
-Neden → Saniyede 60 kez değişen fare koordinatları bir Context'e yazılmış; her koordinat değişiminde yüzlerce bileşen render oluyor.  
-Düzeltme → Yüksek frekanslı veri akışları için yerel state, ref veya özel state yönetim kütüphaneleri (Zustand, Redux) tercih edilmelidir.
-:::
+function App() {
+  return <PageLayout menu={<UserMenu />} />
+}
+```
 
-:::sector
-Endüstriyel React projelerinde Context API'nin en yaygın kullanım alanları şunlardır:
-1. **Tema sağlayıcıları** (Aydınlık / Karanlık mod).
-2. **Kimlik doğrulama oturumu** (Giriş yapmış kullanıcı bilgileri).
-3. **Uluslararasılaştırma ve Dil (i18n)** (Aktif dil ve çeviri sözlüğü).
-4. **Toast / Bildirim sistemleri** (Ekranın köşesinde açılan geçici bildirim kuyruğu).
-Bunun dışındaki karmaşık sunucu verileri için modern ekipler TanStack Query gibi araçları tercih eder.
+Bu örnekte `PageLayout` menünün iç yapısını ya da verisini taşımaz; yalnızca aldığı içeriği gösterir. Context'i, aynı ortak değeri ağaçta birbirinden ayrı birçok noktanın okuması gerektiğinde seçmek daha uygundur.
+
+Context değerini değiştiğinde, o Context'i okuyan tüketiciler yeniden render olur. Bu yüzden tema gibi seyrek değişen ortak ayarlar için doğal bir araçtır. Saniyede defalarca değişen her veri için otomatik çözüm değildir; böyle bir durumda state'in nerede tutulması gerektiğini ve gerçekten hangi bileşenlerin güncellenmesi gerektiğini ayrıca düşün.
+
+:::info[Derinlemesine (isteğe bağlı)]
+React 19'da `<LanguageContext value="tr">` yazabilirsin; `<LanguageContext.Provider value="tr">` biçimi de geçerlidir. Provider her render'da yeni bir nesne üretirse değer kimliği değişebilir ve tüketiciler güncellenebilir; önce bu maliyeti ölç, sonra gerekirse değeri stabilize et veya farklı sıklıkta değişen verileri ayrı Context'lere ayır.
 :::
 
 ## Özet
 
-- Context, prop drilling acısını ortadan kaldırarak ağacın derinliklerine doğrudan veri ulaştırır.
-- `createContext<T | null>(null)` ve null kontrolü yapan özel hook deseni tip güvenliği ve erken hata tespiti sağlar.
-- Yalnızca tek bir bileşeni derine taşımak için Context yerine `children` (composition) tercih edilmelidir.
-- Provider değeri her değiştiğinde o context'i dinleyen tüm tüketiciler yeniden render olur; bu nedenle farklı alanlar için ayrı bağımsız context'ler açılmalıdır.
-- React 19 ile birlikte `<Context value={...}>` sözdizimi doğrudan kullanılabilir.
+- Context, ortak değeri aradaki ilgisiz bileşenlere prop olarak taşıma gereğini azaltır.
+- Provider altındaki tüketici değeri `useContext` ile okur; en yakın Provider kazanır.
+- Provider değeri değişince o Context'i okuyan tüketiciler güncellenir.
+- Birkaç prop geçişi veya tek bir alt bileşene içerik verme için props ve composition daha açık olabilir.
+- `null` varsayılanı ve kontrol yapan özel hook, eksik Provider'ı sessiz hata yerine görünür hale getirir.
 
-**Kendini yokla:** `createContext`'e sahte bir varsayılan değer vermek neden önerilmez?  
-*Cevap:* Çünkü Provider bileşeni ağaçta unutulduğunda uygulama hata vermez; sahte değerle sessizce yanlış davranarak hatanın tespit edilmesini zorlaştırır.
+**Yeni terimler:**
 
-**Kendini yokla:** Tema Context'i ile Oturum (Auth) Context'i neden aynı Provider'da birleştirilmemelidir?  
-*Cevap:* Çünkü kullanıcı tema değiştirdiğinde, aynı context içindeki oturum verisini dinleyen tüm ilgisiz bileşenler de gereksiz yere yeniden render edilir.
+- **Prop drilling:** Kullanmadığı halde ortak değeri alt bileşene geçirmek zorunda kalan ara bileşenler zinciri.
+- **Context:** React ağacındaki alt bileşenlere ortak değer ulaştırma kanalı.
+- **Provider:** Context'in değerini altındaki bileşenlere veren bileşen.
+- **Composition:** Bileşenleri hazır içerik veya `children` vererek bir araya getirme.
+
+**Kendini yokla:** İç içe iki `LanguageContext.Provider` varsa `MovieDetails` hangisini okur?
+
+*Cevap:* Kendi dalındaki en yakın, yani içteki Provider'ın değerini.
+
+**Kendini yokla:** Bir Context tüketicisi Provider dışında çalışıyorsa neden varsayılan olarak boş değer vermek yerine hata fırlatmak yararlı olabilir?
+
+*Cevap:* Yanlış ağaç kurulumunu erken ve açık gösterir; sahte veriyle sessizce hatalı arayüz üretmesini önler.

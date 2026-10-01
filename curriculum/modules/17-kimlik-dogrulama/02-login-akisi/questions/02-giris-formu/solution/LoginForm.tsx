@@ -13,14 +13,14 @@ export interface LoginValues {
 export function LoginForm({
   onLogin,
 }: {
-  onLogin: (values: LoginValues) => Promise<unknown> | unknown
+  onLogin: (credentials: { username: string; password: string }) => Promise<void> | void
 }) {
   const {
     register,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<z.input<typeof schema>, unknown, z.output<typeof schema>>({
+  } = useForm<LoginValues>({
     resolver: zodResolver(schema),
   })
   return (

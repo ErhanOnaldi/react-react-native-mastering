@@ -1,128 +1,130 @@
 ---
-title: "ESLint 10 flat config katmanları"
+title: "ESLint flat config dosyaları nasıl seçer?"
 minutes: 15
 kind: concept
 ---
 
-# ESLint 10 flat config katmanları
+# ESLint flat config dosyaları nasıl seçer?
 
-:::pain[Problem]
-Bir dosyada ESLint kullanılmayan değişkeni buldu; başka bir `.tsx` dosyasında aynı yanlışlık sessiz kaldı. Kural doğru görünüyor, ancak config’in dosya eşleşmesi sadece `.js` uzantısını seçmiş. Sonuçta “lint temiz” raporu, denetlenmeyen dosyalar hakkında hiçbir şey söylemiyor.
-:::
+Bir projede `src/movie.ts` ve `src/MovieCard.tsx` dosyaları olabilir. Bir lint kuralını yazmış olman, ESLint’in bu iki dosyayı da incelediği anlamına gelmez. Önce ESLint’e hangi dosyaları ve hangi kurallarla kontrol edeceğini anlatan ayara, yani **config** dosyasına bakalım.
 
-## Config bir dosya eşleştirme listesi
+ESLint 10’un güncel config modeli **flat config** olarak adlandırılır. Ayar çoğunlukla `eslint.config.js` dosyasında bir dizi katman halinde yazılır. Her katman belirli dosyaları seçebilir, kurallar ekleyebilir veya önceden tanımlanmış ayarları kullanabilir. Bu modeli öğrenirken dosya eşleşmesini takip etmek yeterli; önce uzun bir kural listesi ezberlemene gerek yok.
 
-ESLint 10 proje ayarını flat config dosyasından okur. Tipik ad `eslint.config.js` ya da projenin modül biçimine uygun uzantıdır. Eski `.eslintrc` biçimi bu sürümün config modeli değildir. Flat config’i bir kurallar listesi gibi değil, dosya kümelerine sırayla uygulanabilen katmanlar olarak düşün: her nesne hangi dosyalarla eşleştiğini, hangi plugin veya parser’ı açtığını, hangi kuralları değiştirdiğini ve hangi yolları kapsam dışı tuttuğunu söyleyebilir.
+## Bir dosya deseni oku
 
-`defineConfig` yapılandırmayı yazarken düzenli bir dizi tanımlamaya yardım eder. TypeScript-ESLint’in `configs.recommended` preset’i TypeScript kaynakları için parser ve temel kuralları birlikte getirir. React Hooks preset’i ise hook’lara özgü analizleri ekler. Bir preset’i config dizisine eklemek, hangi dosyalarda etkili olacağını hâlâ doğru belirlemeyi gerektirir.
+Config’te `files` alanı hangi kaynak yollarının bir katmanla eşleşeceğini söyler. Örneğin şu **glob**, dosya yollarını desenle eşleştiren kısa ifadedir:
 
-![Flat config katmanlarının dosya kümelerine uygulanması](diagrams/flat-config-katmanlari.svg)
+```js title="İlk dosya kümesi"
+{
+  files: ['src/**/*.js'],
+  rules: { 'no-unused-vars': 'error' },
+}
+```
 
-## Hangi katman hangi dosyaya uygulanır?
+`src/**/*.js`, `src` klasörünün altındaki `.js` dosyalarını seçer. `**/` alt klasörleri de kapsar; `.js` ise dosya uzantısını sınırlar. Bu nedenle `src/views/Queue.js` eşleşir, `src/views/Queue.tsx` eşleşmez. Desen yalnız seçtiği dosyaları denetler; eşleşmeyen dosyalar için “lint temiz” sonucu çıkaramazsın.
 
-Katmanların kapsamını şu sırayla oku:
+Şimdi aynı kaynak klasöründe farklı uzantılı dosyaları düşün:
 
-1. **Ignore katmanı üretilmiş dosyaları dışlar.** `dist/**`, `coverage/**` gibi derleme çıktıları kaynak kod değildir. Bunları gitignore sanıp otomatik dışlanacaklarını varsayma; ESLint ignore kapsamını config’te açıkça tanımla.
-2. **JavaScript katmanı `.js` ve `.mjs` dosyalarına eşleşir.** Burada `@eslint/js` önerilen kuralları kullanılabilir. Dosya uzantısı başka kümeye girmiyorsa bu kurallar ona uygulanmaz.
-3. **TypeScript katmanı `.ts` ve `.tsx` dosyalarını seçer.** `typescript-eslint` önerilen preset’i tip sözdizimini anlayan parser’ı ve TypeScript’e uygun kuralları getirir. Genel `no-unused-vars` ile TypeScript karşılığını aynı anda açıp iki ayrı mesaj üretme; preset’in kuralını tercih et.
-4. **React katmanı TSX bileşenlerine eklenti kurallarını uygular.** Hook sırası ve bağımlılığı gibi kurallar `eslint-plugin-react-hooks` içinden gelir. Refresh eklentisinin bileşen export sınırı gibi kuralları ayrı bir katmandır.
-5. **Son katman biçim çakışmalarını kapatır.** `eslint-config-prettier/flat` diğerlerinden sonra yer alır; Prettier’ın sahiplendiği görünüş kurallarının ESLint’le çakışmasını engeller. Bu katman format çalıştırmaz.
+| Yol | `src/**/*.js` ile eşleşir mi? | Neden? |
+| --- | --- | --- |
+| `src/App.js` | Evet | Klasör ve uzantı eşleşiyor |
+| `src/views/App.js` | Evet | `**/` alt klasörleri kapsıyor |
+| `src/views/App.tsx` | Hayır | Uzantı `.tsx`, desen `.js` istiyor |
+| `scripts/build.js` | Hayır | Yol `src/` ile başlamıyor |
 
-Bir dosyaya birden fazla katman eşleşebilir. Bu nedenle dizinin sırası ve preset’lerin hangi dosya glob’unda etkin olduğu önemlidir. `files` belirtmeyen bir katman, ESLint’in config kurallarına göre daha geniş dosya kümesine uygulanabilir; ilk kurulumda kapsamları açık yazmak hangi kuralın nereden geldiğini anlamayı kolaylaştırır.
+Buradaki önemli ayrım şu: kuralın doğru olması ve dosyanın denetlenmesi iki ayrı şeydir. Önce config’in dosyayla eşleştiğini, sonra o dosya türünü anlayan parser ve kuralların uygulandığını kontrol et.
 
-Katman birleştirmesinde aynı ayarı iki nesne değiştirirse sonraki eşleşen config’in değeri belirleyici olur. Bu davranış, önce ortak kuralları tanımlayıp sonra dar bir klasöre özel istisna koymayı sağlar. Fakat istisnayı beklenmedik yere koyarsan genel kuralı fark etmeden ezebilirsin. Bir dosyanın etkin config’ini incelemek, “bu rule nereden geldi?” sorusuna yanıt verir.
+## TypeScript için hazır kural grubu
 
-ESLint 10 config aramasını lint edilen dosyanın klasöründen başlatıp yukarı doğru sürdürür. Monorepo’da bu sayede her paket kendi config dosyasına sahip olabilir. Tek kök config kullanıyorsan, paketlerin içinde başka `eslint.config.*` dosyası olmadığını da hesaba kat. Bir komut kökte başarılı diye alt paketin dosyasının beklediğin config’i bulduğunu varsayma; gerçek hedef dosyanın yolu üzerinden kontrol et.
+TypeScript dosyalarında ESLint’in TypeScript söz dizimini anlayan bir parser’a ve buna uygun kurallara ihtiyacı vardır. Bunları tek tek eklemek yerine bir **preset**, yani birlikte kullanılmak üzere hazırlanmış ayar grubu, ekleyebilirsin. `typescript-eslint` paketinin önerilen preset’i TypeScript dosyaları için parser ve temel kurallar sağlar.
 
-Ignore kararı da config’in bir parçasıdır. Eski `.eslintignore` dosyasına yazılan klasörlerin ESLint 10’da aynı biçimde dışlanacağını düşünme; flat config için ignore desenini config’te ifade et. `dist` gibi klasörleri dışlamak hem gereksiz analiz maliyetini önler hem de minified ya da üretilmiş kodun kaynak kurallarından mesaj yağdırmasını engeller. Buna karşılık tüm `src`’yi dışlayan geniş bir desen “temiz” komut üretir ama gerçek kaynakları da denetimden çıkarır.
-
-Preset’i `extends` içine koymak okunaklı bir bileşim sağlar. Ancak `files` kapsamı üst config ile preset içinde birlikte bulunduğunda eşleşmelerin nasıl kesiştiğini bilmek gerekir. Bir kuralın çalışmadığı durumda yalnız üst nesneye bakma; preset’in kendi dosya kapsamı ve tanımladığı parser ayarlarını da incele. Bu özellikle React Hooks config’i TSX dosyalarını açıkça hedefleyen projelerde önemlidir.
-
-## Bir dosyanın yolunu izleyelim
-
-Projede `src/views/Queue.tsx`, `src/data/queue.ts`, `scripts/make-report.mjs` ve `dist/assets/app.js` olduğunu düşün. Config’i gözünde çalıştır:
-
-| Dosya | Ignore eşleşmesi | Uzantı katmanı | Ek katman | Beklenen denetim |
-| --- | --- | --- | --- | --- |
-| `src/views/Queue.tsx` | Hayır | TS/TSX | React Hooks, Refresh, Prettier uyumu | TS ve React kuralları |
-| `src/data/queue.ts` | Hayır | TS/TSX | Genel React katmanı eşleşmeyebilir | TypeScript kuralları |
-| `scripts/make-report.mjs` | Hayır | JS modül | JS önerilen kurallar | JavaScript kuralları |
-| `dist/assets/app.js` | Evet | Dosya kapsam dışı | Hiçbiri | Lint edilmez |
-
-Bir TSX dosyasını lint ederken yalnız “errorCount sıfır mı?” diye bakmak eksik olabilir. Dosyanın doğru parser’la okunduğunu, mesajların hangi `ruleId`’den geldiğini ve gerektiğinde `calculateConfigForFile` benzeri inceleme yoluyla etkin config’i kontrol et. Bir TSX dosyasındaki JSX söz dizimi parser’a ulaşmıyorsa hata raporu ya da yanlış parse davranışı görürsün.
-
-## Kapsamı görünür config’e dönüştür
-
-Aşağıdaki küçük config tek bir küme üzerinde temel bir karar gösterir. Eğitim örneğinde hook eklentisi yok; burada önemli olan `files` eşleşmesinin açıkça yazılmasıdır:
-
-```js title="eslint.config.js"
+```js title="Test dosyaları için TypeScript preset'i"
 import { defineConfig } from 'eslint/config'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig([
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['tests/**/*.test.{ts,tsx}'],
     extends: [tseslint.configs.recommended],
   },
 ])
 ```
 
-Bu config `src` dışındaki TypeScript dosyalarını bilinçli olarak kapsamıyor. Eğer `scripts` içindeki TS de kontrol edilecekse glob’u genişletmelisin. Scope’u gereğinden fazla büyütmek generated code’u taratabilir; dar tutmak ise kaynak dosya kaçırabilir. Başlangıçta dosya ağacına göre karar ver ve yeni kaynak klasörü eklendiğinde kapsamı tekrar değerlendir.
+Bu örnek yalnızca `tests` içindeki `.test.ts` ve `.test.tsx` dosyalarına preset’i uygular. Dosya deseni test klasörünü ve iki uzantıyı birlikte seçti; preset TypeScript’i anlamak için gereken ayarları ekledi. Bu sayede dosyaları seçme kararı ile onları inceleme kuralları ayrı ayrı okunabilir.
 
-Kurallar için önem seviyesi `off`, `warn` veya `error` olabilir; sayısal biçimleri de vardır. Kuralı warning’den error’a almak CI’da başarısızlığı değiştirebilir, bu yüzden büyük projede bir anda yüzlerce yeni error açmak yerine kademeli temizleme planı gerekebilir. Küçük projede ise recommended kuralları ve az sayıda açık kural ile başlamak anlaşılırdır.
+Preset, bütün olası proje tercihlerini senin yerine yapmaz. ESLint’in genel `no-unused-vars` kuralı ile TypeScript’e özel kullanılmayan ad kuralını aynı anda açarsan tek sorun için yinelenen mesajlar alabilirsin. TypeScript preset’inin kendi kuralını kullanmak bu çakışmayı önler. `rules` alanına yalnızca gerçekten farklı bir tercih ekle; her kuralı elle tekrar yazmak gerekmez.
 
-TypeScript kurallarının amacı derleyiciyi kopyalamak değildir. Örneğin kullanılmayan değişken kontrolü, kodu okuyan kişiye artık katkısı olmayan tanımı gösterir. Daha ileri tip tabanlı analizler ayrı parser hizmeti isteyebilir ve performans maliyeti yaratabilir. İhtiyacın olmayan bütün kuralları açmak, her hata mesajının değerini düşürür.
+## Katmanlar bir araya gelince
 
-## Önce kırık, sonra doğru
+Bir uygulamada JavaScript araç betikleri, TypeScript yardımcıları ve TSX bileşenleri olabilir. Flat config dizisine dosya kümelerine göre katmanlar eklersin. Bir katman genel kuralı açar, bir sonraki daha dar bir dosya kümesine ek ayar getirebilir. Aynı ayarı birden fazla eşleşen katman değiştirirse dizide daha sonra gelen değer geçerli olur.
 
-Kırık config’in yalnız JS’i seçtiğini varsay:
+![Flat config katmanlarının dosya kümelerine uygulanması](diagrams/flat-config-katmanlari.svg)
 
-```js title="Kırık kapsam"
-export default [{ files: ['src/**/*.js'], rules: { 'no-unused-vars': 'error' } }]
+Üç dosyanın config içinden geçtiğini adım adım izleyelim:
+
+| Sıra | Dosya | Dosya deseni | Eşleşen katman | Beklenen sonuç |
+| --- | --- | --- | --- | --- |
+| 1 | `src/views/Queue.js` | JS kaynakları | JavaScript kuralları | JS kuralları çalışır |
+| 2 | `src/data/queue.ts` | TS kaynakları | TypeScript preset’i | TS söz dizimi ve kuralları çalışır |
+| 3 | `src/views/Queue.tsx` | TSX kaynakları | TS preset’i, ardından React katmanı | TS ve React kuralları çalışır |
+
+Sıra önemlidir, çünkü belirli bir dosya birden çok katmana eşleşebilir. Aşağıdaki örnekte eski arayüz klasörü ilk katmana da, ikinci katmana da girer:
+
+```js title="Dar kapsamlı istisna"
+[
+  { files: ['src/ui/**/*.jsx'], rules: { 'no-alert': 'warn' } },
+  { files: ['src/ui/legacy/**/*.jsx'], rules: { 'no-alert': 'off' } },
+]
 ```
 
-Bu kural `src/views/Queue.tsx` dosyasını hiç görmez. Hata, kuralın yanlış yazılması değil, dosya kümesinin eksik olmasıdır. Kapsama TypeScript uzantılarını ve TS parser/preset’ini ekleyen bir katman koy:
+`src/ui/Card.jsx` için `no-alert` warning olur; `src/ui/legacy/Card.jsx` iki desene de uyduğu için sonraki katmandaki `off` değeri geçerli olur. Bu, dar kapsamlı bir istisnanın neden genel ayardan sonra yazıldığını gösterir. Benzer biçimde sonradan gelen Prettier uyum katmanı, ESLint’in Prettier ile çakışan görünüş kurallarını kapatabilir. Bu katman dosyayı biçimlendirmez; biçimlendirme işini yine Prettier yapar.
 
-```js check
-import { defineConfig } from 'eslint/config'
-import tseslint from 'typescript-eslint'
+## Küçük bir config hatasını düzelt
 
-export default defineConfig({
-  files: ['src/**/*.{ts,tsx}'],
-  extends: [tseslint.configs.recommended],
-})
-```
+Şimdi `src/views/Queue.tsx` içindeki kullanılmayan bir değişkeni aramak istiyorsun. Config’te yalnızca `src/**/*.js` varsa TSX dosyası seçilmez. Belirti, dosyada yanlış kod olmasına rağmen ESLint’in o kodla ilgili hiç mesaj vermemesidir. Bu, kuralın başarısızlığı değil, dosya kapsamının eksikliğidir.
 
-Gerçek projede JS ve TS kapsamları birden fazla nesne olarak ayrılabilir. Bir preset’in kendi `files` alanı ve iç config’leri varsa ESLint’in güncel flat config davranışına göre bunları kontrol et; yalnızca dış nesnenin glob’una güvenip içeridekileri körlemesine birleştirme.
+Düzeltirken önce dosya kümesini genişletip `.ts` ve `.tsx` uzantılarını dahil etmen, sonra TypeScript preset’ini bu katmana eklemen gerekir. İki küçük kararı birbirinden ayır: glob hangi yolları seçiyor, preset seçilen dosyalarda hangi analiz desteğini sağlıyor? Dosyaların kendisini kontrol etmek, yazdığın deseni sezgisel olarak tahmin etmekten daha güvenlidir.
 
-## Sık hatalar
+Config’in kapsamını `src` dışındaki dosyalara da bilerek açabilirsin. Örneğin `scripts` içindeki TS dosyalarını da denetlemek istiyorsan onları kapsayan ayrı bir glob ekle. Ama `dist` gibi derlenmiş çıktıları çoğunlukla dışarıda bırakırsın; bu dosyalar kaynak değildir ve binlerce gürültülü mesaj üretebilir. ESLint ignore desenleri config’te yazılır; `.gitignore` dosyasındaki her desenin lint için de otomatik geçerli olduğunu varsayma.
 
-:::mistake[Config dosyası var, ama TSX dışarıda]
-Belirti → `eslint .` başarılı; TSX dosyasındaki kullanılmayan tanım için mesaj yok. Neden → `files` glob’u `.tsx` ile eşleşmiyor ya da doğru parser/preset uygulanmıyor. Düzeltme → Kaynak uzantılarını açıkça kapsa ve dosya başına etkin config’i incele.
+Bir config dosyasının bulunması da tek başına yeterli değildir. ESLint 10, config aramasını lint edilen dosyanın bulunduğu klasörden başlatıp yukarı doğru sürdürür. Birden çok paketli depoda her paketin kendi config’i olabilir. Komutun hangi config’i bulduğundan emin değilsen gerçek hedef dosya yolunu kontrol et.
+
+:::info[Derinlemesine (isteğe bağlı)]
+ESLint config’inde `ignores` katmanları, `eslint-config-prettier/flat` sırası ve preset’lerin kendi `files` alanları daha ayrıntılı eşleşme davranışları oluşturabilir. Kuralın neden çalışmadığını incelerken dosya başına hesaplanan config’e bakabilirsin. Tek kök config kullanmak küçük projede çoğu zaman yeterlidir; paket başına config kararı depo yapısına bağlıdır.
 :::
 
-:::mistake[Generated dosyalar yüzlerce mesaj üretiyor]
-Belirti → Lint çıktısında `dist` ya da derlenmiş bundle yolları var. Neden → Üretilmiş klasörler flat config’te kapsam dışında bırakılmadı. Düzeltme → Ignore kararını flat config içinde tanımla ve glob’ların gerçek klasör ağacına uyduğunu kontrol et.
+## Sık görülen config hataları
+
+:::mistake[Config var, ama TSX dosyası eşleşmiyor]
+Belirti → Lint başarılı, fakat TSX içindeki sorunlara mesaj yok. Neden → `files` deseni yalnız `.js` veya `.ts` seçiyor. Düzeltme → Gerçek yolları ve uzantıları kontrol edip glob’u ihtiyaca göre güncelle.
 :::
 
-:::mistake[JS ve TS unused kuralları iki mesaj veriyor]
-Belirti → Tek değişken için iki farklı unused mesajı. Neden → Genel JavaScript kuralı ile TypeScript’e özel kural aynı anda çalışıyor. Düzeltme → TS için TypeScript preset’inin kuralını kullan; çakışan temel kuralı kapat.
+:::mistake[Üretilmiş dosyalar da lint ediliyor]
+Belirti → `dist` içindeki sıkıştırılmış dosyalar yüzlerce mesaj veriyor. Neden → Üretilmiş klasörler config’te kapsam dışı değil. Düzeltme → `dist` gibi çıktı klasörlerini ESLint ignore ayarına ekle.
 :::
 
-:::sector
-Takımlar config dosyasını uygulama kaynak kodu gibi code review’dan geçirir. Bir kural eklendiğinde hangi klasörleri kapsadığı, error mı warning mi olduğu ve eski dosyaların nasıl temizleneceği açıkça görülür. Paket sürümü yükseltildiğinde preset’lerin yeni kural ekleyip eklemediğini de gözden geçirmek gerekir.
+:::mistake[Aynı değişken için iki mesaj]
+Belirti → TypeScript değişkeni için benzer iki unused mesajı çıkıyor. Neden → JavaScript temel kuralı ve TypeScript kuralı birlikte çalışıyor. Düzeltme → TypeScript preset’inin uygun kuralını kullanıp çakışanı kapat.
 :::
 
 ## Özet
 
-- ESLint 10 flat config’i sıralı, dosya kapsamı belirlenmiş katmanlar olarak düşün.
-- `files` glob’ları denetlenmesi gereken kaynak uzantılarını kapsamalı.
-- JS, TS, React ve format uyumu farklı katmanlarda kurulabilir.
-- `eslint-config-prettier/flat` sona eklenir; formatter çalıştırmaz.
-- Config’in temiz olması için kapsamı dosya bazında doğrula.
+- Flat config, dosya kümelerine uygulanan ayar katmanlarından oluşur.
+- `files` glob’u hangi yolların denetlendiğini belirler; uzantı eşleşmesini özellikle kontrol et.
+- TypeScript preset’i parser ve temel kuralları birlikte sağlar.
+- Sonradan eşleşen katman, daha önceki katmanın aynı ayarını değiştirebilir.
+- Lint kapsamına giren dosyaları ve üretilmiş klasörleri bilinçli seç.
 
-**Kendini yokla:** `src/**/*.js` seçen config neden `src/App.tsx` dosyasındaki Hook sorununu bulmayabilir?
-*Cevap:* Glob dosyayla eşleşmiyor; TSX için parser ve React Hooks katmanı da gerekebilir.
+**Yeni terimler:**
 
-**Kendini yokla:** Prettier uyum katmanı neden dizinin sonunda yer alır?
-*Cevap:* Önceki katmanların biçim kurallarıyla çakışan ESLint kurallarını son aşamada kapatması için.
+- **Config:** ESLint’e hangi dosya ve kuralları kullanacağını söyleyen ayar.
+- **Flat config:** ESLint 10’un katmanlı dosya ayarı modeli.
+- **Glob:** Dosya yollarını desenle eşleştiren kısa ifade.
+- **Preset:** Birlikte çalışacak hazır ayarlar grubu.
+- **Parser:** Kaynak dosya söz dizimini ESLint’in inceleyebileceği biçime çeviren parça.
+
+**Kendini yokla:** `src/**/*.js` neden `src/views/Queue.tsx` dosyasını seçmez?
+*Cevap:* Desen `.js` uzantısını ister; `.tsx` farklı bir uzantıdır.
+
+**Kendini yokla:** TypeScript preset’i eklemek hangi sorunu çözer?
+*Cevap:* Seçilen TypeScript dosyalarının söz dizimini anlayıp TypeScript’e uygun temel lint kurallarını uygulamaya yardım eder.

@@ -1,4 +1,4 @@
-Korumalı bir kullanıcı profili uç noktasına kimlik kanıtı sunarak istek atan ve gelen profil verisini ayrıştıran bir istemci fonksiyonu oluştur.
+`https://dummyjson.com/auth/me` korumalı kullanıcı profili uç noktasına kimlik kanıtı sunarak istek atan ve gelen profil verisini ayrıştıran bir istemci fonksiyonu oluştur.
 
 ## Gereksinimler
 

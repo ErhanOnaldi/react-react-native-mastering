@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import type { WatchlistRecord } from './watchlists'
 
@@ -14,6 +13,16 @@ export function WatchlistEditor({
   list: WatchlistRecord
   onSave: (values: FormValues) => void
 }) {
+  return <WatchlistEditorForm key={list.id} list={list} onSave={onSave} />
+}
+
+function WatchlistEditorForm({
+  list,
+  onSave,
+}: {
+  list: WatchlistRecord
+  onSave: (values: FormValues) => void
+}) {
   const {
     register,
     handleSubmit,
@@ -22,11 +31,6 @@ export function WatchlistEditor({
   } = useForm<FormValues>({
     defaultValues: { name: list.name, description: list.description },
   })
-
-  useEffect(() => {
-    reset({ name: list.name, description: list.description })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [list.id])
 
   function submit(values: FormValues) {
     onSave(values)

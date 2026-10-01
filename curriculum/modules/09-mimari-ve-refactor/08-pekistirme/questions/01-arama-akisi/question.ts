@@ -13,14 +13,13 @@ export default defineQuestion({
   ],
   files: ['searchMovies.ts', 'buildSearchUrl.ts'],
   hints: [
-    'İlk ve sonraki sayfada değişen bilgi ne, ortak kalan akış ne?',
-    '`URLSearchParams` ile URL üretimini ayır; istek başlığı ve sonucu koru.',
-    'Aynı arama fonksiyonu iki sayfada da bir URL ve tek fetch yolundan geçsin.',
-    'Türkçe query’yi kodlanmış URL’den tekrar okurken aynı değeri görmelisin.',
+    'Önce `buildSearchUrl` içinde `language`, `query` ve `page` değerleriyle tam adresi üret.',
+    '`searchMovies` tek fetch çağrı yolunu kullansın ve URL kurucusunu çağırsın; `undefined` değeri string yapma.',
   ],
   rubric: [
-    'Sayfa 1 ve sonraki sayfalar aynı HTTP akışını kullanır; yalnız parametre değişir.',
-    'Bearer, dil ve query tek yerde kurulur; kopya kalmaz.',
-    'Dönüş tipi ve mevcut kullanıcı davranışı korunur.',
+    '`buildSearchUrl` URL API kullanarak Türkçe arama ve sayfa değerlerini kodlar.',
+    '`searchMovies` bir kez fetch çağırır ve ayrılan URL kurucusunu gerçekten kullanır.',
+    'Bearer başlığı, Türkçe karakterler ve istenen sayfa korunur.',
+    'İlk sayfa ve sonraki sayfalar aynı istek yolundan geçer.',
   ],
 })

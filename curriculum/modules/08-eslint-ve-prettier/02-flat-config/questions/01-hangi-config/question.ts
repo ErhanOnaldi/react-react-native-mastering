@@ -2,30 +2,34 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'ESLint 10 hangi config’i okur?',
+  title: 'Dosya eşleşmesini oku',
   difficulty: 'kolay',
   concepts: ['tooling.eslint-config', 'tooling.eslint'],
-  question:
-    'Sinema’ya ESLint 10 kuruyorsun. Kök config dosyası ve yardımcı için doğru çift hangisi?',
+  question: `Bu flat config katmanına hangi dosyalar eşleşir?
+
+\`\`\`js
+{
+  files: ['src/**/*.ts'],
+  rules: { 'no-unused-vars': 'error' },
+}
+\`\`\``,
   options: [
     {
-      text: '`eslint.config.js` ve `defineConfig` (`eslint/config`).',
+      text: '`src` içindeki `.ts` dosyaları, alt klasörler dâhil.',
       correct: true,
-      explanation: 'ESLint 10 flat config kullanır; yardımcı ESLint çekirdeğinden gelir.',
+      explanation: '`**/` alt klasörlerle eşleşir, `.ts` uzantısı ise `.tsx` dosyalarını kapsamaz.',
     },
     {
-      text: '`.eslintrc.json` ve `env` alanı.',
-      explanation: 'ESLint 10 eslintrc biçimini kaldırdı; flat config gerekir.',
+      text: 'Yalnızca `src` klasörünün kökündeki `.ts` dosyaları.',
+      explanation: '`**/` alt klasörlerdeki dosyaları da kapsar.',
     },
     {
-      text: '`.eslintignore` ve `tseslint.config`.',
-      explanation:
-        'Ignore flat config içindedir; typescript-eslint config yardımcısı artık önerilmez.',
+      text: '`src` içindeki `.ts` ve `.tsx` dosyaları.',
+      explanation: 'Desendeki uzantı yalnızca `.ts`; `.tsx` ayrı bir uzantıdır.',
     },
     {
-      text: '`vite.config.ts` ve `defineConfig` (`vite`).',
-      explanation:
-        'Vite config derleme içindir; ESLint kendi config’ini ve kendi `defineConfig` yardımcısını okur.',
+      text: 'Projedeki bütün `.ts` dosyaları, `src` dışındakiler dâhil.',
+      explanation: 'Desen `src/` ile başladığı için başka klasörlerle eşleşmez.',
     },
   ],
   explanation: '',

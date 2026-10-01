@@ -6,127 +6,154 @@ kind: concept
 
 # Utility-first ile tasarım kararı
 
-:::pain[Bir değişiklik neden üç yere gidiyor?]
-Sinema'da aynı küçük etiket arama sonuçlarında, kaydedilenlerde ve film ayrıntısında görünüyor. Birinin yazısı büyüyünce diğer ikisi küçük kalıyor; üç ayrı CSS kuralı aynı tasarım kararını temsil ediyor.
-:::
+Sinema’da küçük bir film etiketi düşün: zemini renkli, yazısı küçük, çevresinde de biraz boşluk var. Bildiğin CSS’te JSX’e `className="film-label"` yazıp görünümü `.film-label` kuralında tanımlayabilirsin. **Utility-first**, her küçük görünüm kararını adlandıran class’ları doğrudan öğenin yanında yazma yaklaşımıdır. Tailwind CSS bu class adlarından CSS üretir; React’in state’ini veya düğmenin davranışını değiştirmez.
 
-## Görünüm kararını bileşene yaklaştır
-
-Klasik CSS'te JSX `className="movie-label"` der, başka dosyadaki `.movie-label` kuralı görünüşü tarif eder. Bu ayrım büyük ve ortak stiller için kullanışlıdır; fakat bir öğeye ait birkaç kararın nerede verildiğini bulmak için dosyalar arasında gidip gelirsin. Utility-first yaklaşımında küçük kararlar — boşluk, renk, yazı boyu ve hizalama — JSX üzerinde yan yana durur.
-
-Tailwind CSS utility adlarını tanır ve karşılık gelen CSS'i üretir. React'in render veya state modeline karışmaz. Bir class eklemek DOM öğesinin görsel stilini değiştirir; `disabled`, `aria-pressed` veya event handler gibi davranışları kendiliğinden kurmaz.
-
-:::model[Utility-first'in üç kuralı]
-1. Her utility tek bir görsel kararı adlandırır; birkaç utility birlikte bir öğenin görünümünü oluşturur.
-2. Tailwind kaynakta tam class adlarını bulup CSS üretir; çalışma zamanında class string'ini tahmin edip CSS üretmez.
-3. Tekrarlanan karar, ancak kullanım yerlerinde gerçekten aynı kaldığında ortak token'a veya bileşene taşınır.
-:::
-
-![JSX'te utility kararlarının tek öğede birikmesini gösteren diyagram](diagrams/utility-karari.svg)
-
-Bir class adının biçimi, kararın yönünü okumaya yardım eder. `px-4` yatay padding, `py-2` dikey padding, `text-sm` yazı boyu, `font-semibold` ağırlık seçer. Ölçek değerleri Tailwind'in tasarım ölçeğidir; `4` değerini doğrudan dört piksel diye yorumlama. Utility'leri ezberlemek yerine önekin hangi CSS alanını seçtiğini sor.
-
-## Değişikliği JSX üzerinden izleyelim
-
-Bir başlık ve alt metin içeren küçük bir panel düşün. İlk render'da şu kararlar uygulanır:
-
-| Sıra | Kaynaktaki class | Görsel kararı | Değişken |
-|---|---|---|---|
-| 1 | `rounded-xl` | köşeleri yuvarlar | radius |
-| 2 | `border` | ince sınır çizer | border width |
-| 3 | `p-4` | dört yönde iç boşluk verir | padding |
-| 4 | `font-semibold` | başlığı kalınlaştırır | font weight |
-| 5 | `text-sm` | alt metni küçültür | font size |
-
-Bu satırlar farklı CSS özelliklerine dokunduğu için birlikte çalışır. Aynı özellik üzerinde iki class varsa yalnızca JSX'te hangisinin önce yazıldığına bakarak CSS kazananını çıkaramazsın. Bunun için ayrı bir class birleştirme modeli kullanılır; burada class'ların sorumluluğunu ve kaynakta görünmesini kuruyoruz.
-
-Bir metin başlığı panel genişliğini aşıyorsa `truncate` görünür taşmayı keser, ama tek başına bir tasarım kararı değildir. Başlığın daralmasına izin veren bir kapsayıcı ve uygun genişlik koşulu gerekir. Utility-first kodu da CSS gibi düşünülmelidir: class eklemek, çevresindeki düzen kurallarından bağımsız olarak doğru sonucu garanti etmez.
-
-## Önce kırık, sonra tam class
-
-Bir API'den sayı geldiğini varsayalım. Bu biçim Tailwind'in kaynak taramasında tamamlanmış bir class adı değildir:
+İlk örnekte etikete yalnızca yatay ve dikey iç boşluk verelim:
 
 ```tsx
-function Score({ level }: { level: number }) {
-  return <span className={`text-${level}xl`}>Puan</span>
+function FilmTag() {
+  return <span className="px-3 py-1">Bilim kurgu</span>
 }
 ```
 
-`level` değeri tarayıcıda `2` olsa bile Tailwind derleme anında uygulamayı çalıştırıp bütün olası değerleri denemez. Sonuçta `text-2xl` CSS'i üretilmemiş olabilir. Görülen belirti, öğenin beklenen boyutu almaması; nedeni class'ın parça parça kurulmasıdır.
+`px-3` sağa ve sola, `py-1` yukarı ve aşağı iç boşluk verir. Her class ayrı bir görsel karar olduğu için JSX’e bakınca etiketin nasıl kurulduğunu görebilirsin. Sayılar Tailwind’in aralık ölçeğinden gelir; `3` sayısını “üç piksel” diye okumak doğru değildir.
 
-Sınırlı seçenek varsa tam class string'lerini kaynakta tut:
+Şimdi etikete sınır ve yuvarlak köşe ekleyelim; bu, önceki örneğe tek bir yeni karar ekler:
+
+```tsx
+function FilmTag() {
+  return <span className="rounded-full border px-3 py-1">Bilim kurgu</span>
+}
+```
+
+`rounded-full` köşeleri yuvarlar, `border` sınır çizer. Önceki boşluk class’ları yerinde kaldı. Farklı CSS özelliklerine dokunan class’lar birlikte çalışabilir; her class’ın hangi kararı verdiğini adından ve CSS karşılığından okuyabilirsin.
+
+Son olarak yazının boyunu ve kalınlığını belirleyelim:
+
+```tsx
+function FilmTag() {
+  return (
+    <span className="rounded-full border px-3 py-1 text-sm font-medium">
+      Bilim kurgu
+    </span>
+  )
+}
+```
+
+`text-sm` yazıyı küçültür, `font-medium` ağırlığını artırır. Böylece küçük bir görünüm, birkaç açık karardan oluştu. Aynı class dizisini başka bir bileşende aynen tekrarlamaya başladığında ortaklaştırmayı düşünebilirsin; tek kullanım için hemen yeni CSS katmanı veya component açmak zorunda değilsin.
+
+## Bir class değişince neyi değiştiriyorsun?
+
+Bir class dizisini okurken hangi CSS kararlarının birlikte bulunduğunu izleyelim:
+
+| Sıra | Class | Karar | Birlikte çalıştığı şey |
+|---|---|---|---|
+| 1 | `rounded-xl` | köşeleri yuvarla | sınır ve boşluk |
+| 2 | `border` | ince sınır çiz | köşe biçimi |
+| 3 | `p-4` | dört yönde iç boşluk | yazı biçimi |
+| 4 | `font-semibold` | yazıyı kalınlaştır | boyut |
+| 5 | `text-sm` | yazıyı küçült | ağırlık |
+
+Bu kararlar farklı alanlara dokunduğu için bir arada durur. İki class aynı alanı etkiliyorsa ikisinin birlikte yazılması, HTML’de sağdaki class kesin kazanır anlamına gelmez. Bu ayrıntıyı birazdan class birleştirme konusuna bırakacağız; şimdilik class adlarını görsel kararlar olarak okumak yeterli.
+
+Bir başlık satıra sığmadığında `truncate` taşan kısmı tek satırda üç noktayla gösterir. Fakat uzun yazının sığacağı alanı düzenin de sağlaması gerekir. Yani class eklemek, çevresindeki öğelerin nasıl yerleştiğine bakma ihtiyacını ortadan kaldırmaz.
+
+![JSX'te utility kararlarının tek öğede birikmesini gösteren diyagram](diagrams/utility-karari.svg "Utility kararları öğenin yanında")
+
+## Koşullu görünüm: class adı kaynakta tam görünsün
+
+Sinema’daki koleksiyon kartında film türüne göre etiket rengi seçmek isteyebilirsin. İlk deneme class adını parçalar hâlinde kuruyor:
+
+```tsx
+function GenreLabel({ level }: { level: number }) {
+  return <span className={`text-${level}xl`}>Bilim kurgu</span>
+}
+```
+
+Tarayıcıda `level` değeri `2` olduğunda `text-2xl` oluşmasını beklersin. Ancak Tailwind’in kaynak taraması uygulamayı çalıştırıp `level` için olası sayıları denemez. Kaynakta tam class adı görünmediği için gerekli CSS üretilmeyebilir; belirti, yazının beklenen boyuta gelmemesidir.
+
+Seçenekler sınırlıysa class adlarını eksiksiz string’ler olarak kaynakta tut:
 
 ```ts check
-const titleSize = {
+const titleSizes = {
   compact: 'text-lg',
   featured: 'text-2xl',
 } as const
 
-function getTitleClass(size: keyof typeof titleSize): string {
-  return titleSize[size]
+function titleSizeFor(kind: keyof typeof titleSizes): string {
+  return titleSizes[kind]
 }
 
-const className = getTitleClass('featured')
+const featuredTitleClass = titleSizeFor('featured')
 ```
 
-Tailwind iki string'i de görebilir; React ise uygun seçimi çalışma anında yapar. Bu ayrım önemlidir: React hangi görünümün gerektiğini seçer, Tailwind seçilebilecek class'ların CSS'ini önceden üretir. Çok geniş ve gerçek veriyle gelen değer aralığında arbitrary value kullanılabilir, ancak sınırlı tasarım seçenekleri için rastgele sayıdan class üretmek doğru model değildir.
+Bu kez iki tam class adı dosyada görünür. Tailwind bu seçeneklerin CSS’ini üretir, React ise kullanım anında hangisinin seçileceğine karar verir. Bu ayrım, sınırlı görünüm seçeneklerinde sonucu güvenilir kılar.
 
-## Varyantlar yeni durum ekler
+Üçüncü örnekte class’a bir koşul ekleyelim:
 
-`hover:bg-sky-800` veya `focus-visible:outline-2` gibi önekler, utility'nin hangi CSS koşulunda çalışacağını bildirir. `sm:` ve `lg:` de belirli cihaz adları değil, viewport eşiklerinden itibaren geçerli olan responsive koşullardır. Örneğin `text-sm md:text-base` dar görünümde küçük, orta eşikten itibaren normal metin kullanır.
-
-Tailwind mobile-first ilerler: öneksiz class temel kuraldır; responsive class o eşiğe ulaşıldığında eklenir veya aynı özelliğin değerini değiştirir. `grid-cols-2 md:grid-cols-4` küçük ekranda iki, `md` ve üzerinde dört sütun seçer. `md:` sınıfını yazmak kendiliğinden başka class'ı silmez; hangi CSS özelliğine dokunduğuna bak.
-
-Varyantları rastgele çoğaltmak okunabilirliği düşürür. Örneğin aynı öğede `hover:`, `focus-visible:`, `disabled:` ve `dark:` olması kabul edilebilir; ancak aynı tasarım kararını farklı renk tonlarıyla her ekranda kopyalamak ortak tasarım dilini dağıtır. Bu nedenle önce tek kullanımlı öğeyi utility'lerle kur, sonra gerçek tekrar oluştuğunda kararı ortaklaştır.
-
-## Kurulumun yeri ve sınırı
-
-Bu repoda Tailwind v4, Vite eklentisiyle çalışır. Uygulamanın ana CSS dosyasında `@import "tailwindcss";` bulunur; Vite yapılandırması Tailwind eklentisini yükler. V4'te tema ve özel utility kararları CSS tarafında tanımlanır. Eski üç `@tailwind` direktifi ve JS config örneklerini v4 kurulumu gibi kopyalama.
-
-```css title="src/styles.css"
-@import "tailwindcss";
-
-@theme {
-  --color-label: oklch(0.48 0.12 245);
+```tsx
+function RatingLabel({ highlighted }: { highlighted: boolean }) {
+  const colorClass = highlighted ? 'text-amber-700' : 'text-slate-600'
+  return <span className={`text-sm ${colorClass}`}>8.4</span>
 }
 ```
 
-Bu token'dan `text-label` veya `bg-label` gibi utility adları üretilebilir. Bir rengi yalnız bu panelde bir kere kullanıyorsan hazır renk utility'si yeterli olabilir; aynı marka kararı birkaç bileşende görünüyorsa anlamlı token adı bakım maliyetini azaltır. Token'ları ve dark tema değerlerini ayrı derste kuracağız.
+Her iki tam class da kodda bulunduğu için Tailwind ikisinin CSS’ini hazırlayabilir; React `highlighted` değerine göre yalnızca birini seçer. Class seçmek görünüşü değiştirir. Bir düğmeyi gerçekten devre dışı bırakmak gibi davranışlar için ayrıca `disabled`, state ve event gibi HTML/React araçlarını kullanırsın.
 
-:::mistake[Belirti → neden → düzeltme]
-Önizlemede dinamik başlık boyu class'ı etkisiz kalıyor → class adı kaynakta tam görünmüyor → sınırlı class seçeneklerini tam string'ler olarak yaz ve seçimi bu listeden yap.
+## Ekran genişledikçe değişen görünüm
+
+Bir **variant**, class’ın hangi durumda uygulanacağını belirten önektir. Örneğin `hover:bg-sky-800` arka plan rengini hover sırasında değiştirir. `md:` gibi responsive variant’lar ise **viewport** denilen tarayıcı içerik alanının genişliği belirli bir eşiğe ulaştığında devreye girer. Bunlar telefon veya tablet adları değildir.
+
+Film türü etiketini dar ekranda küçük, orta genişlikten sonra biraz büyük göstermek için:
+
+```tsx
+function GenreLabel() {
+  return <span className="text-sm md:text-base">Bilim kurgu</span>
+}
+```
+
+Öneksiz `text-sm` temel kuraldır. `md:` eşiğinde `text-base` aynı yazı boyu kararını günceller; eşik gelmeden yeni class etkili olmaz. Tailwind’in responsive yaklaşımı mobile-first’tür: önce dar görünümde gerekeni yazarsın, sonra genişlik geldikçe değişiklik eklersin.
+
+| Viewport genişliği | Etkin class | Yazı boyu kararı |
+|---|---|---|
+| 390 px | `text-sm` | küçük |
+| 900 px | `md:text-base` | normal |
+
+İkinci satırdaki kural ilkini her koşulda silmez; yalnızca kendi eşiğinde aynı CSS kararını değiştirir. Benzer biçimde `grid-cols-2 md:grid-cols-4` dar alanda iki, eşik sonrasında dört sütun seçer. Düzenin ayrıntısını bir sonraki derste kuracağız.
+
+## Nerede ortaklaştırmalı?
+
+Başta öğenin görünümünü class’larla yanında tut. Aynı tasarım kararı gerçekten birkaç yerde tekrarlanıp değiştikçe birbirinden ayrılıyorsa ortak bir component veya tasarım token’ı düşün. Class satırını yalnızca kısaltmak için başka değişkene taşımak tek başına tekrar sorununu çözmez. İsimlendirilmiş bir değişken, tasarım rolünü ya da koşulu açıklıyorsa fayda sağlar.
+
+Tarayıcının DevTools aracında **computed styles**, yani öğeye sonunda uygulanan CSS değerlerini görebilirsin. Kaynaktaki class listesi ile ekrandaki son değer aynı şey değildir: CSS kuralları, responsive koşullar ve başka stiller sonucu etkileyebilir. Utility class’ları CSS’in çalışma modelini ortadan kaldırmaz; yalnızca küçük kararları JSX’e yaklaştırır.
+
+:::mistake[Başlık boyu değişmiyor]
+Belirti: Önizlemede dinamik boy class’ı etkisiz. Neden: Class adı kaynakta tam görünmüyor. Düzeltme: Sınırlı seçenekleri tam string’lerle tanımla, aralarından seçim yap.
 :::
 
-:::mistake[Belirti → neden → düzeltme]
-Bir class ekleyince düğme davranışının da değiştiğini sanıyorsun → utility yalnız CSS'i etkiler → `disabled`, state, erişilebilir ad ve event'leri HTML/React sözleşmesinde ayrıca kur.
+:::mistake[Class ekledim, davranış da değişti sanıyorum]
+Utility class yalnız görünümü değiştirir. Düğmede `disabled` niteliği, erişilebilir ad ve event handler gibi davranışları ayrıca kur.
 :::
 
-:::mistake[Belirti → neden → düzeltme]
-Her öğeye ayrı CSS sınıfı açıp aynı kararları tekrar ediyorsun → görsel kararlar farklı dosyalarda çoğalıyor → birkaç utility ile öğeye yakın başla; tekrar gerçek olduğunda ortak bileşen veya token çıkar.
+:::info[Derinlemesine (isteğe bağlı)]
+Tailwind v4’te uygulamanın CSS dosyası genellikle `@import "tailwindcss";` ile başlar ve Vite projesi Tailwind eklentisini yapılandırır. `@theme` tekrar kullanılabilir renk gibi tasarım token’ları tanımlamak içindir; bunu tema token’ları dersinde kuracağız. Tailwind’in bir monorepo’da hangi ek kaynak dosyalarını taradığını `@source` ile belirtmek, özel renkleri `oklch(...)` ile yazmak ve arbitrary value kullanmak bu dersin temel akışı için gerekmez.
 :::
-
-:::sector
-Takımlar genellikle utility-first'i küçük ve orta ölçekli görsel kararları bileşen kullanımının yanında tutmak için seçer. Kod incelemesinde class satırının uzunluğuna tek başına bakmak yerine kararların anlamlı adlandırılıp adlandırılmadığını, tekrarın gerçekten ortak olup olmadığını ve HTML davranışının görünümden ayrı kurulup kurulmadığını kontrol et.
-:::
-
-## Class listesi nerede büyür?
-
-Utility yaklaşımında uzun bir class string'i her zaman tasarım hatası değildir. Bir düğmenin normal, hover, focus, dark ve disabled hallerini yan yana tanımlamak satırı uzatır; her class'ın hangi koşulda devreye girdiği de görünür olur. Aynı string farklı component'lerde kopyalanmaya başladığında, görünüm kararı artık paylaşılmıyordur. Bu noktada ortak bileşen veya varyant tablosu daha iyi bir sınır olabilir.
-
-Class listesini yalnız kısaltmak amacıyla `const classes = '...'` değişkenine taşımak tekrar sorununu çözmez. İsimlendirilmiş helper, koşulları veya tasarım rolünü gerçekten açıklıyorsa değer katar. Aksi durumda JSX'teki görünüm kararını dosyanın başka yerine taşımış olursun.
-
-Tarayıcı DevTools'ta öğeyi seçip computed styles bölümüne bakmak, iki utility aynı CSS özelliğine dokunuyorsa ne olduğunu anlamaya yardım eder. Source'taki utility class'ı ile son computed değeri ayrı şeylerdir: media query, cascade layer, selector specificity ve `!important` sonucu etkileyebilir. Tailwind class adlarını bilmek CSS'in çalışma modelini ortadan kaldırmaz.
-
-Monorepo'da class'ın JSX'te görünmesine rağmen stil üretilmemesi, kaynak tarama kapsamıyla da ilgili olabilir. Tailwind bazı dosyaları `.gitignore` veya varsayılan sezgileri nedeniyle taramayabilir; dış paketteki kaynak gerektiğinde `@source` ile tanıtılır. Bu yüzden class etkisiz görünüyorsa yazımı, CSS build çıktısını ve dosyanın tarama kapsamını ayrı ayrı kontrol et.
 
 ## Özet
 
-- Utility class'ları küçük görsel kararları JSX yanında tutar; React davranışını kurmaz.
-- Tailwind CSS'i kaynakta bulduğu tam class adlarından üretir.
-- Öneksiz class temel görünümü, `hover:` ve `md:` gibi varyantlar koşullu görünümü tanımlar.
-- Aynı kararı birkaç yerde tekrarladığında ortaklaştır; tek kullanımda erken soyutlama yapma.
-- V4 kurulumu CSS `@import` ve Vite eklentisiyle çalışır.
+- Utility-first, küçük görünüm kararlarını class adlarıyla öğenin yanında tutar.
+- Tailwind class’lardan CSS üretir; React hangi tam class’ın seçileceğine karar verir.
+- Variant’lar `hover:` gibi durumlarda veya `md:` gibi viewport eşiklerinde görünümü değiştirir.
+- Görünüm class’ları düğmenin işlevini ya da erişilebilir davranışını kendiliğinden kurmaz.
 
-**Kendini yokla:** `text-${size}xl` neden güvenilir değil? Kaynak taramasında tam class görünmez.
+**Yeni terimler:**
 
-**Kendini yokla:** `disabled:opacity-50` düğmeyi gerçekten devre dışı bırakır mı? Hayır; görünüm değişir, HTML `disabled` niteliği ayrıca gerekir.
+- **Utility:** Tek bir görsel kararı adlandıran class.
+- **Utility-first:** Görünüm kararlarını öğenin yanında utility class’larla yazma yaklaşımı.
+- **Variant:** Bir class’ın hangi durum veya genişlik koşulunda geçerli olduğunu belirten önek.
+- **Viewport:** Tarayıcıda sayfanın görünen içerik alanı.
+- **Computed styles:** Tarayıcının bir öğeye sonunda uyguladığı CSS değerleri.
+
+**Kendini yokla:** `text-${level}xl` neden güvenilir bir seçim değil? Tailwind kaynakta tam class adını göremeyebilir.
+
+**Kendini yokla:** `disabled:opacity-50` tek başına düğmeyi devre dışı bırakır mı? Hayır; yalnız görünüm değişir, HTML `disabled` niteliği ayrıca gerekir.

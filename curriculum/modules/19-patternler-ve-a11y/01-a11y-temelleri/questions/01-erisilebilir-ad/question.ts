@@ -29,14 +29,14 @@ export default defineQuestion({
         '`aria-label` düğmenin adını verir ve içerikteki metni ezer. Yıldız zaten `aria-hidden` olduğu için hiç okunmaz.',
     },
     {
-      text: '“Yıldız, Favorilerden çıkar” der; `aria-hidden` düğme içinde yok sayılır.',
+      text: '“Favorilerden çıkar, basılı” der; değişen ad eylemi, durum niteliği ise toggle durumunu bildirir.',
       explanation:
-        '`aria-hidden="true"` öğeyi erişilebilirlik ağacından çıkarır; düğmenin içinde de geçerlidir.',
+        'İki mesaj da ayrı ayrı duyulabilir; fakat bu örnekte eylem adı ile basılı durumu farklı yönlere işaret eder. Tek bir anlatım seçmek daha açıktır.',
     },
     {
-      text: 'Sorun yok; iki bilgi birbirini destekler, ne kadar çok ARIA o kadar iyi.',
+      text: 'Düğmenin adı “Favori” olur; `aria-pressed` değeri adın parçası olarak okunmaz.',
       explanation:
-        'Fazla ARIA yanlış ARIA’dan iyi değildir. “Basılı olan, çıkarmak mı?” sorusunu kullanıcıya bırakıyorsun.',
+        'Bu, sabit ad + durum tasarımında doğru olurdu. Burada ad eyleme göre değiştiği için aynı düğmenin iki farklı durumu farklı eylem adıyla duyuruluyor.',
     },
   ],
   explanation:

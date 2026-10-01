@@ -1,14 +1,14 @@
 import { defineQuestion } from '@rm/content/define'
 export default defineQuestion({
   type: 'code',
-  title: 'Silme sonrası listeyi tazele',
-  difficulty: 'orta',
-  concepts: ['query.invalidation', 'query.useMutation', 'query.keys'],
+  title: 'Silinen satırı hata halinde geri al',
+  difficulty: 'zor',
+  concepts: ['query.optimistic', 'query.invalidation', 'query.useMutation'],
   files: ['useDeleteRating.ts'],
   hints: [
-    'Başarılı ve başarısız DELETE sonrası cache’in farklı davranması gerektiğini ayır.',
-    '`useQueryClient` ve mutation callback’lerini kullan.',
-    '`onSuccess` içinde `client.invalidateQueries({ queryKey: ["ratings", sessionId] })` döndür.',
-    'Invalidation’ı `onError` veya `onSettled` içine koyma; hata eski listeyi korumalı.',
+    'Satırı hemen kaldırmanın yanında, başarısızlıkta geri koyabilmek için neyi saklayacağını düşün.',
+    '`onMutate` önce query’yi iptal edip eski listeyi okuyabilir; callback’ten context döndür.',
+    '`onError` context’teki listeyi geri yüklesin; silinen id’yi `filter` ile çıkar.',
+    'Yalnız başarıda doğru session key’ini invalidate et; diğer session’ı değiştirme.',
   ],
 })

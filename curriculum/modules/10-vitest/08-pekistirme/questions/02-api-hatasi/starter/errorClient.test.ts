@@ -1,6 +1,5 @@
 import { describe, it } from 'vitest'
 
 describe('API hatası ayrıntılarını test et', () => {
-  it.todo('404 durumunu taşır')
-  it.todo('TMDB hata kodu ile mesajını korur')
+  it.todo('404 cevabını TMDB hata kodu ve mesajıyla taşır')
 })

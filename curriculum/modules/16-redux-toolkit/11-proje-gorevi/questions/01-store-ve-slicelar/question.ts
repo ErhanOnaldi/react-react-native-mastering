@@ -33,7 +33,7 @@ export default defineQuestion({
   ],
   hints: [
     'Hangi bilgiler sunucudan, hangileri kullanıcı etkileşiminden geliyor? Eski favori ve watchlist davranışını da koru.',
-    'Client state için her özellikte `createSlice` kurup `combineSlices` ile birleştir; bileşenler yalnız gereken değeri seçsin.',
+    'Client state için her özellikte `createSlice` kurup `configureStore` reducer haritasında birleştir; bileşenler yalnız gereken değeri seçsin.',
     '`RootState` ve `AppDispatch` tiplerini store’dan türet; hook’ları `.withTypes` ile dışa ver. ID’leri sakla, TMDB nesnelerini değil.',
   ],
 })

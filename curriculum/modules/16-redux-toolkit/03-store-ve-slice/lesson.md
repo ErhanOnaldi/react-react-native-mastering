@@ -6,171 +6,151 @@ kind: concept
 
 # Store ve slice ile tek kural
 
-:::pain[Sinema’da sorun]
-Favori ekleme kuralı kartta, arama sayfasında ve detay ekranında ayrı ayrı yazılmış. Bir ekranda tekrar tıklayınca favori kaldırılıyor, diğerinde ikinci kopya oluşuyor. Beş Context’i tek değere toplamak bu iş kuralını ortaklaştırmıyor; yalnızca değerleri taşımaya devam ediyor.
-:::
+Bir film sayfasında buton tıklanınca bir değerin değiştiğini `useState` ile görmüşsündür. Şimdi aynı kuralı katalog, detay ve fragman ekranlarının kullanmasını düşün. Her ekranda ayrı ayrı yazmak yerine değişikliği ortak bir yerde adlandırıp, yeni değeri oradan okumak istiyoruz.
 
-## Redux’un döngüsü
+Redux Toolkit’te ortak verinin bulunduğu nesneye **store** denir. Store’ı bir posta kutusu gibi düşünebilirsin: component’ler oradan state okur ve bir değişiklik isteğini gönderir. Bu isteğe **action** denir; örneğin “fragman açıldı” bir olaydır, doğrudan state’in yeni değerini tarif etmez.
 
-Redux Toolkit, ortak client state’e yapılan değişiklikleri adlandırılmış olaylardan geçirir. Bir bileşen ne olduğunu anlatan bir **action** gönderir. Store ilgili reducer’ları çalıştırır, yeni state’i saklar ve abonelere yeni görünümü bildirir. Bileşen, ihtiyacı olan sonucu bir selector ile okur.
+## Bir action’dan yeni değere
 
-![dispatch, middleware, reducer, store, selector ve UI arasındaki döngü](diagram:redux-veri-akisi)
+Bir **slice** özelliğe ait başlangıç state’ini ve onu değiştiren kuralları bir arada tutar. RTK’nin `createSlice` fonksiyonu bu kurallardan action creator’ları da üretir: action creator, verdiğin bilgiden action nesnesi oluşturan fonksiyondur.
 
-Bu model için kurallar net olmalı:
-
-1. **Store tek ortak state ağacıdır.** Her slice kendi alanını yönetir; örneğin `pantry` ve `settings`.
-2. **Action olayı tarif eder.** Action creator’dan çıkan değer `{ type, payload? }` biçimli serileştirilebilir bir nesnedir. `type`, olayın adını; `payload` ise o olay için gereken veriyi taşır.
-3. **Reducer geçişi belirler.** Reducer eski state ve action’a göre yeni state’i hesaplar. Aynı girdilerle aynı sonucu üretmelidir; ağ veya `localStorage` gibi dış dünya işi yapmaz.
-4. **Slice kuralı ve action’ı bir arada tutar.** `createSlice`, başlangıç state’ini, reducer’ları ve action creator’larını üretir.
-5. **Dispatch döngüyü başlatır.** `store.dispatch(action)` middleware zincirinden geçer; reducer’lar tamamlanır, store güncellenir, ilgili aboneler yeni sonucu okur.
-6. **UI state’i yalnızca okur ve olay gönderir.** Görünüm hesaplaması component’te; ortak geçiş kuralı reducer’dadır.
-7. **Bir kez oluşturulan store uygulamaya sağlanır.** React ağacındaki bileşenler `Provider` üzerinden aynı store’a erişir.
-
-`configureStore` RTK’nin önerilen kurulumudur. Geliştirme kontrolleri ve temel middleware’leri ekler; reducer ağacını da tek yerde toplar. Birkaç slice’ı `combineSlices` ile birleştirip sonucu `configureStore`’a verebilirsin. Küçük örnekte nesne biçimli reducer haritası da uygundur.
-
-## Bir paketin yolculuğu
-
-Kilerdeki ürün miktarını artıran `restock` olayını düşün. State başlangıçta `{ items: [{ name: 'Mercimek', count: 2 }] }` olsun. Kullanıcı üç paket aldığını kaydeder.
-
-| Sıra | Kodun yaptığı | Değer |
-| --- | --- | --- |
-| 1 | `restock({ name: 'Mercimek', count: 3 })` action creator çağrılır | `{ type: 'pantry/restock', payload: { ... } }` |
-| 2 | `dispatch` action’ı store’a verir | Middleware action’ı iletir |
-| 3 | `pantry` reducer’ı eşleşen case’i bulur | Eski sayım: `2` |
-| 4 | Reducer yeni miktarı hesaplar | `2 + 3 = 5` |
-| 5 | Store yeni state’i kaydeder | `count: 5` |
-| 6 | Selector `count` değerini okur | `5` |
-| 7 | React commit eder | Ekranda “5 paket” görünür |
-
-Action tek başına state’i değiştirmez. Reducer’a ulaşması gerekir. Reducer da UI’yi doğrudan değiştirmez; store güncellendikten sonra component yeni değeri okur. Akışı ayırmak, “butona basınca ne oldu?” sorusunu bileşen içindeki rastgele mutasyonlardan çıkarıp izlenebilir bir geçişe dönüştürür.
-
-## Slice kuralı: önce kırık, sonra doğru
-
-Component içinde state’i doğrudan değiştiren saf bir JavaScript nesnesi Redux’un güvenli geçişini sağlamaz:
-
-```ts title="Kırık: paylaşılan state'i yerinde değiştir"
-type PantryState = { count: number }
-const pantry: PantryState = { count: 2 }
-
-function addPackages(amount: number) {
-  pantry.count += amount
-  return pantry
-}
-```
-
-Çağıran kodun tuttuğu `pantry` nesnesi aynı referansla değişti. Eski ve yeni görünüm arasındaki sınır kayboldu. React ve Redux, değişim tespiti için referans kimliğinden yararlanabilir; aynı nesneyi değiştirmek abonelerin beklediği yeni snapshot’ı vermez.
-
-Slice içinde Immer draft’ı kullanarak geçişi okunur yazarsın. Buradaki mutasyon gibi görünen satır yalnız `createSlice` reducer’ının özel bağlamında güvenlidir:
+Önce fragman panelinin kaç kez açıldığını sayalım. Reducer, eski state ve action’ı alıp yeni state’i hesaplayan fonksiyondur. `createSlice` reducer’ında `state.count += 1` gibi bir satır göreceksin: bu satır gerçek eski nesneyi değiştirmiyor. RTK, düzenlenebilir geçici bir **draft** üzerinde çalışır ve Immer bu değişiklikten yeni, değişmez sonuç çıkarır; burada mutasyon benzeri yazımın güvenli olmasının nedeni budur.
 
 ```ts check
-import { configureStore, createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 
-type PantryState = { count: number }
-const pantrySlice = createSlice({
-  name: 'pantry',
-  initialState: { count: 0 } satisfies PantryState,
+const trailerSlice = createSlice({
+  name: 'trailer',
+  initialState: { openCount: 0 },
   reducers: {
-    restock(state, action: PayloadAction<number>) {
-      state.count += action.payload
+    trailerOpened(state) {
+      state.openCount += 1
     },
   },
 })
+const openTrailer = trailerSlice.actions.trailerOpened()
+void openTrailer
+```
 
-const store = configureStore({ reducer: { pantry: pantrySlice.reducer } })
-export const restock = pantrySlice.actions.restock
-export type RootState = ReturnType<typeof store.getState>
-store.dispatch(restock(3))
-const count = store.getState().pantry.count
+`trailerOpened()` action nesnesini üretir ama henüz store’a bir şey göndermez. `dispatch` action’ı store’a ileten çağrıdır; store ilgili reducer’ı çalıştırır ve yeni sonucu saklar. Bu ayrım sayesinde bir olayın tanımı component’te değil, slice kuralında kalır.
+
+## Action’a gereken bilgiyi ekle
+
+Bir component yalnızca “fragman açıldı” demekle kalmayıp hangi filmin açıldığını da bildirebilir. Bu bilgi action’ın `payload` alanında taşınır. Aşağıdaki örnekte son açılan film kimliğini saklıyoruz:
+
+```ts check
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+
+const trailerSlice = createSlice({
+  name: 'trailer',
+  initialState: { lastOpenedMovieId: null as number | null },
+  reducers: {
+    trailerOpened(state, action: PayloadAction<number>) {
+      state.lastOpenedMovieId = action.payload
+    },
+  },
+})
+const action = trailerSlice.actions.trailerOpened(603)
+void action
+```
+
+Action creator’a `603` verdik, o sayı payload oldu; reducer’ın görevi bu kimliği yeni state’e yazmak. Reducer içinde rastgele sayı, saat, ağ isteği veya `localStorage` çağrısı yapma: reducer yalnızca verilen state ve action’a göre sonuç hesaplamalı. Böylece aynı state ve action her zaman aynı sonucu verir; akışı izlemek ve tekrar üretmek kolaylaşır.
+
+## Değeri okuyacak yeri seç
+
+Bir **selector**, store state’inden component’in ihtiyaç duyduğu değeri seçen fonksiyondur. Slice state’ini root state içindeki `trailer` alanında tuttuğumuzu düşünelim:
+
+`PayloadAction<number>`, bu reducer’a gelen action’ın `payload` alanında bir sayı bulunduğunu belirtir. Store’daki bütün feature alanlarının birleştiği nesneye **root state** denir; selector bu nesnenin içinden okur.
+
+```ts check
+type RootState = { trailer: { lastOpenedMovieId: number | null } }
+const selectLastOpenedMovieId = (state: RootState) => state.trailer.lastOpenedMovieId
+const lastId = selectLastOpenedMovieId({ trailer: { lastOpenedMovieId: 603 } })
+void lastId
+```
+
+Selector state’in kendisini değiştirmez; sadece gereken parçayı okur. Component’in tamamını store’a bağlamak yerine küçük bir sonucu okuması, hangi ekranda hangi verinin kullanıldığını anlaşılır kılar. React Redux bu sonucu hook’larla component’e bağlar; hook kullanımı sonraki derste ele alınacak.
+
+## İki slice’ı tek store’da birleştir
+
+Fragman geçmişi ve katalog görünüm tercihi birbirinden bağımsız özelliklerdir. `configureStore`, reducer’ları tek store’da birleştirir. `reducer` nesnesindeki anahtarlar root state’teki yolları belirler; örneğin `trailer` anahtarı state’e `state.trailer` yolu verir.
+
+```ts check
+import { configureStore, createSlice } from '@reduxjs/toolkit'
+
+const trailerSlice = createSlice({ name: 'trailer', initialState: { openCount: 0 }, reducers: { opened: (state) => { state.openCount += 1 } } })
+const catalogSlice = createSlice({ name: 'catalog', initialState: { compact: false }, reducers: { toggleCompact: (state) => { state.compact = !state.compact } } })
+const store = configureStore({ reducer: { trailer: trailerSlice.reducer, catalog: catalogSlice.reducer } })
+export const { opened } = trailerSlice.actions
+export const { toggleCompact } = catalogSlice.actions
+store.dispatch(opened())
+const count = store.getState().trailer.openCount
 void count
 ```
 
-RTK’de reducer’ın `state.count += amount` satırı gerçek eski state’i değiştirmez. Immer bir draft üzerinde çalışır ve yeni immutable sonuç üretir. Bu esneklik yalnız `createSlice`/Immer reducer bağlamındadır; dışarıda normal bir nesneye aynı satırı yazarsan mutasyon olur.
+Burada `state.trailer.openCount` ve `state.catalog.compact` yolları reducer haritasındaki anahtarlardan gelir. Slice’ın `name` alanı action türünü `trailer/opened` gibi adlandırır; store haritasındaki anahtar ise state yolunu belirler. Genellikle aynı adı seçmek okunaklıdır ama bunlar farklı işler yapar. Örnekte store bir kez oluşturuluyor. Birden çok bağımsız store gerektiğinde `configureStore` çağrısını bir fonksiyon içinde yaparsın; her fonksiyon çağrısı yeni başlangıç state’i olan bir store verir.
 
-Slice adı, Redux DevTools’ta ve action türlerinde görünür. `pantry/restock` adı, “hangi değer değişti?” yerine “hangi olay oldu?” sorusunu cevaplar. Action’ı birden çok ekrandan dispatch edebilmek, kuralın her ekranda yeniden kurulmasına gerek bırakmaz.
+Action’ın yolculuğunu bu örnekte sırayla izleyebilirsin:
 
-## Store’u bir araya getir
+| Sıra | Ne çalışır? | Sonuç |
+| --- | --- | --- |
+| 1 | `opened()` action creator’ı çağrılır | `{ type: 'trailer/opened' }` oluşur |
+| 2 | `store.dispatch(action)` çağrılır | Action store’a gider |
+| 3 | Store `trailer` reducer’ını çalıştırır | `openCount` 0’dan 1’e çıkar |
+| 4 | Store yeni state’i saklar | `state.trailer.openCount` artık 1’dir |
+| 5 | Selector değeri okur | Ekran “1 kez açıldı” gösterebilir |
 
-Birden çok özellik bağımsız reducer’lara sahipse her biri kök state’te bir anahtar alır. Aşağıdaki küçük kurulumda ürün sayacı ile görünüm tercihi farklı alanlardadır:
+![Dispatch, middleware, reducer, store, selector ve UI arasındaki Redux veri akışı](diagram:redux-veri-akisi)
 
-```ts title="İki slice, bir store"
-import { combineSlices, configureStore, createSlice } from '@reduxjs/toolkit'
+### Store’un çevresindeki iki terim
 
-const stockSlice = createSlice({
-  name: 'stock',
-  initialState: { count: 0 },
-  reducers: { addOne: (state) => { state.count += 1 } },
-})
-const displaySlice = createSlice({
-  name: 'display',
-  initialState: { compact: false },
-  reducers: { toggleCompact: (state) => { state.compact = !state.compact } },
-})
-const rootReducer = combineSlices(stockSlice, displaySlice)
-const store = configureStore({ reducer: rootReducer })
-```
+`configureStore` bazı **middleware**’leri de store’a ekler. Middleware, action reducer’a ulaşmadan önce onu görebilen bir ara katmandır; örneğin geliştirmede yaygın hataları denetleyen varsayılan katmanlar bulunur. Şimdilik kendi middleware’ini yazmana gerek yok; ana state geçişini action ve reducer ile takip et.
 
-Store’un state şekli `{ stock: { count: number }, display: { compact: boolean } }` olur. Özellik sınırı hem state ağacında hem action adlarında görünür. Slice’ları farklı dosyalara koyabilirsin; store dosyası onları birleştirir.
+`preloadedState`, store ilk oluşturulurken başlangıç state’i olarak verdiğin değerdir. Örneğin daha sonra testte belirli bir film seçimiyle başlamak veya kaydedilmiş başlangıç verisini geri yüklemek için kullanılabilir; verdiğin nesnenin şekli reducer haritasıyla uyumlu olmalıdır. Normal açılışta slice’ların `initialState` değerleri yeterlidir.
 
-### Action adlarını olay diliyle kur
-
-Action type Redux DevTools’ta kalır ve hata ayıklarken değişiklik geçmişini okumaya yardım eder. `pantry/restock` “miktar 5 olsun” gibi sonucu değil, “stok yenilendi” olayını anlatır. İki farklı component aynı action creator’ı kullanınca iş kuralı ortak kalır. Payload yalnız reducer’ın geçişi hesaplaması için gereken en küçük bilgiyi taşımalıdır; bütün component props’unu veya API cevabını action’a koymak gerekmeyebilir.
-
-Action creator’ı çağırmak da dispatch ile aynı şey değildir. `pantrySlice.actions.restock(3)` action nesnesini oluşturur; `store.dispatch(...)` onu zincire verir. Bu ayrım, event handler’da action’ı üretip göndermeyi, testte ise reducer’a action’ı doğrudan vererek tek bir geçişi izole etmeyi mümkün kılar.
-
-### Kök state şekli bir sözleşmedir
-
-`configureStore({ reducer: { stock: stockSlice.reducer } })` yazdıysan kök state anahtarı `stock` olur. Slice’ın `name` değeri action type’larını adlandırır; reducer haritasındaki anahtar ise state ağacının yolunu belirler. Bunlar çoğu zaman aynı ad olsa da aynı kavram değildir. `name: 'stock'` olan slice’ı `inventory` anahtarına bağlarsan bileşenler `state.inventory` okur.
-
-Bu state şekli selector’ları, preloaded state’i ve DevTools incelemesini etkiler. Store büyüdükçe feature sınırlarını root anahtarlarında tutmak gezinmeyi kolaylaştırır. Her şeyi tek `app` nesnesine koymak da geçerlidir ama feature’ların reducer sahipliğini daha az görünür yapar. Kök şekli üründeki veri sınırına göre belirle.
-
-### Provider’ı uygulama sınırında kur
-
-React Redux `Provider`, store nesnesini React context üzerinden alt bileşenlere verir. Uygulama girişinde tek bir varsayılan store sağlayabilirsin. Testlerde veya birden fazla bağımsız uygulama örneğinde ise `setupStore()` benzeri factory her çağrıda yeni store üretir. Tek bir module singleton’ı kullanırsan her test ve render aynı state’i paylaşabilir.
-
-Redux Provider ile TanStack Query Provider aynı ağaçta birlikte bulunabilir; her biri kendi verisinin erişim sınırıdır. Provider sırasını seçerken birinin diğerinin state’ini kapsadığını varsayma. Bileşen yalnız store’daki client seçimini ve Query’den gelen katalog verisini birlikte okuyabilir; iki provider da ilgili consumer’ların üstünde olmalıdır.
-
-Bu örnekte reducer’lar inline arrow function olarak yazılmış. Gerçek ekipte satırları ayrı satırlara yaymak okunabilirliği artırır; burada önemli olan iki ayrı reducer’ın birleştirilmesi. `combineSlices` mevcut reducer’ları bir araya getirir ve gerektiğinde lazy-loaded slice eklemek için de kullanılabilir. Bu modülde statik kök kurulum yeterlidir.
-
-## Sınırlar ve sık hatalar
-
-:::mistake[Belirti → Action görünüyor ama state beklenmiyor]
-Belirti → DevTools’ta `pantry/restock` var; miktar değişmiyor.  
-Neden → Action creator çağrılmış ama sonucu `dispatch` edilmemiş olabilir; ya da slice reducer’ı store’a bağlanmamıştır.  
-Düzeltme → Önce action’ın `type` değerini, ardından reducer ağacındaki slice anahtarını ve store dispatch’ini izle.
+:::info[Derinlemesine (isteğe bağlı)]
+Bir test ya da uygulama başlangıç state’i veriyorsa `configureStore({ reducer, preloadedState })` biçimini kullanabilirsin. Her slice için gerekli alanların tipi reducer’ın beklediği state ile uyuşmalıdır; kısmi başlangıç değerlerini otomatik birleştiren ayrı bir kural varsayma.
 :::
 
-:::mistake[Belirti → Reducer her çağrıda farklı sonuç üretiyor]
-Belirti → Aynı action bazen farklı bir tarih veya rastgele kimlik üretiyor.  
-Neden → Reducer’ın içine saat, random, ağ veya storage gibi gizli girdiler konmuş.  
-Düzeltme → Gerekli değeri olay gerçekleştiği yerde hesapla ve action payload’ında taşı; reducer yalnız state dönüşümünü yapsın.
+## Sık yapılan yanlışlar
+
+:::mistake[Belirti → Action geçmişte görünüyor ama değer değişmedi]
+Belirti → Action creator’ı çağırdın fakat state aynı kaldı.
+Neden → Action nesnesini üretmek dispatch etmek değildir; ayrıca slice reducer’ı store’a bağlanmamış olabilir.
+Düzeltme → Action’ı `dispatch` et ve reducer’ın `configureStore` haritasında yer aldığını kontrol et.
 :::
 
-:::mistake[Belirti → Slice dışındaki diziler de değişiyor]
-Belirti → Reducer’dan önce sakladığın eski liste, action sonrası farklı.  
-Neden → Immer dışındaki normal nesnede mutasyon yaptın veya reducer’dan gelen taslağı sızdırdın.  
-Düzeltme → Mutasyon gibi yazımı yalnız RTK reducer içinde kullan; dışarıda immutable güncelleme uygula.
+:::mistake[Belirti → State ağacında beklenmeyen yol var]
+Belirti → `state.trailer` beklerken değer başka anahtarın altında.
+Neden → Slice `name` alanı ile reducer haritasındaki anahtarın aynı şeyi yaptığını varsaydın.
+Düzeltme → State yolunu `configureStore` içindeki anahtara göre oku.
 :::
 
-:::mistake[Belirti → Store’da aynı özellik için iki anahtar var]
-Belirti → `state.stock` ve `state.stockSlice` gibi beklenmeyen bir şekil görüyorsun.  
-Neden → Slice’ın adı ile store’daki reducer anahtarının farklı olabileceğini gözden kaçırdın.  
-Düzeltme → `configureStore` reducer haritasında seçtiğin anahtarı kök state sözleşmesi olarak kabul et ve selector’ları ona göre yaz.
-:::
-
-:::sector
-Takımlar Redux DevTools action geçmişini hata raporlarında tekrar üretilebilir bir iz olarak kullanabilir. Bu değer, olay adlarının anlamlı ve payload’ların serileştirilebilir olmasıyla artar. Kişisel bilgi veya sırları payload’a koymamak ve dış dünya işlerini middleware/thunk katmanında tutmak ekip standardı olmalıdır.
+:::mistake[Belirti → Eski state de değişmiş görünüyor]
+Belirti → Action öncesinde tuttuğun sıradan nesne, işlemden sonra farklı.
+Neden → `state.count += 1` yazımını slice reducer’ı dışında normal nesnede kullandın.
+Düzeltme → Mutasyon benzeri yazımı yalnız RTK reducer’ının Immer draft’ında kullan; sıradan veriyi yerinde değiştirme.
 :::
 
 ## Özet
 
-- Action bir olayı anlatır; reducer saf state geçişini hesaplar; store sonucu saklar.
-- `createSlice` başlangıç state’i, reducer ve action creator’larını birlikte üretir.
-- `configureStore` reducer’ları ortak state ağacına bağlar; `combineSlices` slice’ları birleştirebilir.
-- Immer, RTK reducer’ında mutasyon benzeri yazımı immutable sonuca dönüştürür.
-- Reducer’da ağ, saat, random veya storage gibi yan etkiler bulunmaz.
+- Action bir olayı taşır; `dispatch` onu store’a verir; reducer yeni state’i hesaplar.
+- Slice başlangıç state’iyle ilgili reducer kurallarını ve action creator’larını bir arada tutar.
+- Selector store’dan ihtiyaç duyulan değeri okur; `configureStore` reducer haritası root state yollarını belirler.
+- RTK reducer’ındaki draft yazımı Immer sayesinde yeni immutable sonuç üretir.
+- Middleware action ile reducer arasındaki ara katmandır; `preloadedState` store’un ilk state’ini verir.
 
-**Kendini yokla:** `createSlice` ile üretilen action creator’ı çağırmak state’i değiştirir mi?  
-*Cevap:* Hayır. Oluşan action store’a `dispatch` edilmelidir.
+**Yeni terimler:**
 
-**Kendini yokla:** `state.count += 1` neden slice reducer’ında güvenli ama sıradan nesnede güvenli değil?  
-*Cevap:* RTK reducer’ında Immer draft’ı günceller; sıradan nesnede aynı satır gerçek nesneyi mutasyona uğratır.
+- **Store:** Uygulamanın ortak state’ini ve güncelleme akışını tutan yer.
+- **Action / action creator / dispatch:** Sırasıyla olay bilgisi, olay nesnesini üreten fonksiyon ve olayı store’a gönderme.
+- **Reducer / slice:** Yeni state’i hesaplayan kural / bu kuralları ve başlangıç state’ini özellik bazında toplayan RTK yapısı.
+- **Selector:** State içinden component’in ihtiyaç duyduğu değeri okuyan fonksiyon.
+- **Draft:** Immer’ın reducer’da geçici olarak düzenlenebilir sunduğu state görünümü.
+- **Middleware / preloadedState:** Action’ı reducer öncesi gören ara katman / store’un oluşturulurken aldığı başlangıç state’i.
+
+**Kendini yokla:** `trailerOpened(603)` çağrısı store’daki state’i hemen değiştirir mi?
+*Cevap:* Hayır. Action oluşturur; state’in değişmesi için onu dispatch etmek gerekir.
+
+**Kendini yokla:** `configureStore` içindeki `catalog` anahtarı neyi belirler?
+*Cevap:* Root state’teki yolu belirler; katalog state’i `state.catalog` altında bulunur.

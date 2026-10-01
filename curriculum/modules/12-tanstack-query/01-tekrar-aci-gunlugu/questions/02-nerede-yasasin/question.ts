@@ -5,20 +5,20 @@ export default defineQuestion({
   title: 'Veri nerede yaşasın?',
   difficulty: 'kolay',
   concepts: ['arch.state-categories', 'router.search-params', 'react.state'],
-  question:
-    'Arama metni paylaşılan URL’de, TMDB cevabı ise tekrar kullanılmalı. Hangi eşleştirme doğru?',
+  question: `Sinema'da kullanıcı arama bağlantısını paylaşabilsin, TMDB sonucu ekrandan ayrılınca kısa süre saklansın, yıldızla işaretlediği favori ise kendi seçimi olarak kalsın. Bu üç değerin sahibi nasıl ayrılır?`,
   options: [
     {
-      text: '`q` URL’de, cevap Query cache’inde, favori seçimi client state’te',
+      text: '`q` URL’de, TMDB cevabı Query cache’inde, favori seçimi client state’te',
       correct: true,
       explanation: 'Üç durumun ömrü ve sahibi farklıdır.',
     },
     {
-      text: 'Üçünü de `useState` içinde tut',
-      explanation: 'Sayfa unmount olunca API cevabı kaybolur; URL paylaşımı da bozulur.',
+      text: 'Arama ve favoriyi URL’de, TMDB cevabını `useState` içinde tut',
+      explanation:
+        'URL yalnız paylaşılması gereken seçimi taşır; API cevabını component state’ine kopyalamak ekranlar arası tekrar kullanımı sağlamaz.',
     },
     {
-      text: 'Üçünü de Query cache’ine taşı',
+      text: 'Arama, TMDB cevabı ve favoriyi Query cache’ine taşı',
       explanation:
         'Kullanıcının favori seçimi ve paylaşılabilir URL parametresi sunucu cevabı değildir.',
     },

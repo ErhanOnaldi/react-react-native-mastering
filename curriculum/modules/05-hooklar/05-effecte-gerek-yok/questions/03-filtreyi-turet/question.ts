@@ -7,8 +7,7 @@ export default defineQuestion({
   files: ['MovieFilter.tsx'],
   hints: [
     'Ekrandaki liste yalnızca `titles` ve `query` değerlerinden hesaplanıyor.',
-    'Bu durum için ayrı state yerine render sırasında türetilmiş değer kullan.',
-    '`useEffect` ve `useState` import’unu kaldır; `const visible = titles.filter(...)` yaz.',
-    'Karşılaştırmada iki tarafı da `toLocaleLowerCase("tr")` ile küçült.',
+    'Önce Türkçe harf duyarlı biçimde eşleşen bir başlık dizisi oluştur; sonra bunu liste öğelerine dönüştür.',
+    'Yeni diziyi `titles.filter` ile üret ve arayış için `toLocaleLowerCase("tr")` kullan.',
   ],
 })

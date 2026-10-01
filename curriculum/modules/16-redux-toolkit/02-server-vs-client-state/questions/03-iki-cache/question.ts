@@ -13,14 +13,16 @@ export default defineQuestion({
       explanation: 'İki ayrı sahip senkronizasyon gerektirir.',
     },
     {
-      text: 'Redux createSlice derlenmez.',
+      text: 'Query ve Redux aynı değişikliği otomatik olarak birbirine iletir.',
       correct: false,
-      explanation: 'Kod derlenebilir; sorun yaşam döngüsü ve doğruluktur.',
+      explanation:
+        'İki sistemin cache’i kendiliğinden senkronize olmaz; aradaki güncellemeyi açıkça kurman gerekir.',
     },
     {
-      text: 'URL parametresi otomatik silinir.',
+      text: 'Her yenilemede iki kopyayı da güncelleyen ek kod gerekebilir.',
       correct: false,
-      explanation: 'Bu iki cache’in URL ile doğrudan ilişkisi yoktur.',
+      explanation:
+        'Bu da gerçek bir bakım maliyetidir; Query ve Redux değişikliklerini eşlemek gerekir.',
     },
   ],
 })

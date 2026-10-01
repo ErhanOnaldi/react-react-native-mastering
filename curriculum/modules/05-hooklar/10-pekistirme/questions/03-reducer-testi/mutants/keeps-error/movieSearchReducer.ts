@@ -30,9 +30,7 @@ export function movieSearchReducer(
       return { ...state, status: 'success', results: action.results }
     case 'failed':
       return { ...state, status: 'error', results: [], error: action.error }
-    default: {
-      const neverAction: never = action
-      return neverAction
-    }
+    default:
+      return state
   }
 }

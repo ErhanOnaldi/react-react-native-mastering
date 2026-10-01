@@ -5,20 +5,29 @@ export default defineQuestion({
   title: 'Poster neden reddedildi?',
   difficulty: 'kolay',
   concepts: ['zod.schemas', 'ts.optional-nullable'],
-  question: 'TMDB `poster_path: null` gönderdi. `z.string()` kullanan şema ne yapar?',
+  question: `Aşağıdaki iki parse sonucundan hangisi başarılı olur?
+
+\`\`\`ts
+const posterSchema = z.object({ path: z.string() })
+posterSchema.safeParse({ path: null })
+posterSchema.safeParse({})
+\`\`\`
+
+Şema bu haliyle kalırken hangi sonuçları beklersin?`,
   options: [
     {
-      text: 'Parse başarısız olur; `.nullable()` gerekir.',
+      text: 'İkisi de başarısız olur; ilkinde null türü, ikincisinde zorunlu alan eksiktir.',
       correct: true,
-      explanation: 'Doğru. null ayrı bir değerdir; string şeması onu kabul etmez.',
+      explanation:
+        'Doğru. `z.string()` null kabul etmez ve nesne şemasındaki alan varsayılan olarak zorunludur.',
     },
     {
-      text: 'Null otomatik boş string olur.',
+      text: 'İlki başarılı, ikincisi başarısız; Zod null-ı boş metne dönüştürür.',
       correct: false,
       explanation: 'Zod varsayılan olarak dönüştürmez; bunu açıkça istemelisin.',
     },
     {
-      text: '`.optional()` null kabul eder.',
+      text: 'İlki başarısız, ikincisi başarılı; string alan optional olduğu için null kabul edilmez ama eksik olabilir.',
       correct: false,
       explanation: 'Optional eksik/undefined değeri kabul eder; null için nullable gerekir.',
     },

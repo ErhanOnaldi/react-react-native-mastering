@@ -1,123 +1,47 @@
 ---
-title: "Sıfırdan kurulum: araçlar birbirine değdiğinde"
-minutes: 12
+title: "Kitaplık iskeletini kur"
+minutes: 8
 kind: project
 ---
 
-# Sıfırdan kurulum: araçlar birbirine değdiğinde
+# Kitaplık iskeletini kur
 
-:::pain[Problem]
-Öğrenirken araçları tek tek tanıdın: Vite'ı ayrı bir derste, Vitest'i başka bir modülde, ESLint ve Tailwind'i kendi başlıklarında gördün. Hepsi izole ortamlarda mükemmel çalışıyordu.
+Boş bir proje kurarken bütün araçları tek dosyada toplamaya çalışma. Her ayar bir sorumluluğu açıklasın: Vite uygulamayı paketlesin, Vitest testleri çalıştırsın, Playwright tarayıcıyı açsın. Böylece hata çıktısı geldiğinde hangi katmana bakacağını bilirsin.
 
-Fakat boş bir klasörde `pnpm create vite` çalıştırıp hepsini aynı anda kurmaya kalktığında araçlar birbirine çarpar: TypeScript `@/` yolunu çözer ama Vite derleyicisi dosyayı bulamaz; `pnpm test` çalıştırdığında Vitest Playwright'ın E2E test dosyalarını çalıştırmaya çalışıp çöker; ESLint Tailwind v4'ün yeni CSS direktiflerine kızar. Araçların **birbirine değdiği yüzeyler** yapılandırılmadığında proje daha başlamadan kilitlenir.
+:::model[Proje araç zinciri]
+Kaynak koddan uygulama paketi üretilir; tip kontrolü, lint ve testler bu kodu farklı açılardan denetler. Bir komut başarısız olduğunda önce hangi araca ait olduğunu bul, sonra o aracın ayarını düzelt. Tüm kontrollerin temiz çalışması iskeletin hazır olduğunu gösterir.
 :::
 
-Bu derste modern bir React uygulamasının temel araç zincirini sıfırdan ayağa kaldırıyor; paket yönetimi, derleme, tip kontrolü, lint, biçimlendirme ve iki katmanlı test altyapısını tek bir tutarlı hatta birleştiriyorsun.
+![Kaynak kod build, test ve yayın aşamalarından geçerek tarayıcıya ulaşır](diagram:build-ve-yayin)
 
-## Araç zincirinin katmanları ve zihinsel model
+## Üç ayar, üç belirti
 
-Bir frontend projesinde araçlar keyfi seçilmez; her birinin yaşam döngüsünde kesin bir görevi ve sınır çizgisi vardır.
+İlk olarak `@/components/BookCard` import’unu düşün. `@/` bir **path alias**’tır: uzun göreli yollar yerine kullanılan kısa yol adıdır. TypeScript’e ve Vite’a ayrı ayrı tanıtılmalıdır; yalnız TypeScript bilirse editör yolu kabul eder ama Vite modülü bulamaz.
 
-![Kaynak koddan derleme, test ve yayın aşamalarına geçiş](diagram:build-ve-yayin)
+Sonra ESLint ayarına bak. **Flat config**, ESLint’in güncel yapılandırma biçimidir; kurallar ve dosya grupları sırayla bir dizide belirtilir. `eslint-config-prettier` bu dizinin sonuna gelmelidir ki daha önce eklenen biçim kurallarıyla çakışmayı kapatsın.
 
-Bu mimariyi şu temel kurallarla yönetirsin:
+Son olarak bir **duman testi** ekle: bu, uygulamanın en temel parçalarının ayağa kalktığını gösteren küçük kontroldür. Kitaplık ana sayfası testte açılıp “Kitaplık” başlığını gösteriyorsa rota ve provider iskeletin çalışıyor demektir. Testin çalışması özelliklerin tamamlandığını kanıtlamaz; yalnızca temel bağlantıları doğrular.
 
-1. **Paket sorumluluğunu ayır:** Tarayıcıya gidecek ve son kullanıcının indireceği JavaScript paketleri (React, Router, TanStack Query, Zod) `dependencies` alanında yaşar. Yalnızca geliştirme, derleme ve test anında Node.js üzerinde çalışan araçlar (Vite, TypeScript, Vitest, Playwright, ESLint) `devDependencies` içinde olmalıdır.
-2. **Derleme ile test ortamını ayır:** `vite.config.ts` tarayıcı paketi üretir; `vitest.config.ts` ise Node/jsdom üzerinde birim test koşturur. Test ayarlarını doğrudan `vite.config.ts` içine gömmek yerine ayrı tutmak hem derleme hızını korur hem de sorumlulukları ayırır.
-3. **Yol takma adını (alias) iki yerde tanımla:** TypeScript'e `@/*` yolunu öğretmek (`tsconfig.app.json`) derleyicinin tip kontrolü yapmasını sağlar ancak Vite paketleyicisinin bu yolu çözebilmesi için `vite.config.ts` içinde `resolve.alias` tanımı da şarttır.
-4. **Test katmanlarını izole et:** Vitest tarayıcı DOM'unu taklit eden jsdom üzerinde birim/entegrasyon testlerini koşturur; gerçek tarayıcı açan Playwright E2E testleri ise ayrı bir dünyadır. Vitest yapılandırmasında `e2e/**` dizini mutlaka hariç tutulmalıdır (`exclude`).
+## Kurulum sırası
 
-## Araç zincirini adım adım izleyelim
+Önce çalışma zamanı paketleriyle geliştirme araçlarını ayır. Sonra TypeScript/Vite alias ayarını kur; ESLint ve Prettier’ı ekle. Vitest’in jsdom ortamını ve MSW kurulumunu Playwright E2E ortamından ayrı tut. Playwright’ın yerel sunucu ayarını en sona ekleyip CI’da yeni sunucu başlatıldığını kontrol et.
 
-Kurulumu rastgele dosyalar açarak değil, kontrol edilebilir bir doğrulama sırasıyla yürütürsün:
+`createRoutes(queryClient)` bir **factory function** örneğidir: kendisine QueryClient verilir ve testte ya da uygulamada kullanılabilecek rota listesini üretir. Ayrı bir `AppProviders` bileşeni, uygulamanın ihtiyaç duyduğu sağlayıcıları tek noktada kurar. İkisini de küçük tut; rota kurmak ile tüm uygulamayı render etmek aynı görev değildir.
 
-| Sıra | Adım | Üretilen dosya | Doğrulama komutu | Beklenen başarı çıktısı |
-| --- | --- | --- | --- | --- |
-| 1 | Proje iskeleti ve paketler | `package.json` | `pnpm install` | Paketler kilitlenir, node_modules oluşur |
-| 2 | Tip kontrolü ve derleme | `tsconfig*.json`, `vite.config.ts` | `pnpm typecheck` | `tsc -b` sıfır hatayla tamamlanır |
-| 3 | Kod kalitesi ve biçim | `eslint.config.js`, `.prettierrc` | `pnpm lint && pnpm format:check` | Tüm dosyalar standartlara uygundur |
-| 4 | Birim ve entegrasyon testi | `vitest.config.ts`, `src/test/setup.ts` | `pnpm test` | jsdom üzerinde duman testi yeşil döner |
-| 5 | Uçtan uca (E2E) test | `playwright.config.ts`, `e2e/*.spec.ts` | `pnpm test:e2e` | Headless Chromium gerçek sayfayı açar |
-
-## Örnekler: Yanlış ve doğru yapılandırma
-
-### Kırık örnek: Test ayarlarının derleme yapılandırmasına gömülmesi
-
-Aşağıdaki dosya Vitest ve Vite'ı tek bir yerde toplar ancak üretim derlemesinde tip hatalarına ve paketleme karmaşasına yol açar:
-
-```ts
-// TEHLİKE: vite.config.ts içine vitest ayarları kontrolsüz gömülmüş
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  // Vite build sırasında test alanı gereksiz yer kaplar ve tipleri kirletir:
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    // HATA: e2e testleri dışlanmamış; pnpm test playwright testlerini koşturmaya çalışıp patlar!
-  },
-})
-```
-
-### Doğru örnek: Temiz ayrılmış yapılandırma
-
-Üretim derleyicisi ile test koşucusunu iki ayrı dosyada yapılandırıp `mergeConfig` ile bağlayalım:
-
-```ts
-// vitest.config.ts — Test ortamı izole edilmiştir
-import { defineConfig, mergeConfig } from 'vitest/config'
-import { configDefaults } from 'vitest/config'
-import viteConfig from './vite.config'
-
-export default mergeConfig(
-  viteConfig,
-  defineConfig({
-    test: {
-      environment: 'jsdom',
-      setupFiles: ['./src/test/setup.ts'],
-      // E2E testleri Vitest'in menzilinden çıkarılır:
-      exclude: [...configDefaults.exclude, 'e2e/**'],
-    },
-  }),
-)
-```
-
-## Sık karşılaşılan kurulum hataları
-
-:::mistake[Yol takma adının (alias) yalnızca tsconfig'e yazılması]
-**Belirti:** Editörde veya `pnpm typecheck` çalıştırıldığında hiçbir hata görülmez; ancak `pnpm dev` açıldığında tarayıcı konsolunda `Failed to resolve import "@/components/Header"` hatası patlar.  
-**Neden:** `tsconfig.json` sadece statik tip denetimi yapar; çalışma zamanında modülü bulup getiren motor Vite'tır.  
-**Düzeltme:** `vite.config.ts` dosyasına `resolve: { alias: { '@': path.resolve(__dirname, './src') } }` tanımını ekle.
-:::
-
-:::mistake[ESLint flat config sırasında prettier eklentisinin başa konması]
-**Belirti:** Kod biçimlendirildiğinde ESLint kurallarının kodla savaşması ve çakışan girinti hataları fırlatması.  
-**Neden:** `eslint-config-prettier`, ESLint'in stil ve biçim kurallarını devre dışı bırakır. Dizinin başında tanımlanırsa sonraki eklentiler bu kuralları tekrar aktif eder.  
-**Düzeltme:** `eslint.config.js` yapılandırma dizisinde `eslint-config-prettier` kural setini daima **en son eleman** olarak yerleştir.
-:::
-
-:::mistake[Playwright CI ortamında sunucu bekleme hatası]
-**Belirti:** Yerel makinede `pnpm test:e2e` sorunsuz çalışırken GitHub Actions CI hattında `webServer` zaman aşımı verip başarısız olması.  
-**Neden:** Yerel ortamda açık kalan bir Vite dev sunucusu portu işgal ederken CI ortamında taze sunucunun açılması beklenir; `reuseExistingServer` bayrağı CI için `false` yapılmamıştır.  
-**Düzeltme:** `playwright.config.ts` içinde `webServer: { reuseExistingServer: !process.env.CI }` kontrolünü sağla.
-:::
-
-:::sector[Sektörde şablonlar ve temel altyapı]
-Kıdemli mühendislerin en değerli reflekslerinden biri, sıfırdan bir depo açıldığında ekibin geri kalanının rahat çalışabileceği "altın yolu" (Golden Path) kurmaktır. `pnpm typecheck && pnpm lint && pnpm test` zincirini tek bir komutta çalışabilir ve CI'da kırılamaz kılmak, projeyi haftalar sonra ortaya çıkacak uyumsuzluk maliyetlerinden kurtarır.
+:::mistake[Test araçlarının E2E dosyalarını da toplaması]
+Belirti: `pnpm test` Playwright dosyalarını çalıştırıp `page` bulunamadı diye hata verir. Neden: Vitest ve Playwright aynı test dizinini tarıyordur. Düzeltme: Vitest yapılandırmasında `e2e/**` dizinini hariç tut; gerçek tarayıcı testlerini Playwright çalıştırsın.
 :::
 
 ## Özet
 
-- Bağımlılıklar `dependencies` (çalışma zamanı) ve `devDependencies` (araçlar) olarak ayrılmalıdır.
-- `tsconfig` tip kontrolü yaparken, `vite.config.ts` modül çözümlemesini üstlenir; takma adlar (alias) her iki tarafta da tanımlanmalıdır.
-- `vitest.config.ts` bağımsız tutulmalı ve `e2e/**` dizini Vitest kapsamı dışında bırakılmalıdır.
-- Temiz bir kurulum, tek bir script çalıştığında (`typecheck`, `lint`, `format:check`, `test`, `test:e2e`) sıfır uyarı ve sıfır hatayla tamamlanmalıdır.
+- Araçları görevlerine göre ayır: build, birim/DOM testi ve gerçek tarayıcı testi farklı işlerdir.
+- Alias hem TypeScript hem Vite tarafından tanınmalı.
+- Flat config ESLint ayarlarını dosya gruplarıyla düzenler; Prettier uyum ayarı en sona gelir.
+- Duman testi temel iskeleti doğrular, uygulamanın tamamını değil.
+
+**Yeni terimler:** Path alias: dosya yolunu kısaltan ad eşlemesi. Flat config: ESLint’in dizi tabanlı yapılandırma biçimi. Duman testi: uygulamanın temel parçalarının çalıştığını kontrol eden küçük test. Factory function: girdi alıp yapılandırılmış bir değer üreten fonksiyon.
 
 ### Kendini yokla
 
-1. **Soru:** Bir React projesinde `react-router` paketi `devDependencies` alanına yazılırsa ne olur?  
-   **Cevap:** Geliştirme ortamında çalışabilir; ancak üretim derlemesi alınıp sunucuya taşındığında veya bağımlılıklar budandığında (`pnpm install --prod`), tarayıcı paketi bağımlılığı bulamayacağı için çalışma zamanında çöker.
-2. **Soru:** Vitest ayarlarında `e2e/**` klasörünü hariç tutmazsak ne yaşanır?  
-   **Cevap:** Vitest, Playwright için yazılmış `*.spec.ts` dosyalarını kendi birim testi sanarak çalıştırmaya kalkar. Playwright'ın `page` fixture'ı jsdom ortamında bulunmadığı için testler anında hata verir.
+1. TypeScript `@/` yolunu tanıyor ama Vite neden bulamıyor? **Cevap:** TypeScript tip kontrolü yapar; import’u paketleyen Vite’ın da alias eşlemesini bilmesi gerekir.
+2. Duman testinin yeşil olması neyi kanıtlar? **Cevap:** Test ettiği temel iskelet çalışır; henüz bütün özelliklerin doğru olduğunu değil.

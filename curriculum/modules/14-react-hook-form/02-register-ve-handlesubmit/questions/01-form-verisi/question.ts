@@ -14,19 +14,20 @@ export default defineQuestion({
         '`register` ile bağlanan alanlar form verisine girer; `handleSubmit` submit akışını yönetir.',
     },
     {
-      text: '`onValid` fonksiyonunu render sırasında hemen çalıştırır.',
+      text: 'Submit olayındaki DOM event’ini doğrudan `onValid` fonksiyonuna verir.',
       correct: false,
-      explanation: 'Dönen handler ancak form gönderildiğinde çalışır.',
+      explanation: '`handleSubmit` alanları toplar; callback’e event değil form değerlerini verir.',
     },
     {
-      text: 'Sunucuya otomatik POST atar.',
+      text: '`useForm` alanlardan runtime şeması üretip kuralları kendiliğinden doğrular.',
       correct: false,
-      explanation: 'RHF formu yönetir; ağ isteğini senin callback’in veya mutation yapar.',
+      explanation:
+        'Generic değerlerin TypeScript tipini belirtir; runtime kurallarını ayrıca yazarsın.',
     },
     {
-      text: 'TypeScript tipini çalışma zamanında otomatik şemaya çevirir.',
+      text: '`handleSubmit` hangi endpoint’e istek atacağını belirler.',
       correct: false,
-      explanation: 'Generic yalnızca tip kontrolüdür; doğrulama kurallarını ayrıca yazarsın.',
+      explanation: 'Ağ isteği senin callback’inde kurulur; RHF endpoint bilmez.',
     },
   ],
 })

@@ -13,7 +13,6 @@ export function TrendingFeed() {
     },
     initialPageParam: 1,
     getNextPageParam: (last) => (last.page < last.total_pages ? last.page + 1 : undefined),
-    maxPages: 3,
   })
   if (feed.isPending) return <p>Yükleniyor</p>
   if (feed.isError) return <p role="alert">Trend yüklenemedi</p>

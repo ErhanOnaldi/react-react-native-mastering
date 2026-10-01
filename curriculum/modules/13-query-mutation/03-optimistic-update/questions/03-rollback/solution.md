@@ -1,3 +1,3 @@
 ## Neden böyle?
 
-Paylaşılan listeyi hemen değiştirmek için cache patch’i gerekir. Snapshot hata dönüşünde geri alınır; `onSettled` sunucuyu son doğru kaynak yapar. Testte 500, `response.ok` kontrolünü de ölçer. Eşzamanlı mutation’larda tek snapshot diğer işlemi ezebilir; gerçek uygulamada kapsamı ve sıra politikasını belirle.
+`rate` yalnızca sunucu yazmasını yapar; hook cache’in geçici görünümünü yönetir. `onMutate` önce eski listeyi snapshot olarak saklar, sonra immutable biçimde değiştirir. Hata gelirse `onError` önceki listeyi koyar, `onSettled` de aynı session’ın verisini sunucudan yeniden aldırır. Bu görev tek bekleyen puanlama varsayar; eşzamanlı güncellemelerde eski snapshot başka bir güncellemeyi ezebilir.

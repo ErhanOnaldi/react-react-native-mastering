@@ -21,8 +21,8 @@ describe('ilk lint temizliği', () => {
     expect(result.fatalErrorCount).toBe(0)
   })
   it('film başlığını ekranda tutan bileşeni korur', () => {
-    expect(movieSource).toMatch(/Dövüş Kulübü/)
     expect(movieSource).toMatch(/export function MovieTitle/)
+    expect(movieSource).toMatch(/MovieTitle\(\{ title \}\)/)
     expect(movieSource).toMatch(/<h1>\{title\}<\/h1>/)
   })
 })

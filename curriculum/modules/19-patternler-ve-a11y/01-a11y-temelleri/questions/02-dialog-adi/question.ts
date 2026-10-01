@@ -14,16 +14,19 @@ export default defineQuestion({
       explanation: 'Doğru. Dialogun erişilebilir adı görünür başlığın metninden gelir.',
     },
     {
-      text: 'Dialoga yalnızca aria-modal=true eklemek.',
-      explanation: 'aria-modal modal ilişkiyi bildirir; adı sağlamaz.',
+      text: 'Dialoga `aria-describedby` ile başlığı bağlamak.',
+      explanation:
+        '`aria-describedby` açıklayıcı metin içindir; dialogun adını başlıktan almak için `aria-labelledby` gerekir.',
     },
     {
-      text: 'Başlığı yalnızca kalın göstermek.',
-      explanation: 'Görsel vurgu, dialog ile başlık arasında programatik ilişki kurmaz.',
+      text: 'Dialoga `aria-label="Fragman"` vermek ve görünür başlığı ayrıca bırakmak.',
+      explanation:
+        'Bu ad sağlar, ancak görünür başlıktan türemez. Başlık değişirse erişilebilir ad eski metinde kalabilir.',
     },
     {
-      text: 'Dialoga aria-hidden=true eklemek.',
-      explanation: 'Bu, içeriği erişilebilirlik ağacından saklar; tam tersi sonuç verir.',
+      text: 'Başlıkla dialoga aynı sabit `id` değerini vermek.',
+      explanation:
+        'Aynı id belge içinde iki öğeye verilemez ve tek başına dialogu adlandıran ilişki kurmaz.',
     },
   ],
 })

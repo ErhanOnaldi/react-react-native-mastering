@@ -1,53 +1,73 @@
 ---
-title: "Test katmanları ve davranış güvencesi"
-minutes: 17
+title: "Testler hangi davranışı korur?"
+minutes: 13
 kind: concept
 ---
 
-# Test katmanları ve davranış güvencesi
+# Testler hangi davranışı korur?
 
-:::pain[Sinema’da ne oldu?]
-Sinema’da tür filtresinde Dram seçili, ama Komedi etiketli film de listede kalıyor. Derleme yeşil ve ekran açılıyor; yanlış filtre ancak kullanıcı listeyi incelerken fark ediliyor.
-:::
+Sinema aramasında `page=2` seçtiğini düşün. İstek yine ilk sayfanın filmlerini getirirse ekran açılır ve TypeScript hata vermez; kullanıcı yanlış listeyi görür. **Regresyon**, daha önce çalışan bir davranışın sonraki bir değişiklikle yeniden bozulmasıdır. Test, böyle bir değişiklikten sonra beklediğin davranışın hâlâ çalışıp çalışmadığını tekrar kontrol eder.
 
-## Derleyicinin bilemediği davranış
+## Derleyici şekli, test davranışı denetler
 
-TypeScript, tür etiketlerinin string olduğunu ve filtre fonksiyonunun beklenen tipte sonuç verdiğini denetler. Dram filtresinin Komedi filmini dışarıda bıraktığını bilemez. Derleme hatasız olsa bile yanlış koşul veya eksik karşılaştırma çalışmaya devam edebilir. Test, seçtiğin girdiyi gerçek koddan geçirip gözlenebilir sonucu önceden belirlediğin beklentiyle karşılaştırır.
+TypeScript, `page` değerinin sayı olduğunu denetleyebilir. Bu sayının URL’ye doğru yazıldığını ya da ikinci sayfa seçilince doğru filmlerin istendiğini kendi başına bilemez. Bir **matcher**, testin gözlediği değerle beklenen sonucu karşılaştıran araçtır; hangi farkın önemli olduğunu açıkça yazmana yardım eder.
 
-Sen zaten 0. modülden beri test okuyup 1–6. modüllerde küçük testler yazdın. Burada başlangıç noktasına dönmüyoruz: aynı Arrange–Act–Assert akışını daha büyük bir sistemde nereye uygulayacağına karar veriyoruz. Yeni soru “test nasıl yazılır?” değil; “bu davranışı hangi sınırda doğrulamak en hızlı ve anlamlı olur?”
+Önce URL’de sayfa numarasının bulunup bulunmadığına bakalım:
 
-:::model[Test anatomisi]
-Bir testi **hazırla → çalıştır → doğrula** diye oku. Hazırlık girdiyi ve gerekli ortamı kurar; çalıştırma gerçek davranışı çağırır; doğrulama dışarıdan görülen sonucu ölçer. Bu üç parça testin neyi kanıtladığını açık eder. Önceki modüllerde saf fonksiyonlara uyguladığın bu model, şimdi farklı büyüklükteki sınırları karşılaştırmana yardım eder.
+```ts check
+const url = new URL('https://sinema.test/search?page=3')
+const hasPage = url.searchParams.has('page')
+if (!hasPage) throw new Error('Sayfa parametresi eksik')
+```
+
+Parametre var, ama değeri yanlışlıkla `1` de olabilir. Bu kontrol yalnız “bir sayfa değeri yazılmış mı?” sorusunu cevaplar; “üçüncü sayfa mı istenmiş?” sorusunu cevaplamaz. Beklentinin sınırını, korumak istediğin davranış belirler.
+
+Şimdi değerin kendisini kontrol edelim:
+
+```ts check
+const url = new URL('https://sinema.test/search?page=3')
+const page = url.searchParams.get('page')
+if (page !== '3') throw new Error('Üçüncü sayfa istenmeliydi')
+```
+
+Bu kontrol yanlış sayfa değerini yakalar. Yine de bir URL’nin doğru olması, ekrandaki listenin doğru olduğunu tek başına kanıtlamaz: istek doğru hazırlanıp cevap ekrana yanlış bağlanmış olabilir. O yüzden test edeceğin yeri, doğrulamak istediğin davranışa göre seçersin.
+
+## Bir davranış, farklı sınırlar
+
+Test katmanı, kontrolün uygulamanın hangi büyüklükteki parçasında yapıldığını anlatır. **Birim testi** küçük bir fonksiyonu tek başına çalıştırır. **Entegrasyon testi** birlikte çalışan parçaları, örneğin seçim kontrolüyle film listesini, beraber dener. **Uçtan uca test** uygulamayı kullanıcıya yakın biçimde açıp aramadan sonuçların görünmesine kadar akışı yürütür.
+
+Aynı film arama davranışını üç küçük adımda düşünelim. İlkinde yalnız sayfa URL’sini kuran fonksiyon vardır:
+
+```ts check
+function pageFromUrl(input: string): string | null {
+  return new URL(input).searchParams.get('page')
+}
+
+const page = pageFromUrl('https://sinema.test/search?page=3')
+if (page !== '3') throw new Error('Sayfa 3 okunmalıydı')
+```
+
+Burada fonksiyonun girdisi ve çıktısı belli; ağ veya arayüz yok. Bu nedenle birim testi hızlıca “URL’den doğru sayfayı okuyor mu?” sorusuna cevap verir. Hata çıkarsa bakılacak yer de dardır.
+
+Bir sonraki adımda seçim kontrolü ve film listesi birlikte çalışsın. Seçim `3` olduğunda görünen listede üçüncü sayfanın filmleri olmalı. Birlikte çalışan iki parçayı denediğimiz için bu, entegrasyon örneğidir. İlk testte her parçanın tek başına doğru olduğunu bilmek, aralarındaki bağlantının da doğru kurulduğunu garanti etmez.
+
+Son adımda Sinema’yı tarayıcıda açıp arama kutusuna film adı yazar, üçüncü sayfaya geçer ve film kartlarını görürsün. Bu akış route, tarayıcı ve ekranı birlikte kapsar; uçtan uca testin gücü daha gerçek kullanıcı yolunu denemesidir. Buna karşılık kurulum daha ağırdır ve başarısız olduğunda hatanın hangi parçadan geldiğini bulmak daha uzun sürebilir.
+
+| Soru | Uygun katman | Neden? |
+| --- | --- | --- |
+| URL’den `page` değeri doğru okunuyor mu? | Birim | Tek küçük fonksiyon yeterli |
+| Seçim değişince doğru film kartları kalıyor mu? | Entegrasyon | Seçim ve liste birlikte çalışıyor |
+| Kullanıcı arayıp üçüncü sayfaya geçince sonuçları görüyor mu? | Uçtan uca | Tarayıcıdaki tam akış önemli |
+
+Bu tablo “her özelliğe üç test yaz” demiyor. En küçük anlamlı sınır, hızlı geri bildirim verir; parçaların birlikte davranışı önemliyse daha geniş sınırı da denersin. Tüm ayrıntıları yalnız tarayıcı testinde sınamak yavaştır; sadece küçük fonksiyonları sınamak ise kablo bağlantısındaki bir hatayı kaçırabilir.
 
 ![Test katmanları: küçük birimden tüm kullanıcı akışına](diagram:test-katmanlari)
 
-## Üç katmanın karar kuralları
+Test katmanları kalite sıralaması değildir. Birim testi daha küçük olduğu için önemsiz olmaz; kullanıcı akışının doğru görünmesi de tek bir fonksiyonun her girdide doğru olduğunu kanıtlamaz. Aynı davranışın farklı sorularını cevaplarlar. “URL sayfayı okuyor mu?” ile “seçim değişince doğru kartlar görünüyor mu?” aynı kontrol değildir ve her biri kendine uygun küçük bir beklenti ister.
 
-1. **Birim testi**, tek bir küçük davranışı dış ortamdan ayırarak denetler. Saf fonksiyon, reducer veya tarih biçimleyici buna uygundur. Başarısızsa olası neden azdır ve geri bildirim hızlıdır.
-2. **Entegrasyon testi**, birlikte çalışması gereken birkaç parçayı gerçek halleriyle bağlar. Örneğin bir React bileşenini render edip kullanıcı etkileşiminin ekranda oluşturduğu sonucu gözlersin. Gerçek ağ gibi kontrol etmediğin dış sistemleri bu katmanda sınırlandırabilirsin.
-3. **Uçtan uca test**, uygulamayı kullanıcıya en yakın ortamda açıp baştan sona bir akışı yürütür. Route, tarayıcı, ağ ve ekran birlikte çalışır. Daha çok gerçek davranışı kapsar; kurulum ve hata ayıklama maliyeti de daha yüksektir.
+## Aynı uzunluk, farklı sonuç
 
-Bir katmanın “daha iyi” olması diğerlerini gereksiz yapmaz. Küçük fonksiyondaki her kombinasyonu tarayıcıyı açarak test etmek yavaştır. Öte yandan tüm bileşenleri izole birim testine ayırırsan kullanıcı eylemi ile ekrandaki sonucun bağını hiç ölçmeyebilirsin. Her katmanı, sorunun ortaya çıktığı sınıra yerleştir.
-
-## Tür filtresini adım adım izleyelim
-
-Kullanıcı Dram türünü seçtiğinde birbirinden ayrı birkaç karar vardır:
-
-| Sıra | Çalışan parça | Bilinmesi gereken sonuç |
-| --- | --- | --- |
-| 1 | Kontrol değeri | seçili tür Dram olur |
-| 2 | Karşılaştırma | her filmin tür listesi incelenir |
-| 3 | Saf filtre | yalnız Dram içeren filmler kalır |
-| 4 | Ekran | Komedi filmi listede görünmez |
-| 5 | Birleşik akış | seçili tür ve görünen kartlar uyuşur |
-
-Adım 3 saf bir fonksiyonsa birim testi tür listesini doğrudan verip kalan filmleri sınar. Adım 1–4 arasında seçici bileşen ve kartlar işbirliği yapıyorsa entegrasyon testi etkileşim ile görünen listeyi ölçer. Kullanıcı tercihini kaydedip sonra yeniden açma akışı önemliyse uçtan uca senaryo eklenebilir. Tek bir üst düzey test bütün girdi çeşitlerini hızlıca kapsayamaz; küçük testler de filtre kontrolünün gerçekten ekrana bağlandığını kanıtlamaz.
-
-Bu ayrım hata bulmayı da kolaylaştırır. Birim testi Komedi türünü yanlışlıkla geçiriyorsa filtre kuralına bakarsın. Birim testi geçip entegrasyon testi kalırsa seçili değer karta doğru ulaşmıyor olabilir. Entegrasyon geçip tarayıcı akışı kalırsa tercih saklama veya ekranı yeniden kurma akışı sorun çıkarabilir. Katmanlar birer teşhis sınırı sağlar.
-
-## Önce kırık, sonra doğru
-
-Aşağıdaki saf fonksiyonda yanlış tür karşılaştırması testin gözünden kaçar; yalnızca kalan eleman sayısını kontrol etmek yeterli değildir:
+Filtre fonksiyonunun `Dram` ve `Komedi` filmlerinden yalnız seçili türü bırakması gerektiğini düşün. Sadece kaç film kaldığına bakan beklenti şöyle olabilir:
 
 ```ts check
 type Film = { title: string; genres: string[] }
@@ -55,18 +75,17 @@ function filterByGenre(items: Film[], genre: string): Film[] {
   return items.filter((film) => film.genres.includes('Dram'))
 }
 
-const movies: Film[] = [
+const films: Film[] = [
   { title: 'Kıyı', genres: ['Dram'] },
   { title: 'Kahkaha', genres: ['Komedi'] },
 ]
-const brokenResult = filterByGenre(movies, 'Komedi')
-const expected = [{ title: 'Kahkaha', genres: ['Komedi'] }]
-if (JSON.stringify(brokenResult) !== JSON.stringify(expected)) {
-  throw new Error('Yalnız Komedi türündeki film bekleniyordu')
-}
+const result = filterByGenre(films, 'Komedi')
+if (result.length !== 1) throw new Error('Bir film kalmalıydı')
 ```
 
-Kırık davranışta Komedi seçildiğinde de bir film kalır; sayı kontrolü yeşil kalır. Beklentiyi kullanıcının ihtiyacına göre keskinleştir:
+Kırık fonksiyon Dram’ı aradığı halde bir film döndürüyor; uzunluk beklentisi yeşil kalıyor. Belirti “test geçti ama yanlış film gösterildi” olur. Çünkü beklenti, seçilen türün doğru olmasını değil yalnız tek kayıt kalmasını söylüyor.
+
+Beklentiyi gözlenen davranışa yaklaştıralım:
 
 ```ts check
 type Film = { title: string; genres: string[] }
@@ -74,48 +93,37 @@ function filterByGenre(items: Film[], genre: string): Film[] {
   return items.filter((film) => film.genres.includes(genre))
 }
 
-const movies: Film[] = [
+const films: Film[] = [
   { title: 'Kıyı', genres: ['Dram'] },
   { title: 'Kahkaha', genres: ['Komedi'] },
 ]
-const actual = filterByGenre(movies, 'Dram')
-const expected = [{ title: 'Kıyı', genres: ['Dram'] }]
-if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-  throw new Error(`Beklenen ${expected}, gelen ${actual}`)
-}
+const result = filterByGenre(films, 'Komedi')
+if (result[0]?.title !== 'Kahkaha') throw new Error('Komedi filmi kalmalıydı')
 ```
 
-İlk blokta test “bir film var” diyor ama gereksinim “seçili türdeki filmler var”. Doğru örnekte kalan filmin kimliği ve türü karşılaştırılır. Gerçek test dosyasında aynı fikir Vitest’in `expect(actual).toEqual(expected)` matcher’ıyla yazılır; ileride farklı veri şekillerine uygun matcher seçeceksin.
+Bu kez yanlış tür koşulu testte doğru filmi bırakamaz ve test kırmızı olur. Test, fonksiyonun nasıl yazıldığını değil çağıranın göreceği sonucu sabitler; uygulamayı içeride yeniden düzenleyebilirsin, davranış bozulursa test haber verir.
 
-## Sınırları doğru seç
+İkinci sayfa örneğinde de aynı hata biçimi vardır: “istek başladı” demek yeterli değildir, istenen sayfanın taşındığını bilmen gerekir. Beklenti, bilinen yanlış sonucu kabul etmeyecek kadar belirgin olmalı; ilgisiz iç ayrıntıları ise sabitlememelidir.
 
-Bir testi seçerken şu sırayı izle: önce kullanıcının veya çağıranın gördüğü hatayı cümleye dök; sonra hataya en yakın, dış sistem içermeyen parçayı bul; son olarak parçalar arası bağlantının ayrıca doğrulanması gerekip gerekmediğine karar ver. “Komedi filmi Dram filtresinde görünüyor” gözlemdir. Saf tür karşılaştırmasını birim testinde, seçicinin bileşene bağlanmasını entegrasyon testinde, tercih saklanıp sayfanın yeniden açılmasını uçtan uca testte ölçebilirsin.
-
-Testin sonucu uygulamanın özel değişken isimlerine bağlıysa refactor sırasında gereksiz yere kırılır. Fakat yalnız “filtre çağrıldı” beklentisi de yanlış tür karşılaştırmasını yakalamaz. Dışarıdan görülen davranış, hem çözüm biçimine alan bırakmalı hem de gerçek gereksinimi ayırt edecek kadar kesin olmalı.
-
-:::mistake[Tip kontrolünü davranış testi sanmak]
-**Belirti:** Derleme yeşil, ama Dram filtresinde Komedi filmi var. → **Neden:** Tipler metnin string olduğunu doğrular; karşılaştırma mantığını çalıştırmaz. → **Düzeltme:** Tür listesini gerçek fonksiyondan geçirip kalan filmleri karşılaştır.
-:::
-
-:::mistake[Her şeyi tek tarayıcı testine yüklemek]
-**Belirti:** Basit bir hesaplama hatasını bulmak için bütün uygulama açılıyor ve hata mesajı çok genel kalıyor. → **Neden:** Küçük mantık ile route ve ekran bağlantısı aynı sınırda sınanıyor. → **Düzeltme:** Hızlı birim testiyle hesabı, entegrasyon veya uçtan uca testiyle gereken bağlantıyı ayrı doğrula.
-:::
-
-:::mistake[Sadece çağrı sayısını ölçmek]
-**Belirti:** Filmler dönüyor ama seçili tür dışındakiler listede. → **Neden:** Test yalnız sonucun boş olmadığını ölçüyordur. → **Düzeltme:** Kalan filmlerin türlerini veya beklenen kartları denetle.
-:::
-
-Bir test katmanının hata bulma hızı, kurulum maliyeti ve temsil ettiği gerçeklik arasında seçim yaparsın. Örneğin tek tür karşılaştırmasını unit testte hızlıca tekrar etmek kolaydır. Gerçek seçim kontrolü, state ve film kartlarının birlikte çalıştığını görmek için entegrasyon testi gerekir. Kullanıcının sayfayı yenileyip aynı filtre tercihini bulması ise route ve kalıcı durumla birleşen başka bir akıştır. Küçük testlerin tümünü browser testine taşımak pahalıdır; yalnız birim testleri de kablolama hatasını gizleyebilir.
-Ekipler genellikle saf iş kurallarını hızlı birim testinde, kritik kullanıcı akışlarını daha az sayıda uçtan uca testte tutar; aradaki component ve servis bağlantılarını entegrasyon testleriyle kapatır. Kod incelemesinde “hangi davranış bozulursa bu test kırılır?” sorusu, test adedinden daha anlamlı bir kalite ölçüsüdür.
+:::mistake[Sadece kayıt sayısını kontrol etmek]
+**Belirti:** Test yeşil ama Dram filtresinde Komedi filmi görünüyor. → **Neden:** Aynı sayıda yanlış film kalmış olabilir. → **Düzeltme:** Filmin türünü veya beklenen kartı da doğrula.
 :::
 
 ## Özet
 
-- TypeScript şekli denetler; test, girdiden çıkan davranışı çalıştırır.
-- Birim testi küçük kuralı, entegrasyon testi parçaların işbirliğini, uçtan uca test kullanıcı akışını kapsar.
-- Hata görüldüğü sınıra yakın test, nedenini daha hızlı buldurur.
-- Beklenti, yanlış filtre gibi gerçek hatayı ayırt edecek kadar kesin olmalıdır.
+- Derleyici tipleri kontrol eder; test çalıştırılan davranışı ve gözlenen sonucu kontrol eder.
+- Regresyon, daha önce çalışan davranışın değişiklikten sonra bozulmasıdır; test bunu tekrar fark ettirir.
+- Birim testi küçük parçayı, entegrasyon testi parçaların işbirliğini, uçtan uca test kullanıcı akışını sınar.
+- Testin kapsamını, cevabını aradığın davranışa göre seç; yalnız kolay ölçüleni değil.
 
-**Kendini yokla:** Filtre sonucunun uzunluğunu kontrol etmek neden yetersizdir? Çünkü yanlış türde aynı sayıda film kalabilir; beklenen filmleri de karşılaştırmalısın.
+**Yeni terimler**
 
-**Kendini yokla:** Tür seçiminin tarayıcıda yapılıp doğru kartları göstermesi hangi katmana uygundur? Component ve liste birlikteyse entegrasyon; tercih saklanıp yeniden açılması da kapsanacaksa uçtan uca test uygundur.
+- **Regresyon:** Değişiklik sonrası yeniden ortaya çıkan davranış hatası.
+- **Matcher:** Gerçek gözlemi beklenen sonuçla karşılaştıran test aracı.
+- **Birim testi:** Tek küçük davranışı tek başına sınayan test.
+- **Entegrasyon testi:** Birlikte çalışan parçaları beraber sınayan test.
+- **Uçtan uca test:** Kullanıcının uygulamada izlediği tam akışı sınayan test.
+
+**Kendini yokla:** Derleme hatasızken URL neden yanlış sayfayı isteyebilir? TypeScript tipleri denetler; istenen sayfa numarasının URL’ye yazıldığını denetlemez.
+
+**Kendini yokla:** Sayfa seçimi doğru olsa bile doğru filmler görünmüyorsa neyi ek olarak sınarsın? Seçimle film listesinin birlikte çalışmasını entegrasyon sınırında sınarım.

@@ -1,123 +1,133 @@
 ---
 title: "Build çıktısı ve üretim önizlemesi"
-minutes: 14
+minutes: 17
 kind: concept
 ---
 
-# Build çıktısı ve üretim önizlemesi
+# Tarayıcıya hangi dosyalar gider?
 
-:::pain[Yerelde çalışan sayfa yayında boş]
-Sinema geliştirme sunucusunda açılıyor. Aynı kaynak dosyaları statik hosta yükleyince tarayıcı `/src/main.tsx` isteğinde 404 görüyor ve ekran boş kalıyor. Başka bir denemede uygulama `/sinema/` altında açılıyor, fakat JS isteği yanlışlıkla alan adının kökündeki `/assets/...` adresine gidiyor. Geliştirme sunucusunun sunduğu kaynak ile kullanıcının indirdiği üretim dosyası aynı şey değil.
-:::
+Sinema `pnpm dev` ile bilgisayarında açılıyor. Statik bir hosta yalnızca `src/` klasörünü kopyaladığında sayfa açılmıyor: tarayıcı geliştirme sunucusundan aldığı dönüştürülmüş kodu artık bulamıyor. Yayında tarayıcıya kaynak TSX dosyalarını değil, Vite’ın hazırladığı dosyaları vermen gerekir.
 
-## Kaynaktan tarayıcıya giden dört durak
+Bu hazırlığa **build** denir: kaynak dosyaları tarayıcının çalıştıracağı HTML, JavaScript ve CSS dosyalarına dönüştürür. Üretim için hazırlanan bu dosyalara **asset** denir. Vite’ın `vite build` komutu bunları varsayılan olarak `dist/` klasörüne yazar.
 
-Vite geliştirirken TSX dosyalarını dönüştürüp tarayıcıya anında sunar. Üretimde ise `vite build` kaynakları işler ve varsayılan olarak `dist/` klasörüne statik dosyalar yazar. Statik host, Vite geliştirme sunucusunu çalıştırmak zorunda değildir; bu dosyaları HTTP üzerinden sunması yeterlidir.
+## Kaynaktan ilk üretim dosyalarına
 
-![Kaynak dosyaların Vite build ile hashli çıktıya, oradan host ve tarayıcıya gitmesi](diagram:build-ve-yayin "Build ve yayın akışında HTML ile asset dosyalarının ayrı görevleri vardır.")
+En küçük build’de `index.html` başlangıç sayfası olur; o sayfanın ihtiyaç duyduğu JavaScript ve CSS de çıktıda yer alır:
 
-Modelin kuralları şöyle:
+```text
+src/main.tsx       ─┐
+src/styles.css      ├─ vite build → dist/index.html
+index.html         ─┘              dist/assets/index-a41c.js
+                                   dist/assets/index-b82d.css
+```
 
-1. **Kaynak ile çıktı ayrıdır.** `src/` içindeki TSX ve CSS üzerinde çalışırsın. Tarayıcı üretimde `dist/index.html` ile `dist/assets/` içindeki dönüştürülmüş dosyaları alır. `public/` içindeki dosyalar da build çıktısının köküne kopyalanır.
-2. **HTML giriş noktasıdır.** `index.html`, çalıştırılacak JS ve kullanılacak CSS dosyalarının URL’lerini taşır. Sayfa ilk açılışında tarayıcı önce HTML’i, ardından onun işaret ettiği asset’leri ister.
-3. **İçerik değişirse hash değişebilir.** Örneğin `index-a41c.js` yerine `index-b82d.js` oluşur. İki dosyanın URL’si farklı olduğundan eski asset’in uzun süre saklanması yeni sürümü engellemez. Bunun çalışması için HTML’in güncel dosya adını göstermesi gerekir.
-4. **İstemci env’i build sırasında çözülür.** `import.meta.env.VITE_API_URL` gibi değerler build sonucuna yerleşir. Host sürecinde sonradan env değiştirmek statik JS’i değiştirmez. `VITE_` önekli değerler kullanıcıya açıktır; sır saklama yeri değildir.
-5. **Yayın kökü URL’lerin parçasıdır.** Uygulama alan adının kökünde değil `/sinema/` altında sunulacaksa Vite `base: '/sinema/'` ayarıyla asset yollarını o öneke göre üretir. `base` sunucunun SPA fallback ayarının yerini almaz; yalnızca üretilen URL tabanını ayarlar.
+**Ne oldu, neden?** Vite kaynak dosyalarını tarayıcının kullanacağı dosyalara dönüştürdü. Tarayıcı `src/main.tsx` istemez; `dist/index.html` dosyasını açar, sonra HTML’in gösterdiği JS ve CSS’i ister. `public/` içeriği de build sırasında `dist/` köküne kopyalanır.
 
-Sonraki adımda host bu dosyalara farklı cache başlıkları verecek. Şimdilik önemli olan ayrım şu: dosya adının hash’i asset’in kimliğini taşır, HTML ise hangi kimliğin güncel olduğunu söyler.
+Bir sonraki örnekte kaynak değişince JavaScript dosya adının değişebileceğini düşün. `index-a41c.js` içindeki **hash**, içeriği temsil eden kısa kimliktir; içerik değişince yeni dosya adı oluşabilir:
 
-## Bir build’i zaman sırasıyla izle
-
-Diyelim bir sanat alanı uygulamasının `src/main.tsx` dosyası değişti ve yayın yolu `/sergi/`. Build öncesinde `VITE_API_URL=https://staging.example` verilmiş olsun.
-
-| An | Yapılan iş | Somut sonuç |
+| Yayın | HTML’in işaret ettiği dosya | Sonuç |
 | --- | --- | --- |
-| 1 | Vite `src/` ve `public/` dosyalarını okur | TSX kaynakları ve favicon girdidir |
-| 2 | `VITE_API_URL` çözülür | İstemci kodu staging adresini kullanacak şekilde üretilir |
-| 3 | JS ve CSS paketlenir | `dist/assets/index-a41c.js` gibi dosyalar çıkar |
-| 4 | HTML bağlantıları yazılır | `/sergi/assets/index-a41c.js` istenir |
-| 5 | `vite preview` ile çıktı açılır | Geliştirme dönüşümü değil, `dist/` dosyaları sunulur |
-| 6 | Hosttaki env değiştirilir ama build tekrarlanmaz | Tarayıcı hâlâ staging adresini kullanır |
+| Önceki build | `assets/index-a41c.js` | Önceki JavaScript içeriği |
+| Yeni build | `assets/index-f903.js` | Değişmiş JavaScript içeriği |
 
-Altıncı satır sık karıştırılır. Statik dosya yayınında çalışma anı env’i istiyorsan uygulamanın açılışta ayrıca bir `/config.json` okuması gibi başka bir tasarım gerekir. Buradaki Vite akışı build anı değerini kullanır. Farklı staging ve production ortamları için ayrı build üretmek basit ve öngörülebilir seçimdir.
+**Ne oldu, neden?** Yeni asset farklı URL aldığı için tarayıcı eski dosyayı yeni sürüm sanmaz. HTML’in güncel sürümü yeni hash’li ada işaret eder; eski HTML ise yanlışlıkla tutulursa artık var olmayan eski asset’i isteyebilir. Bu yüzden HTML ile hash’li dosyaların cache süresi farklı seçilir.
 
-Vite, seçilen moda göre `.env` ve `.env.production` gibi dosyalardan değer okuyabilir. `import.meta.env.MODE` modun adını, `import.meta.env.PROD` ve `DEV` ise üretim ve geliştirme ayrımını verir. Bu değerleri de build’in girdileri gibi düşün: yanlış dosyadaki URL ile paket ürettiğinde, host doğru çalışsa bile tarayıcı yanlış API’ye gider. Build öncesinde hangi ortamın seçildiğini kontrol etmek, boş ekranı sonradan aramaktan kolaydır.
+## Ortam değeri build’e ne zaman girer?
 
-## Kırık URL’den doğru URL’ye
+Sinema’nın API adresi `import.meta.env.VITE_API_URL` ile okunuyor. `VITE_` ile başlayan **env değişkeni**, uygulamanın hangi ortamda çalıştığına bağlı bir ayardır. Vite bu değeri build sırasında JavaScript’e yerleştirir; statik dosyaları sunan host, tarayıcıdaki bundle’a sonradan değer enjekte etmez.
 
-Şu örnekte uygulama `/sergi/` altında duruyor, fakat asset adresi alan adı kökünden başlıyor. `base` ayarı olmadan el ile yazılmış bu URL, tarayıcıyı yanlış yere gönderir:
-
-```ts check title="src/lib/brand.ts"
-const logoPath = '/brand/galeri.svg'
-const siteTitle = 'Kent Galerisi'
-console.log(siteTitle, logoPath)
+```ts title="src/api.ts"
+const apiUrl = import.meta.env.VITE_API_URL
+export const searchUrl = `${apiUrl}/search/movie`
 ```
 
-Yayın yolu `/sergi/` iken kök varsayılanını bırakırsan çıktıdaki bundle ve asset URL’leri alan adı köküne gider:
+**Ne oldu, neden?** Build yapılırken `VITE_API_URL` hangi değerse üretilen kod o adrese istek atar. Host panelinde daha sonra env değerini değiştirmen daha önce üretilmiş `dist/` dosyasını değiştirmez; yeni değer için yeniden build gerekir.
 
-```ts title="vite.config.ts (kırık)"
-import { defineConfig } from 'vite'
+İki ortamla zaman çizgisinde iz sürelim. Staging adresiyle oluşturulmuş dosyaları production hosta kopyaladığını varsay:
 
-export default defineConfig({
-  base: '/',
-})
-```
+| An | Yapılan iş | Tarayıcının kullanacağı adres |
+| --- | --- | --- |
+| 1 | `VITE_API_URL=https://staging.example` ayarlanır | Henüz istek yok |
+| 2 | `vite build` çalışır | Staging adresi JavaScript’e yerleşir |
+| 3 | `dist/` production hosta kopyalanır | Bundle hâlâ staging adresini taşır |
+| 4 | Hostta env `https://api.example` yapılır, build tekrarlanmaz | Eski staging adresi kullanılır |
 
-Doğru Vite yapılandırması, yayın yolunu build’e bildirir:
+**Ne oldu, neden?** Tarayıcı host sürecinin env değişkenlerini okuyamaz; o yalnızca sunulan dosyaları indirir. Farklı adresle yeniden build edersen dosyaların içine yeni adres girer. İstemciye açılan her `VITE_` değeri kullanıcı tarafından görülebileceği için parola veya gizli token koyma.
+
+## Alt dizinde doğru adresi üret
+
+Sinema `https://ornek.test/sinema/` altında yayınlanacaksa JS ve CSS dosyaları da o dizinde aranmalı. Vite ayarındaki **base path** (uygulamanın yayınlandığı URL kökü), üretilen HTML’deki asset bağlantılarının hangi önekle başlayacağını söyler.
 
 ```ts check title="vite.config.ts"
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/sergi/',
+  base: '/sinema/',
+})
+```
+
+**Ne oldu, neden?** Vite HTML’e `/sinema/assets/...` adresleri yazar. `base: '/'` kalsaydı tarayıcı `/assets/...` isteyecek ve dosyayı alan adının kökünden arayacaktı. `base` yalnızca üretilen URL’lerin önekini ayarlar; hostun SPA yönlendirme kuralını ayarlamaz.
+
+Vite bu ayara göre kendi ürettiği HTML bağlantılarını düzeltir. Uygulama içinde elle `'/brand/logo.svg'` yazarsan bu adres hâlâ alan adı köküne gider. Uygulama içi asset adresi gerekiyorsa `import.meta.env.BASE_URL` değerini kullan; o da aynı yayın kökünü verir.
+
+Bir adım daha ekleyelim: production hatasını daha sonra okuyabilmek için build ile **source map** de üretebiliriz. Source map, sıkıştırılmış JavaScript satırlarını özgün kaynak dosya ve satırla eşleştiren dosyadır.
+
+```ts check title="vite.config.ts"
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  base: '/sinema/',
   build: { sourcemap: 'hidden' },
 })
 ```
 
-Bu ayarda Vite, ürettiği HTML’de asset URL’lerine `/sergi/` önekini koyar. Aynı build’i alan adı köküne taşırsan bu kez yollar yanlış olur; URL tabanı yayın adresine göre seçilmelidir. `base` değerini gerektiğinde `import.meta.env.BASE_URL` ile okuyabilirsin; sabit string’i uygulamanın çeşitli yerlerine dağıtmak bakım yükünü artırır.
+**Ne oldu, neden?** Build artık `.map` dosyalarını da üretir, fakat `hidden` bundle’a bu map’i gösteren yorum eklemez. Bu, map’e erişimi gizlemez: `.map` dosyalarını herkese açık hosta kopyalarsan URL’sini bilen herkes indirebilir. Hata izleme servisine yükleyeceksen yayın klasöründen ayrı tut.
 
-Build çıktısında beklediğin yolu görmek için HTML’i ve asset isteklerini birlikte incele. HTML doğru öneki taşısa da host eski `index.html` dosyasını cache’ten sunabilir. Böyle bir durumda JS dosyaları yeni hash’li adla oluşur ama eski HTML artık var olmayan dosyayı ister. HTML için kısa cache, hash’li statik dosyalar için uzun cache süresi bu ayrımı korur.
+## Son build’i yerelde kontrol et
 
-`build.sourcemap: 'hidden'` ayrı bir karar verir. Source map dosyası oluşur, ancak JS çıktısına onu işaret eden yorum eklenmez. Hata izleme servisi bu map’i aynı yayın sürümüyle eşleştirerek sıkıştırılmış stack’i özgün dosya ve satıra çevirebilir. Map’i üretmek ile onu halka açık statik hosta yüklemek aynı karar değildir. Üretim dosyalarını yüklerken map erişimini ayrıca sınırlamalısın.
+`vite dev` kaynak kodunu geliştirirken işler. `vite preview` ise en son `vite build` ile üretilen `dist/` klasörünü yerelde sunar:
 
-## Preview neyi kanıtlar?
+```sh
+pnpm build
+pnpm exec vite preview
+```
 
-`vite preview`, en son üretilmiş `dist/` çıktısını yerelde sunar. Yanlış `base` ya da build anında eksik env gibi sorunlar burada ortaya çıkabilir. Ancak preview, hostun gerçek yönlendirme, cache ve CSP başlıklarını kendiliğinden taklit etmez. Bu yüzden preview’de açılan bir derin bağlantının yayında da çalışacağını varsayma.
+**Ne oldu, neden?** İlk komut dosyaları üretir; ikincisi o dosyaları açar. Kaynağı değiştirdikten sonra build’i tekrarlamazsan preview eski `dist/` içeriğini gösterir. Preview; build çıktısını, env’den gelen adresi ve asset URL’lerini kontrol etmek için yararlıdır.
 
-Preview’den önce `vite build` çalıştırman gerekir; kaynak kodu değiştirdikten sonra yeniden build etmezsen eski çıktı gösterilir. `vite dev` ise anlık kaynağı işler. İki sunucu arasındaki fark, yalnızca hız değildir: biri geliştiriciye dönüşüm sağlar, diğeri üretim dosyalarını okur.
+Preview gerçek hostun bütün ayarlarını taklit etmez. Özellikle alt yoldaki derin bağlantıların yönlendirmesi, cache başlıkları ve Content Security Policy (CSP; tarayıcının hangi kaynaklardan kod yükleyebileceğini sınırlayan başlık) hosta bağlıdır. Dolayısıyla preview’in açılması build dosyalarının doğru olduğunu gösterir; yayındaki bütün sunucu kurallarını kanıtlamaz.
 
-:::mistake[Eski API adresi kalıyor]
-Belirti → Host panelinde API adresi değiştirildiği halde Network sekmesindeki istek eski adrese gidiyor.  
-Neden → `VITE_` değeri mevcut JS üretilirken bundle’a yazıldı.  
-Düzeltme → Doğru ortam değeriyle yeniden build edip yeni `dist/` çıktısını yayınla. Çalışma anı ayarı gerçekten gerekiyorsa ayrı bir yapılandırma kaynağı tasarla.
+:::mistake[Host env değişti ama eski API adresi kaldı]
+**Belirti:** Network’te istek hâlâ staging adresine gidiyor. → **Neden:** Vite env değeri mevcut JavaScript build edilirken koda yerleşti. → **Düzeltme:** Doğru ortam değeriyle yeniden build et ve yeni `dist/` dosyalarını yayınla.
 :::
 
-:::mistake[Alt yolda CSS ve JS 404]
-Belirti → `/sergi/` HTML’i geliyor; `/assets/index-a41c.js` ve CSS istekleri 404.  
-Neden → Build, uygulamanın alan adı kökünde sunulacağını varsaydı.  
-Düzeltme → Vite `base` değerini yayın yoluna ayarla, yeniden build et ve HTML’deki URL’leri Network sekmesinde incele. Cache başlıklarının eski HTML’i tutmadığını da doğrula.
+:::mistake[Alt yolda JS ve CSS bulunamıyor]
+**Belirti:** `/sinema/` sayfası geliyor ama asset istekleri `/assets/...` adresinden 404 dönüyor. → **Neden:** Build alan adı kökünde yayınlanacakmış gibi ayarlanmış. → **Düzeltme:** `base` değerini yayın dizinine ayarla, yeniden build et ve Network’te asset URL’sini kontrol et.
 :::
 
-:::mistake[Source map herkese açıldı]
-Belirti → `assets/*.map` dosyaları doğrudan URL ile indirilebiliyor.  
-Neden → Gizli map üretildi ama aynı dosyalar statik hosta da kopyalandı. `hidden`, erişim kontrolü değildir.  
-Düzeltme → Map dosyalarını yalnızca hata izleme servisine yükle; halka açık yayın dosya kümesinden çıkar.
-:::
-
-:::sector[Sektörde]
-Bir ekip her yayına build kimliği koyar ve staging ile production için ayrı çıktı üretir. Pull request önizlemesinde en son `dist/` açılır; gerçek hostta Network sekmesinde HTML ve asset URL’leri ayrıca kontrol edilir. Böylece “yerelde çalışıyor” cümlesi, hangi build’in hangi adreste çalıştığına dönüşür.
+:::info[Derinlemesine (isteğe bağlı)]
+Vite `.env`, `.env.production` gibi dosyaları seçili moda göre okuyabilir. `import.meta.env.MODE`, `DEV` ve `PROD` da build modunu anlatır; bunları da istemci kodunda sır gibi saklama. İstek sırasında değişen runtime config gerekiyorsa uygulama açılışta ayrı bir config dosyası okuyabilir; bu derste build-time env kullanıyoruz.
 :::
 
 ## Özet
 
-- `vite build`, kaynakları `dist/` içindeki statik HTML, JS ve CSS dosyalarına dönüştürür.
-- HTML güncel hash’li asset adlarına işaret eder; içerik değişimi yeni URL oluşturur.
-- `VITE_` env değerleri build anında bundle’a girer ve kullanıcı tarafından görülebilir.
-- Alt yola yayın için `base` gerekir; `vite preview` son build çıktısını yerelde sunar.
-- `hidden` source map üretir, fakat map dosyalarının yayın erişimini ayrıca yönetmen gerekir.
+- `vite build`, kaynaklardan `dist/` içindeki HTML, JavaScript, CSS ve public dosyalarını üretir.
+- Hash’li dosya adı değişen içeriği yeni URL ile ayırır; HTML güncel ada işaret eder.
+- `VITE_` değerleri build sırasında istemci koduna yerleşir ve gizli bilgi sayılmaz.
+- Alt dizin yayını için `base` ayarlanır; elle yazılan mutlak URL’leri ayrıca düzelt.
+- `vite preview` son build’i açar; gerçek host kurallarını tümüyle sınamaz.
 
-**Kendini yokla:** Host env’i değiştiği halde API adresi neden aynı kaldı?  
-*Cevap:* Tarayıcı eski build’in JS dosyasını indiriyor; env o dosya üretilirken çözülmüştü.
+**Yeni terimler**
 
-**Kendini yokla:** `/sergi/` altında HTML geliyor ama JS 404 ise ilk nerede bakarsın?  
-*Cevap:* Network’te JS URL’sine ve build’in `base` ayarına bakarım; URL’nin `/sergi/assets/...` ile başlaması gerekir.
+- **Build:** Kaynak koddan tarayıcıya hazır üretim dosyaları çıkarma işlemi.
+- **Asset:** Sayfanın kullandığı JavaScript, CSS, görsel gibi dosya.
+- **Hash:** Dosya içeriğini temsil edip asset URL’sini sürümleyen kısa kimlik.
+- **Build-time env:** Build sırasında istemci koduna yerleşen ortam ayarı.
+- **Base path:** Üretilen asset URL’lerinin başladığı yayın dizini.
+- **Source map:** Sıkıştırılmış JavaScript’i özgün dosya ve satırla eşleştiren dosya.
+- **Preview:** Son `dist/` build’ini yerelde sunma biçimi.
+
+**Kendini yokla:** Hostta `VITE_API_URL` değişti, fakat yeni build alınmadı. Tarayıcı hangi adresi kullanır?  
+*Cevap:* Eski build sırasında JavaScript’e yerleşen adresi.
+
+**Kendini yokla:** Sinema `/sinema/` altında açılıyor ama JS `/assets/...` yolunda 404. İlk hangi ayarı incelersin?  
+*Cevap:* Vite config’indeki `base` değerini; build `/sinema/` önekini üretmeli.

@@ -2,23 +2,32 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'Router 8 importları',
+  title: 'Hangi ekran açılır?',
   difficulty: 'kolay',
   concepts: ['router.setup', 'js.modules'],
-  question: 'Data mode kurulumunda doğru import çifti hangisi?',
+  question: `Bu route ağacıyla \`/search\` adresi açıldığında ne olur?
+
+\`\`\`tsx
+const routes = [
+  { path: '/', element: <h1>Sinema</h1> },
+  { path: '/search', element: <h1>Film ara</h1> },
+]
+\`\`\``,
   options: [
     {
-      text: '`createBrowserRouter` → `react-router`, `RouterProvider` → `react-router/dom`.',
+      text: '`Film ara` başlığı gösterilir.',
       correct: true,
-      explanation: 'Doğru. RouterProvider DOM girişinden, rota API’si ana paketten gelir.',
+      explanation: 'Adres `/search` ile ikinci route eşleşir; onun element’i ekrana gelir.',
     },
     {
-      text: 'İkisi de `react-router-dom` paketinden.',
-      explanation: 'React Router 8 bu aynalama paketini kaldırdı.',
+      text: '`Sinema` başlığı gösterilir; ilk route her zaman seçilir.',
+      explanation:
+        'Router route dizisinin ilk elemanını sabit seçmez; geçerli adresle eşleşeni bulur.',
     },
     {
-      text: '`createBrowserRouter` → `react-router/dom`, `RouterProvider` → `react`.',
-      explanation: '`react` router sağlamaz; DOM sağlayıcı ayrı giriştedir.',
+      text: 'İki başlık da gösterilir; her `path` eşleşmesi birlikte render edilir.',
+      explanation:
+        'Birbirinin kardeşi olan bu iki route aynı anda eşleşmez; `/search` ikinci içeriği seçer.',
     },
   ],
 })

@@ -14,14 +14,16 @@ export default defineQuestion({
       explanation: 'Görsel mesajın yanında programatik ilişki de kurulur.',
     },
     {
-      text: 'Sadece kırmızı kenarlık.',
+      text: 'Input’ta `aria-invalid`, fakat hata metnine bağlantı yok.',
       correct: false,
-      explanation: 'Renk tek başına anlamı aktaramaz.',
+      explanation:
+        '`aria-invalid` durumu söyler ama hangi düzeltmenin gerektiğini anlatan metni input’a bağlamaz.',
     },
     {
-      text: 'Sadece placeholder.',
+      text: 'Hata metnini input’un `aria-describedby` değerinde olmayan bir id ile göstermek.',
       correct: false,
-      explanation: 'Placeholder kalıcı label değildir.',
+      explanation:
+        'Id değerleri eşleşmezse input ile açıklama arasında programatik ilişki kurulmaz.',
     },
     {
       text: 'Hata metnini DOM’un herhangi bir yerine yazmak.',

@@ -1,44 +1,37 @@
 ---
-title: "Paylaşılabilir URL'leri pekiştir"
+title: "URL ile arama akışını pekiştir"
 minutes: 7
 kind: practice
 ---
 
-# Paylaşılabilir URL'leri pekiştir
+# URL ile arama akışını pekiştir
 
-:::pain[Problem]
-`/search?q=Matrix&page=3&genre=28` linkini paylaşıyorsun. Arkadaşın aynı adresi açınca başka bir sayfa veya boş liste görürse URL'yi kaynak saymak işe yaramaz.
-:::
-
-Bu bölümde path ve search parametrelerini, statik film verisini ve route bileşenlerini bir arada kullanacaksın. Önce filtre ve sayfalama sırasını düşün: önce listeyi daralt, sonra mevcut sayfaya ait öğeleri seç. Filtre değiştiğinde eski sayfa numarası artık anlamını yitirebilir; sayfa ileri/geri giderken diğer seçimler korunmalıdır.
+Bu pekiştirmede aynı Sinema aramasını üç yerde kullanacaksın: statik listeyi seçerken, ekranda filtreleri gösterirken ve route davranışını sınarken. Her açılışta URL aynıysa görünüm de aynı olmalı; geri tuşu da önceki seçimi geri getirmeli.
 
 :::model[URL state]
-URL route'u ve görünüm seçimlerini taşır; ekran bu değerlerden yeniden kurulur. Bu tekrar merdiveninde yenilik, tek bir parametre okumak değil, sorgu, tür, sayfa ve listeden bulunamayan id gibi birden fazla sınırı birlikte yönetmektir. Bozuk veya eksik URL değeri kullanıcı girdisidir; varsayılan davranışını açıkça seç.
+Paylaşılacak veya geri tuşuyla geri gelmesi gereken seçimleri URL'den oku. Filtrelenmiş listeyi ayrıca state'e kopyalama: filmler ve geçerli URL değerleri ekranda hangi sonuçların görüneceğini zaten belirler.
 :::
 
-## Çalışma sırası
+## Üç işi sırayla ele al
 
-1. Her URL parçasının ne anlattığını ayır: path hangi sayfayı, query string hangi görünüm seçimini anlatıyor?
-2. Metin gelen değerleri sayıya çevirmeden önce eksik, bozuk, ondalıklı ve aralık dışı durumları düşün.
-3. Arama ve tür filtrelerini uygula; toplam kayıt sayısı yerine filtrelenmiş listenin sayfalarını hesapla.
-4. URL'de olmayan değeri varsayılanla göster ve bir filtre değiştiğinde ilişkili sayfayı sıfırla.
-5. Birden fazla adresten açılış ve kullanıcı gezinmesini düşün: ekran hem doğrudan URL ile hem link üzerinden aynı seçimi kurmalı.
+Önce gelen değerleri yorumla: sorgu metni, tür ve sayfa URL'den gelir; sayfa değeri kullanılamazsa güvenli başlangıca dön. Sonra arama ve tür koşullarına uyan listeyi bul, en son o listenin istenen bölümünü göster. Sayfalama filtreden önce yapılırsa, filtrelenmiş listenin doğru öğeleri sayfaya düşmeyebilir.
 
-Pekiştirme soruları artan bütünlük ister. Küçük saf dönüşümde parametre metnini güvenli sayıya çevir; ardından kontrolleri olan bir bileşende URL güncellemelerini koru; son olarak statik liste, arama ve sayfa seçimlerini bir ekranda birleştir. Son soruda kendi testini yazarken bir kullanıcı yolunu baştan sona düşün: başlangıç adresi, görünen içerik, eylem, yeni adres ve sınır değeri.
+Ekrandaki input ve select de aynı seçimleri göstermeli. Bir filtre değiştiğinde artık geçersiz olabilecek sayfa numarasını sıfırla; diğer filtreyi koru. Sonraki sayfaya geçerken ise filtreleri değiştirmeden yalnızca sayfa seçimini ilerlet.
 
-`createMemoryRouter` tarayıcı penceresine ihtiyaç duymadan gerçek route ve URL davranışını bellekte açar. `RouterProvider` aynı uygulama bağlamını kurar; `userEvent` kullanıcı eylemini taklit eder. Bir testte hem adresi hem ekrandaki başlığı doğrulamak, yalnızca `page` değerini test etmekten daha anlamlı bir sözleşme verir. Bozuk URL ile başlatmak da bileşenin doğrudan açılışa dayanıklı olup olmadığını gösterir.
-
-:::sector
-Arama ekranları destek kaydı, analitik bağlantısı ve paylaşılan filtreler için tekrarlanabilir olmalıdır. Ekipler URL şemasının davranışını test ederek geri/ileri gezinme ve kullanıcı tarafından elle yazılan adreslerin aynı sonuçları ürettiğinden emin olur.
-:::
+Son adımda route'u bellekte açıp kullanıcı etkileşimini taklit ederek hem adresi hem görünen başlığı kontrol et. Böylece yalnızca bir fonksiyonun değerini değil, kullanıcının gördüğü URL → ekran akışını da doğrularsın.
 
 ## Özet
 
-- Filtrelemeden sonra sayfala; toplam listeyi erkenden kesme.
-- Query parametrelerini birbirini silmeden güncelle ve bağlı sayfa numarasını sıfırla.
-- URL metinlerini doğrula, güvenli varsayılan kullan.
-- Route testinde adres, görünür sonuç ve eylem sonrası değişimi beraber düşün.
+- URL'den gelen metni sayı gibi kullanmadan önce doğrula; geçersiz sayfada anlaşılır bir varsayılan seç.
+- Önce filtrele, sonra sayfala; ekrandaki listeyi URL ve filmlerden türet.
+- Parametre güncellerken ilgisiz filtreleri koru; yeni filtre eski sayfa konumunu geçersiz kılabilir.
+- Route davranışını hem URL hem görünür içerik üzerinden düşün.
 
-**Kendini yokla:** Tür filtresi aynı kalırken sorgu değişince sayfa neden başa döner?
+**Terimler**
 
-*Cevap:* Yeni filtrelenmiş listenin önceki sayfa indeksinde içerik olmayabilir.
+- **Query string:** URL'deki `?` sonrasında arama ve görünüm seçimlerini taşıyan bölüm.
+- **Türetilmiş liste:** Asıl film verisiyle filtre seçimlerinden hesaplanan, ayrıca saklanması gerekmeyen liste.
+
+**Kendini yokla:** Tür aynı kalırken arama değiştiğinde sayfa numarası neden başa döner?
+
+**Cevap:** Yeni arama başka sayıda sonuç verebilir; eski sayfa numarası artık boş veya yanlış bir bölümü gösterebilir.

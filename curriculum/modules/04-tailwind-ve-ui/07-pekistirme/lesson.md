@@ -6,44 +6,31 @@ kind: practice
 
 # Kart parçalarını birleştir
 
-:::pain[Her sayfa kendi kartını çiziyor]
-Arama sonuçları ve kaydedilen filmler aynı puan etiketini farklı renk ve boşluklarla gösteriyor. Yükleme sırasında kart boyu da değiştiği için poster listesi aşağı yukarı sıçrıyor.
+Bu kısa tekrar, aynı film arayüzünde iki şeyi buluşturuyor: içerik alan kart parçaları ve doğal HTML davranışını koruyan küçük bileşenler. `Badge` ile `Card` içeriğini çağıran yerden alır; `Skeleton` yükleme sırasında yer tutar, `Input` ise arama değerini çağırandan alır.
+
+:::model[Composition]
+`children`, değişebilen içeriği sabit bir çerçevenin içine çağıran yerden taşır. Burada puanı `Card` içine koyarsın; kartın kendisi filmin içeriğini seçmez.
 :::
 
-## Küçük parçalarla ortak görünüm
-
-Bir UI parçası tek bir sorumluluğu üstlenir: `Badge` kısa puan veya tür bilgisini taşır, `Card` içeriği çerçeveler, `Skeleton` yüklenirken yaklaşık alanı tutar, `Input` kullanıcı girdisini alır. Her parçanın doğal HTML öğesi ve props'ları, farklı kullanım yerlerine uyum sağlar.
-
-Bu alıştırmalarda composition, native props ve class override kararlarını farklı içeriklerde birleştir. Çocuk içeriğini component dışında bırak; kartın içinde başlık, `Badge` ve eylem olabilir. Input'un label'ı kullanım yerine aittir çünkü aynı primitive farklı formlarda kullanılır.
-
-:::model[UI primitive görünümü paylaşır, state'i sahiplenmez]
-Doğal öğenin props'larını aktar, className override'ını ortak class birleştiricisinden geçir, görsel Skeleton'ı erişilebilirlik ağacından gizle. Arama değeri veya favori state'i gibi ürün verisini primitive içine taşıma.
+:::model[Props aşağı, olaylar yukarı]
+`ComponentProps` doğal HTML öğesinin props tipini bileşene taşımayı sağlar. Böylece `data-*`, `aria-*` ve event props'larını tek tek yeniden tanımlamazsın. `Input` controlled kalır: değeri prop olarak alır, yazma olayını yukarıya iletir.
 :::
 
-## Çalışma sırası
+Çalışırken önce kart, sonra yükleme alanı ve arama alanı üzerinde ayrı ayrı ilerle. Her parçanın hangi HTML öğesi olduğunu ve hangi props'ları doğal olarak taşıması gerektiğini düşün. Skeleton yalnızca görsel bir yer tutucuysa erişilebilirlik ağacından gizlenir; yükleniyor bilgisini çevresindeki arayüz verir. Input'un erişilebilir adını da kullanım yeri belirler.
 
-Önce bir `article` tabanlı kart içinde başlık ve puanı composition ile yerleştir. Sonra temel class'ların yanına dışarıdan gelen `className` değerini ekleyip padding'in değiştiğini gözle. Skeleton için `aria-hidden="true"` ve ölçüyü koruyan class'lar kullan. Input'a erişilebilir adını çevredeki label veya `aria-label` ile ver.
-
-İkinci görevde yükleme yer tutucusunu arama alanıyla yan yana düşün. Görsel öğe ve etkileşimli öğenin props ihtiyaçları farklıdır; ikisini aynı HTML tag'ine zorlamak yerine kendi native element props tiplerini kullan. Input `value` ve `onChange` ile controlled kalır; primitive state saklamaz.
-
-### İlerlerken kendine sor
-
-- Dışarıdan gelen `p-8` temel `p-4` class'ını gerçekten değiştirebiliyor mu?
-- İçeriği component içine sabitlemek yerine `children` ile vermek neden tekrar kullanımı kolaylaştırıyor?
-- Skeleton'ın kendisi mi yükleniyor bilgisini vermeli, yoksa çevresindeki arayüz mü?
-
-Her cevabı kod üzerinde doğrula. Bir primitive farklı içerikle çalışıyor ve native `data-*`, `aria-*`, event props'larını koruyorsa arayüzü esnek kalır. Yükleme state'i, arama metni ve kart seçimi ürün bileşeninde veya üst state sahibinde durmalıdır.
-
-:::sector
-Ürün ekipleri UI primitive'lerini farklı sayfalarda aynı HTML ve görünüm sözleşmesini korumak için kullanır. Paylaşılan bileşen çok genel hale gelirse tasarım kararları props yığınına dönüşür; ortak kalan kısımları çıkar, içerik ve state'i kullanım yerinde bırak.
-:::
+`cn` temel class'larla dışarıdan gelen `className` değerini birleştirip bilinen Tailwind çakışmalarını çözer. Dış class son girdiyse aynı utility kararını değiştirebilir; düz string birleştirme bunu garanti etmez. Class listesinde iki çakışan padding utility'sinin kalıp kalmadığına bak, ardından Input'a yazıp callback'in değişikliği üst bileşene ilettiğini doğrula.
 
 ## Özet
 
-- `Card`, `Badge`, `Skeleton` ve `Input` ayrı sorumlulukları olan primitive'lerdir.
-- `children` içerik bileşimini kullanım yerine bırakır.
-- Native props ve `className` primitive'in gerçek HTML davranışını korur.
-- Görsel Skeleton yükleme alanını tutar; yükleme mesajını çevreleyen arayüz verir.
-- Controlled Input değeri kendi içinde saklamaz.
+- `children` değişken içeriği kart çerçevesine yerleştirir.
+- Doğal HTML props'ları bileşenin `data-*`, `aria-*` ve event davranışını korur.
+- `cn` bilinen class çakışmalarını çözer; dış class override edebilir.
+- Skeleton görsel yer tutucudur; Input'un değeri kullanım yerinde tutulur.
 
-**Kendini yokla:** UI primitive'i arama değerini kendi state'inde tutmalı mı? Hayır, kullanım yeri controlled props verir.
+**Terimler:**
+
+- **Native props:** Bir HTML öğesinin kendi props'ları; örneğin button için `disabled` ve `onClick`.
+- **Controlled Input:** Değeri üst bileşenden gelen ve değişikliği callback ile bildiren input.
+- **Override:** Dışarıdan gelen bir değerin temel görünüm kararını değiştirmesi.
+
+**Kendini yokla:** Skeleton yükleme mesajını da vermeli mi? Hayır; dekoratif yer tutucuyu gizle, durumu çevreleyen arayüz anlatsın.

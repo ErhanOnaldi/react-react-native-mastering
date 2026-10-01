@@ -8,17 +8,19 @@ export default defineQuestion({
   question: 'useParams kullanan MovieDetailsPage tek başına render edilince neden sorun yaşar?',
   options: [
     {
-      text: 'Route eşleşmesi için RouterProvider ile bir router gerekir',
+      text: 'Router bağlamı verilmediği için hook route parametresini okuyamaz',
       correct: true,
-      explanation: 'createMemoryRouter test URL’sini eşleşen route’a bağlar.',
+      explanation: 'Testte createMemoryRouter ve RouterProvider ile adresi route’a bağlarsın.',
     },
     {
-      text: 'getByRole sadece BrowserRouter içinde çalışır',
-      explanation: 'RTL sorguları DOM üzerinde çalışır; sorun useParams bağlamıdır.',
+      text: 'RTL render otomatik olarak BrowserRouter kurar, ama başlangıç URL’i eksik kalır',
+      explanation:
+        'RTL render component’i DOM’a koyar; uygulama provider’larını ve router’ı kendiliğinden eklemez.',
     },
     {
-      text: 'MSW RouterProvider yerine geçer',
-      explanation: 'MSW ağ cevaplarını yönetir; route bağlamı oluşturmaz.',
+      text: 'useParams yalnızca BrowserRouter altında çalışır; memory router bunu desteklemez',
+      explanation:
+        'Memory router test için geçerli bir Router bağlamı sağlar ve route parametrelerini aktarır.',
     },
   ],
 })

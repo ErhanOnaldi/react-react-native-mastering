@@ -1,4 +1,3 @@
-import { useForm } from 'react-hook-form'
 type Watchlist = {
   id: string
   createdAt: string
@@ -8,7 +7,6 @@ type Watchlist = {
 }
 export type Values = Omit<Watchlist, 'id' | 'createdAt'>
 export function VisibilityForm({ onSave }: { onSave: (values: Values) => void }) {
-  useForm<Values>()
   return (
     <form>
       <label htmlFor="name">Liste adı</label>

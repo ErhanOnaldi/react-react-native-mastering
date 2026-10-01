@@ -5,25 +5,32 @@ export default defineQuestion({
   title: 'Hangi araç hangi işi yapar?',
   difficulty: 'kolay',
   concepts: ['tooling.prettier', 'tooling.eslint', 'react.useEffect.deps'],
-  question:
-    'PR’da bir dosyanın tırnakları farklı, başka dosyada `useEffect` bağımlılığı eksik. Doğru araç eşlemesi hangisi?',
+  question: `Sinema'da Prettier ayarlarında \`singleQuote: true\` ve \`semi: false\` var. Şu dosyada \`format --write\` çalıştırılırsa ne değişir?
+
+\`\`\`ts
+const title = "Dövüş Kulübü";
+export const heading = title;
+\`\`\``,
   options: [
     {
-      text: 'Prettier tırnakları eşitler; ESLint Hook bağımlılığını işaretler.',
+      text: 'Tırnak tek tırnağa döner ve noktalı virgül kalkar; değişken adları ve değer aynı kalır.',
       correct: true,
-      explanation: 'Biçim ve kod kuralı ayrı işlerdir.',
+      explanation: 'Bu seçenekler görünüşü değiştirir; `format --write` dosyaya bu biçimi yazar.',
     },
     {
-      text: 'Prettier her iki sorunu da düzeltir.',
-      explanation: 'Prettier effect’in davranışını analiz etmez.',
+      text: 'Prettier `heading` değerini `Dövüş Kulübü` metniyle değiştirir.',
+      explanation:
+        'Formatter değişkenleri çözüp yerine değer yazmaz; yalnızca kod biçimini düzenler.',
     },
     {
-      text: 'ESLint tırnakları otomatik biçimler; Prettier `id` bağımlılığını bulur.',
-      explanation: 'Roller ters: burada Prettier biçim, ESLint Hook kuralı için kullanılır.',
+      text: 'Prettier yalnızca terminalde yeni bir biçim önerir; dosyayı değiştirmez.',
+      explanation:
+        '`--write` dosyayı değiştirir; dosyaya dokunmayan kontrol seçeneği `--check`tir.',
     },
     {
-      text: 'TypeScript iki sorunu da `tsc -b` ile çözer.',
-      explanation: 'Tip kontrolü biçim tercihlerini ve effect bağımlılığını çözmez.',
+      text: 'Prettier noktalı virgülü korur; `semi: false` TypeScript derleyicisine yöneliktir.',
+      explanation:
+        '`semi` Prettier biçim tercihidir; `false` satır sonundaki noktalı virgülün yazılmamasını seçer.',
     },
   ],
   explanation: '',

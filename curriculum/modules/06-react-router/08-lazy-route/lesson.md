@@ -1,128 +1,129 @@
 ---
 title: "İhtiyaç anında rota yükleme"
-minutes: 13
+minutes: 12
 kind: concept
 ---
 
 # İhtiyaç anında rota yükleme
 
-:::pain[Problem]
-Sinema ilk açıldığında kullanıcı yalnızca ana sayfaya bakıyor. Büyük istatistik panelinin JavaScript'i de başlangıç paketine girmiş; ilk ekran görünmeden önce gereksiz kod indiriliyor. Seyrek kullanılan route'u gerçekten gerekince yüklemek istiyorsun.
-:::
+Sinema açıldığında çoğu kişi önce ana ekrana bakıyor; bazı kişiler ancak daha sonra listelerini ya da istatistiklerini açıyor. Şu an her route bileşenini baştan normal `import` edersek başlangıçta hepsinin koduna ihtiyaç duyabiliriz. **Lazy route**, route açılana kadar onun bileşen kodunu bekleten React Router özelliğidir; kullanıcı henüz açmadığı ekranın kodunu başta indirmeyebilir.
 
-## Route sınırı kodu bölmeye yarayabilir
+## Başlangıçta yüklenen ekran
 
-Uygulama modülleri normal `import` ile birbirine bağlandığında build aracı bu bağımlılıkları başlangıçta indirilen JavaScript'e koyabilir. Code splitting, bazı modülleri ayrı parçalara ayırır. Lazy route bu parçayı route gerektiğinde yükletir: kullanıcı Favoriler ekranına gitmiyorsa o ekranın kodunu başlangıçta indirmeyebilir.
-
-![Başlangıç ekranı kodu ile ilk route ziyaretinde indirilen ek modül](diagrams/lazy-route-yuklemesi.svg)
-
-1. **Router eşleşme için gerekli bilgiyi önceden bilmelidir.** `path`, `index` ve `children` route ağacında kalır; router hangi URL'nin o route'a gittiğini modül yüklenmeden çözebilmelidir.
-2. **`lazy` ek route alanlarını sonradan getirir.** Route eşleştiğinde import fonksiyonu çalışır, modül yüklenir ve export ettiği `Component`, `loader` veya başka desteklenen route özellikleri çözülür.
-3. **Modül sözleşmesi route alanlarının adını kullanır.** Lazy modülde `Component` named export'u route component'ini sağlar. Sadece `default` export etmek, Router'ın bu route alanını bulduğu anlamına gelmez.
-4. **İlk ziyaret ek ağ gecikmesi getirebilir.** Ayrı chunk'ın alınması için ek istek gerekir. Kullanıcı bu rotaya hızlı geçerse gecikmeyi hissedebilir; uygulama ölçümü bu maliyetin paketteki kazançtan küçük olup olmadığını göstermelidir.
-5. **Her ekranı bölmek otomatik performans kazanımı değildir.** Çok küçük parçalar çok sayıda istek ve daha karmaşık yükleme deneyimi yaratabilir. Büyük veya seyrek açılan route daha iyi adaydır.
-
-Code splitting veri önbelleği değildir. Lazy import JavaScript modülünü indirir; film listesini sunucudan çekmez veya sonuçları cache'lemez. Route modülünde loader olabilir, ama bu iki işin sahibi ve yaşam döngüsü farklıdır. Bu derste yalnızca route kodunun ne zaman yükleneceğine bakıyoruz.
-
-## `default` export neden yetmiyor?
-
-Dinamik import çoğu JavaScript modülünü `{ default: ... }` nesnesi olarak döndürebilir. Fakat data route `lazy` sözleşmesi, modülün içindeki route alanlarını isimleriyle çözümleyip mevcut route'a ekler. Bu nedenle bir React bileşeninin default export edilmesi tek başına Router'ın `Component` alanını vermez.
-
-```tsx
-// favorites.tsx
-export default function Favorites() {
-  return <h1>Favoriler</h1>
-}
-```
-
-Route bunu yüklediğinde beklenen named alan yoktur. Bir de `path` değerini yalnız lazy modüle taşırsan Router henüz `/favorites` adresini hangi route'la eşleştireceğini bilemez. Eşleşme anahtarı ve yüklenecek implementasyon ayrı tutulur:
+Bir route bileşenini dosyanın başında normal `import` etmek, o modülü uygulamanın kod bağımlılıklarına ekler:
 
 ```tsx title="src/router.tsx"
-const statsRouter = createBrowserRouter([
-  { path: '/', element: <h1>Kitaplık</h1> },
-  {
-    path: '/statistics',
-    lazy: async () => {
-      const module = await import('./statistics-route')
-      return { Component: module.StatisticsScreen }
-    },
-  },
-])
+import { HighlightsPage } from './highlights-page'
+
+const routes = [
+  { path: '/', element: <h1>Sinema</h1> },
+  { path: '/highlights', element: <HighlightsPage /> },
+]
 ```
 
-```tsx title="src/statistics-route.tsx"
-export function StatisticsScreen() {
-  return <h1>Okuma istatistikleri</h1>
+Bu yapı küçük uygulamalar için gayet uygundur ve okumak kolaydır. Ancak başlangıç ekranı için `HighlightsPage` gerekmese de onun kodu uygulamayla birlikte alınabilir. Başlangıçta indirilen kod grubuna **bundle** denir; build aracı bu kodu bir veya birkaç dosyaya yazar.
+
+## Yalnız route seçilince yükle
+
+Build aracına kodu ayrı bir dosyaya ayırmasını söylemeye **code splitting** denir. Ayrılan JavaScript parçasına **chunk** denir. `import()` ifadesi, modülü hemen değil çağrıldığında indiren **dynamic import**'tır.
+
+`lazy` route'la `path` route haritasında durur, bileşen kodu ise o route gerektiğinde gelir:
+
+```tsx title="src/router.tsx"
+const routes = [
+  { path: '/', element: <h1>Sinema</h1> },
+  {
+    path: '/highlights',
+    lazy: async () => {
+      const page = await import('./highlights-route')
+      return { Component: page.HighlightsScreen }
+    },
+  },
+]
+```
+
+Router `/highlights` adresine gitmeden önce route'un `path` değerini zaten bilir. O adres eşleşince `import()` başlar; indirilen modülün `HighlightsScreen` bileşeni route'un `Component` alanına bağlanır. Böylece ilk ana sayfa için bu route bileşenini indirmemiz gerekmez.
+
+![Başlangıç ekranı kodu ile ilk route ziyaretinde indirilen ek modül](diagrams/lazy-route-yuklemesi.svg "Öne çıkanlar ekranının kodu ilk ziyarette indirilir.")
+
+Yüklenen modül, Router'ın beklediği bileşeni dışa aktarmalıdır:
+
+```tsx title="src/highlights-route.tsx"
+export function HighlightsScreen() {
+  return <main><h1>Öne çıkan filmler</h1><p>Bu haftanın seçkisi.</p></main>
 }
 ```
 
-Burada `path` baştan bilinir. Router `/statistics` ile eşleşince `import('./statistics-route')` çalıştırır ve callback modülün `StatisticsScreen` export'unu route'un `Component` alanına bağlar. Gerçek projede modül bu alanı named export olarak da sunabilir; bu örnekte alias'ı router tanımında görünür tuttuk. Başka desteklenen route export'larını da aynı modülden döndürebilirsin. Route'un eşleşme ağacını geç yüklenen modülden üretmeye çalışma.
+Buradaki `export function` bir **named export**'tur: modül dışarıya `HighlightsScreen` adıyla bileşen sunar. `lazy` callback'inde aynı adı kullanıp `Component` alanını döndürüyoruz. Dosyada yalnız `export default` yazarsak `page.HighlightsScreen` bulunmaz; dinamik import başarılı olsa bile route'a bileşen vermemiş oluruz.
 
-## İlk ve ikinci ziyareti izleyelim
+## İlk ve sonraki ziyareti izleyelim
 
-Kullanıcı `/` adresinde uygulamayı açar. Ana bundle router tanımını, layout'u ve ana içeriği getirir. `statistics-route` henüz import edilmez. Kullanıcı İstatistikler linkine tıklayınca adres `/statistics` olur; Router route'u eşleştirir, lazy import başlar, tarayıcı ayrı chunk'ı indirir ve modül değerlendirildikten sonra `Component` render edilir.
+Şimdi aynı route'a önce ana sayfadan, sonra bağlantıyla gittiğini düşün. Kodun ne zaman geldiği önemlidir: ilk adımda ana ekran açılır; ikinci adımda route'un ayrı parçası istenir; indirme bitince route bileşeni görünür.
 
-| An | Router'ın bildiği bilgi | Kod yükleme |
+| Sıra | Olan biten | Görünen / indirilen |
 | --- | --- | --- |
-| İlk `/` açılışı | `/` ve `/statistics` route path'leri | Ana ekran chunk'ı yüklenir |
-| İstatistikler seçildi | `/statistics` eşleşmesi | Route chunk'ı istenir |
-| Import tamamlandı | `Component` route alanı hazır | İstatistik ekranı render edilir |
-| Sonraki ziyaret | Aynı route ağacı | Tarayıcı/runtime modülü genellikle yeniden kullanır |
+| 1 | Sinema `/` adresinde açılır | Ana ekran görünür, öne çıkanlar route'u gerekmez. |
+| 2 | Kullanıcı `/highlights` bağlantısını seçer | Router hazır `path` ile route'u eşleştirir. |
+| 3 | `lazy` callback'i çalışır | `highlights-route` chunk'ı istenir. |
+| 4 | Modül geldikten sonra `Component` hazır olur | Öne çıkan filmler sayfası görünür. |
+| 5 | Kullanıcı yeniden bu route'a döner | Çalışma zamanı genellikle indirilmiş modülü tekrar kullanır. |
 
-İlk ziyaretin beklemesi kullanıcı deneyiminin parçasıdır. Route'a yükleme geri bildirimi vermek gerekebilir; data router'ın pending state araçları bunun için vardır, ama küçük bir uygulamada her route için özel animasyon kurmak şart değildir. Modül büyüklüğü ve ziyaret sıklığına bakarak karar ver.
+Demek ki `lazy` ilk açılışta gereken kodu azaltabilir, ama ilk ziyarette bekleme ekleyebilir. Her küçük ekranı ayrı chunk'a çevirmek otomatik hız kazandırmaz: ekstra indirme sayısı da vardır. Büyük veya daha seyrek kullanılan bir route daha iyi aday olabilir.
 
-Bu yükleme, React component kimliğini rastgele değiştirmez. Modül yüklenince Router'ın `Component` olarak render ettiği bileşen kendi route konumunda görünür. Sibling route'a geçişte parent layout eşleşmede kaldığı sürece ortak layout state'i korunabilir; lazy yükleme yalnız child implementasyonunun ne zaman indirildiğini değiştirir. URL hâlâ route seçiminin kaynağıdır.
+Karar verirken iki soruyu birlikte sor: Bu ekran başlangıçta ne kadar kod ekliyor, kullanıcıların ne kadarı ilk anda bu ekrana gidiyor? Örneğin büyük görsel galerisi içeren bir film koleksiyonu ayrı route ise ve kullanıcıların çoğu önce ana sayfada kalıyorsa ertelemek işe yarayabilir. Küçük bir “Hakkında” ekranıysa ayrılan kod çok az olabilir; ilk tıklamadaki ek indirme, başlangıçtaki kazançtan daha belirgin hissedilebilir.
 
-## Sınır ve maliyet hesabı
+Bu yaklaşım toplam JavaScript miktarını kendiliğinden küçültmez. Kullanıcı ayrı route'a gittiğinde onun kodu yine indirilir; fark, bu işin ilk açılışta mı yoksa o route gerektiğinde mi yapıldığıdır. Kod parçalarını gereğinden ufak bölmek de bağlantı başına istek ve bekleme ekler. O yüzden `lazy` her dosyaya eklenecek bir işaret değil, başlangıçta gereken kodu ertelemek için verilen bir karardır.
 
-Entry modülünü route ağacında `lazy` olarak yüklemeye çalışma; router yaratılıp ilk adres eşleştirilirken gerekli tanım hazır olmalıdır. Çok sık kullanılan küçük bir ekranı ayırmak da ilk gezinmede ek ağ maliyetine değmeyebilir. Paylaşılan büyük bir kütüphane birkaç route chunk'ında tekrar paketlenebilir; build aracı ortak chunk çıkarabilir ama ölçüm gerekir.
+## Route haritasıyla modülün işi ayrı
 
-## Hangi ekranı bölmek mantıklı?
+Şu örnekte `/reports` adresini bileşen modülünün içine saklamadık:
 
-Bir adayın başlangıç paketine ne kattığını ve ne sıklıkla açıldığını ölç. Büyük bir grafik kütüphanesi kullanan rapor route'u açılışta kullanıcıların çoğunun ziyaret etmediği bir bölüm olabilir. Ayarlar ekranı ise çok küçük ve neredeyse her oturumda ilk dakikada açılıyorsa ayırmanın getirisi az olabilir. Bundle analyzer ilk transferi, gerçek kullanıcı ölçümü de ekranın ne zaman ve ne kadar kullanıldığını anlamaya yardım eder.
+```tsx
+const routes = [
+  { path: '/', element: <h1>Sinema</h1> },
+  {
+    path: '/reports',
+    lazy: () => import('./reports-route'),
+  },
+]
+```
 
-Code splitting toplam kod miktarını azaltmak zorunda değildir. Aynı uygulama modülleri yine indirilebilir; yalnızca hangi zamanda ve hangi chunk'ta geldikleri değişir. Ana ekranın ilk transferi küçülür, ama route ziyaretinde yeni istek ve modül değerlendirme işi eklenir. Cihaz yavaşsa parse/execute maliyeti de önemlidir; ağ boyutu tek ölçüt değildir.
+Router, adres `/reports` olduğunda hangi route'u seçeceğini `lazy` callback'i çalışmadan önce bilmelidir. Callback'ten dönen modül route'un `Component` gibi alanlarını sağlayabilir; route'un eşleşme desenini sonradan öğrenemez. Bu nedenle `path` route ağacında kalır, geç yüklenecek ekranın gövdesi modülde durur.
 
-Route modülünde named `Component` export'u olması React component'inin lazy yüklendiği anlamına gelir, ama `Component` bir route nesnesinin `element` alanıyla aynı yazım değildir. Modül export'u Router'ın çözümlediği route alanıdır. Bu küçük sözleşme hatası derleme ile runtime arasında fark yaratabilir: dinamik import başarılı görünür ama beklenen route alanı tanımlı değildir. Modül adlarını ve export biçimini açık tut.
-
-Lazy child yüklendiğinde parent layout normal route ağacında kalabilir. Kullanıcının açık menüsü veya Context içindeki favori seçimi parent/provider hala aynı React konumunda ise korunur; child route'un kendi yerel state'i ilk mount sırasında başlar. Kodun geç gelmesi, bu state ömrünü değiştiren bir reset mekanizması değildir. State'i koruma veya sıfırlama kararı hâlâ route kimliği ve component ağacına bağlıdır.
-
-Ertelemenin kullanıcıya görünen bir maliyeti varsa bekleme deneyimini de tasarla. Kullanıcı linke bastığında adres güncellenebilir; route chunk'ı gelirken eski child, boş alan veya bekleme mesajı görünebilir. Data mode'un navigasyon durumu bu tür beklemeyi ifade etmek için kullanılabilir. Hata durumunda modül yüklenememesi için genel route hata yüzeyinin bulunması da önemlidir. Bu modülde özellikle route modülünün normal yüklenme sözleşmesine odaklanıyoruz.
-
-Lazy route kullanımı React `lazy` ile aynı API değildir. `React.lazy` component'i Suspense ile yükler; data mode route `lazy` ise route modülünün alanlarını dinamik import ile alır. İkisi code splitting'e hizmet eder, fakat modül sözleşmeleri ve Router'la ilişkileri farklıdır. Bu modülde yalnız Router'ın route modülü mekanizmasını kullanıyoruz.
-
-:::mistake[Belirti → neden → düzeltme]
-Lazy route modülü yükleniyor ama ekran görünmüyor → dosya yalnız `default` export sunmuş veya Router'ın beklediği `Component` alanı yok → modülden `Component` named export et.
-:::
-
-:::mistake[Belirti → neden → düzeltme]
-Router lazy modüle gitmeden adresi eşleyemiyor → `path` yalnız geç yüklenen modüle konmuş → path ve child eşleşme bilgilerini route ağacında tut, implementation alanlarını lazy modüle bırak.
-:::
+Şunları da ayıralım: **lazy route JavaScript kodunu yükler; film verisini getirmez.** Bir route modülü yüklendi diye katalog isteği atılmış veya film listesi cache'lenmiş olmaz. Kod yükleme ve veri alma ayrı işlerdir.
 
 :::mistake[Belirti → neden → düzeltme]
-İlk route geçişi daha yavaş hissediliyor → kullanıcıya sık gereken ekran ayrı chunk'a alınmış ve indirme ilk ziyarete kalmış → ziyaret sıklığını ve chunk boyutunu ölç; code splitting'i büyük, seyrek route'larda kullan.
+Route geçişinde modül yüklendiği halde beklenen ekran görünmüyor → dosyanın export adı ile callback'te okunan ad farklı ya da `Component` alanı dönmemiş → named export'u ve dönen route alanını aynı adla eşleştir.
 :::
 
-:::model[URL state ve route kimliği]
-URL aynı route zincirini seçmeye devam eder; lazy loading yalnızca eşleşen route'un kodunun ne zaman indirileceğini değiştirir. Parent layout'ın kimliği sibling navigasyonda korunabilir, lazy child hazır olduğunda kendi bileşeni Outlet içinde görünür. Yeni bağlam, adres state'inden bağımsız bir performans kararıdır: kodu bölmek URL'yi veya veriyi cache'lemez.
+:::mistake[Belirti → neden → düzeltme]
+Router route'u eşleştiremiyor → `path` yalnızca geç yüklenen dosyanın içine konmuş → URL desenini route ağacında tut, yalnız ekran kodunu lazy yükle.
 :::
 
-:::sector
-Ürün ekipleri bundle analizini kullanarak büyük editör, raporlama veya yönetim ekranlarını ayrı route chunk'larına böler. Karar kullanıcı analitiği, ilk yükleme bütçesi ve navigasyonun bekleme davranışına dayanır. Code splitting küçük dosyaları çoğaltma yarışı değildir; kullanıcının başlangıçta gerçekten ihtiyaç duymadığı kodu ölçerek ertelemektir.
+:::info[Derinlemesine (isteğe bağlı)]
+İlk lazy geçişinde kullanıcı bekleyecekse uygulamanın genel navigasyon durumu bir yükleniyor geri bildirimi sunabilir. React'in `lazy` API'si de kodu sonradan yükler; ancak o API React bileşeni seviyesinde çalışır. Buradaki `lazy`, data mode route tanımının alanlarını yükler. Aynı ada sahip olmaları, iki API'nin aynı yerde kullanıldığı anlamına gelmez.
 :::
 
 ## Özet
 
-- Lazy route, eşleşme bilgisi hazırken route modülünün kodunu ilk ziyaret anına erteleyebilir.
-- `path` route ağacında kalır; lazy modül `Component` gibi implementasyon alanlarını export eder.
-- Data mode route `lazy` sözleşmesini React `lazy` ile karıştırma.
-- İlk ziyaret ek indirme gecikmesi getirebilir; büyük ve seyrek route'ları ölçerek seç.
-- JavaScript chunk'ını yüklemek, route verisini çekmek veya cache'lemek değildir.
+- Normal `import`, küçük ve her zaman gereken ekranlar için basit seçimdir.
+- Code splitting route kodunu ayrı chunk'a böler; React Router `lazy` bunu route gerektiğinde alabilir.
+- `path` route haritasında hazır kalır; modül `Component` gibi route alanlarını named export ile sağlayabilir.
+- Lazy route ilk yükü azaltabilir ama ilk ziyarete indirme beklemesi ekler; büyük ve seyrek route'larda düşün.
+- JavaScript kodu yüklemek, route verisini almak veya cache'lemek değildir.
 
-**Kendini yokla:** Router `path` değerini lazy modül yüklenmeden önce neden bilmelidir?
+**Yeni terimler**
 
-*Cevap:* Geçerli URL'nin hangi route'a eşleştiğini modül import edilmeden çözmesi gerekir.
+- **Bundle:** Build aracının uygulama için ürettiği JavaScript kod grubu.
+- **Code splitting:** Kod grubunu ihtiyaç anında yüklenebilecek ayrı parçalara ayırma.
+- **Chunk:** Code splitting sonrası oluşan indirilebilir kod parçası.
+- **Dynamic import:** `import()` ile modülü çağrıldığı sırada yükleme.
+- **Named export:** Modülden adıyla alınabilen dışa aktarılan değer; burada route bileşenini Router'a verir.
 
-**Kendini yokla:** Lazy import tamamlandıktan sonra route bileşeni hangi export alanından alınır?
+**Kendini yokla:** Router `/reports` adresinin hangi route'a ait olduğunu neden lazy modül inmeden önce bilmelidir?
 
-*Cevap:* Modülün `Component` named export'undan.
+**Cevap:** Adresi eşleyip seçilecek route'u bulması gerekir; lazy modül yalnız route'un sonradan gelecek alanlarını sağlar.
+
+**Kendini yokla:** Lazy route film listesinin sunucudan da geldiğini garanti eder mi?
+
+**Cevap:** Hayır. Lazy route JavaScript modülünü yükler; veri isteği ayrı bir işlemdir.

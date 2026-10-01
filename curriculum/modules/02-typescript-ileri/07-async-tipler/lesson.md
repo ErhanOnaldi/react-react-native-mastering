@@ -1,171 +1,154 @@
 ---
-title: "Promise tipi ile ağ gerçeğini ayır"
+title: "Promise tipleri ve JSON sınırı"
 minutes: 16
 kind: concept
 ---
 
-# Promise tipi ile ağ gerçeğini ayır
+# Promise tipleri ve JSON sınırı
 
-:::pain[Problem]
-Bir detay çağrısı `Promise<Show>` dönüyor. Sunucu yanlış yetki anahtarı için `{ status_code: 7, status_message: 'Invalid key' }` yanıtlıyor. Editör hâlâ `show.title` alanını öneriyor; sayfa başlığı okumaya çalışınca uygulama hata veriyor.
-:::
+Bir film başlığını bir fonksiyondan hemen alabilirsin. Ama bir iş biraz sonra sonuç verecekse, örneğin film bilgisi hazırlanıyorsa, çağıran kodun beklemesi gerekir. JavaScript bu gelecekteki sonucu bir `Promise` (sonradan tamamlanacak işin temsilcisi) ile taşır.
 
-## Promise ne söylüyor, ne söylemiyor?
+## Sonuç şimdi değil, biraz sonra gelir
 
-`Promise<T>`, gelecekte başarıyla elde edilecek değerin tipini anlatır. `async` fonksiyonun dışarıya dönüşü her zaman Promise'tir; fonksiyonun içinde doğrudan `T` döndürsen bile çağıran `Promise<T>` alır. `await` başarılı sonucu bekleyip `T` değerine erişmeni sağlar. Ret edilen Promise ise exception akışına geçer.
+`async`, bir fonksiyonun asenkron çalıştığını belirtir: fonksiyon doğrudan bir değer döndürse bile çağıran bir `Promise` alır. `Promise<T>` içindeki `T`, iş başarılı olduğunda gelecek değerin tipidir.
 
-Bu tip, işlemin hangi zamanda biteceğini veya dış servisin gerçekten `T` biçiminde cevap vereceğini söylemez. Önceki derste sınırdan gelen veriyi `unknown` kabul edip kontrol etmeyi öğrendin. Ağ isteğinde ikisini birlikte düşün: Promise asenkron sonucu taşır; HTTP cevabının başarılı olup olmadığı ve JSON'un şekli ayrı denetlenir.
+```ts check
+async function featuredTitle(): Promise<string> {
+  return 'Geleceğe Dönüş'
+}
+```
 
-:::model[Derleme ve çalışma zamanı sınırı]
-`getRecord<T>` çağrısındaki `T`, çağıranın beklentisini ifade eder; `response.json()` gövdesini TypeScript denetlemez. Önceki type guard dersi runtime'da alanları kontrol ederek bu iddiaya dayanak oluşturuyordu. Bu yeni bağlamda ek olarak Promise'in çözülmesi ve HTTP başarısının ayrı olaylar olduğunu hesaba kat.
+Fonksiyonun içinde string döndürdük; dışarıdan bakınca dönüş tipi `Promise<string>`. Bu sarmalayıcı, çağıranın sonucu beklemesi gerektiğini gösterir. Promise başarısızlık ihtimalinin tipini ayrıca anlatmaz.
+
+Sonucu kullanmak için `await` yazarsın. `await`, o Promise tamamlanana kadar mevcut `async` fonksiyonun devamını bekletir ve başarılı değeri verir:
+
+```ts check
+async function featuredTitle(): Promise<string> {
+  return 'Geleceğe Dönüş'
+}
+
+async function showFeaturedTitle(): Promise<void> {
+  const title = await featuredTitle()
+  console.log(title)
+}
+```
+
+`featuredTitle()` çağrısı `Promise<string>` verir; `await` sonrasında `title` bir `string` olur. `await` yalnızca o `async` fonksiyonun devamını bekletir; JavaScript'in geri kalanı eşzamanlı işini yapabilir.
+
+| Sıra | Çalışan bölüm | Değer | Ne olur? |
+| --- | --- | --- | --- |
+| 1 | `showFeaturedTitle()` başlar | Henüz başlık yok | `async` fonksiyon hemen bir Promise döndürür |
+| 2 | `featuredTitle()` çağrılır | `Promise<string>` | Gelecek sonucu temsil eden Promise alınır |
+| 3 | `await` noktasına gelinir | Promise henüz tamamlanmadı | Bu fonksiyonun devamı bekler |
+| 4 | Promise başarılı olur | `'Geleceğe Dönüş'` | `title` bu string değerini alır |
+| 5 | `console.log(title)` çalışır | String | Başlık konsola yazılır |
+
+Promise başarılıysa “resolve oldu”, başarısızsa “reject oldu” denir. Reject olan Promise'i `await` ederken hata fırlatılmış gibi davranır; `try/catch` ile yakalayabilirsin. `Promise<T>` yalnızca başarı değerinin tipini söyler, hata değerinin biçimini söylemez.
+
+## Awaited yalnızca tipteki Promise katmanını açar
+
+`await` çalışan kodda bir Promise'i bekler. `Awaited<T>` ise TypeScript'e bir tipin Promise katmanlarını açıp sonunda hangi değer tipine ulaşıldığını sorar. İsimleri benzer, yaptıkları iş farklıdır.
+
+```ts check
+type MovieCard = { title: string; year: number }
+type MovieCardsPromise = Promise<MovieCard[]>
+type LoadedCards = Awaited<MovieCardsPromise>
+
+const cards: LoadedCards = [{ title: 'Aftersun', year: 2022 }]
+```
+
+`LoadedCards`, `MovieCard[]` olur: Promise katmanı kalkar ama dizi ve içindeki film kartları kalır. Bu, fonksiyonun `await` sonrası verdiği değeri ayrıca elle kopyalayıp yazmak yerine dönüş tipiyle bağlı tutar.
+
+`Awaited` çalışma anında hiçbir şey beklemez; yalnızca tip hesabıdır. Gerçek sonucu almak için yine `await` gerekir. Örneğin bir `Promise<MovieCard[]>` değerini `await` edince kartlar dizisi gelir, tek bir `MovieCard` değil.
+
+## JSON tipi, JSON'un doğru olduğunu kanıtlamaz
+
+Sinema'nın film listesi yerel bir JSON metninden okunuyor olsun. JSON metnini nesneye çevirmek **parse etmek** demektir. `JSON.parse` metnin geçerli JSON olup olmadığına bakar; içindeki alanların beklenen film bilgisi olup olmadığını doğrulamaz.
+
+:::model[Tipler derleme sırasında vardır]
+`JSON.parse` metni JavaScript değerine çevirir ama TypeScript tipi o değeri doğrulamaz. Alanları runtime'da kontrol edip yalnız doğruladığın veriyi kullan.
 :::
 
 ![TypeScript tipinin derlemede silinmesi ve dış JSON'un runtime'da doğrulanması](diagram:ts-derleme-ve-calisma)
 
-## Async dönüş tipi
-
 ```ts check
-async function fetchNames(): Promise<string[]> {
-  return ['Ada', 'Mina']
+type Rating = { score: number }
+
+async function readSavedRating(): Promise<number> {
+  const text = '{"score": 4.5}'
+  const raw: unknown = JSON.parse(text)
+
+  if (typeof raw !== 'object' || raw === null || !('score' in raw)) {
+    throw new Error('Puan bilgisi yok')
+  }
+  if (typeof raw.score !== 'number') throw new Error('Puan sayı değil')
+  return raw.score
 }
-
-type FetchPromise = ReturnType<typeof fetchNames>
-type Names = Awaited<FetchPromise>
-type Args = Parameters<typeof fetchNames>
-
-const promise: FetchPromise = fetchNames()
-const names: Names = await promise
-const args: Args = []
 ```
 
-Kesin kurallar:
+`unknown`, değeri kullanmadan önce türünü kontrol etmeni ister. Metin geçerli JSON olsa bile `{ "score": "iyi" }` gelirse sayı kontrolü hata verir. Bu kodda `async` fonksiyon içindeki `throw`, çağırana reject olmuş bir Promise olarak ulaşır.
 
-1. `async function f(): Promise<T>` başarılı tamamlandığında `T` değerini çözer.
-2. `ReturnType<typeof f>`, fonksiyonun tam dönüş tipini verir; async fonksiyonda bu genellikle `Promise<T>` olur.
-3. `Awaited<ReturnType<typeof f>>`, Promise katmanını açıp başarılı değeri verir; dizi gibi iç içe tipleri açıp tek elemana indirmez.
-4. `Parameters<typeof f>`, parametreleri tuple olarak çıkarır ve sıralarını korur.
-5. Promise tipi rejected olabilecek hatanın tipini burada kodlamaz. Hata davranışını catch veya result union ile ayrı tasarlarsın.
-6. `fetch` 4xx/5xx cevabında reject olmaz; yalnızca ağ seviyesinde hata olduğunda Promise reddedilir.
-7. JSON gövdesi tek kez okunur. Başarısız HTTP cevabında gövdeyi başarı verisi gibi ele alma; 204 gibi boş cevaplarda JSON parse etmeye çalışma.
-
-Bu tür yardımcılar var olan bir fonksiyonun imzasını tekrar yazmadan başka bir tipe veya adaptöre taşımayı sağlar. `Parameters` ile tuple'ın `[0]` elemanı ilk parametre, `[1]` ikincidir; argüman sırası da sözleşmenin parçasıdır.
-
-## İsteğin zaman çizgisinde iz sür
+Şu kısayol cazip gelebilir:
 
 ```ts
-async function loadProfile(url: string): Promise<Profile> {
-  const response = await fetch(url)
-  if (!response.ok) throw new Error(`HTTP ${response.status}`)
-  const raw: unknown = await response.json()
-  return parseProfile(raw)
-}
+const rating = JSON.parse(text) as Rating
 ```
 
-| Sıra | Çalışan satır | Promise / değer | Önemli sonuç |
+`as Rating`, TypeScript'e “bunu Rating kabul et” der ama alanları kontrol edecek JavaScript kodu üretmez. Sonrasında `rating.score` editörde sayı gibi görünür; gerçek veri string ise hata ancak program çalışırken çıkar. Dış veriyi doğrulamadan ona tip etiketi vermek, hatayı editörden uygulamanın içine taşır.
+
+Bir generic fonksiyonun dönüş tipinde `T` kullanması da aynı ayrımı korumayı gerektirir. `T`, çağıranın beklediği başarı tipini anlatabilir; JSON metnindeki alanları kendiliğinden incelemez. Bu yüzden Promise tipiyle veri doğrulamasını ayrı sorular olarak düşün: “Sonuç geldiğinde tipi ne olmalı?” ve “Gelen verinin gerçekten o tipte olduğunu nasıl anlarım?”
+
+| Sıra | İşlem | Başarılı durumda | Sorun varsa |
 | --- | --- | --- | --- |
-| 1 | `loadProfile(url)` çağrılır | `Promise<Profile>` hemen döner | Çağıran bekleyebilir veya `.then` kullanabilir |
-| 2 | `fetch(url)` çağrılır | `Promise<Response>` beklenir | Bağlantı/CORS/abort hatası reject edebilir |
-| 3 | `response.ok` okunur | boolean | 404/500 için fetch yine Response vermiştir; burada sen hata üretirsin |
-| 4 | `response.json()` beklenir | `unknown` gövde | Cevap stream'i okunur; ikinci kez okunamaz |
-| 5 | `parseProfile(raw)` çalışır | doğrulanmış `Profile` | Guard/şema reddederse fonksiyon hata verir |
-| 6 | async fonksiyon tamamlanır | `Promise<Profile>` resolve olur | Başarı tipi yalnız başarılı yolu anlatır |
+| 1 | `JSON.parse(text)` | JavaScript değeri üretir | Geçersiz JSON için hata fırlatır |
+| 2 | Alanları kontrol et | Beklenen şekil onaylanır | Uygun değilse kendi hatanı fırlatırsın |
+| 3 | `async` fonksiyon tamamlanır | `Promise<number>` başarılı olur | Fırlatılan hata Promise'i reject eder |
+| 4 | Çağıran `await` eder | Kontrol edilmiş sayı gelir | Hata `try/catch`'e ulaşır |
 
-Her `await`, fonksiyonun devamını Promise tamamlanana kadar erteler; ana thread senkron kodu işlemeye devam edebilir. Hata fırlatılırsa o satırdan sonraki başarı satırları atlanır ve dönen Promise reject olur. `Promise<Profile>` hata cevabının da Profile olduğunu söylemez.
-
-## Önce kırık, sonra doğru
-
-Bu kod, status'a bakmadan her gövdeyi başarı cevabı olarak okur:
-
-```ts
-async function loadProfile(url: string): Promise<Profile> {
-  const response = await fetch(url)
-  return (await response.json()) as Profile
-}
-```
-
-401 için JSON parse başarılı olabilir; hata HTTP status'udur. Fakat cast, `{ status_code: 7 }` değerini `Profile` olarak gösterir. Önce HTTP durumunu kontrol et, sonra gövdeyi runtime'da doğrula:
-
-```ts check
-type Profile = { id: number; displayName: string }
-function isProfile(value: unknown): value is Profile {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
-  if (!('id' in value) || !('displayName' in value)) return false
-  return typeof value.id === 'number' && typeof value.displayName === 'string'
-}
-
-async function loadProfile(url: string): Promise<Profile> {
-  const response = await fetch(url)
-  if (!response.ok) throw new Error(`İstek başarısız: ${response.status}`)
-  const raw: unknown = await response.json()
-  if (!isProfile(raw)) throw new Error('Geçersiz profil cevabı')
-  return raw
-}
-```
-
-Bu örnekte status başarısı ve JSON şekli iki ayrı kapıdır. `response.ok`, yalnızca status kodunun 200–299 aralığında olduğunu söyler; başarılı bir status ile bozuk JSON sözleşmesi gelebilir. Guard da yalnızca tanımladığı alanları doğrular.
-
-## Generic `getJson<T>` iddiası
-
-Bir generic JSON yardımcısı, ağ cevabını çağıranın istediği tipe bağlayabilir. Bu kullanım ergonomiktir ama generic parametresi doğrulama değildir:
-
-```ts
-const result = await getJson<Profile>('/api/profile')
-```
-
-Bu satır, “bu çağrıda başarı gövdesi `Profile` olacak” beklentisini ifade eder. Yardımcı içinde `response.json() as T` varsa kontrol eklenmemiştir. Tüm çağıranlar doğru varsaymak zorunda kalır; hata nesnesi de başarılı modelmiş gibi görünür. Daha güvenli API, sonucu `unknown` tutup validator veya schema alan bir fonksiyondan geçirmek olabilir. Zod modülünde bu sınır için çalışma zamanı şeması kullanacaksın.
-
-HTTP hatasında hata gövdesini kullanıcıya taşımak gerekiyorsa onu da `unknown` olarak parse edip ayrı hata modeline doğrula. Bir 404'ün gövdesi JSON olsa bile `response.ok` false'dur. Hatanın status kodu, mesajı ve retry kararı uygulamanın açık politikası olmalıdır.
-
-TypeScript `Promise<T>` içinde başarısızlık değerinin şeklini taşımadığı için hatayı `catch` içinde çoğu zaman `unknown` kabul etmek gerekir. JavaScript'te `throw` ile string, Error veya başka herhangi bir değer fırlatılabilir. Yakalanan değerde `.message` okumadan önce `instanceof Error` veya kendi hata guard'ını kullan. Bir endpoint hatalarını dönüş değerinde taşımak istiyorsa `{ ok: true; data: T } | { ok: false; error: ApiError }` gibi bir union kurabilir; o zaman çağıran `ok` kontrolüyle iki dalı daraltır.
-
-Bu karar Promise'in tipiyle değil uygulama API'siyle ilgilidir. Promise reject olduğunda `await` exception gibi davranır; `Promise<T>` başarılı değerin `T` olduğunu söyler ama hangi hataların çıkabileceğini imzaya eklemez. Bir fonksiyon hem beklenen HTTP hatalarını hem beklenmeyen programlama hatalarını tek bir string'e indirirse çağıran retry, kullanıcı mesajı ve log kararlarını ayıramaz. Hata sözleşmesinin de başarı verisi kadar açık olması gerekir.
-
-## Sınırlar ve sık hatalar
-
-:::mistake[Belirti: 404'te `catch` çalışmıyor]
-Belirti → `fetch` tamamlanıyor ve `response.status` 404 gösteriyor.  
-Neden → `fetch` HTTP 4xx/5xx'i ağ hatası saymaz; Response döndürür.  
-Düzeltme → `response.ok` veya status aralığını kendin kontrol et ve uygun hata üret.
+:::mistake[Belirti: sayı beklerken `toFixed is not a function` hatası]
+Belirti → JSON parse ediliyor ve editör `score` alanını sayı gibi gösteriyor, ama ekranda `toFixed is not a function` çıkıyor.
+Neden → `as Rating` yalnızca TypeScript'e iddia verir; gelen JSON alanını kontrol etmez.
+Düzeltme → Dış veriyi `unknown` kabul et, `score` alanının gerçekten number olduğunu runtime'da kontrol et ve ancak sonra kullan.
 :::
 
-:::mistake[Belirti: `Awaited` sonucu hâlâ dizi sanılmıyor]
-Belirti → `Awaited<ReturnType<typeof load>>` için `Movie` bekliyorsun, ama cevap `Movie[]`.  
-Neden → `Awaited` Promise katmanını açar; dizinin eleman katmanını kaldırmaz.  
-Düzeltme → Fonksiyon gerçekten `Promise<Movie[]>` ise sonuç `Movie[]` olur.
+:::info[Derinlemesine (isteğe bağlı): HTTP cevabı ve Response gövdesi]
+`fetch` bir HTTP isteği yapar; HTTP, tarayıcıyla sunucunun istek ve cevap biçimidir. `fetch` 404 veya 500 durumlarında da bir cevap (`Response`) verir, bu yüzden `response.ok` değerini sen kontrol edersin. Cevabın gövdesi çoğu tarayıcıda stream olarak okunur; yani veri parça parça gelebilir ve aynı gövde genellikle bir kez tüketilir. Bu ayrıntılar Promise'in başarı tipiyle JSON alanlarının doğrulanmasını birbirinden ayırma kuralını değiştirmez.
+
+Bir profil yükleyicinin akışı buna örnek olur. HTTP status kontrolü, JSON'u okuma ve alanları doğrulama farklı adımlardır:
+
+| Sıra | İşlem | Sonuç |
+| --- | --- | --- |
+| 1 | `fetch(url)` çağrılır | `Promise<Response>` beklenir; bağlantı veya iptal hatası Promise'i reddedebilir |
+| 2 | `response.ok` okunur | 404/500 de bir `Response` verir; hata üretmek uygulamanın sorumluluğudur |
+| 3 | `response.json()` beklenir | Gövde okunur; JSON metni geçerliyse JavaScript değeri gelir |
+| 4 | `unknown` değer profil alanları için denetlenir | Uygunsa `Profile`, değilse doğrulama hatası |
+| 5 | `async` fonksiyon tamamlanır | Başarıda `Promise<Profile>` çözülür; fırlatılan hata Promise'i reddeder |
+
+Önce HTTP status'unu, sonra gövdenin şeklini denetlemek gerekir: başarılı bir status bozuk JSON içerebilir; geçerli JSON da HTTP hatasının gövdesi olabilir. `response.json()` gövdeyi okur ve aynı gövde ikinci kez okunamaz. 204 No Content cevabında JSON metni bulunmayabileceği için endpoint'in sözleşmesine göre parse etmeyi atlamak gerekir.
+
+Generic `getJson<Profile>(url)` çağrısı da tek başına cevabın profil olduğunu kanıtlamaz. Generic parametresi çağıranın beklentisini taşır; içeride `response.json() as T` kullanmak alanları denetlemez. Hata gövdesi gerekiyorsa onu da dış veri kabul edip ayrı ele al. Promise tipi hata değerlerinin şeklini kodlamadığı için `catch` içindeki değeri `unknown` sayıp `Error` olup olmadığını kontrol etmek güvenlidir. Beklenen API hatalarını dönüş değerinde modellemek istersen `{ ok: true; data: T } | { ok: false; error: ApiError }` gibi bir union kullanabilirsin.
 :::
 
-:::mistake[Belirti: Aynı Response gövdesini ikinci kez okuyunca hata]
-Belirti → `json()` ikinci çağrıda body stream consumed hatası verir.  
-Neden → Fetch response gövdesi tek kullanımlıktır.  
-Düzeltme → Bir kez oku ve sonucu değişkende tut; hem log hem parse için gerekiyorsa okumadan önce uygun kopyalama stratejisi seç.
-:::
-
-:::mistake[Belirti: 204 yanıtında JSON parse hata verir]
-Belirti → Sunucu gövde göndermediği için `response.json()` reject olur.  
-Neden → No Content cevabında JSON metni yoktur.  
-Düzeltme → Endpoint'in gövde sözleşmesini bil ve 204'ü parse etmeye çalışma.
-:::
-
-:::mistake[Belirti: Generic dönüş tipi hatalı gövdeye güven verir]
-Belirti → Editör `profile.displayName` önerirken runtime'da alan yoktur.  
-Neden → `T` yalnızca çağıranın iddiasıdır; JSON doğrulanmamıştır.  
-Düzeltme → Başarı durumunu denetle ve `unknown` cevabı runtime guard ya da schema ile doğrula.
-:::
-
-:::sector
-Üretim API client'ları genellikle status kodlarını merkezi biçimde ele alır, endpoint cevabını doğrular ve async fonksiyonların dönüşlerini tekrar kullanılabilir tiplerden türetir. `ReturnType` ve `Awaited`, imza kopyalarını azaltır; çalışma zamanı doğrulama ihtiyacını ortadan kaldırmaz.
+:::info[Derinlemesine (isteğe bağlı): Fonksiyonlardan tip çıkarma]
+`ReturnType<typeof f>` bir fonksiyonun dönüş tipini, `Parameters<typeof f>` ise parametrelerinin tuple tipini çıkarır. Bunlar imzaları tekrar kullanırken işe yarar; bu dersteki Promise ve `Awaited` fikrini anlamak için gerekmez.
 :::
 
 ## Özet
 
-- Async fonksiyon başarılı değeri `Promise<T>` içine sarar.
-- `ReturnType`, `Parameters` ve `Awaited` fonksiyon imzasını türetir.
-- `fetch` HTTP hata durumunda resolve olur; `response.ok` kontrolü sana aittir.
-- Response gövdesi bir kez okunur; 204'te JSON yoktur.
-- Generic `getJson<T>` çağıran beklentisidir, runtime doğrulaması değildir.
+- `async` fonksiyonun başarılı dönüşü `Promise<T>` olur; `await` başarılı olduğunda `T` değerini verir.
+- `Awaited<Promise<T>>`, tip düzeyinde Promise katmanını açar; dizi gibi diğer katmanları korur.
+- Promise başarı değerini türlendirir, ama başarısızlığın biçimini veya dış verinin doğruluğunu garanti etmez.
+- JSON parse etmek metni okur; beklenen alan ve türleri runtime'da ayrıca doğrulamak gerekir.
 
-**Kendini yokla:** `Promise<Movie[]>` için `Awaited<...>` nedir?  
-*Cevap:* `Movie[]`; Promise katmanı kalkar, dizi kalır.
+**Yeni terimler**
 
-**Kendini yokla:** `getJson<Movie>` çağrısı neden sunucudan Movie geldiğini kanıtlamaz?  
-*Cevap:* Generic yalnızca derleme zamanı tip iddiasıdır; cevabın alanları runtime'da kontrol edilmemiştir.
+- **Promise:** Henüz tamamlanmamış bir işin gelecekteki sonucunu temsil eden JavaScript değeri.
+- **`async` / `await`:** Asenkron fonksiyon tanımlama ve o fonksiyonun devamını Promise sonucu gelene kadar bekletme sözdizimi.
+- **`Awaited<T>`:** Bir tipteki Promise katmanını açıp başarılı sonuç tipini çıkaran TypeScript aracı.
+- **Runtime doğrulama:** Program çalışırken gelen değerin beklenen şekil ve türde olduğunu kontrol etme.
+
+**Kendini yokla:** `Awaited<Promise<MovieCard[]>>` ne olur?
+*Cevap:* `MovieCard[]`; Promise kalkar, dizi kalır.
+
+**Kendini yokla:** Geçerli JSON metninden çıkan değerin film tipinde olduğunu `Promise<Movie>` kanıtlar mı?
+*Cevap:* Hayır. Promise başarıyla gelince hangi tipin beklendiğini söyler; JSON alanları ayrıca doğrulanmalıdır.

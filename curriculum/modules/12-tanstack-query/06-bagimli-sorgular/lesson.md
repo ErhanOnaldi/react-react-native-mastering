@@ -1,125 +1,160 @@
 ---
-title: "Önkoşulu hazır olunca sorgula"
-minutes: 15
+title: "Önkoşul hazır olunca sorgula"
+minutes: 12
 kind: concept
 ---
 
-# Önkoşulu hazır olunca sorgula
+# Önkoşul hazır olunca sorgula
 
-:::pain[Problem]
-Kullanıcının ekip profilini açıyorsun. İlk istek `accountId`’yi getirecek, ikinci istek o hesabın açık görevlerini yükleyecek. İlk render’da kimlik henüz yokken `/api/accounts/undefined/tasks` gidiyor ve sunucudan 404 geliyor.
-:::
+Bir film sayfasında oyuncu listesini almak için önce seçili filmin id’si gerekir. Sayfa ilk açıldığında seçim henüz yapılmamış olabilir. O sırada `/api/movies/undefined/cast` isteği göndermek yerine sorgunun beklemesini isteriz.
 
-## Veri bağımlılığını key ve başlangıç koşulunda göster
+## Eksik id ile bekle
 
-Bazı sorgular bağımsızdır ve aynı anda başlayabilir. Örneğin hava durumu ile yakındaki feribot saatleri birbirini beklemiyorsa iki query’yi de render et; birinin cevabını diğerine bağlama. Bağımlı sorgu ise ancak önceki sonuçtan bir değer çıktıktan sonra anlam kazanır. Hesap kimliği olmadan görev isteği kurulamıyorsa bu bağımlılığı açıkça modelle.
+`enabled`, query’nin çalışmaya hazır olup olmadığını belirten seçenektir. Hook’u her render’da çağırmaya devam ederiz; yalnızca id gelene kadar query’yi kapalı tutarız.
 
-:::model[Query key]
-Key, hangi cevabın istendiğini kaydeder. Bu derste key’e ayrıca henüz bulunmayan bir değeri koyup isteği hemen çalıştırmayacağız: key eksik durumu tarif eder, query function’ın çalışıp çalışmayacağını ise başlangıç koşulu belirler.
-:::
+```tsx check
+import { useQuery } from '@tanstack/react-query'
 
-![İlk sorgudan id geldikten sonra ikinci sorgunun başlaması](diagrams/bagimli-sorgu.svg "İkinci sorgu gerekli kimlik gelene kadar bekler.")
+type CastMember = { id: number; name: string }
+declare function getCast(movieId: number): Promise<CastMember[]>
 
-React Hook kuralları gereği hook sırası render’lar arasında sabit kalmalıdır. Dolayısıyla `if (accountId) useQuery(...)` doğru çözüm değildir. Hook her render’da çağrılır; seçeneklerinde “henüz başlama” durumu verilir. Değer geldiğinde Query yeni key’i izler ve sorguyu başlatır.
-
-İki genel seçenek vardır:
-
-1. `enabled: Boolean(accountId)` query’yi koşula bağlar. `queryFn` tanımlı kalır; uygun olduğunda query çalışır. UI’da yalnızca `isPending`’e bakma: devre dışı sorgu ilk anda `status: 'pending'`, `fetchStatus: 'idle'` olabilir.
-2. `skipToken` query function yerine geçer. Gerekli girdi yokken yanlışlıkla parametresiz fetch yapılamaz ve diğer daldaki TypeScript tipi daralır. Bu tercih fonksiyonsuz durumu tipe yansıtır. Böyle bir query’de `refetch()` çağırmak mümkün değildir; yeniden değerlendirme için id vermen gerekir.
-
-`enabled` yararlıdır, eğer sorgu elle `refetch()` ile çalıştırılabilir olmalı veya fetch function her zaman geçerli biçimde tanımlanabiliyorsa. `skipToken` ise eksik parametre varken sorgu işlevi olmamasını açıkça ifade eder. Birini seçerken hangi durumun uygulama için doğru olduğunu belirle; ikisini de hook çağrısını koşullamak için kullanma.
-
-Bağımlı query modelinin kuralları:
-
-1. React hook’u component’in her render’ında aynı sırada çağrılır.
-2. Eksik girdiyle query function çalıştırılmaz; endpoint’e `undefined` veya NaN gönderilmez.
-3. Önkoşul sağlanınca key ve function aynı doğrulanmış değeri kullanır.
-4. Devre dışı `pending` sonucu ile devam eden network işi ayrı durumlar olarak ele alınır.
-5. Sadece gerçek veri bağımlılığı seri kurulur; bağımsız sorgular paralel başlayabilir.
-
-Bu ayrım, Hook kurallarını korumak kadar hata ayıklamayı da kolaylaştırır. “Sorgu başlamadı” görünümü ile “sorgu başladı ve cevap bekliyor” aynı değildir. İlki formda henüz hesap seçilmemesi olabilir; ikincisi kullanıcıya progress göstermek için bir nedendir. İki durumda da yalnız `isPending` kontrolü yaparsan her zaman doğru mesajı seçemezsin. Parametrenin kendisi de anlamlı olabilir: id 0 geçerli ise `Boolean(id)` onu yanlışlıkla kapatır; `id !== undefined` açık kontrolü daha doğru olur.
-
-## Akışı adım adım takip et
-
-Önce URL’den `workspaceId` okunur. İlk render’da değer undefined ise `skipToken` seçilir. Query key `['workspaces', undefined, 'tasks']` gibi bu state’i tanımlar ama fetch function yoktur; `fetchStatus` idle’dır, ağ isteği çıkmaz. Kullanıcı workspace açınca id 42 olur. Yeni render yine aynı hook sırasıyla çalışır; key `['workspaces', 42, 'tasks']` olur ve geçerli query function seçilir. Promise çözülünce görev listesi success data olur.
-
-| Render | `workspaceId` | Seçilen `queryFn` | Cache key | Ağ davranışı |
-|---|---:|---|---|---|
-| İlk açılış | `undefined` | `skipToken` | `['workspaces', undefined, 'tasks']` | İstek yok, `fetchStatus: idle` |
-| Parametre çözüldü | `42` | `getTasks(42)` | `['workspaces', 42, 'tasks']` | GET başlar |
-| Başarı | `42` | Aynı işlev | Aynı key | Sonuç 42’nin girdisine yazılır |
-| Workspace değişti | `99` | `getTasks(99)` | Farklı key | Ayrı istek / cache girdisi |
-
-İlk sorgu ve ikinci sorgu seri çalışırsa kullanıcı en az iki ağ gidiş-dönüşünü bekler. Bu bir **waterfall** maliyetidir. İş gereği görev endpoint’i sadece id ile bulunuyorsa bu sıralama doğrudur; fakat ilk istekten bağımsız ikinci veriyi boşuna bekletme. İkisi de kullanıcı girişi olmadan alınabiliyorsa ayrı query’lerle paralel çalıştır. Önkoşulun API tasarımından kaynaklanıyorsa backend’in ekran için birleşik endpoint sağlayıp sağlayamayacağını da ekiple konuş.
-
-Waterfall’ı ölçerken yalnız istek sayısını değil toplam bekleme süresini de düşün. İki endpoint’in her biri 180 ms sürüyor ve seri ise yaklaşık 360 ms sonra ikinci data gelir; paralel bağımsız isteklerde ikisi de yaklaşık 180 ms’de sonuçlanabilir. Bu kaba toplam, render ve ağ gecikmelerini dışarıda bırakır ama akış kararının neden kullanıcıya dokunduğunu gösterir. Sırf paralel olsun diye endpoint’leri zorla birleştirme; gerçekten hangi data’nın diğerine ihtiyaç duyduğunu kaydet.
-
-:::model[Effect yaşam döngüsü ve race condition]
-Effect yaşam döngüsü dış bağlantıyı kurar, dependency değişince kapatıp yeniden kurar. `yaris-kosulu` modelinde eski cevabın yeniyi ezmemesi için cleanup veya abort gerekir. Query bu veri akışında aynı key’e ait Promise ve cache durumunu yönetir; bu, effect’in bütün kullanımını ortadan kaldırmaz, yalnız server data getirme işini elde yazma ihtiyacını azaltır.
-:::
-
-Birinci isteğin id’si değişirse Query yeni key’e geçer. Geç gelen eski cevap eski key’in cache girdisine aittir; ekrandaki observer yeni key’i izlediği için başka id’nin data’sı yeni profil diye gösterilmez. Bu, doğru key kullanmanın race condition savunmasına katkısıdır. Ancak iki farklı query key’inden alınan veriyi elle tek component state’ine karıştırırsan aynı korumayı kaybedebilirsin. Modelin yarısı key; diğer yarısı UI’da o an seçili olan key’i izlemektir.
-
-### Kırık örnek: erken `fetch`
-
-```ts
-type Task = { id: number; title: string }
-
-function getTasks(workspaceId: number | undefined): Promise<Task[]> {
-  return fetch(`/api/workspaces/${workspaceId}/tasks`).then((response) => response.json())
-}
-```
-
-Bu helper undefined değerini string’e çevirir ve geçersiz URL kurar. `workspaceId!` ile TypeScript’i susturmak runtime’da yeni bilgi sağlamaz; URL parametresi halen eksik olabilir.
-
-### Doğru biçim: geçerli girdi geldiğinde fonksiyon seç
-
-```ts check
-import { skipToken, useQuery } from '@tanstack/react-query'
-
-type Task = { id: number; title: string }
-declare function getTasks(workspaceId: number): Promise<Task[]>
-
-export function useWorkspaceTasks(workspaceId: number | undefined) {
+function useMovieCast(movieId: number | undefined) {
   return useQuery({
-    queryKey: ['workspaces', workspaceId, 'tasks'],
-    queryFn: workspaceId === undefined ? skipToken : () => getTasks(workspaceId),
+    queryKey: ['movies', movieId, 'cast'],
+    enabled: movieId !== undefined,
+    queryFn: () => {
+      if (movieId === undefined) throw new Error('Film id gerekli')
+      return getCast(movieId)
+    },
   })
 }
 ```
 
-Burada `workspaceId === undefined` ile sıfır değerine dair belirsizlik de kalmaz. Eğer kimlik yalnızca pozitif tamsayıysa bunu URL sınırında ayrıca doğrula. Sorgunun devrede olmadığı arayüz “seçili çalışma alanı yok” durumunu ifade etsin; kullanıcının gerçekten hiçbir görevi olmadığı success data `[]` durumundan ayrı kalsın.
+Burada `enabled` ve `queryFn` içinde ayrı bir kontrol bulunması bilinçlidir. Query devre dışıyken function çağrılmamalı; kontrol ise ileride kod değişip function yanlışlıkla çağrılsa bile `undefined` değerinin URL’ye gitmesini önler. `movieId !== undefined` kullanıyoruz; çünkü sıfırın geçersiz olduğunu bilmiyorsak `Boolean(movieId)` 0’ı da eksik sanır.
 
-## Sınır durumları ve sık hatalar
+## “Bekliyor” ile “yükleniyor” aynı değil
+
+Component, sorgunun sonucunu ekrana koyabilir. Query durumundaki `isPending`, henüz kullanılabilir cevap olmadığını söyler; `fetchStatus` ise ağ isteğinin şu anda çalışıp çalışmadığını söyler. Bu iki bilgi ilk render’da farklı şeyler anlatabilir:
+
+```tsx check
+import { useQuery } from '@tanstack/react-query'
+
+type CastMember = { id: number; name: string }
+declare function getCast(movieId: number): Promise<CastMember[]>
+
+function useMovieCast(movieId: number | undefined) {
+  return useQuery({
+    queryKey: ['movies', movieId, 'cast'],
+    enabled: movieId !== undefined,
+    queryFn: () => {
+      if (movieId === undefined) throw new Error('Film id gerekli')
+      return getCast(movieId)
+    },
+  })
+}
+
+function CastNames({ movieId }: { movieId: number | undefined }) {
+  const cast = useMovieCast(movieId)
+
+  if (movieId === undefined) return <p>Önce bir film seç</p>
+  if (cast.isPending && cast.fetchStatus === 'fetching') return <p>Oyuncular yükleniyor</p>
+  if (cast.isError) return <p>Oyuncular alınamadı</p>
+  if (cast.data === undefined) return <p>Oyuncu bilgisi henüz yok</p>
+  return <p>{cast.data.map((person) => person.name).join(', ')}</p>
+}
+```
+
+Film seçilmemişken query `pending` olabilir ama `fetchStatus` değeri `idle` kalır: ortada başlamış bir istek yoktur. Film seçilince id key’e girer ve istek başlar. Tek başına `isPending` ile her durumda spinner gösterirsen, kullanıcı seçim yapmadığı halde sayfanın sürekli yüklendiğini sanabilir.
+
+| An | `movieId` | Query durumu | Ekrandaki karşılık |
+|---|---:|---|---|
+| Sayfa yeni açıldı | `undefined` | `pending`, `idle` | “Önce bir film seç” |
+| Film seçildi | `550` | `pending`, `fetching` | “Oyuncular yükleniyor” |
+| Cevap geldi | `550` | `success`, `idle` | Oyuncu adları |
+| Başka film seçildi | `680` | Yeni key, `fetching` | Yeni filmin oyuncuları yükleniyor |
+
+Tabloda aynı hook çağrısı sürerken yalnızca girdinin değiştiğini görüyorsun. Key’de id bulunduğundan film 550’nin cevabı film 680’in cevabı yerine kullanılamaz. Bu da bir filmden diğerine hızlı geçerken eski cevabın yanlış filme aitmiş gibi görünmesini önler.
+
+## Bir sorgu gerçekten diğerine bağlı olsun
+
+Şimdi seçilen filmin verisi geldikten sonra benzer filmleri isteyelim. İlk cevap ikinci sorguya gereken id’yi sağlar; bu gerçek bir veri bağımlılığıdır. İki bağımsız sorguyu bu biçimde arka arkaya bağlamak gerekmez.
+
+```tsx check
+import { useQuery } from '@tanstack/react-query'
+
+type Movie = { id: number; title: string }
+type Recommendation = { id: number; title: string }
+declare function getMovie(movieId: number): Promise<Movie>
+declare function getRecommendations(movieId: number): Promise<Recommendation[]>
+
+function MovieRecommendations({ movieId }: { movieId: number | undefined }) {
+  const movie = useQuery({
+    queryKey: ['movies', 'detail', movieId],
+    enabled: movieId !== undefined,
+    queryFn: () => {
+      if (movieId === undefined) throw new Error('Film id gerekli')
+      return getMovie(movieId)
+    },
+  })
+
+  const recommendations = useQuery({
+    queryKey: ['movies', movie.data?.id, 'recommendations'],
+    enabled: movie.data !== undefined,
+    queryFn: () => {
+      if (movie.data === undefined) throw new Error('Film henüz yüklenmedi')
+      return getRecommendations(movie.data.id)
+    },
+  })
+
+  if (movieId === undefined) return <p>Bir film seç</p>
+  if (movie.isPending) return <p>Film yükleniyor</p>
+  if (movie.isError) return <p>Film alınamadı</p>
+  if (recommendations.isPending) return <p>Benzer filmler yükleniyor</p>
+  if (recommendations.isError) return <p>Benzer filmler alınamadı</p>
+
+  return <ul>{recommendations.data.map((item) => <li key={item.id}>{item.title}</li>)}</ul>
+}
+```
+
+Önce film isteği başlar; filmi tanımadan benzerlerini soramayız. Film cevabı geldikten sonraki render’da ikinci hook hâlâ aynı sırada çağrılır, ama `enabled` artık true olur ve öneri isteği başlar. Bu ardışık beklemeye **waterfall** denir. Her iki isteğin de ayrı ayrı 180 ms sürdüğünü varsayarsak, seri akışta öneriler kabaca 360 ms’de gelir; bağımsız istekler paralel olsaydı yaklaşık 180 ms yeterdi. Burada seri beklemek gerekir, çünkü öneri isteği film id’sine bağlıdır.
+
+![İlk sorgudan id geldikten sonra ikinci sorgunun başlaması](diagrams/bagimli-sorgu.svg "İkinci sorgu gerekli kimlik gelene kadar bekler.")
+
+| Sıra | Film sorgusu | Öneri sorgusu | Ağda olan |
+|---|---|---|---|
+| İlk render | `enabled` id varsa açık | `enabled: false` | Film isteği başlar |
+| Film cevabı | `success`, `data.id` hazır | Yeni render’da etkinleşir | Öneri isteği başlar |
+| Öneri cevabı | Cache’te kalır | `success` | Öneriler görünür |
+| Film id’si değişir | Yeni film key’i | Yeni film cevabını bekler | Yeni bağımlı akış başlar |
+
+Bu tür gecikme gereksiz görünüyorsa önce verinin gerçekten bağımlı olup olmadığını kontrol et. İki panel aynı anda alınabiliyorsa iki query’yi de aynı render’da başlat. API yalnızca ilk cevaptan gelen id ile ikinci cevabı veriyorsa waterfall davranışın doğal bedelidir.
 
 :::mistake[Hook’u koşullu çağırmak]
-**Belirti:** İlk render’da hook hatası veya sonraki render’da Hook sırası uyarısı görünür. → **Neden:** Bir render’da `useQuery` atlanmış, sonraki render’da çağrılmıştır. → **Düzeltme:** Hook’u component’in üst seviyesinde her render’da çağır; önkoşulu `enabled` veya `skipToken` ile query seçeneklerine taşı.
+**Belirti:** İlk render’da olmayan bir query, sonraki render’da eklendiğinde React Hook sırası uyarısı çıkar. **Neden:** `if (movieId) useQuery(...)` hook listesini render’dan render’a değiştirmiştir. **Düzeltme:** Hook’u üst seviyede her render’da çağır; bekleme koşulunu `enabled` seçeneğine ver.
 :::
 
-:::mistake[`undefined` id’yi `!` ile gizlemek]
-**Belirti:** Sunucuya `/accounts/undefined` gider. → **Neden:** Non-null assertion yalnızca derleyiciyi susturur, değeri üretmez. → **Düzeltme:** Eksikliği açık kontrol et; yalnız geçerli dalda query function kur.
+:::mistake[Id’yi `!` ile garanti sanmak]
+**Belirti:** `/api/movies/undefined/cast` isteği çıkar. **Neden:** TypeScript’teki `movieId!` yalnızca derleyici uyarısını susturur; çalışma anında id üretmez. **Düzeltme:** Hem `enabled` ile beklet hem de `queryFn` içinde eksik değeri açıkça kontrol et.
 :::
 
-:::mistake[Devre dışı sorguyu loading ekranı sanmak]
-**Belirti:** Kullanıcı seçim yapmamışken spinner dönmeye devam eder. → **Neden:** `isPending` tek başına ağ işi olup olmadığını söylemez. → **Düzeltme:** `fetchStatus` ve gerekli parametrenin varlığını birlikte değerlendir; idle bekleyiş için anlaşılır seçim metni göster.
-:::
-
-:::mistake[Bağımsız sorguları seri yapmak]
-**Belirti:** İki bağımsız panel arka arkaya yüklenir. → **Neden:** İkinci query’nin önkoşulu olmayan ilk query’ye bağlanmıştır. → **Düzeltme:** Gerçek bağımlılığı olmayan query’leri aynı render’da başlat.
-:::
-
-:::sector
-Ekipler query function içinde gelen id’yi varsaymak yerine, route sınırında parse edilmiş parametreyi tipli olarak geçirir. Query’nin bekleme durumu da tasarımda yer alır: “kimlik seçilmedi” ile “istek sürüyor” farklı cümlelerdir.
+:::info[Derinlemesine (isteğe bağlı): `skipToken`]
+`skipToken`, id yokken `queryFn` yerine verilen özel değerdir; böylece eksik parametreyle fetch function seçilemez. TypeScript’in hangi dalda id bulunduğunu anlamasına yardım eder. Bu query’de elle `refetch()` kullanamazsın, çünkü çağrılacak bir function yoktur; elle yeniden deneme gerekiyorsa `enabled` daha uygundur.
 :::
 
 ## Özet
 
-- Bağımlı sorgu yalnızca önkoşul verisi hazır olduğunda anlamlıdır.
-- Hook her render’da çağrılır; query’yi devre dışı bırakmak için `enabled` veya `skipToken` kullanılır.
-- `skipToken` eksik id’de function sağlamaz; elle `refetch()` ihtiyacı varsa `enabled` seç.
-- `pending` her zaman ağ isteği demek değildir; `fetchStatus: idle` bekleyişi gösterir.
-- Bağımsız işleri paralel başlat; gerçek veri bağımlılığını waterfall olarak kabul et.
+- Hook’lar her render’da aynı sırada çağrılır; sorgunun başlamasını `enabled` ile beklersin.
+- Eksik değeri hem query function içinde kontrol et, hem geçerli girdiyi key’e koy.
+- `pending` veri olmadığını, `fetchStatus` ise ağ isteğinin çalışıp çalışmadığını anlatır.
+- Gerçekten bağlı iki istek waterfall oluşturur; bağımsız sorgular aynı anda başlayabilir.
 
-**Kendini yokla:** `skipToken` ile beklerken neden `refetch()` uygun değildir? İki panel aynı anda yüklenebiliyorsa sıraya koymanın bedeli nedir?
+**Yeni terimler:**
 
-**Yanıt:** `skipToken` durumunda query function yoktur. Bağımsız sorguları sıraya koymak toplam beklemeyi artırır.
+- **`enabled`:** Query’nin hangi koşulda çalışabileceğini belirleyen seçenek.
+- **`pending`:** Henüz query verisi bulunmayan durum.
+- **`fetchStatus`:** Query için ağ işinin çalışıp çalışmadığını gösteren alan.
+- **Waterfall:** Bir istek bitmeden gerekli girdisi oluşmayan sonraki isteğin başlayamaması.
+
+**Kendini yokla:** Film seçilmemişken `pending` görüp neden hemen spinner göstermemelisin? Film ve öneri sorguları neden seri başlar?
+
+**Yanıt:** Sorgu `pending` olsa bile `fetchStatus: idle` ise ağ isteği çalışmıyordur; seçim bekleniyordur. Öneriler için önce film cevabından id gerektiği için ikinci istek ilkinden sonra başlar.

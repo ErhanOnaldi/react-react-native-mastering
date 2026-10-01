@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Provider } from 'react-redux'
 import { describe, expect, it } from 'vitest'
@@ -93,6 +93,9 @@ describe('Sinema Tabs', () => {
     const user = userEvent.setup()
     renderDetails(550)
     expect(await screen.findByRole('tablist', { name: 'Film bilgileri' })).toBeInTheDocument()
+    const tablist = screen.getByRole('tablist', { name: 'Film bilgileri' })
+    expect(within(tablist).queryByRole('button', { name: 'Fragmanı aç' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Fragmanı aç' })).toBeInTheDocument()
     await user.click(screen.getByRole('tab', { name: 'Oyuncular' }))
     expect(screen.getByRole('tabpanel', { name: 'Oyuncular' })).toHaveTextContent('Edward Norton')
     await user.click(screen.getByRole('tab', { name: 'Videolar' }))

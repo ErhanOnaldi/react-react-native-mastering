@@ -5,22 +5,27 @@ export default defineQuestion({
   title: 'Yeşil test ne söyler?',
   difficulty: 'orta',
   concepts: ['arch.refactoring', 'arch.separation-of-concerns'],
-  question:
-    'Spagetti başlangıç kodu davranış testlerini geçiyor. Bu bilgi tek başına neyi kanıtlar?',
+  question: `Arama refactor'ında davranış testleri başlangıçtaki tek büyük component ile de geçiyor. Kod hâlâ loading metnini üç yerde tekrar ediyor. Bu yeşil sonuç ve rubric birlikte nasıl okunmalı?`,
   options: [
     {
-      text: 'Yalnız ölçülen davranışların korunduğunu',
+      text: 'Testler ölçtüğü ekran çıktısını korur; tekrarı azaltma hedefi ayrıca incelenir',
       correct: true,
-      explanation: 'Doğru. Tekrar ve sınır kalitesi için rubric/code review da gerekir.',
+      explanation:
+        'Aynı çıktıyı tekrar eden kod da üretebilir; yapı ve tekrar rubric/code review ile değerlendirilir.',
     },
     {
-      text: 'Klasör yapısının iyi olduğunu',
-      explanation: 'Davranış testleri dosyanın nerede durduğunu değerlendirmez.',
+      text: 'Testler geçiyorsa yeni component sınırı gereksizdir',
+      explanation:
+        'Davranış testleri yapıyı ölçmez; istenen mimari sınır ayrı bir kalite hedefidir.',
     },
-    { text: 'Hiç bug kalmadığını', explanation: 'Testler yazılmamış durumları garanti etmez.' },
     {
-      text: 'API client’ın merkezileştiğini',
-      explanation: 'Aynı cevap dağınık fetch koduyla da üretilebilir.',
+      text: 'Loading metninin tek yerde olduğunu',
+      explanation: 'Test aynı metni görür; kaç yerde üretildiğini ölçmez.',
+    },
+    {
+      text: 'Başarı, hata ve boş durumların hepsinin test edildiğini',
+      explanation:
+        'Yalnız çalıştırılmış beklentilerin sonucu bilinir; kapsanmayan haller kanıtlanmaz.',
     },
   ],
 })

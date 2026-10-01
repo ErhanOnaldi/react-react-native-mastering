@@ -1,150 +1,158 @@
 ---
 title: "Optimistic arayüz ve rollback"
-minutes: 14
+minutes: 16
 kind: concept
 ---
 
 # Optimistic arayüz ve rollback
 
-:::pain[Problem]
-Otobüs durağında bağlantı zayıf. “Takip et” düğmesine bastın; sunucu yanıtı üç saniye gecikince düğme hiçbir şey olmamış gibi duruyor. Hemen “Takip ediliyor” göstermek istiyorsun, ama kayıt sunucuda reddedilirse bu görüntüyü nasıl geri alacaksın?
-:::
+Sinema’da “Favoriye ekle”ye bastığında ağ yavaşsa düğme bir süre yanıtsız görünebilir. Sunucudan onay gelmeden beklenen sonucu gösterme yaklaşımına **optimistic update** denir. Hızlı hissettirir; ama sunucu reddederse geçici görünümü kaldırman gerekir.
 
-## Geçici doğruyu göstermek
+## En küçük geçici görünüm
 
-Optimistic update, sunucu onayını beklemeden beklenen sonucu arayüze yansıtır. Kullanıcıya hız kazandırır; karşılığında başarısızlık ve eşzamanlı değişiklikleri daha dikkatli ele alman gerekir. “Ekranı hemen güncelle” tek başına yeterli kural değildir. Geçici değerin nerede tutulacağı, hatada neyin geri döneceği ve gerçek cevap geldiğinde cache’in nasıl uzlaşacağı belirlenmelidir.
-
-:::model[Mutation ve invalidation]
-Mutation önce kullanıcı olayında başlar; başarılı cevap query cache’ini otomatik güncellemez. Bir değişiklik tek bir bileşende görünüyorsa geçici değeri mutation variables içinden göstermek yeterli olabilir. Paylaşılan query görünümü de anında değişecekse cache’e geçici yazarsın; hata halinde önceki snapshot’ı geri koyar, son durumda sunucu cevabıyla yeniden uzlaşırsın. Bu derste modelin yeni tarafı, geçici yazı ve rollback’tir.
-
-![Mutation, optimistic update ve invalidation akışı](diagram:mutation-ve-invalidation)
-:::
-
-## Önce geçici değerin kapsamını seç
-
-İki yaklaşım vardır. Mutation `pending` iken `variables` ile metin göstermek, mutation state’ini tek ekrana yansıtır; ortak cache’i değiştirmez. Bu nedenle rollback gerekmez: hata olduğunda pending biter ve geçici satır kendiliğinden kaybolur. Aynı bekleyen değişiklik başka bileşende de görünmeli ya da query’yi okuyan ekranların hepsi hemen değişmeli ise cache patch’i gerekebilir.
-
-`variables` yaklaşımı için mutation sonucu şart değildir:
+Önce yalnızca tıklanan kartta bekleyen mesajı gösterelim. Mutation’ın `variables` alanı, `mutate` çağrısında verdiğin girdiyi içerir:
 
 ```tsx
-const follow = useMutation({ mutationFn: saveFollow })
-const preview = follow.isPending ? follow.variables?.followed : undefined
+const favorite = useMutation({ mutationFn: addFavorite })
+
+return (
+  <>
+    {favorite.isPending && <span>Favoriye ekleniyor…</span>}
+    <button onClick={() => favorite.mutate(movieId)}>Favori</button>
+  </>
+)
 ```
 
-Buradaki `follow` ve `saveFollow` yalnız kesit örneğidir. Tek bir `FollowButton` içinde geçici metin göstermek için cache’i değiştirmek gereksiz risk getirir. Başka bir bileşen aynı pending işlemleri okuyacaksa `useMutationState` ve ortak `mutationKey` ile MutationCache’ten izleyebilirsin; bu değerler query cache’inde değildir.
+Tıklayınca `isPending` true olur ve mesaj görünür; Promise tamamlanınca mesaj kalkar. Cache’e bir şey yazmadığımız için hata durumunda ayrıca geri alma yok: geçici mesaj sadece mutation’ın beklediği sürece render edilir. Bu yol yeterlidir, eğer değişikliği yalnızca bu kartta göstermek istiyorsan.
 
-## Paylaşılan query için snapshot ve rollback
+Bu örnekte gerçek favori durumu henüz değişmedi. Sadece kullanıcıya bekleyen isteği anlatan bir satır render ettik. Tek kartın yanında gösterilen küçük bir “gönderiliyor” metni için bu genellikle daha az parçalı çözümdür; aynı anda birden fazla kartın mutation’ı varsa her kartın kendi mutation state’ine sahip olması da görünümü anlaşılır tutar.
 
-Örneğin takip edilen uzmanların listesi header ve profil sayfasında aynı query’den okunuyor. İki yerde de anında yeni görünüm isteniyorsa mutation başlamadan önce listeyi güvenli hale getir. Sıra şöyledir:
+## Bekleyen değeri de göster
 
-1. Etkilenen query’nin devam eden GET’ini iptal et. Aksi halde eski GET optimistic yazının üstüne eski cevabı koyabilir.
-2. Cache’teki mevcut değeri snapshot olarak al.
-3. Yeni array ve değişen kayıtlarla geçici sonucu yaz.
-4. Mutation hata verirse snapshot’ı geri yükle.
-5. İşlem sona erdiğinde query’yi invalidate et; sunucunun son kabul ettiği görünüm gelsin.
+Bir adım daha atalım. Kullanıcı “favoriye ekleniyor” yerine hangi filmin gönderildiğini görsün. `variables` değerini render’da okuyabiliriz:
 
-`onMutate` async olabilir. Döndürdüğü context, `onError` parametresine taşınır; bu nedenle snapshot’ı context olarak döndür. Önceki değer `undefined` ise hata halinde cache’e uydurma boş liste yazma. `cancelQueries` iptal ettiği Promise’i beklemek ve sonra snapshot almak, eski fetch’in sonra dönüp patch’i ezmesini önler.
+```tsx
+const favorite = useMutation({ mutationFn: addFavorite })
 
-## Zaman çizelgesinde bir başarısızlık
-
-Başlangıç listesi `['Ada']`, kullanıcı `Bora`yı takip etmeyi seçti. POST 500 döndü.
-
-| An | Ağ | Cache | Ekran |
-| --- | --- | --- | --- |
-| t0 | Önceki GET tamamlandı | `['Ada']` | Ada |
-| t1 | Eski GET iptal edilir | Snapshot `['Ada']` | Ada |
-| t2 | POST başlar | `['Ada', 'Bora']` geçici | Ada ve Bora |
-| t3 | POST 500 | Hata callback’i snapshot’ı yazar | Ada |
-| t4 | Invalidation sonrası GET | Sunucu cevabı cache’e girer | Sunucunun kabul ettiği liste |
-
-Tabloda görünüm başarısızlık boyunca kısa süre yanlış olabilir. Düğme veya satırda “Kaydedilemedi” mesajı göster; aksi halde kullanıcı geçici görünümü onaylandı sanabilir. `onSettled` invalidation’ı hata halinde de çalıştırır. Eğer hata sonrası rollback kesin ve server cevabı değişmemişse yine de invalidation yapmak son durumu doğrular.
-
-## Önce bozuk geri alma, sonra doğru örnek
-
-Kırık yaklaşım eski değeri hiç saklamaz. POST başarısız olsa bile cache’te “Bora” kalır:
-
-```ts
-onMutate: ({ person }) => {
-  client.setQueryData(['following'], (old: Person[] = []) => [...old, person])
-}
+return (
+  <>
+    {favorite.isPending && favorite.variables !== undefined && (
+      <p>{movieTitle} favorilere ekleniyor…</p>
+    )}
+    {favorite.isError && <p role="alert">Favori kaydedilemedi.</p>}
+    <button onClick={() => favorite.mutate(movieId)}>Favori</button>
+  </>
+)
 ```
 
-Bir başka kırılma, snapshot’ı saklayıp rollback’te yok saymaktır. Aşağıdaki tam kesitte başka bir ürüne ait collection listesi kullanılır; `saveSelection` sunucu hata cevabında reject eder.
+Şimdi geçici satır yalnız işlem beklerken görünür; reject olursa hata mesajı gösterilir. Ancak başka bir ekrandaki favori listesi değişmez. Çünkü bu yaklaşım yalnız mutation state’ini okur, paylaşılan query cache’ine yazmaz.
+
+:::model[Mutation ve invalidation]
+Mutation sunucuya yazma talebidir; query cache’ini kendi başına değiştirmez. Tek bileşendeki bekleme görünümü için `variables` yeterli olabilir. Birden çok ekran aynı cache verisini hemen görmeli ise geçici cache yazısı, hata halinde geri alma ve işlem bitince invalidation gerekir.
+:::
+
+![Mutation, optimistic update ve invalidation akışı](diagram:mutation-ve-invalidation)
+
+## Ortak listeyi geçici olarak değiştir
+
+Sinema’nın favori listesi hem film kartında hem de Favoriler sayfasında okunuyor diyelim. İki yerde de yeni favori hemen görünmeli. Önce eski cache değerinin bir kopyasını **snapshot** olarak alırız; snapshot, değişiklikten hemen önceki değerin saklanmış görüntüsüdür. TanStack Query’nin `onMutate` callback’inden döndürdüğün bu bilgi **mutation context** olur: callback’ler arasında taşınan ek veridir ve hata callback’inde rollback için kullanılır.
+
+Şimdi üçüncü, birleştirilmiş örnek. Bu örnekte `addMovieToFavorites` senaryosu, puan kaydetme görevlerinden ayrıdır:
 
 ```tsx check
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-type Selection = { id: number; label: string }
-type Input = { collectionId: string; item: Selection }
-declare function saveSelection(input: Input): Promise<void>
+type Movie = { id: number; title: string }
+type FavoriteInput = { sessionId: string; movie: Movie }
+declare function addMovieToFavorites(input: FavoriteInput): Promise<void>
 
-export function SelectionButton({ collectionId, item }: Input) {
+export function FavoriteAction({ sessionId, movie }: FavoriteInput) {
   const client = useQueryClient()
-  const save = useMutation({
-    mutationFn: saveSelection,
-    onMutate: async ({ collectionId: id, item: next }) => {
-      const key = ['collections', id, 'items'] as const
-      await client.cancelQueries({ queryKey: key })
-      const previous = client.getQueryData<Selection[]>(key)
-      client.setQueryData<Selection[]>(key, (old) =>
-        old ? [...old, next] : old,
+  const add = useMutation({
+    mutationFn: addMovieToFavorites,
+    onMutate: async ({ sessionId: id, movie: nextMovie }) => {
+      const queryKey = ['favorites', id] as const
+      await client.cancelQueries({ queryKey })
+      const previous = client.getQueryData<Movie[]>(queryKey)
+      client.setQueryData<Movie[]>(queryKey, (old) =>
+        old ? [...old, nextMovie] : old,
       )
-      return { key, previous }
+      return { queryKey, previous }
     },
     onError: (_error, _input, context) => {
       if (context?.previous !== undefined) {
-        client.setQueryData(context.key, context.previous)
+        client.setQueryData(context.queryKey, context.previous)
       }
     },
     onSettled: (_data, _error, input) =>
-      client.invalidateQueries({ queryKey: ['collections', input.collectionId, 'items'] }),
+      client.invalidateQueries({ queryKey: ['favorites', input.sessionId] }),
   })
+
   return (
-    <button disabled={save.isPending} onClick={() => save.mutate({ collectionId, item })}>
-      {save.isPending ? 'Ekleniyor…' : 'Koleksiyona ekle'}
+    <button
+      disabled={add.isPending}
+      onClick={() => add.mutate({ sessionId, movie })}
+    >
+      {add.isPending ? 'Ekleniyor…' : 'Favorilere ekle'}
     </button>
   )
 }
 ```
 
-Burada yeni öğenin listede olmadığı varsayılmıştır. Gerçek üründe tekrar tıklama ihtimali varsa eklemeden önce aynı `id` var mı kontrol et. Cache değeri sayfalıysa toplam ve sayfa ilişkisini de koru.
+`onMutate` önce aynı query için devam eden GET isteğini iptal eder. Böylece daha önce başlamış eski bir cevap, optimistic yazının üstüne gelip onu silemez. Sonra mevcut listeyi alıp snapshot olarak döndürür ve yeni array ile geçici favoriyi cache’e yazar. Sunucu hata verirse `onError` snapshot’ı yerine koyar; işlem başarılı ya da hatalı bittiğinde `onSettled` listeyi invalidate eder ve sunucunun son durumunu tekrar aldırır.
 
-`onMutate` çalışırken `mutationFn` henüz sunucuda başarılı olmamıştır. Callback’in kendi Promise’i tamamlanana kadar mutation’ın asıl gönderimi bekler; bu sayede cancellation ve snapshot adımları yazmadan önce tamamlanır. Callback içinde hata fırlarsa yazma akışı farklı davranır; optimistic kurulumun sessizce yarım kalmaması için context’i ve olası hata yolunu düşün. Snapshot tipi de cache’teki veri tipiyle aynı olmalıdır; `unknown` veya aşırı geniş tip rollback’in güvenliğini azaltır.
+Context’i ayrıca callback’ten döndürmemizin nedeni, hata anında başlangıç listesini yeniden hesaplayamıyor oluşumuzdur: o sırada cache geçici olarak değişmiş durumdadır. `onMutate` içindeki `previous` değeri işlem başlamadan önceki tek güvenilir kopyadır. Context ile bu kopya mutation’ın hata callback’ine kadar taşınır.
 
-Her mutation’da bütün cache’i geri yüklemek zorunda değilsin. Basit ve tek işlemli örnekte snapshot en anlaşılır çözümdür. Aynı kayda paralel iki değişiklik varsa daha güvenli seçenekler vardır: aynı kayda ait işlemleri seri yürütmek; ekleme/silme gibi tersine çevrilebilir bir farkı geri almak; ya da ortak cache’i bekletip yalnız mutation variables’ı görünür kılmak. Seçeneklerden biri bütün yarışları kendiliğinden çözmez; API’nin çakışma kuralı da önemlidir.
+Cache henüz yüklenmediyse `previous` değeri `undefined` olur. Bu durumda boş listeyi snapshot gibi yazıp rollback etmek yanlış olurdu; eski bir liste yoktu. Kod, yalnız gerçek bir önceki değer varsa geri yükler. Ayrıca `[...old, nextMovie]` yeni array üretir; `old.push(nextMovie)` ile eski array’i değiştirmez.
 
-Optimistic arayüzde erişilebilirlik de korunmalı. Pending metni yalnız renkle ayrılmamalı; düğme adı veya canlı bölge kullanıcıya işlemin sürdüğünü anlatmalı. Hata sonrası kaybolan geçici değer, “başarılı oldu” hissi vermemeli. Ekran okuyucu kullanan biri de geçici ve onaylanmış değeri ayırt edebilmelidir.
+## Başarısız isteği zaman çizelgesinde izle
 
-## Eşzamanlı yazmaların sınırı
+Favori cache’i `['Dune']` olsun; kullanıcı “Arrival”ı eklesin ve sunucu isteği reddetsin:
 
-Tek snapshot’ı körlemesine geri koymak iki paralel mutation’da sorun çıkarabilir. A işlemi snapshot alır, B işlemi yeni snapshot alır, A başarısız olunca ilk snapshot’ı geri koyarsa B’nin başarılı değişikliğini de silebilir. Bu durumda sadece variables tabanlı görünüm kullanmak, aynı kaynağa yazmaları sıraya almak veya işlem başına farkı tersine çevirmek daha doğru olabilir. `scope` ile aynı scope’taki mutation’ları seri çalıştırmak da bir seçenektir; fakat başka cihazlardan gelen yazmaları çözmez.
+| An | Ağ ve callback | Cache | Ekran |
+| --- | --- | --- | --- |
+| t0 | Önceki GET tamamlanmış | `['Dune']` | Dune |
+| t1 | `onMutate` eski GET’i iptal eder, snapshot alır | `['Dune']` | Dune |
+| t2 | Optimistic yazı yapılır, POST başlar | `['Dune', 'Arrival']` | İkisi görünür |
+| t3 | POST hata verir, `onError` çalışır | Snapshot: `['Dune']` | Arrival kaybolur, hata gösterilir |
+| t4 | `onSettled` sonrası GET döner | Sunucudaki gerçek liste | Son durum görünür |
 
-:::mistake[Eski GET geçici sonucu siliyor]
-Belirti → Yeni satır tıklama anında çıkıp birkaç milisaniye sonra kayboluyor. Neden → Önceden başlamış GET eski listeyle cache’e yazdı. Düzeltme → Patch’ten önce aynı query’yi `cancelQueries` ile iptal et.
+İşlem sırasında Arrival görünür ama henüz onaylanmamıştır. Hata mesajı bu farkı kullanıcıya anlatır; aksi halde kullanıcı eklemenin kesinleştiğini sanabilir.
+
+## Gerçek bir rollback hatası
+
+Snapshot alıp `onError` içinde kullanmazsan POST başarısız olsa bile favori cache’te kalır. Belirti, kullanıcı Favoriler sayfasına geçtiğinde reddedilen filmin hâlâ listede görünmesidir. Düzeltme, yalnızca `onMutate` içinde saklanan önceki değeri `onError` callback’inde geri yazmaktır.
+
+:::mistake[Önceki GET geçici favoriyi siliyor]
+Belirti → Arrival bir an görünür, ardından liste eski haline döner. Neden → Patch’ten önce başlayan GET, eski listeyi daha sonra cache’e yazdı. Düzeltme → Snapshot almadan ve optimistic yazmadan önce aynı query’yi `cancelQueries` ile iptal et.
 :::
 
-:::mistake[Rollback başka başarıyı siliyor]
-Belirti → İki kayıt aynı anda gönderildi; biri hata verince ikisi de kayboldu. Neden → Eski snapshot bütün cache’i geri koydu. Düzeltme → Yerel variables yaklaşımı seç, yazmaları sırala veya yalnız başarısız işlemin farkını geri al.
+:::mistake[Cache yokken boş liste uydurmak]
+Belirti → Henüz yüklenmemiş Favoriler ekranı hata sonrası boş ve yüklüymüş gibi görünür. Neden → Snapshot `undefined` iken `[]` geri yüklendi. Düzeltme → Cache’te gerçekten önceki değer varsa onu geri koy; yoksa kayıt yaratma.
 :::
 
-:::mistake[Undefined cache’i boş liste sanmak]
-Belirti → Henüz açılmamış sayfa hata sonrası boş ve taze görünüyor. Neden → Rollback öncesinde olmayan query için `[]` yazıldı. Düzeltme → Snapshot `undefined` ise kayıt üretme; gerektiğinde invalidate et.
-:::
-
-:::sector
-Ürün ekipleri optimistic değişikliği seçerken “kaç ekran hemen güncellenmeli?” sorusunu sorar. Tek satır cevabı için variables, ortak liste görünümü için cache patch’i uygundur. Cache patch’inde hata halinde geri alma ve paralel işlemlerin sahipliği tasarımın parçasıdır; yalnız animasyon kararı değildir.
+:::info[Derinlemesine (isteğe bağlı)]
+Aynı listeye birden çok mutation aynı anda yazarsa, eski snapshot’ı geri koymak arada başarıyla eklenen başka bir filmi de silebilir. `scope` aynı scope’taki mutation’ları sıraya alabilir; `useMutationState` ortak mutation durumlarını okumaya yarar. Bu araçlar başka cihazlardan gelen değişiklikleri çözmez; paralel yazmaların kuralı API ve ürün davranışıyla birlikte tasarlanır.
 :::
 
 ## Özet
 
-- Tek bileşendeki geçici görünüm için `variables` genellikle yeterlidir.
-- Paylaşılan cache’i değiştirirken önce GET’i iptal et, snapshot al ve immutable yaz.
-- Hata callback’i snapshot’ı geri yükler; işlem sonunda invalidation sunucuyla uzlaştırır.
-- Snapshot rollback’i paralel mutation’ları yanlışlıkla silebilir.
-- Cache yoksa boş veri uydurmak yerine `undefined` durumunu koru.
+- Tek karttaki geçici görünüm için `isPending` ve `variables` kullan; cache yazmak şart değildir.
+- Ortak query görünümünü değiştireceksen önce devam eden GET’i iptal et ve snapshot al.
+- `onMutate` dönüşü mutation context’tir; hata callback’i bunu rollback için alır.
+- Immutable cache yaz; cache yoksa `undefined` değerini boş listeye çevirme.
+- İşlem sonunda invalidation, arayüzü sunucunun son kabul ettiği veriyle uzlaştırır.
 
-**Kendini yokla:** Optimistic metin için her zaman `setQueryData` gerekir mi?  
-Cevap: Hayır. Tek mutation’ı gösteren bileşen `isPending` ve `variables` okuyabilir.
+**Yeni terimler**
 
-**Kendini yokla:** Snapshot’tan önce eski GET’i neden iptal ederiz?  
-Cevap: Eski cevap daha sonra dönüp geçici cache güncellemesini ezmesin diye.
+- **Optimistic update:** Sunucu cevabını beklemeden beklenen sonucu geçici gösterme.
+- **Snapshot:** Değişiklikten önce cache’te bulunan değerin saklanmış görüntüsü.
+- **Mutation context:** `onMutate` dönüşüyle diğer mutation callback’lerine taşınan ek bilgi.
+
+**Kendini yokla:** Tek bir film kartında bekleyen metin için neden cache güncellemen gerekmeyebilir?
+
+Cevap: O kart `isPending` ve `variables` okuyarak geçici metni gösterebilir; ortak listeyi değiştirmek zorunda değildir.
+
+**Kendini yokla:** Snapshot almadan önce eski GET’i neden iptal ederiz?
+
+Cevap: Eski cevap geç dönüp yeni optimistic cache değerinin üstüne yazmasın diye.

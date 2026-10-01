@@ -1,3 +1,3 @@
-export default function Favorites() {
-  return <h1>Favoriler</h1>
+export function Component() {
+  return null
 }

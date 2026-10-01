@@ -1,154 +1,154 @@
 ---
-title: "Sabit veriyi kontrol et, literal tipini koru"
+title: "Sabit tabloları satisfies ile denetle"
 minutes: 14
 kind: concept
 ---
 
-# Sabit veriyi kontrol et, literal tipini koru
+# Sabit tabloları `satisfies` ile denetle
 
-:::pain[Problem]
-Uygulamanın navigasyon tablosunda `home` ve `account` rotaları var. Ekip bir kart ekleyip `account: '/acount'` yazıyor; tablo yalnızca `Record<string, string>` ile tanımlı olduğu için yanlış yolu yakalayamıyor. Üstelik geniş string tipi, her rotanın tek tek çıkarılan bilgisini de siliyor.
-:::
+Sinema sayfasında filtre düğmelerinin görünen yazıları kaynak kodunda sabit duruyor. İki filtren varsa ikisinin de yazısını tanımlamak istersin; ama tabloyu yalnızca genel bir nesne tipiyle açıklarsan yazım hatalarını fark etmek zorlaşır.
 
-## Sabit kaynak kodu ile dış veri arasındaki fark
+## Önce tabloyu kur, sonra sözleşmesini denetle
 
-Kaynak koduna yazdığın tabloyu TypeScript derleyicisi inceleyebilir. Beklenen anahtarların hepsi var mı, değerler doğru türde mi diye kontrol etmesini isteyebilirsin. `satisfies`, ifadenin beklenen sözleşmeye uyduğunu denetlerken ifadenin kendi çıkarılan tipini korur. `as const` ise literal değerleri geniş string veya sayı tipine dönüşmekten korur ve alanları readonly yapar.
-
-Önceki `keyof` ve `typeof` modelinde sabit bir değerden tip çıkardın. Burada o değeri oluştururken hem yapıyı denetliyor hem de daha sonra kullanacağın literal bilgiyi tutuyorsun. `satisfies` ve `as const` kaynak koddaki sabitlerle ilgilidir; network JSON'u doğrulamaz, nesneyi `Object.freeze` gibi dondurmaz.
-
-![Kaynak tablonun sözleşmeye uyumunun denetlenmesi ve literal tip çıkarımının korunması](diagrams/satisfies-kontrolu.svg)
-
-## İki operatör, iki ayrı iş
-
-Şöyle bir nesne olduğunu düşün: her rota için anahtar `RouteName`, her değer de string olmalı. Açık tip açıklaması (`const routes: Record<RouteName, string> = ...`) sözleşmeyi denetler ama değerlerin tipi çoğunlukla `string` olarak görülür. Sadece `as const` ise literal'leri tutar ama tabloya eksik anahtar eklemeyi engellemez. İkisini `as const satisfies ...` ile birleştirebilirsin.
-
-Kurallar:
-
-1. `satisfies Shape`, ifadenin `Shape` ile uyumunu derleme zamanında denetler.
-2. `satisfies` değişkeni zorla `Shape` tipine dönüştürmez; çıkarılan alan ve literal tipleri korunur.
-3. `as const`, literal değerleri daraltır ve nesne/dizi alanlarını readonly yapar.
-4. `as const` runtime freeze değildir; derlenmiş JavaScript'te nesne hâlâ değiştirilebilir olabilir.
-5. `satisfies` ve `as const` çalışma zamanı verisine kontrol eklemez.
-6. `Record<ClosedUnion, Value>` gibi kapalı sözleşmeler beklenen tüm anahtarları kontrol eder.
+Bir **sözleşme**, burada nesnede bulunması gereken alanların ve değer türlerinin tarifidir. `Record<K, V>`, `K` anahtarlarının her birinde `V` türünde değer isteyen böyle bir sözleşmedir. Aşağıdaki örnekte `FilterName` izin verilen anahtarları belirler:
 
 ```ts check
-type RouteName = 'home' | 'profile'
-const NAVIGATION_PATHS = {
-  home: '/',
-  profile: '/members/:id',
-} as const satisfies Record<RouteName, string>
+type FilterName = 'all' | 'watched'
 
-type ProfileRoute = typeof NAVIGATION_PATHS.profile
-const route: ProfileRoute = '/members/:id'
-const home: string = NAVIGATION_PATHS.home
+const FILTER_LABELS = {
+  all: 'Tüm filmler',
+  watched: 'İzlediklerim',
+} satisfies Record<FilterName, string>
 ```
 
-`ROUTES` tablosunun anahtarları `home` ve `profile`; `profile` değerinin tipi `'/members/:id'` literal'idir. Yalnızca `Record` annotation'ı kullansaydın o alan `string` olurdu. Eksik `profile` anahtarı veya yanlış anahtar adı sözleşme kontrolüne takılır.
+Bu tablo iki filtre anahtarını da içeriyor ve her yazı string. `satisfies` bu uyumu **derleme zamanında** kontrol eder: derleyici kodu çalıştırmadan önce yazdığın kaynak kodu inceler. Nesneyi `Record<FilterName, string>` tipine çevirmediği için `FILTER_LABELS` değişkeninin kendi çıkarılan yapısı korunur.
 
-## Derleyicinin gördüğünü adım adım izle
+![Kaynak tablonun sözleşmeye uyumunun denetlenmesi ve literal tip çıkarımının korunması](diagrams/satisfies-kontrolu.svg "Sözleşmeyi denetle, çıkarılan tipi koru")
 
-| Aşama | Kontrol veya çıkarım | Sonuç |
-| --- | --- | --- |
-| `RouteName` tanımlanır | İzinli anahtar kümesi `'home' \| 'profile'` | İki anahtar zorunlu |
-| Nesne literal'i kurulur | Gerçek değerler görülür | `home` ve `profile` alanları çıkarılır |
-| `as const` uygulanır | Literal ve readonly bilgisi korunur | `ROUTES.profile` tipi `'/members/:id'` |
-| `satisfies Record<...>` kontrol eder | Beklenen iki anahtar ve string değerler var mı | Uyum varsa derleme devam eder |
-| Kod çalışır | Normal JavaScript nesnesi vardır | Runtime değeri string olarak okunur |
-
-Bu sırada compiler tabloyu kontrol eder ama ona runtime davranış eklemez. `ROUTES.profile = '/x'` TypeScript'te readonly nedeniyle reddedilir; JavaScript çıktısındaki nesne ise gerçek anlamda dondurulmuş değildir. Runtime'da değişmezlik gerekiyorsa `Object.freeze` gibi JavaScript API'si gerekir.
-
-## Önce kırık, sonra doğru
-
-Geniş kayıt tipi yazım hatalarını kaçırır ve literal'leri kaybettirir:
+Şimdi anahtarı bilerek yanlış yazalım:
 
 ```ts
-type RouteName = 'home' | 'profile'
-const routes: Record<string, string> = {
-  home: '/',
-  profle: '/members/:id',
+const FILTER_LABELS = {
+  all: 'Tüm filmler',
+  watced: 'İzlediklerim',
+} satisfies Record<'all' | 'watched', string>
+```
+
+Derleyici `watched` eksik, `watced` ise izin verilmeyen bir anahtar diye işaretler. `Record<string, string>` yazsaydın her string anahtar kabul edileceği için bu yazım hatasını yakalayamazdı. Kapalı bir anahtar kümesi bu yüzden daha yararlıdır.
+
+## Değerin tipini de gerektiğinde koru
+
+Bazen alanın yalnızca string olduğunu bilmek yetmez; belirli bir sabit değere bağlı kalmasını istersin. Önceki derste gördüğün `as const`, bir literal değerin genel `string` tipine genişlemesini engeller. Aynı filtre tablosuna bunu ekleyelim:
+
+```ts check
+type FilterName = 'all' | 'watched'
+
+const FILTER_LABELS = {
+  all: 'Tüm filmler',
+  watched: 'İzlediklerim',
+} as const satisfies Record<FilterName, string>
+
+const watchedLabel: 'İzlediklerim' = FILTER_LABELS.watched
+```
+
+Burada iki araç ayrı işler yapıyor: `as const` değerlerin literal tipini koruyor; `satisfies` beklenen iki anahtarın bulunduğunu ve değerlerin string olduğunu denetliyor. Sadece `satisfies` kullansaydın tablo yine denetlenirdi ama bu nesnedeki yazılar genellikle `string` olarak çıkarılırdı. `as const`'ı her nesneye ekleme; ancak kodun o kesin değere gerçekten ihtiyaç duyuyorsa kullan.
+
+Bir Sinema detay ekranında filtrelerden başka, hangi bölümlerin gösterileceğini de sabit bir listede tutabiliriz. Bu kez listedeki değerlerden anahtar tipini çıkarıp ikinci tabloyu aynı sözleşmeye bağlayalım:
+
+```ts check
+const DETAIL_SECTIONS = ['overview', 'cast'] as const
+type DetailSection = (typeof DETAIL_SECTIONS)[number]
+
+const SECTION_LABELS = {
+  overview: 'Genel bakış',
+  cast: 'Oyuncular',
+} as const satisfies Record<DetailSection, string>
+
+function sectionLabel(section: DetailSection) {
+  return SECTION_LABELS[section]
 }
-const profile: string = routes.profile
 ```
 
-Bu kod `profle` hatasını kabul eder; `routes.profile` runtime'da `undefined` olur. Anahtar kümesini kapalı tut ve çıkarılan değeri koru:
+`DETAIL_SECTIONS` iki geçerli bölüm adını tutuyor; `DetailSection` bu iki değerden oluşan tipi çıkarıyor. Sonra `satisfies` her bölüm için bir başlık yazıldığını denetliyor. Yeni bölüm eklediğinde başlığını da eklemeyi unutursan derleme hatası alırsın; bu ilişkiyi kendin güncellemen gerekir.
+
+Bir başka kaynak tablosu Sinema sayfalarının yollarını tutabilir. `keyof typeof` ile geçerli sayfa adlarını tablodan çıkarınca, fonksiyon yanlış bir sayfa adını kabul etmez:
 
 ```ts check
-type RouteName = 'home' | 'profile'
-const routes = {
-  home: '/',
-  profile: '/members/:id',
-} as const satisfies Record<RouteName, string>
+const PATHS = {
+  discover: '/discover',
+  favorites: '/favorites',
+} as const satisfies Record<'discover' | 'favorites', string>
 
-const profilePath: '/members/:id' = routes.profile
-```
-
-Şimdi zorunlu alan eksik veya fazla yazılmışsa derleme hatası alırsın. `as const` ile yola bağlı literal de kullanıma hazır kalır.
-
-## Sabit tabloya uyan fonksiyonlar
-
-`typeof routes` tablo tipidir; `keyof typeof routes` anahtar union'ını verir. Bu sayede fonksiyon yalnız tanımlı rota isimlerini kabul edebilir:
-
-```ts check
-const PATHS = { home: '/', help: '/help' } as const satisfies Record<'home' | 'help', string>
 type PageName = keyof typeof PATHS
 
 function pathFor(page: PageName): (typeof PATHS)[PageName] {
   return PATHS[page]
 }
-
-const helpPath = pathFor('help')
 ```
 
-Dönüş tipi iki literal yoldan biri olur. Eğer değeri network'ten alıyorsan `PageName` annotation'ı yeterli değildir; gerçek stringi tablonun anahtarlarıyla runtime'da karşılaştırman gerekir. Kaynak kodundaki sözleşme ile dışarıdan gelen veri arasındaki sınır değişmez.
+`pathFor('favorites')` için TypeScript yalnızca tabloda tanımlı yolların tipini verir. `pathFor`'a dışarıdan gelen rastgele bir string aktarırsan bu derleme zamanı güvencesi tek başına o değeri doğrulamaz; çalışma anında ayrıca kontrol gerekir. Bu tablo kaynak koddaki sabitlerle dışarıdan gelen verinin farklı sınırda olduğunu gösterir.
 
-`satisfies` yazarken beklenen tipi bir kalite kontrolü gibi düşün: ifadeyi dönüştürmez, sadece uygun olmadığında derlemeyi durdurur. Bu yüzden daha sonra `keyof typeof PATHS` ile gerçek anahtarları çıkarabilirsin. Bir değişkene baştan `Record<PageName, string>` tipi verince compiler o değişkeni genel sözleşme üzerinden görür; tablodaki her özgül yol metninin bilgisi kaybolabilir. Literal tipini korumak, o değerin başka bir fonksiyona aktarılırken daha dar doğrulanmasını sağlar.
+`as const` dizilerde sabit uzunluklu bir **tuple** (eleman sayısı ve sırası tipe yazılmış dizi) çıkarır. Önceki derste gördüğün tekniği Sinema sekme adlarında kullanırsan, elemanlardan izin verilen adları türetebilirsin:
 
-Bu özellikleri her nesneye eklemek gerekmez. Tablonun eksiksizliği ve literal değerinin sonraki kodda anlamı varsa kullan. Değeri sonradan kullanıcıdan alıp değiştireceğin normal bir nesnede literal'i korumak gereksiz kısıtlama yaratabilir. TypeScript'in amacı her değişkeni mümkün olan en dar tipe kilitlemek değil, iş kuralının gerçekten istediği kesinliği taşımaktır.
+```ts check
+const DETAIL_TABS = ['overview', 'cast'] as const
+type DetailTab = (typeof DETAIL_TABS)[number]
+```
 
-`as const` nesne içindeki diziler için de tuple çıkarımı yapar. Örneğin `['home', 'settings']` normal bir değişkende `string[]` olurken, `as const` ile iki literal elemanı sabit uzunluklu readonly tuple olarak korunur. `(typeof tabs)[number]` bu tuple'ın eleman union'ını verir. Bu teknik, navigasyon menüsünü ve izinli sayfa adlarını aynı listeden üretmeye yarar.
+`DetailTab`, `'overview' | 'cast'` olur. Böylece liste hem ekranda kullanılacak değerleri tutar hem de başka fonksiyonların kabul edeceği adları sağlar. Tuple fikrini burada tekrar kullanıyoruz; `as const`'ın çalışma anında nesneyi dondurmadığı kuralı değişmiyor.
 
-Bir tabloda anahtar kümesini `satisfies` ile kontrol edip sonra `keyof typeof table` kullanabilirsin. Fakat `satisfies` yalnızca yazdığın literal ifadesi için denetim yapar; tablo sonradan başka kaynaktan genişletiliyorsa aynı çıkarım ilişkisi kurulmaz. Ayrıca `'home' | 'help'` gibi anahtar sözleşmesini ve değerlerin örneğin `string` olmasını ayrı ayrı düşün. Bir değerin `string` olması onun geçerli bir route olduğuna dair runtime kanıt sağlamaz; kaynak koddaki typo kontrolü ile URL güvenliği farklı sorulardır.
+## Derleyicinin yaptığı işi sırayla izle
 
-## Sınırlar ve sık hatalar
+| Aşama | Derleyicinin gördüğü | Sonuç |
+| --- | --- | --- |
+| `DetailSection` tanımlanır | `'overview' \| 'cast'` | İzin verilen anahtarlar belli |
+| `SECTION_LABELS` yazılır | İki gerçek alan ve iki string değer | Nesnenin kendi tipi çıkarılır |
+| `as const` değerlendirilir | Literal değerler ve readonly alanlar | Başlıkların kesin metinleri korunur |
+| `satisfies Record<...>` kontrol eder | Her zorunlu anahtar var mı, değerler string mi? | Eksik veya beklenmeyen anahtar hata verir |
+| Sayfa çalışır | Normal JavaScript nesnesi okunur | `satisfies` kaynak koda ek davranış katmaz |
 
-:::mistake[Belirti: `satisfies` yazdığın halde JSON'da alan eksik]
-Belirti → Sunucu `{ home: '/' }` gönderdi ve `profile` yok.  
-Neden → `satisfies` yalnızca derlenen kaynak ifadelerini kontrol eder.  
-Düzeltme → Dış değeri `unknown` kabul edip runtime guard veya şema ile doğrula.
+Son satır önemli: `satisfies` çalışma anında (kod çalışırken) veri denetlemez. API'den gelen JSON'u veya kullanıcı girişini güvenilir hâle getirmez. Bu araç, yalnızca TypeScript'in görebildiği kaynak kod tanımını kontrol eder.
+
+## Gerçek bir karışıklık: “readonly” nesneyi dondurmaz
+
+`as const` sonrasında TypeScript bir alanı değiştirmeye çalıştığında hata gösterir. Bu, JavaScript nesnesinin her koşulda değiştirilemez olduğu anlamına gelmez. `as const` derleyicinin gördüğü tipi daraltır; JavaScript'te nesneyi gerçekten dondurmaz.
+
+:::mistake[Belirti: tabloyu başka bir yerde değiştiren kod hata veriyor]
+Belirti → `as const` ekledikten sonra `SECTION_LABELS.cast = 'Kadrosu'` satırı TypeScript hatası veriyor.
+Neden → Kaynak tablonun bu yerde sabit kalması istendi ve alan readonly tipinde.
+Düzeltme → Başlıkları sonradan değiştirmek gerekiyorsa bu sabit tabloyu kullanma; değişebilir veriyi uygun bir tipte tut. Runtime'da JavaScript tarafından da değişiklik engellensin istiyorsan `Object.freeze` kullan.
 :::
 
-:::mistake[Belirti: `as const` ile nesne değişmez sanılır]
-Belirti → JavaScript consumer `ROUTES.home = '/other'` ataması yapabiliyor.  
-Neden → `as const` TypeScript'in tip görünümünü readonly yapar; JavaScript nesnesini dondurmaz.  
-Düzeltme → Runtime değişmezliği gerçekten gerekiyorsa `Object.freeze` uygula; bunu ayrıca test et.
-:::
+```ts check
+const sectionLabels = Object.freeze({
+  overview: 'Genel bakış',
+  cast: 'Oyuncular',
+})
 
-:::mistake[Belirti: Tabloya yeni anahtar eklenince başka kodlar string görür]
-Belirti → `routes.help` yalnız `string` kabul ediliyor, literal sözleşme kayıp.  
-Neden → Değişken doğrudan geniş bir `Record` tipine annotation ile atanmış.  
-Düzeltme → Uyum kontrolünü `satisfies` ile yap ve gerekiyorsa literal'leri `as const` ile koru.
-:::
+// TypeScript alanı readonly görür; çalışma anında da nesne dondurulmuştur.
+```
 
-:::mistake[Belirti: `Record<string, string>` her tabloyu kabul ediyor]
-Belirti → Beklenen birkaç sabit anahtar yerine herhangi bir yazım geçiyor.  
-Neden → `string` anahtar kümesi kapalı bir union değildir.  
-Düzeltme → `Record<'home' | 'profile', string>` gibi gerçek izin listesini kullan.
-:::
+`Object.freeze`, nesneyi çalışma anında donduran JavaScript aracıdır. Bu örnekte alanlara yeni değer atamak engellenir. `Object.freeze` sığ dondurma yapar: iç içe nesneler varsa onları ayrıca dondurmaz. Çoğu sabit kaynak kod tablosunda derleme zamanı kontrolü yeterlidir; runtime'da da değişmesini engellemek gerçekten gerekiyorsa `Object.freeze` düşün.
 
-:::sector
-Kaynakta tutulan route, izin, ikon ve varyant tablolarında `as const satisfies` kullanmak yazım hatalarını erken yakalar ve değerleri otomatik tamamlama için korur. Kaynak kodu tablosuyla API'nin gönderdiği konfigürasyonu karıştırma; ikincisi runtime doğrulama ister.
+:::info[Derinlemesine (isteğe bağlı): Dış veriyi doğrulamak]
+`Object.freeze` iç içe nesneleri kendiliğinden dondurmaz. Ayrıca `satisfies` bir API cevabını kontrol etmez. Dışarıdan gelen verinin şeklini çalışma anında doğrulamak için `unknown` değer üzerinde guard veya şema kullanırsın; bunu type guard ve Zod konularında göreceksin.
 :::
 
 ## Özet
 
-- `satisfies` şekil kontrolü yapar ve değişkenin çıkarılan tipini korur.
-- `as const` literal değerleri ve readonly alanları korur.
-- Kapalı `Record` anahtar kümesi eksik veya hatalı anahtarı yakalar.
-- `as const` runtime freeze değildir.
-- Bu ikisi JSON veya URL girdisini doğrulamaz.
+- `satisfies Shape`, kaynak kodundaki bir değerin beklenen yapıya uyup uymadığını kontrol eder ve değişkenin çıkarılan tipini korur.
+- `Record<Keys, Value>` kapalı bir anahtar kümesindeki bütün alanları zorunlu kılabilir.
+- `as const` literal ve readonly tip görünümünü korur; `satisfies` ile farklı işleri tamamlar.
+- `satisfies` ve `as const` çalışma anındaki veriyi doğrulamaz veya nesneyi dondurmaz; `Object.freeze` çalışma anında dondurur.
 
-**Kendini yokla:** `as const satisfies` ile `const value: Shape = ...` arasındaki temel fark nedir?  
-*Cevap:* İlki uygunluğu kontrol ederken literal çıkarımı korur; annotation değişkeni genellikle `Shape` olarak genişletir.
+**Yeni terimler**
 
-**Kendini yokla:** Kaynaktaki tabloyu `satisfies` ile kontrol etmek API'den gelen tabloyu doğrular mı?  
-*Cevap:* Hayır. API verisi runtime'da ayrıca denetlenmelidir.
+- **Sözleşme:** Bir değerde bulunması beklenen alanların ve türlerin tarifi.
+- **Derleme zamanı:** TypeScript'in kodu çalıştırmadan önce kontrol ettiği aşama.
+- **Runtime (çalışma anı):** Program çalışırken gerçekleşen aşama.
+
+**Kendini yokla:** Bir tabloya `satisfies Record<'overview' | 'cast', string>` eklemek neyi yakalar?
+*Cevap:* İki anahtardan biri eksikse veya tabloda izin verilmeyen bir anahtar varsa derleme hatası verir.
+
+**Kendini yokla:** `as const` kaynak kodu tablosunu JavaScript'te gerçekten dondurur mu?
+*Cevap:* Hayır. Tip görünümünü readonly yapar; çalışma anında dondurmak için `Object.freeze` gerekir.

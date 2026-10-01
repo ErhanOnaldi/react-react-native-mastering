@@ -28,6 +28,7 @@ describe('sayfa geçişi', () => {
     expect(screen.getByText('Yeni sayfa yükleniyor')).toBeInTheDocument()
     expect(first).toBeInTheDocument()
     expect(await screen.findByText('Koşucu')).toBeInTheDocument()
+    expect(screen.getByText('Sonuç sayısı: 100')).toBeInTheDocument()
     expect(requests('/3/movie/popular')).toHaveLength(2)
   })
   it('key değişince istenen page parametresini gönderir', async () => {

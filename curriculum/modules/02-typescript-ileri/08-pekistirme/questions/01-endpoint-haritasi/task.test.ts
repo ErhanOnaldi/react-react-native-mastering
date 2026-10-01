@@ -16,9 +16,11 @@ it('detay yolunda detay tipi ve gerçek veriyi döndürür', () => {
   const detail = readEndpoint('/movie/550', responses)
   expect(detail.runtime).toBe(139)
   expectTypeOf(detail).toEqualTypeOf<MovieDetails>()
+  expectTypeOf(detail).not.toBeAny()
 })
 it('liste yolunda sayfalı sonuç döndürür', () => {
   const page = readEndpoint('/trending/movie/week', responses)
   expect(page.results[0].title).toBe('Kara Şövalye')
   expectTypeOf(page).toEqualTypeOf<Paginated<Movie>>()
+  expectTypeOf(page).not.toBeAny()
 })

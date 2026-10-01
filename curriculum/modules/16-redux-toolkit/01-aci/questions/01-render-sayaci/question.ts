@@ -13,9 +13,10 @@ export default defineQuestion({
       explanation: 'Sayaç gözlemi kanıttır; nedeni için Context değeri ve parent render’ını ayır.',
     },
     {
-      text: 'TMDB kesin beş istek attı.',
+      text: 'Bu etkileşim beş bileşeni render etti; ağ istekleri ayrıca ölçülmeli.',
       correct: false,
-      explanation: 'Render sayısı ağ isteği sayısı değildir; requests() ayrı ölçülür.',
+      explanation:
+        'Bu metin sayaç artışını doğru okur, fakat hangi bileşenlerin çalıştığını tek başına göstermez.',
     },
     {
       text: 'React her action’da tüm DOM’u yeniden kurdu.',

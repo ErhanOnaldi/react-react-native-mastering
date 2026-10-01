@@ -4,14 +4,17 @@ export default defineQuestion({
   type: 'quiz',
   title: 'Promise içindeki tip',
   difficulty: 'kolay',
-  concepts: ['ts.async-types', 'ts.return-parameters'],
-  question:
-    '`async function load(): Promise<Movie[]>` için `Awaited<ReturnType<typeof load>>` nedir?',
+  concepts: ['ts.async-types'],
+  question: '`Awaited<Promise<Movie[]>>` hangi tipi verir?',
   options: [
-    { text: '`Movie[]`', correct: true, explanation: 'Awaited Promise içindeki değeri çıkarır.' },
+    {
+      text: '`Movie[]`',
+      correct: true,
+      explanation: 'Awaited Promise katmanını açar; dizi ve içindeki Movie tipi aynı kalır.',
+    },
     {
       text: '`Promise<Movie[]>`',
-      explanation: 'Bu ReturnType sonucudur; Awaited bir katmanı açar.',
+      explanation: 'Awaited Promise katmanını açar, bu yüzden sonuç artık Promise değildir.',
     },
     { text: '`Movie`', explanation: 'Promise açılır, dizi açılmaz.' },
   ],

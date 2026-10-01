@@ -1,137 +1,54 @@
 ---
-title: "Test stratejisi ve CI: güveni otomatikleştir"
-minutes: 12
+title: "Test stratejisi ve CI"
+minutes: 8
 kind: project
 ---
 
-# Test stratejisi ve CI: güveni otomatikleştir
+# Test stratejisi ve CI
 
-:::pain[Problem]
-Kendi bilgisayarında `pnpm dev` açıkken her şey harika çalışıyor gibi görünür: aramayı denedin, bir kitap ekledin, ekran yeşil. Ancak kodu GitHub'a gönderdiğinde arkadaşın projeyi klonluyor ve açar açmaz hata alıyor: TypeScript derlenmiyor, bir test unutulmuş, bir CSS dosyası üretim derlemesinde (`pnpm build`) eksik import yüzünden patlamış.
-
-Bir yazılımın çalıştığına dair tek kanıt "benim makinemde çalışıyordu" cümlesi olamaz. Otomatikleşmemiş test ve denetlenmeyen derleme, üretime taşınan gizli bir saatli bombadır.
-:::
-
-Bu derste Kitaplık projesine çok katmanlı bir test stratejisi (Birim, RTL + MSW, Playwright E2E) kuruyor ve her kod push işleminde bu kontrolleri baştan sona yürüten bir GitHub Actions CI hattı inşa ediyorsun.
-
-## Test Katmanları ve CI Zihinsel Modeli
-
-Bir uygulamayı test ederken her şeyi her katmanda test etmeye çalışmak hem testleri aşırı yavaşlatır hem de kırılganlık yaratır:
+“Bilgisayarımda çalıştı” başka bir makinede de çalışacağını göstermez. Kitaplık’ta bunu sınamak için dış API yanıtlarını kontrolünde tutmalı, kullanıcıya görünen davranışları doğrulamalı ve aynı komutları her kod değişikliğinde çalıştırmalısın.
 
 :::model[Test katmanları]
-Test piramidi üç ana kata ayrılır: tabanda çok hızlı ve ucuz **birim testleri** (saf fonksiyonlar, Zod şemaları, formatlayıcılar); ortada kullanıcı deneyimini taklit eden **bileşen ve entegrasyon testleri** (RTL + sahte ağ MSW); tepede ise gerçek tarayıcıda çalışan az sayıda kritik **uçtan uca (E2E) test** (Playwright).
+Saf fonksiyonlar ve şema dönüşümleri birim testiyle hızlıca denetlenir. Bileşen testinde RTL kullanıcıya görünen arayüzü, MSW ise ağ yanıtını taklit eder. Playwright E2E testi gerçek tarayıcıda birkaç kritik adımı birleştirir. Her katman farklı bir riski kontrol eder; aynı ayrıntıyı her katmanda tekrar etme.
 :::
 
-![Test piramidi ve CI kalite kontrol hattı](diagram:test-katmanlari)
+## Testin tekrar edilebilir olması
 
-Bu modeli şu temel kurallarla yönetirsin:
+**Deterministik veri**, her çalıştırmada aynı yanıtı ve sonucu veren kontrollü veridir. Testin gerçek Open Library ağına çıkarsa yanıt yavaşlayabilir, değişebilir veya gelmeyebilir. MSW ile Vitest testlerindeki yanıtı, Playwright’ta `page.route` ile tarayıcı yanıtını taklit et; böylece test ağ durumuna bağlı kalmaz.
 
-1. **Aynı davranışı üç katmanda kopyalama:** Bir Zod dönüşüm kuralını (örneğin kapak `-1` ise `null` yapma) birim testinde doğrula; E2E testinde tüm kitapların kapak mantığını tekrar test etmeye çalışma. E2E yalnızca kritik yolun (arama → detay → listeye ekle) entegrasyonunu doğrular.
-2. **Gerçek ağa asla bağımlı olma:** Birim ve entegrasyon testlerinde MSW; E2E testlerinde `page.route` kullanarak dış ağ isteklerini deterministik verilerle karşıla. Gerçek Open Library veya harici sunucuya atılan testler ağ yavaşlığında patlar (flaky test).
-3. **CI hattında derlemeyi mutlaka sına:** Sadece testleri koşturmak yetmez; `pnpm build` komutu çalıştırılmalı ve Vite'ın üretim paketi sorunsuz ürettiği kanıtlanmalıdır.
-4. **Tanımsız istekleri hata say:** MSW yapılandırmasında `onUnhandledRequest: 'error'` kullanarak uygulamanın testler sırasında farkında olmadan bilinmeyen adreslere istek atmasını engelle.
+Gerçek zamanlamaya göre bazen geçen bazen kalan teste **flaky test** denir. Örneğin “bir saniye bekle, sonra başlık vardır” varsayımı, ağ daha yavaşsa bozulur. Sabit bekleme yerine başlığın görünmesini bekle. MSW’de tanımsız istekleri hata yapmak da yanlış adrese sessizce çıkılmasını engeller.
 
-## CI hattını adım adım izleyelim
+## CI’da aynı sırayı çalıştır
 
-Bir pull request açıldığında GitHub Actions sunucusunun izlediği doğrulama adımları:
+**CI** (continuous integration), yeni kod gönderildiğinde kalite kontrollerini otomatik çalıştıran sistemdir. İş akışında önce Node/pnpm ortamını hazırla ve bağımlılıkları kur; ardından lint, format, tip kontrolü, Vitest, üretim build’i ve Playwright’ı çalıştır.
 
-| Sıra | İş akışı adımı | Çalışan komut | Amaç | Başarısızlık senaryosu |
-| --- | --- | --- | --- | --- |
-| 1 | Kod çekme ve ortam | `actions/checkout`, `pnpm/action-setup` | Depoyu ve pnpm ortamını hazırlar | Yanlış Node sürümü |
-| 2 | Bağımlılık kurulumu | `pnpm install --frozen-lockfile` | `pnpm-lock.yaml` ile paketleri yükler | Lockfile uyuşmazlığı |
-| 3 | Statik analiz | `pnpm lint && pnpm format:check` | Kod standartları ve kurallarını denetler | Biçim veya lint ihlali |
-| 4 | Tip kontrolü | `pnpm typecheck` | TypeScript derleyicisi (`tsc -b`) | Tip uyumsuzluğu |
-| 5 | Birim/Entegrasyon | `pnpm test` | Vitest + RTL + MSW testleri | İş mantığı kırılması |
-| 6 | Üretim derlemesi | `pnpm build` | Vite üretim paketlemesi ve hash'li dosyalar | Eksik modül veya asset |
-| 7 | E2E testleri | `pnpm test:e2e` | Playwright ile gerçek tarayıcı senaryoları | Rota veya kritik akış arızası |
+`pnpm install --frozen-lockfile` **frozen lockfile** kullanır: CI, `pnpm-lock.yaml` ile `package.json` uyuşmuyorsa bağımlılıkları sessizce güncellemek yerine hata verir. Böylece başka bir bilgisayarda farklı paket sürümleriyle “şans eseri” çalışan bir kurulum oluşmaz.
 
-## Kod örnekleri: Yanlış ve doğru test pratikleri
+| Sıra | Kontrol | Ne yakalar? |
+| --- | --- | --- |
+| 1 | Lint, format, typecheck | Kod kuralları ve tip sorunları |
+| 2 | Vitest | Mantık ve bileşen davranışı |
+| 3 | Build | Üretim paketleme sorunları |
+| 4 | Playwright | Kritik tarayıcı akışı |
 
-### Kırık örnek: Belirsiz bekleme ve kırılgan seçiciler
+![Birim, entegrasyon ve uçtan uca testler CI kalite kontrol hattında yer alır](diagram:test-katmanlari)
 
-Aşağıdaki E2E testi ağ gecikmesine göre rastgele geçer veya kalır:
+Test stratejisi belgesinde hangi gereksinimin hangi katmanda kontrol edildiğini ve nelerin açık risk kaldığını yaz. Örneğin dış servisin güncel olup olmadığını taklit edilmiş kullanıcı testi kanıtlamaz; bu ayrı bir izleme ihtiyacıdır.
 
-```ts
-// TEHLİKE: Kırılgan test mantığı
-import { test, expect } from '@playwright/test'
-
-test('kitap aranır', async ({ page }) => {
-  await page.goto('/')
-  // HATA: CSS sınıfına veya iç DOM yapısına bağımlılık
-  await page.locator('.search-input-wrapper > input').fill('Dune')
-  await page.locator('button.btn-primary').click()
-
-  // TEHLİKE: Yapay bekleme! Ağ 1001 ms sürerse test kalır!
-  await page.waitForTimeout(1000)
-
-  // HATA: Erişilebilir rol yerine div metni kontrolü
-  expect(await page.locator('div.card-title').count()).toBeGreaterThan(0)
-})
-```
-
-### Doğru örnek: Erişilebilir locator ve ağ taklidi
-
-Kullanıcı gibi davranan, ağ isteklerini izole eden sağlam bir test kurgulayalım:
-
-```ts
-import { test, expect } from '@playwright/test'
-
-test('kullanıcı kitap arar ve ilk sonuca tıklar', async ({ page }) => {
-  // 1. Dış ağ isteğini page.route ile taklit et
-  await page.route('**/search.json*', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        numFound: 1,
-        docs: [{ key: '/works/OL123W', title: 'Örnek Kitap', author_name: ['Test Yazarı'] }],
-      }),
-    })
-  })
-
-  // 2. Sayfayı aç ve kullanıcı gibi etkileşime gir
-  await page.goto('/search')
-  await page.getByRole('textbox', { name: 'Kitap ara' }).fill('Örnek')
-  await page.getByRole('button', { name: 'Ara' }).click()
-
-  // 3. Erişilebilir içerik üzerinden otomatik beklemeli assertion
-  await expect(page.getByRole('link', { name: 'Örnek Kitap' })).toBeVisible()
-})
-```
-
-Bu test:
-- Ağ dalgalanmalarından etkilenmez.
-- `waitForTimeout` içermez; Playwright element görünene kadar akıllıca bekler.
-- CSS sınıflarına değil, kullanıcının gördüğü erişilebilir rollerine (`textbox`, `button`, `link`) güvenir.
-
-## Sık karşılaşılan test ve CI hataları
-
-:::mistake[CI hattında Playwright tarayıcı kurulumunu unutmak]
-**Belirti:** Birim testler geçerken `pnpm test:e2e` adımında `Executable doesn't exist at /root/.cache/ms-playwright/chromium...` hatasıyla CI'ın çökmesi.  
-**Neden:** Playwright Node paketini yüklemek tarayıcı ikililerini (Chromium) otomatik indirmez; CI ortamında açıkça kurulmalıdır.  
-**Düzeltme:** CI workflow dosyasında `pnpm test:e2e` komutundan hemen önce `pnpm exec playwright install --with-deps chromium` adımını çalıştır.
-:::
-
-:::mistake[MSW handler'larında her sorguya aynı cevabı dönmek]
-**Belirti:** Arama testlerinde yanlış sorgu veya olmayan kitap arandığında bile testlerin yeşil geçmesi ve gerçek arıza yakalayamaması.  
-**Neden:** MSW handler'ı `q` veya `workId` parametrelerini okumadan statik tek bir nesne dönmüştür.  
-**Düzeltme:** Handler içinde URL arama parametrelerini (`url.searchParams.get('q')`) denetle; bulunamayan id için 404 dönen gerçekçi bir sahte API modeli kur.
-:::
-
-:::sector[Sektörde CI/CD ve Test Kültürü]
-Modern yazılım şirketlerinde bir özelliğin repoya birleşmesi (merge) için CI hattının tüm aşamalarından geçmesi zorunlu bir kuraldır (Branch Protection). Bir mühendisin yazdığı testler, yalnızca o anki kodu değil, 6 ay sonra başka bir ekip arkadaşının yapacağı refactor'da sistemin bozulmamasını güvenceye alır. Mülakatlarda CI pipeline deneyimi, yazılımcının sistem düşüncesine sahip olup olmadığını gösteren en güçlü sinyaldir.
+:::mistake[Gerçek ağa güvenmek]
+Belirti: Test yerelde geçerken ağ yavaşladığında veya API içeriği değiştiğinde CI’da kalır. Neden: Test sonucu dış servisin o anki durumuna bağlıdır. Düzeltme: Test yanıtını MSW veya `page.route` ile sabitle; gerçek servis kullanılabilirliğini bu davranış testinden ayrı değerlendir.
 :::
 
 ## Özet
 
-- Test piramidi: Saf mantık için birim testleri, kullanıcı arayüzü ve MSW için entegrasyon testleri, kritik akışlar için Playwright E2E.
-- Dış API'ler test ortamında daima taklit edilmeli; gerçek ağa istek atılmamalıdır.
-- CI hattı lint, format, tip kontrolü, testler, üretim derlemesi (`build`) ve E2E adımlarını sırayla yürüterek tam kalite güvencesi sağlar.
-- E2E testlerinde yapay bekleme süreleri (`waitForTimeout`) yerine erişilebilir roller ve otomatik beklemeli doğrulayıcılar kullanılır.
+- Birim, bileşen ve E2E testleri farklı riskleri kapsar.
+- Deterministik yanıtlar ağ değişkenliğini testten çıkarır.
+- Sabit süre beklemek flaky test üretir; görünür koşulu bekle.
+- Frozen lockfile CI kurulumunda paket sürümlerinin değişmesini önler.
+
+**Yeni terimler:** Deterministik veri: her çalıştırmada aynı sonucu veren kontrol edilen veri. Flaky test: aynı kodla bazen geçen, bazen kalan test. CI: kod değişince kontrolleri otomatik çalıştıran süreç. Frozen lockfile: kilit dosyasıyla paket tanımları uyuşmazsa kurulumu durduran seçenek.
 
 ### Kendini yokla
 
-1. **Soru:** Bir CI hattında `pnpm test` başarılı olmasına rağmen `pnpm build` neden başarısız olabilir?  
-   **Cevap:** Çünkü Vitest testleri modülleri TypeScript ve JSX üzerinden doğrudan çalıştırabilir; ancak `vite build` sırasında unutulmuş bir tip uyumsuzluğu, eksik bir çevre değişkeni veya paketleme hatası ortaya çıkabilir. Bu yüzden CI'da üretim derlemesi mutlaka test edilmelidir.
-2. **Soru:** MSW yapılandırmasında `onUnhandledRequest: 'error'` seçeneği neden hayati önem taşır?  
-   **Cevap:** Eğer bir test sırasında bileşen beklenmeyen veya tanımsız bir adrese istek atarsa, MSW bunu sessizce gerçek ağa geçirmek yerine testi anında kırmızıya boyar. Böylece testlerin izole kaldığından ve sahte API'nin tam çalıştığından emin olunur.
+1. E2E testinde neden `waitForTimeout` yerine görünür başlığı beklersin? **Cevap:** Başlığın hazır olması gereken koşuldur; sabit süre makine/ağ hızına bağlıdır.
+2. CI’da frozen lockfile neyi garanti etmeye yardım eder? **Cevap:** CI’ın kilit dosyasında seçilmiş sürümlerle kurulmasını; tanım uyumsuzsa hatayı görünür kılmayı.

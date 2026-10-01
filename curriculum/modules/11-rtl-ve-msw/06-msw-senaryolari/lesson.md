@@ -1,119 +1,144 @@
 ---
 title: "Tek testte farklı sunucu cevapları"
-minutes: 13
+minutes: 14
 kind: concept
 ---
 
 # Tek testte farklı sunucu cevapları
 
-:::pain[Problem]
-Normal cevapla çalışan hava durumu panelinde hata tasarımını göremiyorsun. Sunucu hız sınırına ulaşıp 429 verdiğinde kullanıcıya “Hava durumu alınamadı” gösterilmesi gerekiyor. Gerçek servisi bozmak güvenli değil; uygulama içindeki `fetch` mock’u ise URL ve gerçek response davranışını atlıyor.
-:::
+Sinema araması normalde film listesi döndürüyor olabilir; peki kullanıcı aradığında hiç film bulunmazsa veya servis hata verirse? Gerçek servisi bozmayı beklemek yerine, önceki derste gördüğün MSW handler’ını yalnızca ilgili testte değiştirirsin. Böylece aynı component farklı sunucu cevaplarıyla çalışır.
 
-## Handler’ı yalnızca gereken senaryoda değiştir
-
-11.5’te kurduğumuz `diagram:msw-perdesi` modeli geçerli: uygulama normal isteği yollar, MSW yakalar ve handler cevap verir. Burada değişen, handler’ın ömrü ve cevabıdır. Bir test için normal handler’ı geçici olarak gölgeleyebilir, gecikme, boş liste, 500 veya başka bir status üretebilirsin. `server.use(...)` runtime handler ekler; lifecycle sonunda `resetHandlers()` ile başlangıçtaki handler setine dönülür.
-
-Kurallar:
-
-1. **Varsayılanı ortak tut.** Çoğu testte geçerli olan başarı cevabını başlangıç handler’ı olarak tanımla.
-2. **Özel senaryoyu yalnız ilgili testte override et.** Böylece 500 cevabı başka teste sızmaz.
-3. **Handler’ı method, URL ve response sözleşmesiyle tarif et.** Hata yanıtı yalnız status’tan ibaret değildir; kullanıcıya gösterilecek mesajı tetikleyecek gövde de gerçeğe uymalıdır.
-4. **Gecikmeyi yalnız zaman davranışı gözlenecekse kullan.** Yüklenme ekranının kalıcı görünmesini veya yarış sırasını ölçmek için kontrollü gecikme gerekir; her handler’ı yavaşlatma.
-5. **Gecikme sonrası veriyi isteğin kendisinden oku.** Path/query farklılığı cevapta farklı sonuç üretmeli; böylece yanlış URL sessizce başarıya dönüşmez.
-6. **Handler reset’ini garanti et.** Testler birbirinden bağımsız olmalı; sıra değişince cevap değişmemelidir.
-
-## Aynı component, üç sunucu gerçeği
-
-Bir kütüphane aramasında component değişmeden üç response olabilir: sonuç var, eşleşme yok veya servis hata verdi. Asenkron test modelini hatırla: kullanıcı önce yükleniyor durumunu görür, sonra response’un anlamına göre başarı, boş veya error görünümüne geçer. Bu senaryoların her biri aynı UI’ı gerçek fetch hattından çalıştırmalıdır.
-
-| Handler yanıtı | HTTP sonucu | Uygulamada beklenen kullanıcı davranışı |
-|---|---|---|
-| `{ entries: [{ id: 8, label: 'Ada' }] }` | 200 | “Ada” başlıklı sonuç görünür |
-| `{ entries: [] }` | 200 | “Eşleşme yok” durumu görünür |
-| `{ message: 'Servis kullanılamıyor' }` | 429 | Erişilebilir hata görünümü görünür |
-
-Önemli ayrım: boş sonuç bir sunucu hatası değildir. HTTP 200 ve boş liste, aramanın başarıyla tamamlandığını ama eşleşme olmadığını söyler. 503 ise istek beklenen biçimde sonuçlanmadı demektir. Arayüzün “hiç sonuç yok” ile “sonuç alınamadı”yı aynı metinde toplaması kullanıcıyı yanlış yönlendirir.
-
-## Yanlış handler, sonra doğru handler
-
-Bu test sunucu davranışını değil, uygulamanın `fetch` fonksiyonunu değiştiriyor:
-
-```ts
-// Kırık: URL ve HTTP status yolu atlanıyor.
-vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false } as Response)
-```
-
-Bunun yerine yalnız endpoint cevabını değiştir. Aşağıdaki kodda handler hem status hem JSON gövdesi döndürür:
+En basit durumda, bir test için tek bir cevap ekleyebilirsin:
 
 ```ts
 server.use(
-  http.get(`${WEATHER_BASE}/weather`, () =>
-    HttpResponse.json({ message: 'Servis kullanılamıyor' }, { status: 503 }),
+  http.get(`${TMDB_BASE}/search/movie`, () =>
+    HttpResponse.json({ status_message: 'Arama başarısız' }, { status: 503 }),
   ),
 )
 ```
 
-Sonra test `render(...)` ile component’i çalıştırır ve `await screen.findByRole('alert')` ile kullanıcıya gösterilen hatayı bekler. Handler’ı doğrudan `fetch` ile çağırıp status’un 503 olduğunu doğrulamak handler’ın kendisi için doğru olabilir; component’in hatayı görünür kıldığını kanıtlamaz. Bu iki sorumluluğu karıştırma.
+Bu kod ortak varsayılan handler’ın üstüne o test için özel bir cevap koyar. Arama endpoint’ine bu test sırasında istek gelince 503 ve JSON gövdesi döner. HTTP status ile JSON gövdesi ayrı parçalardır: status isteğin başarılı olup olmadığını, gövde ise uygulamanın okuyacağı veriyi taşır. Testten sonra `resetHandlers()` çalıştığı için bu override sonraki teste kalmaz.
 
-## Tek istekte bozuk veri, fakat temiz senaryo
-
-İstek detaylarını test eden yardımcılar (`requests()` gibi) aynı test altyapısında bulunabilir. Örneğin `limit=2.5` gibi tam sayı olmayan bir değer için 400 üretmek, istek parametresi sınırını görünür kılar. Handler query’yi string olarak alır; sayıya çevirme ve integer kontrolü handler’ın kendi işidir. Geçersiz değeri sessizce 2’ye düzeltmek gerçek API’nin hatasını gizleyebilir.
-
-Bir yanıtı bekletmek, yavaş servis koşulunda loading ekranını gözlenebilir yapar; ürünün gerçek ağ hızını ölçmez. Gereksiz uzun bekleme doğrulama süresini artırır. Sonucu status veya başlık görünürlüğüne bağla; “tam 80 ms sonra metin geldi” gibi duvar saati iddiası kurma.
-
-:::model[Yarış koşulu]
-Eski isteğin cevabı yeni isteğin ardından gelebilir. Yavaş server cevabı ile bu bitiş sırasını sınayabilirsin; component’in eski cevabı uygulamaması hâlâ kendi sorumluluğudur.
-:::
+:::model[MSW perdesi]
+Uygulamanın gerçek `fetch` isteği MSW handler'ına ulaşır; handler kontrollü status ve gövdeyi cevaplar. `server.use` bu akışın yalnızca testteki cevabını değiştirir.
 
 ![Uygulama isteğinden handler cevabına MSW akışı](diagram:msw-perdesi)
-
-## Sınır durumları
-
-:::mistake[Belirti: 500 testi yeşil ama hata görünmüyor]
-Belirti → Handler’dan 503 dönüyor, fakat ekranda başlık ya da boş liste durumu var.  
-Neden → Uygulama `fetch` Response’unu yalnız JSON olarak parse etmiş; `response.ok` kontrol etmemiş.  
-Düzeltme → HTTP status’u uygulama hata state’ine çevir; testte role=`alert` ve kullanıcı mesajını bekle.
 :::
 
-:::mistake[Belirti: Override sonraki testi etkiliyor]
-Belirti → Tek başına geçen test, önceki testle birlikte çalışınca beklenmeyen boş liste alıyor.  
-Neden → Ortak mutable state veya handler reset edilmemiş.  
-Düzeltme → `server.resetHandlers()` lifecycle’da çağrılsın; özel cevabı her test kendi kurulumunda eklesin.
+Boş listeyi hata ile karıştırma. 200 ve `results: []`, istek başarılı oldu fakat eşleşen film yok demektir. 503 ise sunucu isteği beklenen biçimde tamamlayamadı. Kullanıcıya “sonuç bulunamadı” ile “sonuç alınamadı” göstermek farklı bilgi verir.
+
+## Status değerini parametre yap
+
+Bazen benzer cevapları farklı status kodlarıyla tekrar kullanmak istersin. Böyle bir durumda **factory**, girdi alıp tekrar kullanılabilir bir şey oluşturan fonksiyondur. Aşağıda verilen status ile MSW handler’ı üreten küçük bir fonksiyon var:
+
+```ts
+function makeWatchlistErrorHandler(status: number) {
+  if (!Number.isInteger(status) || status < 400 || status > 599) {
+    throw new RangeError('status bir hata kodu olmalı')
+  }
+
+  return http.get(`${TMDB_BASE}/account/watchlist`, () =>
+    HttpResponse.json({ message: 'İzleme listesi alınamadı' }, { status }),
+  )
+}
+```
+
+Şimdi aynı handler yapısını 503 ya da 429 gibi farklı hata kodlarıyla izleme listesi endpoint’i için kurabilirsin. Fonksiyon önce değerin tam sayı ve 400–599 aralığında olduğunu denetliyor; geçerli değilse daha test kurulurken `RangeError` fırlatıyor. Bu kontrol, `200` gibi başarı kodunun yanlışlıkla hata cevabı olarak kullanılmasını önler. Status’u değiştirsek de endpoint ve hata gövdesi aynı kalır.
+
+Handler eşleşmesi için method ve URL önemlidir. `http.get` yalnız GET isteğini, `/search/movie` yalnız o yolu karşılar. Query string, örneğin `?query=Matrix`, path’e dahil değildir; handler `new URL(request.url).searchParams` üzerinden ayrıca okuyabilir. Bu ayrım sayesinde yalnız aranan sorguya göre farklı sonuç üretmek mümkündür.
+
+## Query’den boş ve gecikmeli cevap üret
+
+Sinema aramasında boş sonuç döndürürken istenen sayfa numarasını korumak isteyebilirsin. Handler’ın query’den değer okuyup cevapta kullanması bir adım daha ekler:
+
+```ts
+http.get(`${TMDB_BASE}/search/movie`, ({ request }) => {
+  const url = new URL(request.url)
+  const rawPage = url.searchParams.get('page')
+  const page = rawPage === null ? 1 : Number(rawPage)
+
+  if (!Number.isInteger(page) || page < 1) {
+    return HttpResponse.json({ status_code: 22 }, { status: 400 })
+  }
+
+  return HttpResponse.json({
+    page,
+    results: [],
+    total_pages: 1,
+    total_results: 0,
+  })
+})
+```
+
+`URLSearchParams` değerleri string verir, bu yüzden `Number(...)` ile sayıya çeviriyoruz. `page=2` geçerliyse cevapta `page: 2` kalır; parametre yoksa 1 kullanılır. `page=0`, `page=1.5` veya sayıya çevrilemeyen metin geçerli sayfa değildir ve 400 ile döner. Boş `results` dizisi her durumda aynı liste envelope’unu korur.
+
+Handler yanıtını geciktirmek için MSW 2’de `delay` kullanabilirsin. Bu, yavaş sunucu yanıtı boyunca loading durumunun görünmesini sağlayan kontrollü gecikmedir:
+
+```ts
+http.get(`${TMDB_BASE}/search/movie`, async ({ request }) => {
+  const url = new URL(request.url)
+  const page = Number(url.searchParams.get('page') ?? 1)
+
+  await delay(120)
+  return HttpResponse.json({
+    page,
+    results: [],
+    total_pages: 1,
+    total_results: 0,
+  })
+})
+```
+
+Burada handler önce istek bilgisini okur, 120 ms bekler, sonra cevabı verir. Bu bekleme uygulamanın gerçek performansını ölçmez; testte loading anını gözlemleyebilmen için sunucu davranışı kurar. Arayüzdeki sonucu beklemek için yine `findBy` gibi DOM koşuluna dayalı sorgu kullan.
+
+| Sıra | Olay | Gözlenen sonuç |
+|---|---|---|
+| 1 | Component arama isteği gönderir | UI loading durumuna geçer |
+| 2 | Handler query’yi okur | `page` sayıya çevrilir ve doğrulanır |
+| 3 | `delay(120)` tamamlanana kadar beklenir | Loading görünmeye devam eder |
+| 4 | Handler 200 boş listeyi döndürür | Component boş sonuç durumunu gösterir |
+
+Bu sıra bir testin neyi kanıtladığını da açıklar: loading’i görebilmek için kontrollü gecikme gerekir; ama gecikme süresini assertion ile ölçmek gerekmez. Kullanıcıya dönük test, beklenen loading veya boş sonuç metnini arar.
+
+:::mistake[Boş sonucu sunucu hatası saymak]
+Belirti → Arama eşleşme bulmayınca hata mesajı çıkıyor.
+Neden → Boş listeye 503 gibi hata status’u verilmiş veya component boş `results` durumunu ele almamıştır.
+Düzeltme → Başarılı boş listeyi 200 ve boş `results` ile dön; sunucu hatasını ayrı ele al.
 :::
 
-:::mistake[Belirti: Yükleme durumu arada görünmüyor]
-Belirti → `getByRole('status')` bazen öğeyi bulamıyor.  
-Neden → Handler cevabı test assertion’ından önce tamamlanmış.  
-Düzeltme → Loading’i test edeceksen o handler’a kontrollü gecikme koy; sadece son sonucu test ediyorsan ara state’i zorunlu kılma.
+:::mistake[Query değerini doğrulamadan kullanmak]
+Belirti → `page=0` cevabı geçerliymiş gibi ekranda sayfa 0 görünür ya da uygulama beklenmedik veri işler.
+Neden → Query değeri string’den sayıya çevrilmiş ama tam sayı ve alt sınır kontrolü yapılmamıştır.
+Düzeltme → `Number.isInteger(page)` ve `page < 1` koşullarını cevap üretmeden önce kontrol et.
 :::
 
-## Handler kapsamı ve eşleşme sırası
+:::mistake[Handler sonraki teste sızıyor]
+Belirti → Önceki testteki 503, normal başarı bekleyen başka bir testi bozuyor.
+Neden → Runtime override temizlenmemiştir.
+Düzeltme → Test lifecycle’ında `server.resetHandlers()` çalıştır; her test özel cevabını kendi içinde kursun.
+:::
 
-MSW handler’ları method ve URL pattern’ine göre istekle eşleşir. `http.get` tanımlı bir handler, POST isteğini karşılamaz. Path segmenti `:id` gibi değişkense handler içindeki parametre string gelir; numeric id bekleyen kod önce dönüşüm yapmalıdır. Query string path pattern’inin parçası değildir; `request.url` üzerinden ayrıca okunur. Bu ayrım, özel bir test verisinin yanlış route’a bağlanmasının önüne geçer.
-
-Runtime override’ın amacı ortak cevabı kalıcı değiştirmek değil, tek bir testte farklı server gerçeği üretmektir. Bir test içindeki iki istek için önce 503 sonra 200 gerekiyorsa handler cevap sayacı tutabilir veya çağrı sırasına göre yanıt seçebilir; ancak bu state yalnız o test içinde kurulmalıdır. Mümkünse stateful davranış yerine request URL’i, header’ı veya query’yi kullanarak cevabı belirle. Böylece test daha az kırılgan olur.
-
-Üç hata kaynağını da ayır: handler 503 döndürürse HTTP response vardır; bağlantı hatası simüle edilirse uygulamanın fetch Promise’i reject olabilir; handler tanımsızsa test altyapısı unhandled request hatası üretir. Bunlar ürün UI’ında aynı “Hizmet şu anda kullanılamıyor” mesajına dönüşebilir, ancak testteki setup farklıdır. `HttpResponse.error()` gibi network error davranışı gerekiyorsa yalnızca testinin gerçekten o yolu doğruladığından emin ol.
-
-Kontrollü gecikme, server cevabı gelmeden geçen zamanı görünür kılar. Response dönene kadar component loading durumundadır; response geldikten sonra JSON parse ve state update tamamlanır, ardından DOM değişir. Gecikme süresiyle DOM’u bekleme koşulunu ayrı kavramlar olarak düşün: biri sunucu davranışını temsil eder, diğeri arayüzün beklenen sonucunu.
-
-Ekipte varsayılan handler’lar gerçekçi ama mümkün olduğunca basit tutulur. Her testte başka JSON shape üretmek, uygulama tipiyle test fixture’ının birbirinden ayrılmasına neden olur. API response tipi değiştiğinde factory veya ortak handler’ı güncelle, sonra özel senaryoların yalnız relevant alanları override etmesine izin ver.
-
-:::sector
-Üretim sistemlerinde hata senaryoları yalnızca gerçek servis arızası olduğunda gözlenir; geliştirici testleri ise 401, 404, 429, 500 ve boş yanıtı güvenle üretir. Takım, endpoint’in response sözleşmesini aynı yerde tutup her teste gereken özel senaryoyu ekler. Bu yaklaşım hata UI’ının deploy öncesinde denenmesini sağlar.
+:::info[Derinlemesine (isteğe bağlı)]
+HTTP 503 ile ağ bağlantısının kurulamaması farklı durumlardır: 503’te `fetch` bir `Response` ile tamamlanır; bağlantı hatasında Promise reject olabilir. MSW’de `HttpResponse.error()` ağ hatası simüle edebilir. Yalnızca uygulamanın bu ayrı yolu için özel bir davranışı varsa böyle bir test ekle.
 :::
 
 ## Özet
 
-- `server.use` bir testte özel HTTP davranışı ekler; lifecycle reset’i sızıntıyı önler.
-- Boş başarı ile HTTP hatası farklı kullanıcı durumlarıdır.
-- Handler’da status ve gövdeyi birlikte gerçekçi kur.
-- Gecikme yalnız loading veya yarış sırası önemliyse eklenir.
-- Test hem request davranışını hem görünür UI sonucunu ihtiyaç olduğunda doğrular.
+- `server.use` yalnız mevcut test için özel cevap ekler; `resetHandlers()` başlangıç durumunu geri getirir.
+- Boş başarılı arama ile HTTP hata cevabı farklı kullanıcı durumlarıdır.
+- Factory fonksiyonu parametreye göre handler üretmeyi sağlar.
+- Query değeri string gelir; kullanmadan önce sayı dönüşümü ve geçerlilik kontrolü yap.
+- `delay` yükleme anını gözlemlemeye yardım eder; sonucu sabit süre uykusuyla değil DOM koşuluyla bekle.
 
-**Kendini yokla:** Boş sonuç neden 503 ile aynı değildir?  
-*Cevap:* Boş liste başarılı bir yanıttır; servis hata vermemiştir.
+**Yeni terimler**
 
-**Kendini yokla:** Bir testteki handler override’ı sonraki teste nasıl taşınmaz?  
-*Cevap:* Test sonrası `server.resetHandlers()` çalıştırılır.
+- **Override:** Bir test için ortak handler’ın yerine geçici cevap koyma.
+- **Factory:** Girdi alıp tekrar kullanılabilir bir nesne veya handler üreten fonksiyon.
+- **Query parameter:** URL’de `?` sonrasında taşınan istek değeri; handler’da ayrıca okunur.
+
+**Kendini yokla:** `page=2` boş sonuç cevabında neden `page: 2` döndürmelisin?
+*Cevap:* API cevabı istenen sayfayı korumalıdır; boş sonuç olması sayfa bilgisini kaybettirmez.
+
+**Kendini yokla:** `delay(120)` kullandıysan başlığın tam 120 ms’de göründüğünü test etmeli misin?
+*Cevap:* Hayır. Gecikme yükleme davranışını görünür kılar; test beklenen DOM durumunu aramalıdır.

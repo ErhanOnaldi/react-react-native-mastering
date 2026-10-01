@@ -8,7 +8,7 @@ export default defineQuestion({
   files: ['useOptionalMovie.ts'],
   hints: [
     'Id undefined iken geçersiz URL üretmeden query’nin beklemesini sağla.',
-    '`skipToken` ile geçerli `queryFn` dalını koşullu seç; hook’u koşullu çağırma.',
-    '`id === undefined ? skipToken : () => getMovie(id)` ve fetch içinde Bearer/HTTP kontrolü kullan.',
+    '`enabled: id !== undefined` ile sorguyu kapat; query function içinde id’nin bulunduğunu ayrıca kontrol et.',
+    'Query function içinde `if (id === undefined) throw new Error(...)` dalı kur; sayı olduğunda fetch et.',
   ],
 })

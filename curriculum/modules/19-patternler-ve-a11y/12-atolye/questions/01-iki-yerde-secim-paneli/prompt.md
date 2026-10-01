@@ -10,7 +10,7 @@ Ana Sayfa'daki seçim kontrolü çalışıyor. Detay sayfasında farklı seçene
 
 ## Örnek
 
-Ana Sayfa'da Belgesel seçip Detay'a geç. Puan'ı seçip Ana Sayfa'ya dönünce Belgesel seçimi korunur; Detay'a tekrar geçince Puan seçimi durur.
+Ana Sayfa'da Komedi'yi seçip Detay'a geç. Puan'ı seçip Ana Sayfa'ya dönünce Komedi seçimi korunur; Detay'a tekrar geçince Puan seçimi durur.
 
 ## Sözleşme
 

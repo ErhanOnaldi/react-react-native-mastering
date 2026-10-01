@@ -2,24 +2,25 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'Eksik id',
+  title: 'Id gelene kadar bekle',
   difficulty: 'kolay',
-  concepts: ['query.dependent', 'ts.narrowing', 'router.params'],
+  concepts: ['query.dependent', 'query.useQuery', 'router.params'],
   question:
-    '`id: number | undefined` için sorgu id gelene dek başlamasın, tip çıkarımı korunsun. Hangisi uygun?',
+    '`id: number | undefined` için sorgu id gelene dek başlamasın. Hook her render’da aynı sırada çağrılsın. Hangi düzen uygun?',
   options: [
     {
-      text: '`queryFn: id === undefined ? skipToken : () => getMovieDetails(id)`',
+      text: '`enabled: id !== undefined` ayarla ve query function içinde id yoksa isteği durdur',
       correct: true,
-      explanation: 'skipToken eksik id’de sorguyu kapatır; diğer dalda id daralır.',
+      explanation: 'Hook çağrısı sabit kalır; `enabled` eksik id’de isteği başlatmaz.',
     },
     {
-      text: 'Hook’u `if (id) useQuery(...)` içinde çağır',
+      text: '`enabled: Boolean(id)` ile beraber hook’u yalnız id varsa çağır',
       explanation: 'Hook çağrı sırası render’lar arasında değişemez.',
     },
     {
-      text: '`queryFn: () => getMovieDetails(id!)`',
-      explanation: 'Non-null assertion eksik id’de geçersiz istek riskini gizler.',
+      text: '`queryFn` içinde id’yi kontrol etmeden `getMovieDetails(id!)` çağır',
+      explanation:
+        'Non-null assertion eksik id’de geçersiz URL riskini gizler; `enabled` bu fonksiyon içini otomatik daraltmaz.',
     },
   ],
 })

@@ -18,9 +18,10 @@ export default defineQuestion({
       explanation: 'Aynı sunucu verisini kopyalamak iki kaynak ve bayat veri üretir.',
     },
     {
-      text: 'RHF formState içinde.',
+      text: 'Sayfa component’inin yerel state’inde; her ziyaret kendi kopyasını yükler.',
       correct: false,
-      explanation: 'Form state yalnız düzenlenen geçici alanlara aittir.',
+      explanation:
+        'Yerel state bir sayfanın geçici görünümünü tutabilir; sunucu verisinin cache ve yenileme yaşam döngüsünü sağlamaz.',
     },
   ],
 })

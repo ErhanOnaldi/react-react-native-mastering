@@ -6,7 +6,7 @@ Sinema’dan alınan küçük bir kaynak dosyada kullanılmayan bir import kald�
 
 - Kullanılmayan import için sıfır lint hatası üret.
 - Dışa aktarılan bileşen ve `Dövüş Kulübü` başlığı korunmalı.
-- Bileşen verilen `title` değerini `<h1>` içinde göstermeli.
+- Bileşen prop olarak aldığı `title` değerini `<h1>` içinde göstermeli.
 
 ## Örnek
 

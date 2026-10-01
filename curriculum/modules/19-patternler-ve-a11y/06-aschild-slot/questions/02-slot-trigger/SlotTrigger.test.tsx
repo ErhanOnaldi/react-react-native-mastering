@@ -33,6 +33,16 @@ describe('Slot Trigger', () => {
     await user.click(button)
     expect(calls).toEqual(['child', 'open'])
   })
+  it('child kendi erişilebilir adını verirse Trigger adı onun üstüne yazmaz', () => {
+    render(
+      <SlotTrigger asChild onOpen={() => {}} aria-label="Fragmanı aç">
+        <button aria-label="Dövüş Kulübü fragmanını oynat">▶</button>
+      </SlotTrigger>,
+    )
+    expect(
+      screen.getByRole('button', { name: 'Dövüş Kulübü fragmanını oynat' }),
+    ).toBeInTheDocument()
+  })
   it('child preventDefault yapınca açmayı iptal eder', async () => {
     const open = vi.fn()
     const user = userEvent.setup()

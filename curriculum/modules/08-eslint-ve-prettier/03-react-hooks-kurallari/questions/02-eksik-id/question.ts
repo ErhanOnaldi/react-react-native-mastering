@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['react.useEffect.deps', 'router.params', 'tooling.eslint'],
   files: ['detailsSource.ts'],
   hints: [
-    'Effect’in dışındaki render değerlerini bul ve hangisi değişince başlık yenilenmeli diye sor.',
-    '`react-hooks/exhaustive-deps` kuralı effect’in okuduğu reaktif değerlerle dependency array’i karşılaştırır.',
-    'Bu bileşende `useEffect(..., [id])` biçimini kullan; `[]` bu prop değişimini izlemez.',
+    'Bileşen her başlık güncellemesinde neyi okumalı? Önce bu girdiyi adlandır.',
+    '`useEffect` callback’i ve dependency array’i bileşenin içinde birlikte yazılır.',
+    "`useEffect(() => { document.title = 'Film ' + id }, [id])` biçiminde effect'i kur.",
   ],
 })

@@ -6,194 +6,134 @@ kind: concept
 
 # HTTP anatomisi: İstek, cevap ve fetch
 
-:::pain[Problem]
-Kullanıcı profilini çekmek için `fetch('/api/users/42')` yazıyorsun. Sunucu aranan kullanıcıyı bulamayıp `404 Not Found` dönüyor. Kodunun `catch` bloğuna düşeceğini ve ekrana "Kullanıcı bulunamadı" yazacağını varsayıyorsun; fakat `catch` hiç çalışmıyor! Ekran beyaz kalıyor, konsolda `TypeError: Cannot read properties of undefined (reading 'name')` patlıyor. Üstelik hatayı loglamak için ikinci kez `response.json()` çağırdığında bu kez `TypeError: Already read` hatasıyla karşılaşıyorsun.
-:::
+Sinema ana sayfasında film listesini göstermek için zaten `fetch()` kullanabilirsin. `fetch`, tarayıcının bir adrese istek göndermesini sağlar; bu istek ve sunucunun cevabı **HTTP** adı verilen web iletişim biçimini kullanır. İletişim iki parçalıdır: istemci bir **request** (istek) yollar, sunucu bir **response** (cevap) döner.
 
-## İstemci ile sunucu arasındaki sözleşme
+En küçük istek şöyle görünür:
 
-Web uygulamaları sunucularla HTTP (Hypertext Transfer Protocol) üzerinden haberleşir. Tarayıcı bir **istek** (request) gönderir; sunucu bu isteği işleyip bir **cevap** (response) döndürür. Bu alışveriş metin tabanlı, durumsuz (stateless) bir sözleşmeye dayanır.
+```ts
+fetch('/api/films')
+```
 
-Bir HTTP isteği dört temel parçadan oluşur:
-1. **Yöntem (Method):** Yapılmak istenen eylemi bildirir (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`).
-2. **URL (Adres):** Kaynağın nerede olduğunu gösterir (`https://api.example.com/v1/articles?tag=react`).
-3. **Başlıklar (Headers):** İstekle ilgili meta verileri taşır (`Authorization`, `Content-Type`, `Accept`).
-4. **Gövde (Body):** Sunucuya gönderilen veri paketidir (`POST` ve `PUT` gibi isteklerde JSON veya form verisi taşır; `GET` isteklerinde gövde bulunmaz).
+Tarayıcı bu satırda sunucuyla konuşmaya başlar. Satırın kendisi henüz film listesini vermez; `fetch()` daha sonra gelecek cevabı temsil eden bir `Promise` döndürür.
 
-Sunucunun verdiği cevap da üç temel parçadan oluşur:
-1. **Durum kodu (Status code):** İşlemin sonucunu özetleyen 3 basamaklı sayı (`200`, `404`, `500`).
-2. **Cevap başlıkları (Response headers):** Dönen içeriğin türü, boyutu ve önbellek politikası (`Content-Type: application/json`, `Cache-Control`).
-3. **Cevap gövdesi (Response body):** İstenen verinin kendisi (JSON metni, HTML, görsel baytları ya da boş içerik).
+## Önce bir cevabı oku
+
+`fetch()` tamamlandığında sana JSON nesnesi değil, bir `Response` nesnesi verir. `Response` içinde sunucunun durumunu ve cevabın gövdesini okuma yollarını bulursun. Bu örnekte önce cevabı alıp JSON gövdesini okuyoruz:
+
+```ts
+async function loadFeaturedFilms() {
+  const response = await fetch('/api/films/featured')
+  const films = await response.json()
+  return films
+}
+```
+
+İlk `await`, ağ cevabı gelene kadar bekler; ikincisi cevap gövdesini okur. `response.json()` JSON metnini JavaScript değerine çevirir. Bu örnek yalnızca başarılı cevap varsayıyor; sunucu bir sorun bildirse de `fetch()` çoğu zaman cevap nesnesi verecektir.
+
+### Örnek 2: Cevabın sonucunu kontrol et
+
+Sunucu isteğin sonucunu **status code** (durum kodu) adı verilen sayıyla özetler. Örneğin `200` başarılı cevaptır, `404` kaynak bulunamadı demektir. `response.ok`, durum kodu `200` ile `299` arasındaysa `true` olur.
+
+```ts
+async function loadFeaturedFilmsSafely() {
+  const response = await fetch('/api/films/featured')
+
+  if (!response.ok) {
+    throw new Error(`Film listesi alınamadı: HTTP ${response.status}`)
+  }
+
+  const films = await response.json()
+  return films
+}
+```
+
+Bu kez uygulama cevabın başarılı olup olmadığını gövdeyi okumadan denetliyor. Başarısızsa hata fırlatıp JSON gibi işlemiyor; başarılıysa gövdeyi okuyor. Böylece sunucunun hata cevabındaki farklı bir yapıyı film listesi sanma ihtimali azalıyor.
 
 ![HTTP istek ve cevap anatomisi ile fetch davranış modeli](diagram:http-istek-cevap)
 
-## Taşıyıcı zihinsel model: HTTP durum aileleri ve fetch kuralları
+## 404 neden `catch`'e kendi kendine düşmez?
 
-HTTP durum kodları rastgele seçilmez; yüzlük ailelere ayrılmıştır. Her ailenin tarayıcı ve uygulama için kesin bir anlamı vardır:
+Burada sık görülen bir yanılgı var: `fetch()` başarısız HTTP durumlarını otomatik hata saymaz. HTTP cevabı sunucudan geldiyse `404` veya `500` olsa bile `fetch()` Promise'i tamamlanır; `response.ok` ise `false` olur. Promise, ağ bağlantısı kurulamadığında veya tarayıcı cevabı güvenlik nedeniyle JavaScript'ten sakladığında reddedilebilir.
 
-1. **2xx Başarı (Success):** İstek başarıyla karşılandı. En sık görülenler `200 OK` (veri gövdede döner), `201 Created` (yeni kayıt oluşturuldu) ve `204 No Content` (işlem başarılı ama cevap gövdesi **kesinlikle boştur**).
-2. **3xx Yönlendirme (Redirection):** Kaynak başka bir adrese taşındı veya önbellek doğrulaması başarılı oldu (`301 Moved Permanently`, `304 Not Modified`).
-3. **4xx İstemci Hatası (Client Error):** İstekte bir kusur var. `400 Bad Request` (geçersiz parametre), `401 Unauthorized` (kimlik bilgisi eksik veya token geçersiz), `403 Forbidden` (kimlik biliniyor ama bu kaynağa yetki yok), `404 Not Found` (kaynak yok), `409 Conflict` (çakışma), `429 Too Many Requests` (kota aşıldı).
-4. **5xx Sunucu Hatası (Server Error):** İstemcinin isteği doğru olsa bile sunucu tarafında beklenmeyen bir çökme yaşandı (`500 Internal Server Error`, `502 Bad Gateway`, `503 Service Unavailable`).
-
-:::model[HTTP istek ve cevap anatomisi]
-Tarayıcının yerel `fetch()` fonksiyonu hakkında en kritik kural şudur:  
-**`fetch()` bir HTTP hata durumunda (404, 500, 401) Promise'i ASLA reddetmez (reject etmez)!**  
-`fetch` Promise'i yalnızca fiziksel ağ düzeyinde bir kopukluk olduğunda (DNS çözülemedi, internet kablosu çekildi, sunucuya hiç ulaşılamadı, CORS engeline takılındı veya istek `AbortController` ile iptal edildiğinde) reddedilir. Sunucudan dönen her geçerli HTTP cevabı —durumu ister `200` ister `500` olsun— başarılı bir `Promise.resolve(Response)` üretir.
-:::
-
-Bu zihinsel model şunu zorunlu kılar: Cevabın gerçekten başarılı olup olmadığını anlamak için `response.ok` kontrolü yapmak **senin sorumluluğundadır**.
-
-- `response.ok`: Durum kodu `200` ile `299` (dahil) arasındaysa `true`, diğer tüm durumlarda `false` değerini alır.
-- `response.status`: HTTP durumunun sayısal değerini verir (`200`, `404`, `500`).
-- `response.statusText`: Durum kodunun metin karşılığıdır (`"OK"`, `"Not Found"`).
-
-## Zaman çizelgesinde istek ve cevap adımları
-
-Bir kullanıcı arayüzünden tetiklenen `fetch` çağrısının aşamalarını adım adım izleyelim:
-
-| Adım | İşlem Noktası | Oluşan Değer / Olay | Akışın Durumu |
-| --- | --- | --- | --- |
-| 1 | `fetch(url)` çağrıldı | Tarayıcı soket açar, DNS çözer | Ağ aşaması başladı |
-| 2 | Sunucu yanıtladı | Sunucu HTTP başlıklarını ve `404` kodunu yolladı | İlk baytlar ulaştı |
-| 3 | `fetch` Promise'i çözüldü | `Response` nesnesi döndü (`status: 404`, `ok: false`) | `catch`'e GİTMEZ, kod devam eder |
-| 4 | `response.ok` denetimi | Koşul `false` üretir | Uygulama hata fırlatmalıdır |
-| 5 | Gövde okuma | `response.json()` çağrılırsa stream tükenir | Gövde yalnızca bir kez okunabilir |
-
-## Gövdeyi okumak: Stream kuralı ve 204 tuzağı
-
-HTTP cevap gövdesi tarayıcıya bir veri akışı (ReadableStream) olarak gelir. Yerel `Response` nesnesinin sunduğu gövde okuma metotları (`response.json()`, `response.text()`, `response.blob()`) bu akışı baştan sona tüketir.
-
-Bu mekanizmanın iki kesin kuralı vardır:
-
-### Kural 1: Gövde yalnızca BİR KEZ okunabilir
-Bir kez `await response.json()` dediğinde, alttaki veri akışı kilitlenir ve `response.bodyUsed` bayrağı `true` olur. Aynı `response` nesnesinde ikinci kez `.json()` veya `.text()` çağırmak doğrudan çalışma zamanında `TypeError: Failed to execute 'json' on 'Response': body stream already read` hatası fırlatır.
-
-### Kural 2: 204 No Content cevabında gövde aranmaz
-Bir kaynağı sildiğinde (`DELETE /api/items/5`) sunucular sıklıkla `204 No Content` döner. Durum kodu `204` olduğunda HTTP spesifikasyonu gereği cevapta gövde baytı bulunmaz. Eğer `response.ok` doğru diye hemen `await response.json()` çağırmaya kalkarsan, boş metin JSON olarak ayrıştırılamayacağı için `SyntaxError: Unexpected end of JSON input` hatası alırsın. 204 durumunda doğrudan gövdesiz başarı kabul edilmelidir.
-
-## Önce kırık, sonra doğru örnek
-
-### Kırık yaklaşım: Hataları `catch` ile yakalayacağını sanmak
-
-Aşağıdaki kodda geliştirici, sunucu `404` veya `500` dönerse `catch` bloğunun çalışacağını varsaymıştır:
+Şu kırık örnekte geliştirici `404` durumunun `catch`'e gideceğini sanıyor:
 
 ```ts
-// KIRIK ÖRNEK: 404 ve 500 durumlarında catch ÇALIŞMAZ!
-async function loadArticleBroken(slug: string) {
+async function loadFilmTitle(id: string) {
   try {
-    const response = await fetch(`https://api.example.test/articles/${slug}`)
-    // Sunucu 404 dönse bile buraya gelir!
-    // response.json() 404 HTML hata sayfasını parse etmeye çalışırken çökebilir
-    const data = (await response.json()) as { title: string }
-    return data.title
-  } catch (error) {
-    // Yalnızca internet tamamen koptuğunda buraya düşer
-    console.error('Hata:', error)
-    return 'Yüklenemedi'
+    const response = await fetch(`/api/films/${id}`)
+    const film = (await response.json()) as { title: string }
+    return film.title
+  } catch {
+    return 'Film yüklenemedi'
   }
 }
 ```
 
-Bu kodda sunucu `404` döndüğünde API çoğu zaman bir hata nesnesi (`{ message: "Not found" }`) ya da HTML hata sayfası döner. Kod `data.title` alanına erişmeye çalıştığında ekranda `undefined` basılır ya da sayfa çöker.
+Sunucu `404` ile `{ "message": "Film bulunamadı" }` döndürürse `response.json()` yine başarılı olabilir. `catch` çalışmaz; `film.title` ise `undefined` olur. Belirti, ekranda boş başlık veya anlamsız bir değer görmendir. Çözüm, gövdeyi okumadan önce `response.ok` kontrol edip başarısız HTTP cevabını açıkça hataya çevirmektir.
 
-### Doğru yaklaşım: Durum kontrolü, özel hata ve gövdesiz başarı
+Bu ayrımı küçük bir zaman çizelgesinde izleyelim:
 
-Doğru mimaride ağ hatası ile HTTP hatası birbirinden net çizgilerle ayrılır:
+| Sıra | Olan | Kodun gördüğü |
+| --- | --- | --- |
+| 1 | `fetch('/api/films/999')` gönderilir | Bekleyen bir Promise |
+| 2 | Sunucu `404` ve hata gövdesi yollar | HTTP cevabı geldi |
+| 3 | `await fetch(...)` devam eder | `Response`, `status: 404`, `ok: false` |
+| 4 | `if (!response.ok)` çalışır | Uygulamanın fırlattığı hata |
+| 5 | Üstteki `try/catch` bu hatayı yakalar | Hata mesajı gösterilebilir |
 
-```ts check
-export class ApiRequestError extends Error {
-  constructor(
-    public readonly statusCode: number,
-    message?: string,
-  ) {
-    super(message ?? `İstek başarısız oldu: HTTP ${statusCode}`)
-    this.name = 'ApiRequestError'
-  }
-}
+Yani `fetch()` ağ konuşmasının tamamlandığını bildirir; HTTP başarısını sen ayrıca kontrol edersin. İkisini ayırmak gerekir, çünkü sunucudan gelen her cevap uygulamanın istediği veriyi içermez.
 
-interface Article {
-  id: string
-  title: string
-  content: string
-}
+## Büyütme: bazı başarılı cevaplarda gövde yoktur
 
-export async function requestArticle(slug: string): Promise<Article | null> {
-  // 1. Ağ seviyesinde istek atılır (DNS veya bağlantı hatasında kendiliğinden reject olur)
-  const response = await fetch(`https://api.example.test/articles/${slug}`, {
-    headers: {
-      Accept: 'application/json',
-    },
-  })
+Bir filmi favorilerden kaldırdığını düşün. Sunucu işlem başarılı olsa bile yeni bir JSON nesnesi göndermek zorunda değildir. `204 No Content`, “işlem başarılı, cevap gövdesi yok” anlamına gelir.
 
-  // 2. HTTP durum kontrolü: 200–299 dışındaki her durum uygulama hatasıdır
+```ts
+async function removeFilmFromFavorites(id: string): Promise<void> {
+  const response = await fetch(`/api/favorites/${id}`, { method: 'DELETE' })
+
   if (!response.ok) {
-    // 4xx ve 5xx cevaplarında durum kodunu taşıyan özel hata fırlatılır
-    throw new ApiRequestError(response.status)
+    throw new Error(`Favori kaldırılamadı: HTTP ${response.status}`)
   }
 
-  // 3. Gövdesiz başarı kontrolü (ör. 204)
-  if (response.status === 204) {
-    return null
-  }
+  if (response.status === 204) return
 
-  // 4. Gövde yalnızca bir kez okunur
-  const data = (await response.json()) as Article
-  return data
+  await response.json()
 }
 ```
 
-Bu desende:
-- `fetch`'in reddetmediği `404`, `401`, `500` gibi durumlar `if (!response.ok)` bloğunda yakalanır.
-- Çağıran katman `error instanceof ApiRequestError` kontrolü yaparak hatanın durum kodunu (`statusCode`) okuyabilir ve kullanıcıya uygun mesaj gösterebilir.
-- `204` durumu güvenle ele alınır, gereksiz JSON parse hatası önlenir.
+Burada `204` kontrolü JSON okumadan önce gelir. Boş cevaba `response.json()` uygularsan JSON ayrıştırıcısının okuyacağı metin yoktur ve hata alırsın. Her başarılı cevapta gövde bulunduğunu varsaymamak, API ile çalışırken seni bu hatadan korur.
 
-## Tarayıcı Network sekmesinde okumak
+## Gövdeyi tek sefer oku
 
-Geliştirme yaparken bir isteğin durumunu anlamanın en güvenilir yolu Chrome veya Firefox DevTools'taki **Network** sekmesidir:
+Bir **response body** (cevap gövdesi), sunucunun veri taşıdığı kısımdır. Tarayıcı bu veriyi parça parça gelebilen bir **stream** (akış) olarak alır. `response.json()` akışı okuyup bitirir; aynı `Response` üzerinde sonra `response.text()` çağırmak ikinci okuma olacağından hata verir.
 
-1. **Status sütunu:** `200` yeşil, `304` nötr, `4xx` ve `5xx` kırmızı görünür. Kırmızı bir satır gördüğünde ilk bakman gereken yer durum kodudur.
-2. **Type sütunu:** `fetch` ya da `xhr` etiketini görürsün.
-3. **Headers sekmesi:**
-   - *General:* İstek URL'si, metodu ve dönen durum kodunu gösterir.
-   - *Response Headers:* Sunucunun yolladığı başlıklar (`content-type: application/json; charset=utf-8`).
-   - *Request Headers:* Tarayıcının yolladığı başlıklar (`authorization: Bearer ...`).
-4. **Response / Preview sekmesi:** Sunucunun yolladığı ham gövdeyi incelersin. Beklediğin JSON yerine bir HTML sayfası mı geldi? Boş mu? Buradan teşhis edersin.
+| Çağrı | Sonuç |
+| --- | --- |
+| `await response.json()` | Gövde okunur ve JavaScript değerine çevrilir |
+| `await response.text()` | Gövde okunur ve metin olarak döner |
+| Aynı cevapta ikinci bir okuma | Gövde tüketildiği için hata verir |
 
-## Sınır durumları ve sık hatalar
+Örneğin bir hata gövdesini loglamak için önce `text()` çağırıp sonra `json()` çağırma. Hangi biçimde kullanacağına karar ver ve tek bir okuma yap. Bu davranışın nedeni, tarayıcının aynı ağ verisini sınırsız kez yeniden oynatmamasıdır.
 
-:::mistake[Sık hata: 404 yanıtını catch bloğunda beklemek]
-Belirti → API `404` döndüğünde `try/catch` bloğundaki `catch` çalışmıyor, uygulama bir sonraki satırda veri varmış gibi davranıp patlıyor.  
-Neden → `fetch` yalnızca ağ arızalarında reject eder; HTTP `404` cevabı geçerli bir HTTP yanıtıdır ve resolve olur.  
-Düzeltme → İstekten hemen sonra `if (!response.ok) throw new Error(...)` kontrolünü alışkanlık haline getir.
-:::
+HTTP isteği yöntem (örneğin `GET` veya `DELETE`), URL, başlıklar ve bazen bir gövdeden oluşur. Cevapta durum kodu, başlıklar ve varsa gövde bulunur. Bu yapıyı bilmek, Network panelinde bir isteğin ne gönderdiğini ve ne aldığını okumana da yardım eder.
 
-:::mistake[Sık hata: Gövdeyi hem loglamak hem veriye çevirmek için iki kez okumak]
-Belirti → `TypeError: Failed to execute 'json' on 'Response': body stream already read` hatası fırlatılıyor.  
-Neden → Hata ayıklamak için önce `console.log(await response.text())`, ardından `const data = await response.json()` çağrıldı. Veri akışı ilk okumada tükendi.  
-Düzeltme → Gövdeyi bir değişkene alıp tek seferde işle; gerekirse `response.clone()` kullanarak akışın kopyasını oluştur.
-:::
-
-:::mistake[Sık hata: 204 No Content cevabında json() çağırmak]
-Belirti → Silme veya güncelleme isteği başarılı olduğu halde `SyntaxError: Unexpected end of JSON input` hatası alınıyor.  
-Neden → Sunucu `204` durum koduyla boş gövde döndü; tarayıcı boş metni JSON olarak ayrıştıramadı.  
-Düzeltme → `response.status === 204` ise `json()` çağırmadan doğrudan `null` dön veya işlemi tamamla.
-:::
-
-:::sector
-Gerçek dünya projelerinde ham `fetch` nadiren çıplak haliyle bileşenlerin içine yazılır. Ekipler genellikle `response.ok` kontrolünü, durum koduna göre hata sınıfları üretmeyi ve yetkilendirme başlıklarını merkezi bir istemci (API client) fonksiyonunda toplar. TanStack Query veya RTK gibi modern veri yönetimi kütüphaneleri de sunucudan gelen cevabın `Promise.reject` üretmesini bekler; bu yüzden `!response.ok` durumunda hata fırlatan bir fetch sarmalayıcısı yazmak endüstri standardıdır.
+:::info[Derinlemesine (isteğe bağlı)]
+HTTP iletişimine “durumsuz” denmesi, her isteğin kendi başına anlaşılabilmesi gerektiği anlamına gelir; sunucu önceki isteği hatırlıyor varsayılmaz. İsim çözümleme (DNS), tarayıcının alan adını ağ adresine bulma adımıdır. `ReadableStream` ve `AbortController` ile akışı yönetmek ya da isteği iptal etmek mümkündür; bu ayrıntılar burada gereken cevap işleme akışını değiştirmez. Özel bir `HttpError` sınıfı, uygulamada durum kodu ve mesajı aynı hata nesnesinde taşımak için tercih edilebilir; temel akış için `Error` yeterlidir.
 :::
 
 ## Özet
 
-- HTTP isteği yöntem, adres, başlıklar ve gövdeden; cevap ise durum kodu, başlıklar ve gövdeden oluşur.
-- Durum kodları 2xx (başarı), 3xx (yönlendirme/önbellek), 4xx (istemci hatası) ve 5xx (sunucu hatası) ailelerine ayrılır.
-- `fetch()` 4xx ve 5xx gibi başarısız HTTP durumlarında Promise'i reddetmez; `response.ok` kontrolü geliştiricinin görevidir.
-- Cevap gövdesi bir veri akışıdır (stream) ve yalnızca bir kez okunabilir (`response.bodyUsed`).
-- `204 No Content` cevabı başarılıdır fakat gövdesi yoktur; `response.json()` çağrılmamalıdır.
+- `fetch()` bir `Response` verir; JSON verisi için cevap gövdesini ayrıca okursun.
+- HTTP başarısını `response.ok` ile kontrol et; 4xx ve 5xx cevapları kendiliğinden `catch`'e düşmez.
+- `204 No Content` başarılıdır ama gövdesi yoktur; JSON okumayı atla.
+- Bir cevap gövdesini bir kez oku; `json()` ve `text()` aynı gövdeyi tüketir.
 
-**Kendini yokla:** Sunucu `500 Internal Server Error` döndüğünde `fetch()` çağrısının `catch` bloğu çalışır mı?  
-*Cevap:* Hayır, çalışmaz. Sunucu geçerli bir HTTP yanıtı verdiği için Promise resolve olur; hata `response.ok === false` kontrolüyle yakalanmalıdır.
+**Yeni terimler:** HTTP: tarayıcı ile sunucunun istek/cevap iletişim biçimi. Request: istemcinin gönderdiği istek. Response: sunucunun döndürdüğü cevap. Status code: cevabın sonucunu belirten sayı. Response body: varsa cevabın veri taşıyan kısmı. Stream: verinin akış halinde okunması.
 
-**Kendini yokla:** `response.status === 204` olan bir yanıtta `await response.json()` çağrılırsa ne olur?  
-*Cevap:* `SyntaxError: Unexpected end of JSON input` fırlatılır; çünkü 204 cevabının gövdesi boştur ve boş metin JSON olarak ayrıştırılamaz.
+**Kendini yokla:** Sunucu `500` döndürdüğünde `await fetch()` otomatik olarak hata verir mi?
+
+*Cevap:* Hayır. Bir `Response` gelir ve `response.ok` false olur; hata davranışını uygulama kurar.
+
+**Kendini yokla:** `204` cevabında neden `response.json()` çağırmamalısın?
+
+*Cevap:* Çünkü 204 gövdesiz başarıdır; JSON olarak ayrıştırılacak veri yoktur.

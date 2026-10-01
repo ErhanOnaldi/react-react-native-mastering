@@ -9,6 +9,7 @@ export default defineQuestion({
   hints: [
     'Testin kendi cache başlangıcı olması için client nerede oluşturulmalı?',
     '`QueryClient` defaults içinde query retry değerini false yap.',
-    '`render(ui, { wrapper })` çağırıp `{ client, ...view }` döndür.',
+    'Yeni `QueryClient` oluştur; children alanını alan bir `wrapper` bileşenini provider ile kur.',
+    '`render(ui, { wrapper })` sonucunu client ile birlikte döndür.',
   ],
 })

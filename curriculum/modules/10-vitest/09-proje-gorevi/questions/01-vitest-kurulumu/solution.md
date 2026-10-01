@@ -1,6 +1,6 @@
 ## Neden böyle?
 
-`vitest run` tek sefer çalışır ve hata varsa başarısız çıkış kodu üretir; bu yüzden otomasyona uygundur. `vitest` komutu tek başına geliştirmede watch modunu açabilir. `jsdom` ise sonraki görevde `useDebounce` hook’unu DOM ortamında denemeni sağlar.
+`vitest run` tek sefer çalışır ve hata varsa başarısız çıkış kodu üretir; bu yüzden otomasyona uygundur. `vitest` komutu geliştirme sırasında dosyaları izleyip değişiklik olduğunda testleri yeniden çalıştırabilir. `jsdom` ise sonraki görevde `useDebounce` hook’unu DOM ortamında denemeni sağlar.
 
 `toBe` burada string sözleşmesini tam ölçer. Yalnızca `toContain('8')` yazmak, `"8"` ile `"8.0"` farkını kaçırır. `formatDate` için boş durum da gerçek TMDB verisinden gelir; yalnızca dolu tarih testi bu sınırı korumaz.
 

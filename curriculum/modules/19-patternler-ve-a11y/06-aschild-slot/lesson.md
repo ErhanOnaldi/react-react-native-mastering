@@ -1,130 +1,139 @@
 ---
-title: "Bir düğme içinde başka düğme"
-minutes: 14
+title: "Slot ile tek DOM öğesini koru"
+minutes: 16
 kind: concept
 ---
 
-# Bir düğme içinde başka düğme
+# Slot ile tek DOM öğesini koru
 
-:::pain[Belirti]
-Mevcut bir kart düğmesini modalın tetikleyicisi içine yerleştiriyorsun. Ekranda tek düğme gibi görünse de DOM'da `<button><button>Fragmanı aç</button></button>` var. Tab sırası şaşıyor; click iki farklı davranışa gidebiliyor.
-:::
+Film kartında zaten bir “Fragmanı aç” button'ı var. Bunu dialog tetikleyicisinin içine koyarsan iki kez button üretmek kolaydır; önce neden bunun sorun olduğunu, sonra davranışı child öğeye nasıl ekleyeceğini görelim.
 
-## Sarmalayıcı yerine aynı DOM öğesi
-
-Bir davranış component'i kendi `<button>` elementini üretirken kullanıcı da child olarak bir `<button>` verirse etkileşimli HTML iç içe geçer. HTML kuralları button içinde başka button'a izin vermez. Tarayıcının bu yapıyı onarması veya event'leri işlemesi beklenmedik hale gelebilir; klavye kullanıcısı iki durak duyabilirken görselde tek kontrol görebilir.
-
-Slot yaklaşımı davranış component'inin kendi DOM kabını üretmemesini sağlar. `asChild` seçeneğinde tek React element child'ı klonlanır ve Trigger'ın davranışları onun props'larına aktarılır. Sonuçta DOM'da child'ın semantiği korunur: button button kalır, link link kalır. Bu, önceki dersteki headless ayrımın daha ileri biçimidir; davranış paylaşılırken HTML etiketini de çağıran seçer.
-
-Kurallar:
-
-1. **Varsayılan öğe erişilebilir olmalı.** Trigger kendi öğesini üretirse doğal `<button type="button">` kullanır.
-2. **`asChild` tam bir React elementi ister.** String, null veya birden fazla sibling tek DOM hedefi olamaz; yanlış girdi açık hata vermeli.
-3. **Child'ın kimliği ve semantiği korunur.** Slot button'u ikinci bir button ile sarmalamaz; verilen link'in href ve link rolü kaybolmaz.
-4. **Props açık bir politikayla birleştirilir.** Trigger `aria-label` getiriyorsa child'ın anlamlı adı varsa ezilmemeli; class değerleri ihtiyaç doğrultusunda birleşmeli.
-5. **Event handler sırası tanımlanır.** Child'ın handler'ı önce çalışabilir; `preventDefault()` ortak davranışı iptal edebilir.
-6. **Ref tek DOM düğümünü gösterir.** Child ve davranış component'i aynı gerçek öğeye ref almalıdır; object ve callback ref biçimleri düşünülür.
-
-`cloneElement` mevcut React elementini yeni props'larla üretir. Bu işlem derin bir DOM birleştirmesi yapmaz: `className`, `onClick`, `aria-*` ve `ref` gibi her alan için hangi değerin öncelikli olduğu tasarım kararıdır. Props'ları `{...child.props, ...slotProps}` diye yaymak child'ın handler'ını ezer. Ters sıra da Trigger'ın erişilebilir adı gibi değerleri silebilir. Sadece bir spread sırası değiştirerek tüm alanlara aynı birleştirme kuralını uygulamak mümkün değildir.
-
-Bir Slot'ın child'ı yalnızca görsel kabuk değil, çoğu zaman odaklanabilir gerçek kontrol olur. Üst component `disabled`, `type` veya `aria-expanded` gibi bir prop aktarıyorsa child'ın zaten verdiği değerle çakışma politikasını belirle. Örneğin bir linki button gibi devre dışı bırakmak doğal `disabled` ile mümkün değildir; o durumda semantik seçimi yeniden düşünmek gerekir. Slot esnekliği arttıkça doğrulanması gereken kombinasyonların sayısı da artar.
-
-## Click olayını sırayla izle
-
-Child button'ın kendi analitik handler'ı ve Trigger'ın açma handler'ı olsun:
-
-| Sıra | Olay | Sonuç |
-| --- | --- | --- |
-| 1 | Kullanıcı click eder | Child'ın native button davranışı başlar |
-| 2 | Slot handler'ı child callback'ini çağırır | Child ölçüm veya doğrulama yapabilir |
-| 3 | `defaultPrevented` kontrol edilir | Child iptal ettiyse açma davranışı atlanır |
-| 4 | Event iptal edilmediyse Trigger `open` çağırır | Modal state'i değişir |
-| 5 | React günceller | Aynı button DOM öğesi ve ref'i korunur |
-
-`stopPropagation()` ile `preventDefault()` aynı şey değildir. Birincisi olayın üst handler'lara yayılmasını durdurur; ikincisi varsayılan davranışı iptal eder ve event üzerinde `defaultPrevented` işaretini kurar. Slot API'si “child açmayı iptal edebilir” diyorsa `defaultPrevented` kontrol etmelidir. Bu kuralı belirsiz bırakırsan kullanıcı hangi handler'ın önce ve hangi koşulla çalıştığını bilemez.
-
-## Kırık ve düzeltilmiş kullanım
-
-Kırık sarmalayıcı çift button üretir:
-
-```tsx
-function Trigger({ children }: { children: React.ReactNode }) {
-  return <button type="button" onClick={open}>{children}</button>
-}
-
-<Trigger><button>Fragmanı aç</button></Trigger>
-```
-
-Daha iyi Slot, `asChild` kapalıyken doğal button döndürür; açıkken tek child'ı kullanır. Aşağıdaki küçük örnek, yalnız handler sırasını gösterir:
+## Button'ı button içine koyma
 
 ```tsx check
-import { cloneElement, Children } from 'react'
-import type { ReactElement, MouseEvent, ReactNode } from 'react'
+function Trigger({ children }: { children: React.ReactNode }) {
+  return <button type="button">{children}</button>
+}
 
-type ClickableProps = { onClick?: (event: MouseEvent<HTMLElement>) => void }
+<Trigger><button type="button">Fragmanı aç</button></Trigger>
+```
 
-export function withOpen<T extends ClickableProps>(child: ReactElement<T>, open: () => void) {
+Bu kod bir button'ı diğerinin içine koymaya çalışıyor. HTML'de etkileşimli button'ları iç içe kullanmak geçerli değildir; tarayıcı yapıyı onarabilir ve klavyeyle gezinirken beklenmedik duraklar görebilirsin. İstediğimiz, davranışı eklerken child'ın gerçek DOM öğesini korumak.
+
+## Child elementini kullan
+
+Bir **Slot**, kendi sarmalayıcı DOM öğesini eklemeden davranışı child öğeye aktaran component yaklaşımıdır. `asChild` seçeneği açıkken Trigger kendi button'ını üretmek yerine child elementini kullanır. Bu durumda child button ise button, link ise link olarak kalır.
+
+Slot tek bir React elementini hedeflemelidir. `Children.only` React'ın `children` değerinin tam olarak bir element olup olmadığını doğrular; metin, `null` veya kardeş elementler gelirse erken ve açık bir hata verir. `cloneElement`, var olan bir React elementini yeni props'larla kopyalar; DOM'u derinlemesine birleştirmez, yalnızca verilen props'ları elemente ekler ya da değiştirir.
+
+```tsx check
+import { Children, cloneElement } from 'react'
+import type { ReactElement } from 'react'
+
+function withFilmHint(children: ReactElement<{ 'aria-describedby'?: string }>) {
+  const child = Children.only(children)
+  return cloneElement(child, { 'aria-describedby': 'film-hint' })
+}
+```
+
+Burada child'ın elementi kalır, ama dialogla ilgili açıklama id'si ona eklenir. Bu örnek click, class ve ref kurallarını henüz birleştirmiyor; `cloneElement` otomatik ve evrensel bir merge yapmaz. Hangi prop'un korunacağı ya da ekleneceği Slot API'sinin açık kararı olmalıdır.
+
+## İki click handler'ını sırayla çalıştır
+
+Child'ın click handler'ı analitik kaydı veya kendi kontrolünü yapıyor olabilir; Trigger'ın da dialogu açması gerekir. Event üzerinde `preventDefault()` çağrısı yapıldığında `defaultPrevented` true olur. Slot child handler'ını önce çalıştırıp bu işareti kontrol ederek açılışı iptal edilebilir kılabilir.
+
+```tsx check
+import { cloneElement } from 'react'
+import type { MouseEvent, ReactElement } from 'react'
+
+function addOpenAction(child: ReactElement<{ onClick?: (event: MouseEvent<HTMLButtonElement>) => void }>, open: () => void) {
   return cloneElement(child, {
-    onClick: (event: MouseEvent<HTMLElement>) => {
+    onClick: (event: MouseEvent<HTMLButtonElement>) => {
       child.props.onClick?.(event)
       if (!event.defaultPrevented) open()
     },
-  } as Partial<T>)
-}
-
-export function oneChild(value: ReactNode) {
-  return Children.only(value)
+  })
 }
 ```
 
-Bu örnek tam Slot implementasyonu değildir; class, ARIA ve ref birleştirmesini bilerek kapsamıyor. React 19'da `ref` function component'e prop olarak alınabilir. Yeni kodda her ref aktarımı için `forwardRef` sarmalayıcısı zorunlu değildir; fakat birleştirilen ref'in teardown davranışı ve null değeri de doğru yönetilmelidir. UI kütüphanesi yazarken bu sözleşme için test yaz, çünkü ref bir focus veya ölçüm sınırında kullanılır.
+İlk olarak child'ın handler'ı çalışır; iptal işareti yoksa `open` çağrılır. İki davranış da tek button üzerinde kalır. `stopPropagation()` üst component'lere event'in yayılmasını durdurur, ama `defaultPrevented` işaretini kurmaz; açılışı iptal etme sözleşmesi için doğru kontrol `defaultPrevented`'dır.
 
-Çocuğun props tipi de önemlidir. Slot `ReactElement` kabul edip child'ın click/ref alanları yoksa, React clone sırasında desteklenmeyen prop'lar için uyarı ya da beklenmeyen davranış çıkarabilir. API'nin hangi child prop'larını desteklediğini sınırla ve type assertion'ı ancak çalışma zamanı sözleşmesiyle örtüşüyorsa kullan. Link'e button davranışı aktarıyorsan Space davranışının doğal linkte bulunmadığını unutma; görsel aynı olsa da klavye semantiği farklıdır. Dialog açmak bir eylemse button, başka sayfaya gitmek bir gezinmeyse link seç.
+Bir event sırası kararı dışarıdan küçük görünebilir ama component API'sinin anlamını belirler. Child önce çalışırsa doğrulama veya iptal davranışını uygulayabilir. Ters sıra açılışı önce yapar ve child'ın kararını geçersiz bırakır.
 
-## Belirti → neden → düzeltme
+## Props'ları türüne göre birleştir
 
-:::mistake[Belirti: Tıklayınca yalnızca child handler çalışıyor]
-Belirti → Çocuk kendi kaydını yapıyor ama dialog açılmıyor.  
-Neden → Clone sırasında child `onClick`'i Trigger handler'ı tarafından ezilmiş veya tersi olmuş.  
-Düzeltme → Handler'ları açıkça sırayla çağır ve `defaultPrevented` politikasını belirle.
+Props'ları tek spread ile sıraya koymak kolaydır; fakat bütün alanların kuralı aynı değildir. `className` değerlerini birlikte tutmak gerekir. `aria-label` child'da zaten varsa onun anlamlı adı korunmalı; yoksa Trigger kendi adını verebilir. `onClick` iki fonksiyonu sırayla çağırır. `ref` ise aynı gerçek DOM node'una iki kullanıcının da erişmesini sağlamalıdır.
+
+```tsx check
+import { useCallback, useRef } from 'react'
+
+function PosterButton() {
+  const childNode = useRef<HTMLButtonElement>(null)
+  const logNode = useCallback((node: HTMLButtonElement | null) => {
+    console.log('Button DOM öğesi:', node)
+  }, [])
+  const setBothRefs = useCallback((node: HTMLButtonElement | null) => {
+    childNode.current = node
+    logNode(node)
+  }, [logNode])
+
+  return <button ref={setBothRefs}>Fragmanı aç</button>
+}
+```
+
+Callback ref, DOM öğesi oluştuğunda node'u alan fonksiyondur; kaldırıldığında `null` alır. Burada tek callback hem button'un kendi ref ihtiyacını hem başka davranışın node ihtiyacını karşılıyor. React 19'da `ref` function component'e normal prop olarak gelebilir; dolayısıyla yeni component'lerde her ref için `forwardRef` sarmalayıcısı gerekmez.
+
+Bir Slot bu parçaları bir araya getirirken child'ın `href`, `type` veya erişilebilir adını gelişigüzel ezmemeli. Link başka sayfaya götürme anlamı taşır; modal açma gibi bir eylem için button daha uygundur. Aynı renkte görünmeleri bu iki anlamı eşitlemez.
+
+## Bir click olayını sırayla izle
+
+Child button ölçüm yapıyor, Trigger ise dialogu açıyor olsun. Kullanıcı click ettiğinde beklenen sıra şöyledir:
+
+| Sıra | Ne çalışır? | Ne olur? |
+| --- | --- | --- |
+| 1 | Child button'ın click olayı başlar | Olay tek gerçek DOM button'ında gerçekleşir |
+| 2 | Child handler'ı çalışır | Kayıt tutabilir veya `preventDefault()` çağırabilir |
+| 3 | Slot `defaultPrevented` değerine bakar | İptal varsa açılış atlanır |
+| 4 | İptal yoksa Trigger'ın davranışı çalışır | Dialog açılır |
+| 5 | React günceller | Aynı öğenin props ve ref'i korunur |
+
+Sıra değişirse davranış da değişir: Trigger önce açarsa child sonradan iptal etse bile dialog açılmış olur. Bu nedenle event handler'larını birleştirmek, yalnızca iki fonksiyonu saklamak değil; önce-sonra politikasını açıkça seçmektir.
+
+**Gerçek bir yanlış:** `{...child.props, ...triggerProps}` yazınca Trigger'ın `onClick`'i child'ın handler'ını silebilir; ters sıra da Trigger davranışını silebilir. Belirti, child'ın kaydı ya da dialog açılışından birinin hiç çalışmamasıdır. Alanları türüne göre birleştir: event'leri sırala, class'ları ekle, erişilebilir adı koru ve ref'leri aynı node'a bağla.
+
+:::mistake[Belirti: Child çalışıyor ama dialog açılmıyor]
+Belirti → Kart düğmesinin kendi handler'ı çalışıyor, Trigger'ın davranışı kayboluyor.\
+Neden → Props kopyalanırken bir `onClick` diğerinin üstüne yazılmış.\
+Düzeltme → Child handler'ını ve Trigger davranışını tanımlı sırada birlikte çağır.
 :::
 
-:::mistake[Belirti: Trigger'ın erişilebilir adı kayboluyor]
-Belirti → Simge button artık ekran okuyucuda adsız.  
-Neden → Prop birleştirme Trigger `aria-label`'ını düşürmüş.  
-Düzeltme → Child adı varsa onu koru; yoksa Trigger'ın erişilebilir adını aktar.
+:::mistake[Belirti: Simge düğmesi adsız hale geliyor]
+Belirti → Ekran okuyucu button için ad duymuyor.\
+Neden → Slot `aria-label` değerini ezmiş ya da child'ın adını korumamış.\
+Düzeltme → Child erişilebilir ad vermişse onu kullan; vermemişse Trigger'ın adını aktar.
 :::
 
-:::mistake[Belirti: Focus çağrısı yanlış node'a gidiyor]
-Belirti → Açılışta ref `null` veya dış sarmalayıcıyı gösteriyor.  
-Neden → Child ref'i ve Trigger ref'i birlikte bağlanmamış.  
-Düzeltme → Tek gerçek DOM node'u her iki ref'e de ilet; object ve callback ref'i ele al.
-:::
+Slot'ın işi “her prop'u kopyala” değildir. Tek child'ın semantiğini ve DOM kimliğini koruyup yalnızca gereken davranışları açık kurallarla eklemektir. Props çakışması arttıkça Slot yerine davranış ve görünüm API'sini ayrı tasarlamak daha anlaşılır olabilir.
 
-:::mistake[Belirti: Slot içine metin gönderince hata]
-Belirti → `asChild` ile yalın text geçildiğinde clone işlemi bozuluyor.  
-Neden → API tek React elementi gerektirirken text node kabul etmiş.  
-Düzeltme → Tek element sözleşmesini açıkça doğrula ve anlaşılır hata mesajı ver.
-:::
-
-:::model[DOM erişilebilirlik ağacı]
-Slot yalnızca DOM elementinin üretim şeklini değiştirir. Sonuçta oluşan gerçek child öğenin rolü, adı ve durumu hâlâ ekran okuyucunun gördüğü bilgidir. Bu bağlamda Slot'ın yeni yükümlülüğü, doğru semantiği bozmadan davranış eklemektir.
-:::
-
-:::sector
-Radix Slot gibi primitive'ler compound API'lere mevcut tasarım sistemi öğelerini yerleştirmeyi sağlar. Ekipler her prop'u otomatik birleştirmek yerine özellikle handler, `className`, `aria-*` ve ref kurallarını dokümante eder. Sadece özel davranışın gerçekten DOM etiketinden bağımsız olduğu durumlarda Slot kullan; basit bir button'u gereksiz abstraction ile sarmalama.
+:::info[Derinlemesine (isteğe bağlı)]
+Callback ref'ler React 19'da temizleme fonksiyonu da döndürebilir. Gerçek bir Slot kütüphanesi bu yeni biçimi ve eski `forwardRef` kullanan component'leri ayrıca sınamalıdır; burada temel fikir, ilgili ref'lerin aynı node'u almasıdır.
 :::
 
 ## Özet
 
-- Slot, sarmalayıcı etkileşimli DOM yerine tek child element üzerinde davranış kurar.
-- Props'lar alan türüne göre birleşir; tek spread sırası yeterli değildir.
-- Event sırası ve `preventDefault()` davranışı API sözleşmesidir.
-- Ref'ler aynı DOM öğesine bağlanmalı; React 19'da ref prop olarak alınabilir.
-- Görsel benzerlik semantik farkı silmez: eylem button, gezinme link'tir.
+- Slot child'ı sarmalamaz; etkileşimli öğe sayısını ve child'ın semantiğini korur.
+- `Children.only` tek element sınırını doğrular; `cloneElement` yalnızca belirtilen props'ları ekler veya değiştirir.
+- Click handler'larının sırası ve `preventDefault()` politikası davranışı belirler.
+- Class, erişilebilir ad, handler ve ref alanları aynı şekilde birleştirilmez.
+- Callback ref node'u alır; birden çok ref aynı gerçek node'a bağlanabilir.
 
-**Kendini yokla:** `event.stopPropagation()` ile `event.preventDefault()` hangi açıdan farklıdır?  
-*Cevap:* Biri üst handler'lara yayılmayı durdurur; diğeri varsayılan davranışı iptal edip `defaultPrevented` değerini işaretler.
+**Yeni terimler:**
 
-**Kendini yokla:** Slot'a neden tek child element şartı koyulur?  
-*Cevap:* Davranışın ve ref'in aktarılacağı tek bir gerçek DOM hedefi olması gerekir.
+- **Slot:** Sarmalayıcı eklemeden child element üzerinde davranış sağlayan component yaklaşımı.
+- **`Children.only`:** `children` içinde tam bir React elementi bulunduğunu doğrulayan API.
+- **`cloneElement`:** Var olan React elementini ek props'larla yeniden oluşturan API.
+- **Callback ref:** DOM node'u bağlandığında veya kaldırıldığında node'u alan fonksiyon.
+
+**Kendini yokla:** Child handler `preventDefault()` çağırırsa Trigger ne yapmalı? *Cevap:* Child handler'ından sonra `defaultPrevented` kontrol edilmeli ve açma davranışı atlanmalı.
+
+**Kendini yokla:** Slot neden child button'ın üstüne ikinci button koymamalı? *Cevap:* İç içe etkileşimli öğeler geçersiz ve klavyede kafa karıştırıcı davranış doğurur.

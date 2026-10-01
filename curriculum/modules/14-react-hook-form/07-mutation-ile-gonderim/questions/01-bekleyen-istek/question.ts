@@ -14,20 +14,21 @@ export default defineQuestion({
       explanation: '`mutate` beklemeden döner; mutation kendi ağ yaşam döngüsünü izler.',
     },
     {
-      text: 'Yalnızca `formState.isSubmitting`',
+      text: '`formState.isSubmitting` ancak submit callback’i mutation Promise’ini beklerse.',
       correct: false,
       explanation:
         'Senkron callback hemen dönerse bu değer isteğin sonuna kadar pending kalmayabilir.',
     },
     {
-      text: '`formState.isDirty`',
+      text: '`mutation.isSuccess`',
       correct: false,
-      explanation: 'Kirli olmak isteğin hâlâ sürdüğünü söylemez.',
+      explanation: 'Bu değer istek başarıyla bittikten sonrayı gösterir; beklerken true değildir.',
     },
     {
-      text: '`errors` nesnesinin varlığı',
+      text: '`formState.isDirty`',
       correct: false,
-      explanation: 'Alan hatası ile ağ isteği durumu farklıdır.',
+      explanation:
+        'Kirli durum form değerinin başlangıçtan farklı olduğunu söyler, isteğin hâlâ sürdüğünü değil.',
     },
   ],
 })

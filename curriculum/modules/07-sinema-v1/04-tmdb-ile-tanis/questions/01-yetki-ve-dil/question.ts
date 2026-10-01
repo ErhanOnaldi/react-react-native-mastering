@@ -20,9 +20,9 @@ export default defineQuestion({
         'Dil parametresi yetki sağlamaz veya engellemez. Kaldırırsan Türkçe başlık isteğini de kaybedersin.',
     },
     {
-      text: '`status_code: 7` değerini URL’ye eklemek',
+      text: '`Authorization: Token <Read Access Token>` başlığı eklemek',
       explanation:
-        '`status_code` sunucunun hata gövdesindeki teşhis bilgisidir; istek parametresi değildir.',
+        'TMDB bu erişim biçiminde `Token` değil `Bearer` önekini bekler; başlıktaki şema yanlışsa token geçerli olsa bile yetkilendirme başarısız olur.',
     },
     {
       text: '`fetch` sonucuna doğrudan `.json()` çağırmak',

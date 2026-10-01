@@ -1,4 +1,4 @@
-Toplu kayıt ekleme kuralı, tekrarları atlayıp eski state’i korumalı.
+Bir watchlist reducer’ı toplu film kimliği ekler. Reducer’ın tekrarları atladığını ve eski state’i koruduğunu gösteren testleri yaz.
 
 ## Gereksinimler
 
@@ -12,6 +12,6 @@ Başlangıç `[550]`, payload `[550, 603, 603]` → `[550, 603]`.
 
 ## Sözleşme
 
-- Dosya: `bulk.ts`
-- Export: `listSlice`, `addMany(ids: number[])`
+- Dosya: `bulk.test.ts`
+- Test edilecek export: `@impl/bulk` içinden `listSlice` ve `addMany(ids: number[])`
 - State biçimi: `{ ids: number[] }`

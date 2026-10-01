@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250">
+  <title>URL parametresinin güvenli biçimde filme eşlenmesi</title>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse">
+      <path class="d-arrowhead-accent" d="M0,0 L8,4 L0,8 z" />
+    </marker>
+  </defs>
+  <rect class="d-violet" x="25" y="72" width="150" height="100" rx="12" />
+  <text class="d-title" x="100" y="105" text-anchor="middle">URL</text>
+  <text class="d-code" x="100" y="138" text-anchor="middle">/movie/81</text>
+  <rect class="d-accent" x="225" y="72" width="150" height="100" rx="12" />
+  <text class="d-title" x="300" y="105" text-anchor="middle">Parametre</text>
+  <text class="d-code" x="300" y="138" text-anchor="middle">'81' string</text>
+  <rect class="d-warning" x="425" y="72" width="150" height="100" rx="12" />
+  <text class="d-title" x="500" y="105" text-anchor="middle">Doğrula</text>
+  <text class="d-muted" x="500" y="138" text-anchor="middle">biçim + aralık</text>
+  <rect class="d-success" x="625" y="72" width="125" height="100" rx="12" />
+  <text class="d-title" x="687" y="105" text-anchor="middle">Film</text>
+  <text class="d-muted" x="687" y="138" text-anchor="middle">Kıyıdaki ev</text>
+  <path class="d-line-accent" d="M180 122 H216" marker-end="url(#arrow)" />
+  <path class="d-line-accent" d="M380 122 H416" marker-end="url(#arrow)" />
+  <path class="d-line-accent" d="M580 122 H616" marker-end="url(#arrow)" />
+  <text class="d-muted" x="200" y="207" text-anchor="middle">eşleş</text>
+  <text class="d-muted" x="400" y="207" text-anchor="middle">dönüştür</text>
+  <text class="d-muted" x="600" y="207" text-anchor="middle">kaydı bul</text>
+</svg>

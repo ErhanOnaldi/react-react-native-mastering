@@ -1,9 +1,9 @@
-Detay isteğini yalnız geçerli film id’si geldiğinde başlat; eksik id için istek gönderme.
+Detay isteğini yalnız geçerli film id’si geldiğinde başlat; eksik id için istek gönderme. `useQuery` çağrısı component her render olduğunda aynı yerde kalmalı.
 
 ## Gereksinimler
 
 - Hook hem `undefined` id hem sayısal id kabul etsin.
-- Id yokken fetch durumu idle olsun ve ağ isteği çıkmasın.
+- `enabled` ile sorgu id yokken kapalı olsun; fetch durumu idle kalsın ve ağ isteği çıkmasın.
 - Id 550 geldiğinde film detayını alıp `Dövüş Kulübü` başlığını döndür.
 
 ## Örnek

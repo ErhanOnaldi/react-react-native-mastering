@@ -6,23 +6,24 @@ export default defineQuestion({
   difficulty: 'kolay',
   concepts: ['perf.rerender'],
   question:
-    '500 filmlik aramada bir tuş gecikiyor. İlk karşılaştırmada hangisi makineden bağımsız bir sinyaldir?',
+    '500 filmlik aramada bir tuş gecikiyor. Profiler ile ilk karşılaştırmada hangi sinyal daha güvenilirdir?',
   options: [
     {
-      text: 'Liste Profiler callback çağrı sayısı',
+      text: 'Aynı arama etkileşiminde liste için bildirilen commit sayısı',
       correct: true,
       explanation:
-        'Her commit için callback gelir; aynı etkileşimde gereksiz tekrarları gösterebilir.',
+        'Aynı etkileşimdeki commit sayısı, gereksiz tekrarları süre eşiğinden daha tutarlı gösterir.',
     },
     {
-      text: 'Tek bir makinede 5 ms sınırı',
+      text: 'Geliştirici bilgisayarında ölçülen render süresinin 5 ms altında kalması',
       correct: false,
       explanation: 'Süre cihaz ve geliştirme moduna göre değişir; sabit eşik kırılgandır.',
     },
     {
-      text: 'Paket sürüm numarası',
+      text: 'İlk açılışta indirilen JavaScript paketinin sürüm numarası',
       correct: false,
-      explanation: 'Sürüm darboğazın hangi bileşende olduğunu göstermez.',
+      explanation:
+        'Paket sürümü gecikmenin hangi etkileşimde ve hangi ağaçta oluştuğunu göstermez; commit kaydı doğrudan etkileşime bakar.',
     },
   ],
 })

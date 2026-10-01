@@ -2,13 +2,19 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'code',
-  title: 'Route parametresi ve link',
+  title: 'Detay sayfasına gezinme testi yaz',
   difficulty: 'orta',
-  concepts: ['test.custom-render', 'router.params', 'router.navigation'],
-  files: ['MovieRoute.tsx'],
+  concepts: ['test.custom-render', 'test.user-event', 'router.params', 'router.navigation'],
+  files: ['MovieRoute.test.tsx'],
   hints: [
-    'Bileşenin URL’den hangi bilgiyi okuyacağını ve kullanıcıyı nereye götüreceğini ayır.',
-    '`useParams` ile route parametresini, `Link` ile istemci tarafı navigasyonu kullan.',
-    'Id varsa `Film #${id}` heading ve `/search` linki döndür; yoksa `Film seçilmedi` metnini göster.',
+    'Bir memory router içinde hem film route’unu hem de arama sayfasını kur.',
+    'Başlangıç URL’indeki id’nin başlıkta göründüğünü; link tıklanınca URL ve ekrandaki başlığın değiştiğini doğrula.',
+    'Ayrı bir başlangıç URL’iyle id olmayan durumu da sınayabilirsin.',
   ],
+  testWriting: {
+    mutants: [
+      { id: 'fixed-id', label: 'başlıkta URL id’si yerine sabit id gösteren sürüm' },
+      { id: 'wrong-target', label: 'aramaya dönüş linkini yanlış adrese götüren sürüm' },
+    ],
+  },
 })

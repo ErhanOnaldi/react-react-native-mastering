@@ -5,25 +5,25 @@ export default defineQuestion({
   title: 'Paylaşılabilir arama',
   difficulty: 'orta',
   concepts: ['arch.state-categories', 'router.search-params'],
-  question:
-    '“Matrix, 2. sayfa” bağlantısını arkadaşıma gönderince aynı sonuç açılsın. Hangi değerler URL’de olmalı?',
+  question: `Arama alanında kullanıcı henüz göndermediği "Dövüş" taslağını yazıyor. Uygulanan arama "Matrix", sayfa 2; TMDB'den de sonuç listesi geldi. "Matrix'in 2. sayfasını" paylaşılabilir yapan URL neyi taşımalı?`,
   options: [
     {
-      text: 'q ve page',
+      text: 'Uygulanmış sorgu ve sayfa: q=Matrix, page=2',
       correct: true,
-      explanation: 'Doğru. Arama ve sayfa gezinmeyle paylaşılacak seçimlerdir.',
+      explanation:
+        'Gönderilmemiş taslak input içindir; URL uygulanmış seçimi taşır. Sonuçlar bu seçimle sunucudan alınır.',
     },
     {
-      text: 'Sonuç listesinin tamamı',
-      explanation: 'Sonuçlar TMDB’den gelir; URL’ye tüm JSON’u koymak sahipliği karıştırır.',
+      text: 'Input taslağı ve sonuç listesinin tamamı',
+      explanation: 'Taslak henüz uygulanmadı; sonuçlar da URL seçimi değil TMDB cevabıdır.',
     },
     {
-      text: 'Yalnız favori id’leri',
-      explanation: 'Favoriler yerel tercihtir; bu bağlantının arama seçimini anlatmaz.',
+      text: 'Yalnız q=Matrix',
+      explanation: 'Bu aynı sorguyu açar ama ikinci sayfayı geri kuramaz.',
     },
     {
-      text: 'Yalnız loading bayrağı',
-      explanation: 'Loading istek sırasında oluşur; paylaşılacak kalıcı bir seçim değildir.',
+      text: 'Yalnız sonuç listesindeki film id’leri',
+      explanation: 'Bunlar cevabın içeriği; sayfa seçimini yeniden kurmak için q ve page gerekir.',
     },
   ],
 })

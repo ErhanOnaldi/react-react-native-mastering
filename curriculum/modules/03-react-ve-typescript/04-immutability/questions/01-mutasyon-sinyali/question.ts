@@ -5,23 +5,27 @@ export default defineQuestion({
   title: 'Mutasyon sinyali',
   difficulty: 'kolay',
   concepts: ['react.immutability'],
-  question:
-    '`favoriteIds.push(550); setFavoriteIds(favoriteIds)` sonrası ekranda işaret niçin kalabilir?',
+  question: `State'teki film dizisini \`map\` ile yenileyip içerideki filmi doğrudan değiştirirsen hangi sorun sürer?`,
   options: [
     {
-      text: 'State’e aynı dizi referansı geri verilir.',
+      text: 'Eski ve yeni dizi aynı film nesnesini paylaşabilir; önceki state de değişmiş olur.',
       correct: true,
-      explanation: 'Yeni içerik olsa da referans değişmez; yeni dizi üretmek gerekir.',
+      explanation:
+        'Yeni dış dizi, iç nesneleri otomatik kopyalamaz. Değişen film için yeni nesne üret.',
     },
     {
-      text: 'React sayıları state’te tutamaz.',
-      correct: false,
-      explanation: 'Sayılar ve sayı dizileri state’te tutulabilir.',
+      text: '`map` her öğeyi mutlaka deep copy yaptığı için içerik kaybolur.',
+      explanation:
+        '`map` yalnız yeni dizi kurar; döndürdüğün öğelerin nesnelerini kendin kopyalarsın.',
     },
     {
-      text: 'push yeni dizi döndürür.',
-      correct: false,
-      explanation: 'push diziyi yerinde değiştirir ve yeni uzunluğu döndürür.',
+      text: 'React state içinde nesne tutmaya izin vermez.',
+      explanation: 'Nesne state olabilir; güncellerken onu yerinde değiştirmemek gerekir.',
+    },
+    {
+      text: 'Yeni dizi üretildiğinde React artık state güncellemesini izleyemez.',
+      explanation:
+        'Yeni referans güncellemeyi görünür kılar; önemli olan değişen nesne yolunu da kopyalamaktır.',
     },
   ],
 })

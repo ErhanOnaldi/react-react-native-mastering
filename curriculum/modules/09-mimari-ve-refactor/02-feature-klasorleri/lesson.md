@@ -6,146 +6,127 @@ kind: concept
 
 # Dosyaları özelliğin yanına koy
 
-:::pain[Problem]
-Sinema'da arama kutusunun davranışını değiştirmek için `components/`, `pages/`, `hooks/` ve `lib/` içinde dolaşıyorsun. Favorilere özel bir düğmenin genel `shared/ui/` klasöründe ne işi olduğunu anlamak için import zincirini açman gerekiyor. Yeni bir feature geldiğinde dosya adları benzer ama aralarındaki bağ görünmüyor.
-:::
+Sinema uygulamasında yalnızca arama ekranının kullandığı `SearchBox` olsun. Bu dosyayı `features/search/` içine koyarsan, aramayla ilgili bir değişiklikte önce bakacağın yer bellidir. **Feature**, kullanıcının gördüğü bir iş alanıdır; örneğin arama, filmler veya favoriler. Bir klasör, kodun kime ait olduğunu ve hangi kodun onunla birlikte değişmesinin beklendiğini gösterir.
 
-## Klasör bir sahiplik sınırıdır
+## Bir kullanım yerinden başla
 
-Klasör, sadece dosya saklanan bir çekmece değildir. Dosyanın hangi özelliğe ait olduğunu, başka kod tarafından kullanılıp kullanılmadığını ve bağımlılığın hangi yöne gitmesi gerektiğini görünür kılar. Feature temelli düzende bir iş alanına ait sayfa, bileşen, hook ve API fonksiyonları yan yana yaşar. Gerçekten birden fazla feature'ın kullandığı kod `shared/` içine çıkar.
+Önce arama davranışını kendine ait yerde tut:
 
-![Feature klasörlerinden shared katmanına tek yönlü bağımlılığı gösteren diyagram](diagrams/feature-bagimlilik.svg "Feature ortak parçayı kullanır; shared feature'a geri dönmez.")
+```text
+src/
+  features/
+    search/
+      SearchBox.tsx
+      useSearch.ts
+```
 
-Kesin kurallar:
+`SearchBox` arama metnini ve gönderme davranışını biliyorsa, onu genel `shared/ui/` klasörüne koymak arama sorumluluğunu gizler. `shared` ise gerçekten birden fazla feature'ın kullandığı genel parçaların evidir. Örneğin sade bir `TextInput` arama ve yorum formunda aynı görünüm sözleşmesiyle kullanılıyorsa shared adayı olabilir; aramaya özel `SearchBox` yine search feature'ında kalır.
 
-1. **Bir feature'a ait kod önce o feature'ın içindedir.** Yalnız arama sayfasının kullandığı `SearchBox`, `features/search/components/` içinde yer alır. “İleride belki kullanılır” ortaklık gerekçesi değildir.
-2. **İki ya da daha fazla gerçek kullanıcı ortak kodu haklı çıkarabilir.** Saf tarih biçimleyici hem arama hem detay ekranında kullanılıyorsa `shared/lib/` adayıdır. Taşımadan önce aynı işin kopyaları varsa tek uygulamayı ortaklaştır; iki bağımsız doğruluk kaynağı bırakma.
-3. **Bağımlılık feature'dan shared'e doğru akar.** `features/movies` `shared/api`'yi çağırabilir. `shared/api` ise `features/movies` import etmemelidir; aksi halde ortak katman bir ürün özelliğini tanır ve döngü ihtimali doğar.
-4. **Feature'lar arası kullanım açık bir public API'den geçer.** `features/search` doğrudan `features/movies/components/MovieCardInternal` dosyasına bağlanmamalı. Gerekli dış yüzeyi `features/movies/index.ts` gibi bir girişten export edebilir ya da bileşeni gerçekten ortaksa `shared/ui/`'ye taşıyabilirsin.
-5. **Sınıflandırmayı dosya adından değil, değişiklik nedeninden yap.** `MovieCard` adı film içeriyor diye mutlaka shared olmaz. Birden fazla alan aynı davranışı ve görünüm sözleşmesini kullanıyor mu, yoksa yalnız bir feature mı değiştiriyor?
-
-Tipik yapı şu şekilde olabilir:
+Şimdi TMDB'den film listesi alan kodu ekleyelim:
 
 ```text
 src/
   features/
     movies/
-      api/
-      components/
-      hooks/
-      index.ts
+      api/movies-api.ts
     search/
-      components/
-      hooks/
-      api/
-    favorites/
-      components/
-      hooks/
-  pages/
+      SearchBox.tsx
   shared/
-    api/
-    config/
-    lib/
-    ui/
+    api/tmdb-client.ts
 ```
 
-Bu isimler katı bir framework kuralı değil; ekipte anlaşılır bir sahiplik sözleşmesidir. Küçük uygulamada `features/search/` içinde daha az alt klasör kullanmak normaldir. Kod miktarı veya gerçekten ayrı sorumluluklar arttıkça klasörü derinleştir. Her tür dosya için boş `components`, `hooks`, `types`, `utils` klasörleri üretmek yapıyı daha açık kılmaz.
+`movies-api.ts`, “trend filmleri getir” gibi film özelliğinin anlamını bilir. `tmdb-client.ts` ortak HTTP ayrıntısını bilir, örneğin TMDB'ye istek göndermeyi. Bu ayrım faydalıdır çünkü bir feature'ın anlamı değiştiğinde ortak ağ koduna dokunman gerekmez; ortak ağ politikası değiştiğinde de film ekranına özel kararları değiştirmezsin.
 
-## Bir dosyanın yolunu kararlaştır
-
-Şu soruları sırayla sor:
-
-| Soru | Yanıt | İlk yer |
-| --- | --- | --- |
-| Kod tek bir iş akışını mı anlatıyor? | Evet, yalnız arama | `features/search/` |
-| Kod başka feature'larda da aynı sözleşmeyle mi kullanılıyor? | Evet, birden fazla | `shared/` adayı |
-| Kod HTTP standardını mı, film endpoint anlamını mı biliyor? | HTTP | `shared/api/`; film endpoint'i | `features/movies/api/` |
-| Kod sayfa seçimini mi birleştiriyor? | Evet | `pages/` ya da route modülü |
-| Kod bağımlılığı yönü tersine çeviriyor mu? | Evet | Sınırı yeniden çiz |
-
-Örneğin `posterUrl(path)` sadece TMDB görsel adresini kuran saf yardımcıysa filmler ve favoriler onu paylaşabilir; `shared/lib/tmdb-image.ts` makul bir yerdir. `getTrendingMovies()` ise TMDB'ye ait olsa da yalnız HTTP ayrıntısı değildir: endpoint ve “trend film” anlamını bilir, dolayısıyla `features/movies/api/`'ye aittir. `SearchBox` da arama etkileşimini bilir; genel bir text input'la karıştırma.
-
-## Bağımlılık yönünü import'larla izle
-
-Bir import'u okurken “bu dosya ne kullanıyor?” diye sor. Şu zincirde sayfa ürün akışını birleştirir, film feature'ı endpoint anlamını sağlar, ortak API HTTP ayrıntısını uygular:
+İki feature aynı saf film poster adresi kurucusunu gerçekten kullanmaya başladı diyelim. O zaman ortak kullanım görünür hale gelir:
 
 ```text
-pages/HomePage.tsx
-  → features/movies/api/movies-api.ts
-    → shared/api/tmdb-client.ts
+src/
+  features/
+    movies/
+    favorites/
+  shared/
+    lib/movie-poster-url.ts
 ```
 
-`shared/api/tmdb-client.ts` geriye dönüp `features/movies/api/movies-api.ts` içinden bir film tipini almamalı. Ortak katman film özelliğine özel bir tipi gerçekten taşımamalı; ortak ve semantik olarak ortak tipe sahipse `shared`'de tanımla, değilse tip feature'da kalsın. Barrel dosyası bu kuralı değiştirmez. `index.ts` dış kullanıma bir API sunabilir; feature içindeki dosyalar kendi barrel'ına geri import ederek döngü kurmamalı.
+Bu dosya hem filmler hem favoriler ekranında aynı işi yapıyorsa `shared/lib/` uygun olabilir. İleride kullanılabilir düşüncesi tek başına yeterli değil. Önce tek sahibi olan yerde başlamak, ikinci gerçek kullanım doğduğunda ortak sınırı çizmek gereksiz klasörleri ve erken genellemeyi azaltır.
 
-Taşıma değişikliğini izlerken şu küçük zinciri düşün:
+![Feature klasörlerinden shared katmanına tek yönlü bağımlılığı gösteren diyagram](diagrams/feature-bagimlilik.svg "Feature ortak parçayı kullanır; shared feature'a geri dönmez.")
 
-| Adım | Önce | Sonra | Kontrol |
-| --- | --- | --- | --- |
-| 1 | `components/SearchBox.tsx` | `features/search/components/SearchBox.tsx` | Yalnız import yolunu değiştir |
-| 2 | Aynı SearchBox iki sayfada kopya | Tek feature bileşeni | İki kullanımın aynı sözleşmeye uyduğunu doğrula |
-| 3 | Genel formatlayıcı iki feature'da | `shared/lib/format.ts` | Feature'dan shared'e import olduğunu gör |
-| 4 | `shared` feature dosyasını import eder | Yanlış bağımlılık | Tipi ortaklaştır veya feature sınırında bırak |
+## Bağımlılık yönünü import'lardan anla
 
-Bir seferde tüm `src/` ağacını yeniden düzenleme. Tek dosya taşı, importlarını güncelle, editör/typecheck'te kırılan referansları düzelt, sonra sonraki parçaya geç. Küçük adımın değeri sadece kolay geri alma değildir: hata çıkınca hangi sahiplik kararının yanlış olduğunu da hemen görürsün.
+**Bağımlılık**, bir dosyanın çalışmak veya tipini bilmek için başka bir dosyayı kullanmasıdır. Örneğin `HomePage` iki parçayı bir araya getirebilir:
 
-## Önce kırık yön, sonra doğru yön
-
-Bu örnek derlenir ama shared'in feature'a bağımlı olması nedeniyle ortak katmanın gerçek sahibi belirsizdir:
-
-```ts check
-type Movie = { id: number; title: string; credits: string[] }
-
-export function movieLabel(movie: Movie): string {
-  return `${movie.title} (${movie.id})`
-}
+```ts
+import { getTrendingMovies } from '../features/movies/api/movies-api'
+import { tmdbRequest } from '../shared/api/tmdb-client'
 ```
 
-Eğer `Movie` yalnız `movies` feature'ına ait detay cevabıysa bu yardımcıyı shared'e taşımak yanlıştır. Yardımcı `Movie`'nun bütün detaylarını kullanmıyorsa ihtiyacı olan küçük shape'i tanımlamak; gerçekten yalnız filmlere aitse feature içinde tutmak daha açık çözümdür. İki feature'ın aynı temel alanları anlamlı biçimde paylaştığı durumda ortak tipi `shared`'e taşıyabilirsin.
+Page/route ekran akışını kurar, movie feature film endpoint'ini tanır, shared katman ortak HTTP işini yapar. Sağlıklı yön `page → feature → shared` olabilir. `shared/api/tmdb-client.ts` içinden `features/movies/api/movies-api.ts` import edilirse yön geri döner: genel ağ kodu bir film özelliğine bağlanır. Böyle bir yapı değişiklikleri birbirine dolaştırır ve döngülü import olasılığını artırır.
 
-Feature endpoint'i ile ortak taşıma örneği:
+| Kod neyi biliyor? | Genellikle nerede başlar? | Örnek |
+| --- | --- | --- |
+| Yalnız arama akışı | `features/search/` | `SearchBox` |
+| Film endpoint'inin anlamı | `features/movies/api/` | `getTrendingMovies` |
+| Birden fazla feature'ın kullandığı genel iş | `shared/` | `moviePosterUrl` |
+| Ekranların bir araya gelişi | `pages/` veya route modülü | `HomePage` |
 
-```ts check
-type MovieCardData = { id: number; title: string }
+Dosyanın adını değil, ne zaman değişeceğini sor. `MovieCard` adı film diyor diye otomatik olarak shared olmaz. Yalnız film listesindeki alanları gösteriyorsa movies feature'ına ait olabilir. Favori listesi de aynı davranış ve props sözleşmesiyle kullanıyorsa ortaklaştırmak anlamlı olabilir. Paylaşmanın nedeni “belki lazım olur” değil, bugünkü gerçek kullanıcıların aynı işi aynı biçimde yapmasıdır.
 
-export function formatCardLabel(movie: MovieCardData): string {
-  return `${movie.title} · #${movie.id}`
-}
+İki feature aynı adlı dosyaya sahip diye bunları da hemen birleştirme. Örneğin arama sonuçlarındaki kart puanı gösterirken favori kartı yıldız ve kaldırma düğmesi gösterebilir. Yalnızca dış görünüşleri benziyor diye tek bir `MovieCard` yapmak, props'a koşul ekleyip iki farklı davranışı tek yerde toplamana yol açabilir. Önce değişiklik nedenleri ve sözleşmeleri gerçekten aynı mı diye bak; ortaklaştırma kod tekrarını azaltırken kavramı da sadeleştirmeli.
+
+## Dışarı açılan yüzeyi küçük tut
+
+Bir feature'ın diğer feature'lar tarafından kullanılmasına izin verdiği isimler onun **public API**'sidir: yani dışarıdaki kodun güvenle kullanabileceği küçük giriş yüzeyi. Bir **barrel**, genelde `index.ts` adlı dosyadır; seçilmiş export'ları tek bir girişten dışarı verir.
+
+```ts title="features/movies/index.ts"
+export { MovieCard } from './MovieCard'
+export { useMovies } from './useMovies'
 ```
 
-Bu fonksiyonun ortak olması için en az iki gerçek tüketici bulunmalı ve aynı format her ikisi için de anlamlı olmalı. Aksi halde `formatCardLabel` feature'ın içinde kalır. Paylaşımın hedefi klasörü doldurmak değil, aynı kuralın değişiklikte bir kez tutulmasıdır.
+Başka bir feature bu girişten `MovieCard` alabilir. Böylece `features/search` uygulama ayrıntısı olan `features/movies/components/MovieCardInternal.tsx` yoluna bağlanmaz. MovieCard'ın iç yapısı taşınsa da dışarıdaki import aynı kalabilir. İçerideki dosyalar ise birbirini kendi barrel'ından değil, doğrudan göreli yoldan import etmelidir.
 
-## Sınır durumları ve sık hatalar
+Barrel'dan geri dönmek döngü doğurabilir. Örneğin `index.ts`, `MovieCard.tsx` dosyasını export ederken, `MovieCard.tsx` de bir yardımcıyı `index.ts`'ten import etsin:
 
-:::mistake[Belirti: shared klasörü her türden dosyayla doluyor]
-**Belirti →** `shared/` içinde `movieSearch`, `favoriteBadge`, `profileSearch` gibi feature adları çoğalıyor. **Neden →** “Başka yerde kullanabiliriz” ihtimali gerçek tüketici gibi sayılmış. **Düzeltme →** İlk kullanım noktasına koy; ikinci kullanım ortaya çıktığında ortak sözleşme varsa taşı.
+```text
+index.ts → MovieCard.tsx → index.ts
+```
+
+İkinci import, `MovieCard` dosyasının başladığı modüle geri döner. JavaScript modülleri açılırken export henüz hazır değilse yardımcı `undefined` görünebilir. MovieCard içindeki yardımcıyı aynı klasördeki gerçek dosyadan doğrudan import et; barrel'ı dışarıdaki tüketiciler için bırak. Export sırasını değiştirmek bu geri dönüş okunu kaldırmaz.
+
+Taşıma yaparken bir defada tüm `src/` ağacını değiştirme. Tek bir dosyayı taşı, import'larını güncelle ve editör/build hatalarını çöz; sonra sıradaki dosyaya geç. Küçük adımda sorun çıkarsa hangi sahiplik veya import kararıyla ilgili olduğunu bulmak kolaydır.
+
+Bir `SearchBox`'ı taşırken sıra basit olabilir: dosyayı `features/search/` altına taşı, onu kullanan sayfanın import'unu yenile, sonra typecheck/build hatalarını düzelt. Eski kopya başka bir yerde kaldıysa hangi bileşenin güncel olduğunu anlamak zorlaşır; tek gerçek kaynağı seçip eski kopyayı kaldır. Bu adımlar bir framework buyruğu değil, değişikliğin etkisini gözle takip etmenin yoludur.
+
+| Adım | Değişiklik | Neyi kontrol edersin? |
+| --- | --- | --- |
+| 1 | `components/SearchBox.tsx` → `features/search/SearchBox.tsx` | Arama sayfası yeni yolu import ediyor mu? |
+| 2 | İkinci ekran da aynı SearchBox'ı kullanır | Davranış ve props gerçekten aynı mı? |
+| 3 | Ortak, aynı sözleşmeli parça belirginleşir | O parçayı shared'e al; SearchBox arama feature'ında kalsın |
+
+:::mistake[Belirti: shared klasöründe film aramasına özel dosyalar çoğalıyor]
+**Belirti →** `shared/` içinde `movieSearch` ve `favoriteBadge` gibi tek ekrana ait adlar birikiyor. **Neden →** Gelecekte belki kullanılacak olması bugünkü ortak kullanım sanılmış. **Düzeltme →** Önce dosyayı tek feature içinde tut; ikinci gerçek kullanıcı aynı sözleşmeyle kullanınca ortaklaştır.
 :::
 
-:::mistake[Belirti: küçük import değişikliği tüm uygulamayı döngüye sokuyor]
-**Belirti →** `shared/ui` içindeki bileşen feature barrel'ından tekrar `shared` dosyasına ulaşıyor veya başlangıç değeri `undefined` oluyor. **Neden →** Import yönü yukarı/aşağı gidip aynı modül ağacına geri dönüyor; barrel da döngüyü gizliyor. **Düzeltme →** `feature → shared` yönünü koru; içeride doğrudan dosya import et ve public barrel'ı dış tüketiciye sakla.
+:::mistake[Belirti: export edilen feature bileşeni bazen undefined]
+**Belirti →** `MovieCard` açılırken kullandığı yardımcı hazır değil. **Neden →** Feature içindeki dosya, onu tekrar export eden `index.ts` üzerinden kendine geri dönmüş olabilir. **Düzeltme →** İç import'u gerçek dosya yoluna çevir; barrel'ı feature dışındaki kodun giriş noktası olarak kullan.
 :::
 
-:::mistake[Belirti: arama kutusunu güncellemek için üç alana dokunuyorsun]
-**Belirti →** Aynı `SearchBox` bir sayfada `components/`, diğerinde `shared/ui/` kopyası olarak duruyor. **Neden →** Ortaklaştırma yapılırken eski kopya kaldırılmamış veya API'ler ayrışmış. **Düzeltme →** İki kullanımın davranış ve props sözleşmesini karşılaştır, bir kaynağı seç ve diğer import'u ona geçir.
-:::
-
-:::mistake[Belirti: klasör sayısı koddan hızlı artıyor]
-**Belirti →** Tek satırlı küçük dosya için beş seviye derin klasör gerekiyor. **Neden →** Klasör şablonu her feature'a ölçmeden uygulanmış. **Düzeltme →** Yapıyı dosyaların gerçek sorumluluklarına göre tut; alt klasörü ancak gezinmeyi veya sahipliği iyileştiriyorsa ekle.
-:::
-
-:::sector
-Ekiplerde feature klasörleri değişiklik sınırını code review'da görünür kılar. Bir arama davranışının değişmesi çoğunlukla `features/search/` çevresinde kalır; ortak UI değişikliği ise birden fazla sahibin görüşünü gerektirir. Mimari kuralı klasör adına değil, import yönüne ve gerçek kullanıma bakarak denetle.
+:::mistake[Belirti: ortak ağ kodu film feature'ını import ediyor]
+**Belirti →** `shared/api` içindeki HTTP yardımcı dosyasında film tipi veya endpoint adı görünüyor. **Neden →** Genel ağ katmanı feature'a ait anlamı üstlenmiş. **Düzeltme →** Endpoint kararını `features/movies/api/`'ye taşı; shared katmanda yalnız gerçek ortak HTTP davranışı kalsın.
 :::
 
 ## Özet
 
-- Tek bir özelliğe ait kod o feature'ın yanında başlar.
-- Gerçekten ortaklaşan davranış shared'e taşınır; erken genelleme yapılmaz.
-- Bağımlılık yönü feature'dan shared'e doğrudur; shared feature bilmez.
-- Endpoint anlamı feature API'sinde, ortak HTTP politikası shared API client'tadır.
-- Küçük taşıma adımları sahiplik hatasını bulmayı kolaylaştırır.
+- Tek feature'ın kullandığı kodu o feature'ın yanında tut; ortaklaştırmayı gerçek ikinci kullanım doğduğunda düşün.
+- `shared` genel işleri bilir; feature'a özel endpoint ve davranışları bilmez.
+- Import yönünü `page → feature → shared` gibi tek yönde tut.
+- `public API`, feature'ın dışarıya izin verdiği girişlerdir; barrel (`index.ts`) bu girişleri toplar.
+- Feature içindeki import'ları doğrudan dosyaya yönelt; kendi barrel'ına geri dönmek döngü yaratabilir.
 
-**Kendini yokla:** Yalnız favoriler ekranında görünen `FavoriteCount` ilk olarak nereye konur?  
-*Cevap:* `features/favorites/` içine. Başka gerçek feature da aynı sözleşmeyle kullanırsa ortaklaştırmayı düşün.
+**Yeni terimler:** `feature` — uygulamadaki bir iş alanı; `public API` — dış kodun kullanmasına izin verilen export'lar; `barrel` — export'ları genellikle `index.ts`'te toplayan dosya; `bağımlılık` — bir dosyanın kullandığı başka kod.
 
-**Kendini yokla:** `shared/api` film türlerinin etiketlerini seçmeli mi?  
-*Cevap:* Hayır. Ortak API HTTP davranışını bilir; tür ve endpoint anlamı film feature'ına aittir.
+**Kendini yokla:** Yalnız favoriler ekranında kullanılan yıldız düğmesi ilk olarak nereye konur?  
+*Cevap:* `features/favorites/` içine. Aynı davranış başka bir feature'da gerçekten gerekirse sınırı tekrar değerlendir.
+
+**Kendini yokla:** `shared/api` film türlerinin etiketini seçmeli mi?  
+*Cevap:* Hayır. HTTP işi shared'e, film/tür anlamı movies feature'ına aittir.

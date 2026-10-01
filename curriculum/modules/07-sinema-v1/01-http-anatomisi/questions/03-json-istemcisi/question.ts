@@ -7,8 +7,8 @@ export default defineQuestion({
   concepts: ['web.http-anatomy', 'fetch.error-handling'],
   files: ['fetchJson.ts'],
   hints: [
-    'Ağ hatası ile sunucudan gelen başarısız HTTP cevabı farklı yollardan gelir. Önce Response durumuna bak.',
-    '`response.ok`, `response.status` ve gövdesiz başarı için `response.status === 204` kullan.',
-    'Önce `const response = await fetch(url, init)`; başarısızsa `throw new HttpError(response.status)`; 204 ise `return null`; diğer başarıda JSON gövdesini bir kez oku.',
+    'Ağ hatası ile sunucudan gelen başarısız HTTP cevabı farklıdır. HTTP cevabını aldıktan sonra durumunu ayrıca denetle.',
+    'Başarısız HTTP cevabında durum kodunu mesajla taşı; başarılı cevabın gövdesini yalnızca bir kez oku.',
+    'İstek seçeneklerini `fetch` çağrısına aktar. 204 durumunda JSON okuma adımını atla; diğer başarılı durumlarda gövdeyi JSON olarak döndür.',
   ],
 })

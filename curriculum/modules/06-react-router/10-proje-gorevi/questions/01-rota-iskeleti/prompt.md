@@ -20,4 +20,5 @@ Menüde `Ara` seç → adres `/search`, yalnız Ara etkin; `/olmayan` aç → 40
 - `src/layouts/RootLayout.tsx` → named export `RootLayout`.
 - `src/pages/HomePage.tsx`, `SearchPage.tsx`, `MovieDetailsPage.tsx`, `FavoritesPage.tsx`, `NotFoundPage.tsx` → aynı adlı named export'lar.
 - Route'lar: index, `search`, `movie/:id`, `favorites` ve `*`; kök route hata ekranına sahip.
+- Menü bağlantılarının görünen adları: `Ana sayfa` (`/`), `Ara` (`/search`), `Favoriler` (`/favorites`). Etkin bağlantı `aria-current="page"` taşır.
 - `src/main.tsx` uygulama girişidir. Router DOM sağlayıcısı `react-router/dom`, diğer route API'leri `react-router` girişinden alınır.

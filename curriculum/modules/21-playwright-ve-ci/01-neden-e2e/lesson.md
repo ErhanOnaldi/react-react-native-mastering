@@ -1,118 +1,118 @@
 ---
 title: "E2E testi hangi boşluğu kapatır?"
-minutes: 13
+minutes: 16
 kind: concept
 ---
 
 # E2E testi hangi boşluğu kapatır?
 
-:::pain[Sinema’da pazartesi sabahı]
-Pazartesi ilk kullanıcı “Giriş yap” düğmesine basınca boş sayfa görüyor. Cuma günü Vitest raporundaki 126 test yeşildi. Son değişiklikte login route’u korumalı route grubuna taşınmış; giriş yapmamış kişi /login’e gönderiliyor, ama /login de aynı korumaya takılıp formu hiç açmıyor.
-:::
+Bir film kartındaki puanın nasıl yuvarlandığını JavaScript fonksiyonunda sınayabilirsin. Ama Sinema’da kullanıcı giriş yapıp izleme listesi oluşturamıyorsa, puan fonksiyonunun doğru olması pek işe yaramaz. Önce elindeki testlerin hangi parçayı çalıştırdığına bakalım.
 
-## Test katmanı, cevapladığın sorudur
+## Aynı film, üç farklı kontrol
 
-:::model[Test katmanları]
-Bir test katmanı, uygulamanın farklı genişlikteki bir parçasını çalıştırır. Birim testinde tek kural, entegrasyon testinde bağlı parçalar, E2E testinde tarayıcıdaki kullanıcı yolculuğu sınanır. Katmanı “ne kadar gerçekçi?” diye değil, “hangi riski en az maliyetle görünür yapıyor?” diye seç.
+Sinema ana sayfasında bir film puanının 8.4 olarak gösterilmesi gerektiğini düşün. Bunu sağlayan küçük kural şöyle olabilir:
+
+```ts
+function formatRating(rating: number) {
+  return rating.toFixed(1)
+}
+```
+
+Bu fonksiyona `8.36` verip `8.4` döndüğünü kontrol etmek için uygulamayı açman gerekmez. Böyle tek bir kuralı sınayan teste **birim testi** denir. Hata varsa sorun fonksiyondadır; tarayıcı, route veya ağ aramak zorunda kalmazsın.
+
+Şimdi puanı gösteren film kartını düşün. Başlık, puan ve favori düğmesi birlikte doğru görünmeli. React Testing Library (RTL), React bileşenini DOM’a çizip kullanıcının göreceği metin ve düğmeleri kontrol etmene yarar. Bu kontrol fonksiyon testinden daha geniştir, ama uygulamanın tamamını başlatmaz.
+
+Bir testi geçerli saymak için beklenen sonucu kontrol eden ifadeye **assertion** denir. Örneğin “Dövüş Kulübü başlığı görünür” bir assertion’dır. Assertion’ın hangi kapsamda çalıştığı, sana hangi konuda güvence verdiğini belirler.
+
+```tsx
+render(<MovieCard title="Dövüş Kulübü" rating={8.4} />)
+expect(screen.getByRole('heading', { name: 'Dövüş Kulübü' })).toBeVisible()
+expect(screen.getByText('8.4')).toBeVisible()
+```
+
+Burada bileşen başlığı ve puanı aynı yerde kontrol ediyoruz. Kart içindeki başlık yanlışsa test yakalar; gerçek ana sayfa bu kartı hiç göstermiyorsa bileşen testi bunu bilemez. Çünkü kartı tek başına çizdik.
+
+### Bileşenler birlikte çalışınca
+
+Bir sonraki adımda gerçek route listesini ve giriş durumunu kurup `/watchlists` adresini açtığını düşün. Oturumsuz kullanıcı `/login` sayfasına gönderilmeli ve giriş formu görünmeli. Bu bağlı parçaları birlikte çalıştıran kontrole **entegrasyon testi** denir.
+
+```ts
+renderWithRouter(
+  <AppRoutes initialEntries={['/watchlists']} session={null} />,
+)
+expect(screen.getByRole('heading', { name: 'Giriş yap' })).toBeVisible()
+```
+
+Bu test artık yalnızca formun kendisine bakmıyor; gerçek route bağlantısı ve oturum bilgisi de devrede. Yine de tarayıcıyı ve üretimde kullanılan başlangıç yolunu açmış değiliz. Test ortamı uygulamanın bir bölümünü kuruyor.
+
+### Tarayıcıdaki yolculuk
+
+Şimdi aynı işi kullanıcı gibi düşün: tarayıcıda `/watchlists` açılır, adres `/login` olur, form görünür, kullanıcı bilgilerini gönderir, liste ekranına geçer ve bir liste adı kaydeder. Bu akışı gerçek uygulamayı tarayıcıda açarak sınayan teste **uçtan uca (E2E) testi** denir. Tarayıcı, gerçek route’ları, React bileşenlerini ve uygulamanın başlangıç ayarlarını birlikte çalıştırır.
+
+E2E’de yalnızca “sayfa açıldı” demek yetmez. Kullanıcı amacını gösteren görünür sonucu da kontrol edersin: örneğin yeni listenin adı sayfada görünmeli. Böylece test, uygulamanın kabuğunu değil işin tamamlandığını kanıtlar.
+
+## Hata hangi sınırda saklı?
+
+Sinema’da giriş sayfası tek başına düzgün görünüyor, korumalı sayfa da oturumsuz kişiyi doğru yere gönderiyor olsun. Buna rağmen gerçek uygulamada `/login` de koruma altında kaldığı için form hiç görünmüyorsa, iki parçanın birleştiği yerde hata vardır.
+
+| Kontrol | Kurulum | Bu örnekte neyi görebilir? | Yaklaşık süre |
+| --- | --- | --- | --- |
+| Birim | Puan biçimlendirme fonksiyonunu çağır | `8.36` doğru biçimde `8.4` oluyor mu? | Milisaniye |
+| RTL bileşen testi | Film kartını ve sahte veriyi çiz | Kart başlığı ve puanı doğru mu? | Onlarca milisaniye |
+| Entegrasyon | Gerçek route listesini ve oturum durumunu kur | `/watchlists` giriş ekranına yönlendiriyor mu? | Onlarca-yüzlerce milisaniye |
+| E2E | Uygulamayı başlatıp tarayıcıda kullanıcı yolunu izle | Girişten liste kaydetmeye kadar akış çalışıyor mu? | Saniyeler |
 
 ![Birim, entegrasyon ve uçtan uca testlerin kapsadığı alanlar](diagram:test-katmanlari)
-:::
 
-Kesin kurallar:
+Her satır bir öncekinden daha geniş bir alanı çalıştırıyor. Geniş kapsam, route’ların veya gerçek başlangıç ayarlarının birleşmesinden doğan hataları yakalayabilir; ama hata çıktığında olası nedenler de çoğalır. Bu yüzden puanın yuvarlanmasını E2E’ye taşımak gereksiz yere yavaş ve zor teşhis edilir olur.
 
-1. **Birim testi** saf fonksiyonu veya küçük mantık birimini sınar. Süreyi saat ve dakikaya çevirmek, sıfırın nasıl gösterileceğini kontrol etmek bu katmandadır.
-2. **Entegrasyon testi** birlikte çalışması gereken parçaları aynı ortamda kurar. Gerçek route ağacını ve oturum bilgisini bağlayıp korumalı sayfaya gitmek buna örnektir.
-3. **E2E testi** uygulamayı tarayıcıda açar ve kullanıcı girdilerini UI üzerinden verir. Router, provider’lar, CSS ve tarayıcı depolaması bu akışa katılır.
-4. **Bir üst katman alt katmanın yerine geçmez.** E2E, beş sınır değerini denemek için pahalıdır; birim testi de route’ların yanlış bağlanmasını göremez.
-5. **E2E sayısı kritik yolculuklarla sınırlı kalır.** Saniyeler süren ve çok katman içeren testte hata kaynağı geniştir; ayrıntı testleri hızlı ve dar tutulur.
+Bu seçim “en gerçekçi test hangisi?” diye yapılmaz. “Hangi risk kaldı ve bunu en dar, anlaşılır testle nasıl görünür yaparım?” diye sorarsın. Ufak hesap kuralları birim testinde; bileşen davranışı RTL’de; birbirine bağlı route ve UI davranışları entegrasyon testinde iyi korunur. Tarayıcıya kadar uzanan az sayıdaki kritik kullanıcı yolu E2E’ye uygundur.
 
-Vitest’teki üç ayrı test Sinema’daki hatayı kaçırabilir: LoginPage kendi mini router’ında doğru render olur; koruma bileşeni yetkisiz kullanıcıyı doğru yere yollar; liste formu hazır oturumla çalışır. Hatanın bulunduğu şey, bu parçaların gerçek route ağacında hangi sırayla birleştiğidir. Gerçek route dizisini kullanan bir entegrasyon testi de bunu yakalayabilir; E2E ise uygulamanın gerçek giriş noktasından tarayıcıya kadar olan birleşimi sınar.
+## Bir kullanıcı yolunu adımlara ayır
 
-## Üç katmanın çalışma alanı
+E2E yolculuğu, tek bir büyük “çalışıyor” kontrolü değildir. Her adım kullanıcıya görünür bir sonuç üretir:
 
-| Kontrol | Kurulum | Neyi güvenceye alır? | Yaklaşık maliyet |
+| Sıra | Kullanıcı ne yapar? | Ekranda ne görmeli? | Görünmüyorsa olası alan |
 | --- | --- | --- | --- |
-| Süre biçimi | Fonksiyon çağrısı | Yuvarlama ve sınır değerleri | Milisaniye |
-| Giriş sayfası | RTL ve sahte API | Form ve istek/yanıt bağlantısı | Onlarca milisaniye |
-| Girişten liste oluşturmaya | Gerçek uygulama ve tarayıcı | Route, form, depolama ve gezinme | Saniyeler |
+| 1 | `/watchlists` adresini açar | Adres `/login` olur | Route koruması |
+| 2 | Sayfa yüklenir | Giriş formu görünür | Route’ların bağlanması |
+| 3 | Bilgileri gönderir | Oturum açılır ve liste ekranı gelir | Form ile API bağlantısı |
+| 4 | Liste adını yazar ve kaydeder | Yeni listenin adı görünür | Kaydetme ve ekran güncellemesi |
 
-Bir testin kapsadığı alan büyüdükçe daha çok şeyi doğrular, fakat kalınca daha çok olası neden bırakır. “Beklenen başlık görünmedi” tek başına formun hiç açılmadığını, ağın yanıt vermediğini veya route’un yanlış olduğunu söylemez. Dar testler hata yerini hızlı buldurur; geniş testler parçalar arası boşluğu kapatır.
+Bu sıra, başarısızlığın hangi kullanıcı adımında ortaya çıktığını anlamana yardım eder. Yalnızca H1 başlığını kontrol edersen sayfa kabuğunun geldiğini bilirsin; liste kaydetmenin çalıştığını bilmezsin. Öte yandan her filmin tüm puan biçimlerini ve boş alan mesajlarını bu yolculuğa eklemek testi gereksiz yere uzatır. Bunlar daha dar testlerde kalabilir.
 
-Bu nedenle hata incelemesinde “hangi test daha gerçekçi?” sorusu yerine “hangi küçük kanıt eksik?” diye sor. Saf fonksiyon testinde hata varsa bütün ekranı açmadan hesap kuralını düzeltirsin. Bileşen ve sahte servis birlikte çalışırken hata çıkıyorsa entegrasyon testi doğru yerdir. Hata ancak gerçek başlangıç route’u, browser depolaması veya host davranışı devreye girince oluşuyorsa o birleşimi kapsayan E2E gerekir.
-
-Bir test kapsamını büyütmek yeni bir maliyet de getirir: browser açılışı, server hazırlığı, veri sabitleme ve olası zamanlama farkları. Her katmana aynı beklentiyi kopyalama. Örneğin formun boş e-postayı reddetmesi bileşen testinde çok sayıda sınır değerle sınanabilir; E2E’de yalnızca kullanıcıya önemli olan başarılı ve başarısız kayıt yolculukları tutulur.
-
-## Kullanıcının yolunu zaman sırasıyla izle
-
-Girişten listeye giden bir tarayıcı testi beş ayrı gözlem toplar:
-
-| Sıra | Tarayıcı olayı | Beklenen görünür sonuç | Koparsa şüphe |
-| --- | --- | --- | --- |
-| 1 | Kullanıcı /watchlists adresini açar | Adres /login olur | Korumalı yönlendirme |
-| 2 | Sayfa yüklenir | Giriş formu görünür | Route ağacının birleşimi |
-| 3 | Bilgiler gönderilir | Oturum sonrası sayfa açılır | Form ve API bağlantısı |
-| 4 | Liste sayfasına gidilir | Liste adı alanı görünür | Dönüş adresi veya oturum |
-| 5 | Liste kaydedilir | Yeni ad ekranda görünür | Submit ve UI güncellemesi |
-
-İz sürerken her assertion’ın hangi kullanıcı amacına karşılık geldiğini sor. Yalnızca sayfa başlığını kontrol etmek ilk görünümü doğrular; kullanıcının liste oluşturabildiğini kanıtlamaz. Çok fazla beklentiyi tek teste yığarsan ilk kalış sonraki adımları gizler; senaryoyu anlamlı kritik yolculuklara ayır.
-
-Örneğin kullanıcı önce bir içerik bulup sonra ayrıntıya geçiyorsa, yalnızca arama kutusunun göründüğünü doğrulamak yeterli değildir. Akış, sonuç bağlantısının ve açılan ayrıntı başlığının da görünmesini beklemelidir. Buna karşılık her kartın puanını, boş tarihini ve tüm hata mesajlarını tarayıcıyla kontrol etmek gerekmez; bu kurallar küçük testlerde daha hızlı ve anlaşılırdır.
-
-## Önce kırık, sonra anlamlı kontrol
-
-Kırık kontrol yalnızca uygulamanın başlığını doğrular. Başlık doğru olsa da liste isteği başarısız olmuş olabilir:
-
-~~~ts
-await page.goto('/')
-await expect(page.getByRole('heading', { level: 1, name: 'Etkinlikler' })).toBeVisible()
-~~~
-
-Etkinlik kataloğunda daha anlamlı kontrol, kullanıcının aradığı içeriği de bekler:
-
-~~~ts check title="e2e/event-home.spec.ts"
-import { expect, test } from '@playwright/test'
-
-test('etkinlik sayfası haftanın programını gösterir', async ({ page }) => {
-  await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1, name: 'Etkinlikler' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Bu hafta' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Açık hava gösterimi' })).toBeVisible()
-})
-~~~
-
-İki örnek farklı kapsam taşır: ilkinde başlık vardır ama kullanıcı işi bitmez; ikincisinde anlamlı sonuç da görünür. Gerçek uygulamada rol ve erişilebilir ad kullanmak testin kullanıcıya benzer şekilde arama yapmasını sağlar. Testin adı da beklenen davranışı anlatmalıdır; “sayfa çalışıyor” gibi belirsiz bir isim, hangi kullanıcı amacının güvenceye alındığını göstermez.
-
-## Sınırlar ve sık hatalar
+## Sık düşülen iki tuzak
 
 :::mistake[Her ayrıntıyı tarayıcıda sınamak]
-**Belirti:** Küçük bir sayı kuralı değişince yüzlerce saniyelik test kırılır. → **Neden:** Her kenar durumu en pahalı katmanda tekrarlanmıştır. → **Düzeltme:** Fonksiyon kurallarını birim, ekran davranışını entegrasyon, az sayıdaki kritik yolculuğu E2E ile koru.
+**Belirti:** Ufak puan biçimi değişikliğinde uzun E2E testleri kırılıyor. → **Neden:** Sınır değerleri en geniş ve pahalı katmanda tekrar edilmiş. → **Düzeltme:** Hesap kurallarını birim testinde, kullanıcıya önemli birleşimleri entegrasyon veya E2E’de tut.
 :::
 
 :::mistake[Başlığı başarı saymak]
-**Belirti:** Sayfa başlığı doğru görünür ama içerik hiç gelmez. → **Neden:** Assertion kullanıcı amacını değil yalnızca kabuğu ölçer. → **Düzeltme:** Yolculuğun sonunda kullanıcının aradığı görünür sonucu da doğrula.
+**Belirti:** Sayfa başlığı görünüyor ama film listesi boş. → **Neden:** Assertion yalnızca sayfa kabuğunu kontrol ediyor. → **Düzeltme:** Kullanıcının o yolculuğun sonunda beklediği gerçek sonucu da kontrol et.
 :::
 
-:::mistake[Testi yalnız yerelde çalıştırmak]
-**Belirti:** Değişiklik main’e geçtikten sonra E2E ilk kez çalışır. → **Neden:** Tarayıcı senaryosu otomatik değişiklik kapısına bağlı değildir. → **Düzeltme:** Aynı komutları CI’da çalıştır ve temiz makinenin tarayıcı ihtiyacını kur.
+:::mistake[E2E’yi yalnızca yerelde çalıştırmak]
+**Belirti:** Kullanıcı akışı değişiklikten sonra CI’da ilk kez bozuluyor. → **Neden:** Test otomatik değişiklik kontrolüne bağlı değil. → **Düzeltme:** Kritik E2E yollarını CI’da da çalıştır; böylece bozulma kod birleştirilmeden görünür olur.
 :::
 
-:::mistake[E2E’yi hiç yazmamak]
-**Belirti:** Her küçük bileşen doğruyken girişten listeye giden yol bozulur. → **Neden:** Testler yalnızca parçaları ayrı ayrı kurmuştur. → **Düzeltme:** Ürün için kritik olan birkaç yolculuğu gerçek uygulama üzerinden yürüt.
-:::
-
-:::sector[Sektörde]
-Takımlar genellikle çok sayıda hızlı birim ve entegrasyon testi, daha az sayıda E2E testi tutar. E2E listesi ürünün oturum açma, ödeme veya ana iş akışı gibi kritik risklerini korur. Test kalınca ekip hangi katmanın kanıt verdiğine bakar; tüm kontrolleri tarayıcı testine taşımak bakım maliyetini artırır. Playwright ile Chromium, Firefox ve WebKit sürülebilir; bu modülde Chromium kullanıyoruz.
-:::
+E2E listesi genellikle giriş, arama veya liste oluşturma gibi ürünün ana işlerini kapsayan küçük bir gruptur. Playwright aynı testi farklı tarayıcılarda da çalıştırabilir; bu modülde Chromium kullanacağız. Her ayrıntıyı tarayıcıda tekrarlamak yerine her katmana kendi güçlü olduğu soruyu ver.
 
 ## Özet
 
-- Birim testi küçük bir kuralı, entegrasyon testi bağlı parçaları, E2E testi tarayıcıdaki yolculuğu sınar.
-- Geniş kapsam daha çok birleşim hatasını görür; dar test daha hızlı ve kolay teşhis edilir.
-- E2E’yi kritik kullanıcı yollarına ayır; ayrıntıları hızlı katmanlarda bırak.
-- Yeşil test yalnızca kurduğu kapsamı güvenceye alır.
+- Birim testi tek kuralı, RTL bileşen testi tekil UI davranışını, entegrasyon testi bağlı parçaları, E2E tarayıcıdaki kullanıcı yolunu sınar.
+- Kapsam büyüdükçe birleşim hatalarını görebilirsin; hata kaynağını bulmak da zorlaşır.
+- E2E’yi kullanıcı için kritik, baştan sona giden az sayıdaki akışa ayır.
+- Assertion, testte beklenen sonucu kontrol eden ifadedir; onu kullanıcı amacına bağla.
 
-**Kendini yokla:** Bir süre biçimlendirme kuralı için ilk tercihin hangi katman olur?  
-*Cevap:* Birim testi; sınır değerlerini tarayıcı açmadan hızlıca denersin.
+**Yeni terimler**
 
-**Kendini yokla:** Route ağacındaki giriş döngüsünü neden yalnızca sayfa testi yakalamayabilir?  
-*Cevap:* İzole sayfa testi gerçek route ağacını kullanmıyor olabilir; hata parçaların bağlandığı yerdedir.
+- **Birim testi:** Tek bir fonksiyon veya küçük kuralı uygulamanın geri kalanından ayrı sınar.
+- **Entegrasyon testi:** Birlikte çalışması gereken uygulama parçalarını aynı testte kurar.
+- **E2E testi:** Kullanıcının tarayıcıda izlediği yolu gerçek uygulamada sınar.
+- **Assertion:** Testte beklenen sonucu kontrol eden ifade.
+
+**Kendini yokla:** Puanın `8.36` değerini `8.4` yapmasını hangi testle başlatırsın?  
+*Cevap:* Birim testiyle; tarayıcı açmadan fonksiyonun kuralını kontrol edebilirsin.
+
+**Kendini yokla:** Giriş sayfası ve koruma ayrı ayrı doğruyken gerçek route bağlantısı bozuksa hangi test görebilir?  
+*Cevap:* Gerçek route listesini kullanan entegrasyon testi veya gerçek uygulama yolunu izleyen E2E testi.

@@ -6,8 +6,8 @@ export default defineQuestion({
   concepts: ['redux.slice', 'react.immutability'],
   files: ['favorites.ts'],
   hints: [
-    'Aynı olayı tekrar uyguladığında mevcut seçim tersine dönmeli; diğer ID’ler yerinde kalmalı.',
-    'Dizide varlık kontrolü için `indexOf` kullan; Immer draft üzerinde `push` ve `splice` geçerlidir.',
-    'İndeks `-1` ise `state.ids.push(id)`, aksi halde `state.ids.splice(index, 1)` uygula.',
+    'Slice; başlangıç state’ini, olayı karşılayan reducer’ı ve state’i okuyan selector’ı bir arada tutar.',
+    '`createSlice` içinde başlangıçta boş `ids` dizisi, `toggleFavorite` reducer’ı ve `selectFavoriteIds` selector’ı tanımla.',
+    'Reducer’da `indexOf` ile ID’yi bul; yoksa `push`, varsa `splice` kullan. Ardından slice, action ve selector export’larını ver.',
   ],
 })

@@ -10,7 +10,7 @@ export default defineQuestion({
   hints: [
     'Sorunu iki ayrı anda incele: başka kayıt seçildiğinde ve hiçbir değişiklik yapmadan Kaydet’e basıldığında.',
     'RHF `defaultValues` yalnız ilk kurulumda uygulanır; yeni kayıt kimliği değişince alan başlangıçlarını güncelle.',
-    '`list.id` değişimini izleyip `reset({ name: list.name, description: list.description })` çağır; düğmeyi `formState.isDirty` ile yönet.',
-    "Kullanıcı aynı kayıt üzerinde düzenlerken her render'da reset çağırma; bu onun yazısını siler.",
+    'Kayıt kimliği değiştiğinde forma yeni bir başlangıç ver; `key={list.id}` ile form bileşenini yeniden kurabilir, düğmeyi `formState.isDirty` ile yönetebilirsin.',
+    'Başarılı kayıttan sonra `reset(values)` ile yeni değerleri başlangıç yap; hata dalında girdiyi koru.',
   ],
 })

@@ -1,21 +1,18 @@
-Dövüş Kulübü puanını kaldırıyorsun; yalnızca arayüzden silmek sunucudaki kaydı kaldırmaz.
+Dövüş Kulübü puanını kaldırırken kullanıcıya isteğin beklediğini ve sonucunu göster. İsteği yapan `remove` Promise’i başarısız olursa hata mesajı görünsün.
 
 ## Gereksinimler
 
-- `DELETE /movie/:id/rating?guest_session_id=...` isteği gönderilsin.
-- Her istekte Bearer yetkilendirme başlığı bulunsun.
-- HTTP hata cevabında Promise `Error` ile reject olsun.
-- Fonksiyon `Promise<void>` döndürsün.
+- “Puanı sil” düğmesine tıklayınca `remove(movieId)` çağrılsın.
+- İstek beklerken düğme devre dışı ve adı “Siliniyor…” olsun.
+- Başarıdan sonra “Puan silindi” metni görünsün.
+- Hata sonrası `role="alert"` içinde “Puan silinemedi” görünsün.
+- İlk render sırasında `remove` çağrılmasın.
 
 ## Örnek
 
-`deleteRating(550, 'guest-1')` çağrısı 550 numaralı film için aynı session id ile DELETE isteği yollar.
+550 numaralı film için düğmeye basınca `remove(550)` çağrılır. Promise reddedilirse hata metni görünür.
 
 ## Sözleşme
 
-- `deleteRating.ts` dosyasından `deleteRating(movieId: number, sessionId: string): Promise<void>` named export et.
-- TMDB API taban yolu `https://api.themoviedb.org/3`.
-
-## Kısıtlar
-
-- Session id URL query parametresinde encode edilmelidir.
+- `DeleteRatingButton.tsx` dosyasından `DeleteRatingButton({ movieId, remove })` named export et.
+- `movieId: number`; `remove(movieId: number): Promise<void>`.

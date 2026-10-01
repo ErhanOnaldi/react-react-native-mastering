@@ -2,10 +2,12 @@
 
 ## Gereksinimler
 - Dış kaydırma kapsayıcısını **240 px** sabit yükseklik ve taşmayı kaydıran (`overflow: 'auto'`) biçimde kur.
+- İlk hesaplamada pencere boyutu **320 × 240 px** kabul edilmeli; tarayıcı gerçek ölçüyü bildirince liste bu ölçüyü kullanabilir.
 - Yalnızca ekranda görünen satırları ve küçük bir önbellek tamponunu (overscan: 3) DOM içine bas. 500 film için DOM'da bulunan toplam satır (`role="listitem"`) sayısı **30'dan az** olmalıdır.
 - İç liste alanı (`role="list"`), listenin tamamı DOM'daymış gibi toplam sanal yüksekliği (`getTotalSize()`) korumalıdır.
 - Her bir satır tahmini **40 px** yükseklikte olmalı ve satırlar `translateY` ile mutlak konumlandırılmalıdır (`position: 'absolute'`).
 - Satır kimliği (key) olarak film `id` değeri kullanılmalıdır.
+- Başlangıç görünümünde 320 × 240 px değerlerini sanallaştırıcıya ilet.
 - İlk filmin başlığı ("Dövüş Kulübü") ekranda görünür olmalıdır.
 
 ## Örnek

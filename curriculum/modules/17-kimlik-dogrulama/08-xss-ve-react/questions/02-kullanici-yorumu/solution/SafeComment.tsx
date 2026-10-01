@@ -22,9 +22,9 @@ export function SafeComment({ author, content, websiteUrl }: SafeCommentProps) {
   const safeUrl = getSafeWebsiteUrl(websiteUrl)
 
   return (
-    <article data-testid="comment-card">
+    <article>
       <h4>{author}</h4>
-      <p data-testid="comment-content">{content}</p>
+      <p>{content}</p>
       {websiteUrl && (
         <a href={safeUrl} target="_blank" rel="noreferrer noopener">
           Web sitesi

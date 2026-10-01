@@ -6,112 +6,128 @@ kind: concept
 
 # Neden router?
 
-:::pain[Problem]
-Sinema'da `setPage('details')` ile Dövüş Kulübü'nü açtın. Adres hâlâ `/`; yenileyince ana liste geliyor, geri tuşu da detaydan önceki liste durumunu bulamıyor. Arkadaşına aynı filmi açacak bir bağlantı gönderemiyorsun.
-:::
+Bir film kartına basınca şimdiye kadar `useState` ile başka bir görünüm açtın. Örneğin `selectedId` değerini `550` yapınca Dövüş Kulübü'nün ayrıntısı görünür. Bu, ekrandaki değişiklik için yeterlidir; ama tarayıcı adres çubuğunda hâlâ `/` yazar. Burada eksik olan şey yeni bir React tekniği değil: ekranda gördüğün sayfanın adresle anlatılması.
 
-## Görünümün adresi neden önemli?
+## Önce aynı filmi adresle düşün
 
-Bir sayfanın görünmesi için React bileşenleri yeterlidir; ama web'de kullanıcı ekrandan fazlasını bekler. Adres çubuğundaki yolu kopyalar, yer imine ekler, yeniler veya tarayıcının geri tuşuna basar. Bu eylemler ekranın hangi bilgiyi temsil ettiğini de korumalıdır.
+Bir **URL**, web'deki bir kaynağın adresidir. `/movie/550` gibi bir adres, Sinema'daki belirli bir film ayrıntısını tarif edebilir. Kullanıcı bu adresi kopyalayabilir, yer imine ekleyebilir veya doğrudan açabilir.
 
-Şimdiye kadar `useState` ile hangi görünümün açık olduğunu seçtin. Bu state, React ağacının belleğinde yaşar. Kullanıcı tarayıcıda `/movie/550` açtığında React bu state'i bilmez; yalnızca geçerli adresi bilir. Aynı ekranı adresle yeniden kurabilirsen yenileme ve paylaşma doğal hale gelir.
-
-![Yerel görünüm seçimi ile URL'nin eşlediği ekran arasındaki farkı gösteren diyagram](diagrams/state-ve-adres.svg)
-
-Router, URL ile route ağacındaki ekranlar arasında eşleme kurar. URL değiştiğinde uygun route içeriğini seçer; uygulama içi geçişleri tarayıcı geçmişine ekler. Böylece `setPage('details')` gibi uygulamanın belleğine özel bir seçim, `/movie/550` gibi tarayıcının anlayacağı bir adrese dönüşür.
-
-## Adres ile ekran arasındaki dört kural
-
-1. **URL kullanıcıya ait bir giriş noktasıdır.** Kullanıcı bir adresi elle yazabilir, eski yer iminden açabilir veya paylaşılmış bağlantıyı izleyebilir. Bu nedenle URL'den gelen her parçayı güvenilir kabul etme; daha sonraki derslerde parametreleri doğrulayacaksın.
-2. **Route, adres desenini ekranla eşler.** `/movie/550` adresinde `movie` bölümü route'u seçer, `550` ise o route'un hangi filmi göstermesi gerektiğini söyler. `/search?q=Matrix` aynı arama ekranını seçer ve arama değerini taşır.
-3. **Gezinme geçmişi adres değişikliklerini sıraya koyar.** Uygulama içi bir geçiş yeni bir history kaydı ekler. Geri tuşu bu kayıtlarda önceki adrese döner; yalnızca React state'ini değiştirmek history'ye kayıt eklemez.
-4. **Bir görünümün yeniden kurulması adresle mümkün olmalıdır.** Uygulama `/movie/550` adresinden açıldığında, önce ana sayfaya gidip state hazırlamak zorunda kalmamalıdır. Aynı adres yenileme sonrasında da aynı kaynağı anlatmalıdır.
-
-Bu kurallar, her UI değerini URL'ye taşıman gerektiği anlamına gelmez. Kullanıcının paylaşmasını, yenilemede korumasını veya geri/ileri geçmişinde geri çağırmasını istediğin değerler adaydır. Fareyle üzerine gelinen kartın gölge rengi, açık tooltip veya kısa süreli animasyon gibi geçici ayrıntılar genellikle yalnız component içinde kalır.
-
-## URL hangi state'i taşımalı?
-
-Karar vermek için her değere üç soru sor: Bu değeri başka biriyle paylaşmak ister misin? Ekranı yenileyince aynı seçim geri gelmeli mi? Geri tuşuna basınca önceki seçimlere dönmek anlamlı mı? Cevaplardan biri evetse URL iyi adaydır. Örneğin `q=Matrix` arama metnini, `page=2` ikinci sonuç kümesini anlatır. Kullanıcının açık menü animasyonunu veya klavye odağındaki öğeyi paylaşması beklenmez.
-
-URL'ye koymak yalnızca teknik bir saklama tercihi değildir; ürünün gezinme sözleşmesini belirler. Bir arama sayfasında sorguyu URL'ye koyup seçili sıralamayı local state'te bırakırsan link aynı filmleri ama farklı sırayla açabilir. Paylaşılabilir ekran tanımı için hangi seçimlerin görünümün parçası olduğunu ekipçe kararlaştır. Sonraki derste bu seçimleri path ve query parametreleri olarak ayıracaksın.
-
-Adres ayrıca herkese görünen bir alandır. Tarayıcı geçmişine yazılır, kopyalanabilir ve bazı sistem günlüklerine girebilir. Bu yüzden parola, erişim token'ı, kişisel not veya büyük nesne URL'ye taşınmaz. Kaynak kimliğini veya kullanıcıya gösterilecek filtreyi taşımak yeterlidir; verinin kendisi başka bir kaynaktan alınır.
-
-Bir route ekranının aynı adresten açılabilmesi, ekranın tüm bağımlılıklarının URL'de olduğu anlamına gelmez. Örneğin `/movie/550` film kimliğini söyler; film başlığını ve açıklamasını statik veri dosyasından veya API'den bulursun. Favori durumu Context'te veya kalıcı depoda yaşayabilir. URL hangi sayfayı istediğimizi söyler, verinin nerede tutulduğunu değil.
-
-Tarayıcı adresini uygulama içinden güncellemenin iki genel sonucu olabilir. Yeni bir anlamlı ekran açılışı history'ye kayıt ekler; kullanıcının çok küçük bir tercih düzeltmesi için aynı entry'yi değiştirmek daha uygun olabilir. Bu ayrım, geri tuşunun kullanıcıyı kaç adım geriye götüreceğini etkiler. Modülde standart route navigasyonunu kullanacağız; daha ince history kararları ancak ürün akışında ihtiyaç olunca ele alınmalı.
-
-## Anchor ile uygulama içi geçiş arasındaki fark
-
-Normal bir `<a href="/search">` tarayıcıya başka bir belgeye gitmesini söyler. SPA sunucusu aynı `index.html` dosyasını döndürse bile tarayıcı yeni bir document yüklemesi başlatabilir; React ağacı ve bellekteki state yeniden kurulur. Router'ın link bileşeni ise URL'yi history içinde değiştirip eşleşen route içeriğini günceller. Dış siteye giden linkte normal anchor kullanmak doğrudur; uygulamanın kendi route'unda Router bağlantısı gezinme davranışını korur.
-
-Bu farkı yalnızca hız olarak görme. Tam yükleme state'i resetler ve tüm başlangıç işlerini tekrar çalıştırır. Router geçişi uygulama ağacının ortak parçalarını koruyabilir. Buna rağmen state'in korunacağı garanti değildir: hangi route bileşenlerinin ağaçta kaldığı React kimlik kurallarına bağlıdır. URL'yi doğru kullanmak hem history semantiğini hem ortak bileşenlerin yaşam süresini anlamaya zemin hazırlar.
-
-## Aynı ekranı iki yoldan açmayı izleyelim
-
-Sinema'nın film detayını düşün. Yerel state yaklaşımında kullanıcı listede bir karta basar, `selectedMovie` güncellenir ve koşullu render detay bileşenini gösterir. Tarayıcı adresi `/` olarak kalır. Yenileme `selectedMovie` başlangıç değerine döndürür. Dışarıdan gelen kişi bu state'i oluşturacak tıklamayı yapmadığı için detay açılmaz.
-
-| An | Yerel state yaklaşımı | Adres yaklaşımı |
-| --- | --- | --- |
-| Başlangıç | `/`, `selectedMovie = null` | `/` route'u listeyi açar |
-| Film seçildi | State `550` olur, ekran değişir | `/movie/550` adresine gidilir |
-| Yenileme | Başlangıç state'i geri gelir | Router aynı film route'unu yeniden eşler |
-| Bağlantı paylaşma | State başka sekmeye taşınmaz | `/movie/550` doğrudan açılabilir |
-| Geri tuşu | History'de state değişikliği yoktur | Önceki adres açılır |
-
-Bu tablo adresin her şeyi sakladığını söylemez. Kullanıcı oturumu veya büyük veri nesneleri URL'ye konmaz. URL, görünümün kimliğini ve küçük, paylaşılabilir seçimleri taşır; asıl film verisi daha sonra statik listeden veya sunucudan bulunabilir.
-
-## Kırık ekran seçimi ve adresli ekran
-
-Aşağıdaki yaklaşım küçük bir demo içinde çalışır; sorun, uygulamanın ekranını adres ve tarayıcı geçmişinden bağımsız seçmesidir:
+İlk örnekte film seçimi yalnızca React state'inde duruyor:
 
 ```tsx
-function FilmUygulamasi() {
+function FilmEkrani() {
   const [selectedId, setSelectedId] = useState<number | null>(null)
-  return selectedId === null ? <FilmList onSelect={setSelectedId} /> : <MovieDetails id={selectedId} />
+
+  return selectedId === null
+    ? <FilmList onSelect={setSelectedId} />
+    : <MovieDetails id={selectedId} />
 }
 ```
 
-Kullanıcı seçince bileşen tekrar render olur ve detay görünür. Fakat `location.pathname` değişmediğinden bu görünümün dışarıdan bir adresi yoktur. Sorun state güncellemesinin çalışmaması değil; ekran seçiminin tek sahibinin tarayıcının okuyamadığı bellek olmasıdır.
+Kart seçilince `selectedId` değişir ve React ayrıntıyı gösterir. Adres ise değişmediği için bu seçim başka sekmeye taşınamaz. Sayfayı yenilersen React uygulaması yeniden başlar ve `selectedId` başlangıç değeri olan `null` olur.
 
-Route tabanlı düşününce ekranlar bir eşleme olarak tanımlanır. Bu derste yalnızca fikri görüyoruz; bir sonraki derste güncel React Router API'siyle çalışır hale getireceksin.
+Şimdi aynı seçimi adreste taşıdığını varsay:
 
-```tsx
-const ekranlar = [
-  { path: '/', element: <FilmList /> },
-  { path: '/movie/:id', element: <MovieDetails /> },
-]
+```text
+/movie/550
 ```
 
-`/movie/:id` bir desen, `/movie/550` ise onun somut eşleşmesidir. `:id` değeri adresle birlikte gelir; detay bileşeni bu değeri okuyup uygun filmi bulabilir. Eşleşme yoksa ayrı bir 404 ekranı göstermek de route ağacının parçasıdır.
+Bu adresi açan uygulama `550` numaralı filmi gösterebilir; hangi tıklamaların önceden yapıldığını bilmesi gerekmez. **Route**, bir URL desenini ekranda gösterilecek içerikle eşleyen kuraldır. Örneğin `/movie/:id` deseni `/movie/550` adresine uyabilir; `:id` kısmı hangi filmi istediğini belirtir.
 
-:::mistake[Belirti → neden → düzeltme]
-Detay açılıyor ama adres aynı kalıyor → görünüm yalnızca yerel state koşuluyla seçiliyor → adresi temsil eden bir route tanımla ve kullanıcı eylemini o adrese bağla.
-:::
+Bu kez görünüm adresle birlikte değişir. Kullanıcı bağlantıyı yenilediğinde veya başka sekmede açtığında aynı film adresi yine aynı ekranı seçer. Film verisinin kendisi URL'de bulunmaz; adres yalnızca hangi kaynağın istendiğini söyler.
 
-:::mistake[Belirti → neden → düzeltme]
-Adres değişiyor ama yenileyince sunucu 404 veriyor → uygulama derin URL'yi yalnızca istemcide tanıyor, yayın sunucusu SPA girişini döndürmüyor → yayında bilinmeyen uygulama yollarını `index.html`'e yönlendir. Bu modülde yerel route davranışını kuruyoruz; yayın yapılandırması ayrı konudur.
-:::
+## Geri tuşunun görebildiği şey
 
-:::model[Route eşlemesi]
-Route, adres desenini doğru React ekranına bağlar. Bu ilk bakışta adresin seçtiği sayfayı anlatır; ortak parent, child route ve filtrelerin URL'den kurulması nested route dersinde tamamlanacak.
-:::
+Tarayıcı, ziyaret edilen adresleri bir **history kaydı** olarak sırayla tutar. Kullanıcı geri tuşuna bastığında bu kayıtlar arasında geriye gider. React state'ini değiştirmek tek başına tarayıcıya yeni bir adres ziyareti bildirmez.
 
-:::sector
-Ürün ekipleri çoğu zaman hangi state'in URL'de bulunacağını tasarım ve API sözleşmesiyle birlikte kararlaştırır. Destek ekibine gönderilen `/search?q=matrix&page=2` adresi bir hatayı tekrar üretmeye yardım eder; yalnızca bellekte duran seçim ise başka bir kullanıcıya aktarılamaz. Ekipte pratik kural şudur: kullanıcı ekranı yer imine almalı veya geri tuşuyla geri dönmeli diyorsak URL'yi düşün.
-:::
+Şu akışta ekran değişse de history aynı kalır:
+
+| An | Ekran | Adres ve history |
+| --- | --- | --- |
+| İlk açılış | Film listesi | `/`; tek ziyaret |
+| Film seçildi, yalnız state değişti | Film ayrıntısı | Hâlâ `/`; yeni kayıt yok |
+| Geri tuşuna basıldı | Tarayıcı önceki adresi arar | Önceki farklı bir kayıt yok |
+
+`setPage('details')` çalışmıştır; belirti, geri tuşunun beklediğin gibi davranmamasıdır. Nedeni state güncellemesinin başarısız olması değil, bu güncellemenin history kaydı oluşturmamasıdır. Sayfa geçişinin geri alınabilmesi isteniyorsa geçişin adresi de değiştirmesi gerekir.
+
+Bir router, URL ile **route** kurallarını eşleştirip o adrese uygun React ekranını seçen araçtır. Böylece ekran seçimi uygulama belleğinde gizli kalmaz; tarayıcının da okuyabildiği bir adrese bağlanır.
+
+## Adres yalnızca kaynak seçimini taşısın
+
+Bir URL'ye ne koyacağını arama ekranıyla adım adım görelim. En basit halde `/search` yalnızca arama ekranını açar:
+
+```text
+/search
+```
+
+Bu adres ekran türünü anlatır, fakat hangi aramanın yapılacağını henüz söylemez. Bir arama metni eklediğinde `?q=Matrix` bölümü URL'nin **query string** kısmıdır; soru işaretinden sonra gelen küçük değerler ekranın seçimini taşır.
+
+```text
+/search?q=Matrix
+```
+
+Artık aynı adresi açan başka biri de Matrix aramasını görebilir. Sonuçların ikinci sayfası da görünümün anlamlı bir parçasıysa `page=2` eklenebilir:
+
+```text
+/search?q=Matrix&page=2
+```
+
+Her UI ayrıntısını buraya koymayız. Arama metni ve sayfa numarası paylaşılabilir; kartın üzerine gelince oluşan gölge veya klavye odağının konumu çoğunlukla geçicidir. Yenileyince ya da bağlantıyı paylaşınca aynı filmleri görmeyi istiyorsan seçim URL'de olmayı hak eder.
+
+Adres herkese açık olabileceği için parola, kişisel not veya büyük veri nesnesi koyma. `/movie/550` film kimliğini taşır; başlık ve açıklama uygulamadaki veriden bulunur. URL hangi görünümü istediğini belirtir, verinin nerede saklandığını değil.
+
+## Yenilemede ne korunur?
+
+Uygulama liste adresinde başladıktan sonra bir filmi seçtiğini varsay. Yerel state ve adres yaklaşımının farkı yenileme anında belirginleşir:
+
+| An | Yalnızca yerel state | URL ile seçilen ekran |
+| --- | --- | --- |
+| Başlangıç | `/`, `selectedId = null` | `/`, liste route'u |
+| Film seçildi | `selectedId = 550`, ayrıntı görünür | Adres `/movie/550`, ayrıntı route'u |
+| Yenileme | State başlangıç değerine döner, liste görünür | Uygulama `/movie/550` adresini okuyup ayrıntıyı seçer |
+| Adresi paylaşma | Seçim başka sekmeye aktarılmaz | Diğer sekme aynı filmi açabilir |
+
+İkinci yaklaşımda ekranı kurmak için önceden listeye uğrama şartı yoktur. Bunun nedeni, adresin hangi içeriğin açılacağını tarif etmesidir. Film verisini yine yerel listeden veya sunucudan bulursun.
+
+![Yerel görünüm seçimi ile URL'nin eşlediği ekran arasındaki farkı gösteren diyagram](diagrams/state-ve-adres.svg "Adres seçimi yenileme ve paylaşımda korur.")
+
+Bir **SPA** (single-page application), uygulamanın temel HTML belgesini bir kez yükleyip ekran içeriğini JavaScript ile güncellediği uygulamadır. Router kullanıldığında uygulama içindeki adres değişimi yeni bir HTML belgesi yüklemeden yeni ekranı seçebilir. Tarayıcı adresi ve geçmişi yine çalışır; değişen şey bütün sayfayı baştan yüklemek yerine uygulamanın uygun içeriği göstermesidir.
+
+Normal `<a href="/search">` bağlantısı tarayıcıdan yeni belge yüklemesini ister. Uygulama içi router bağlantısı ise adresi güncellerken çalışan uygulamayı korur. Bu fark, kullanıcıya adresi paylaşma ve geri tuşunu kullanma olanağı verir; ortak ekran parçalarının gereksiz yere baştan kurulmasını da önleyebilir.
+
+Burada **React component identity** (bileşen kimliği), React'ın bir ekrandaki bileşenin önceki render'daki aynı bileşen olup olmadığını anlamasıdır. Aynı bileşen ağaçta aynı yerde kalırsa yerel state'i korunabilir; farklı bir ekrana geçildiğinde bazı bileşenler kaldırılıp yenileri eklenebilir. Bu yüzden router geçişi her state'i korur diye düşünme. Şimdilik önemli fark şu: adres hangi ekranın istendiğini, React state'i ise o ekranın içindeki geçici etkileşimleri anlatabilir.
+
+## Öğrencinin düşebileceği hata
+
+Belirtiyi şöyle fark edersin: film ayrıntısı açılır, ama adres `/` kalır; yenileyince listeye dönersin. Genellikle ayrıntıyı yalnızca bir `selectedId` koşuluyla göstermişsindir. Seçilen filmi URL ile eşleyen bir route tanımlayıp geçişi bu adrese bağla; böylece tarayıcı da ekran seçimini görür.
+
+Her state'i URL'ye taşımak da doğru değildir. Örneğin bir menünün o anda açık olup olmadığını paylaşmak gerekmez. Kullanıcı yenilediğinde, yer iminden döndüğünde veya başkasına bağlantı gönderdiğinde aynı görünmesi anlamlı olan seçimler için URL'yi düşün.
+
+## Kısaca hangi seçim URL'ye gider?
+
+Bir seçimin URL'de olmasını, üç soruyla değerlendirebilirsin: Başka birine göndermek ister misin? Yenilemeden sonra aynı seçim geri gelmeli mi? Geri ve ileri tuşları bu seçimler arasında dolaşmalı mı? Bu sorulardan biri evetse adres iyi bir yerdir. Kısa süreli görsel efektler ve odağın yeri component state'inde kalabilir.
+
+URL'yi her değerin deposu gibi düşünme. Arama terimi, sayfa numarası ve film kimliği ekranda ne istendiğini tarif eder. Filmin tam nesnesi, kullanıcı oturumu veya özel bilgiler başka yerde kalır.
 
 ## Özet
 
-- Yerel React state'i tek başına tarayıcı geçmişini veya paylaşılabilir adresi değiştirmez.
-- Route, bir adres desenini doğru ekranla eşler; dinamik bölüm kaynak kimliğini taşıyabilir.
-- Yenileme ve doğrudan açılışta ekranı URL'den yeniden kurabilmelisin.
-- Yalnız paylaşılabilir veya geçmişte anlamı olan seçimleri URL'ye koy; geçici görsel ayrıntılar yerel kalabilir.
+- Yerel React state'i ekranı değiştirebilir; kendiliğinden adres veya history kaydı oluşturmaz.
+- Router, URL'yi route kuralıyla eşleştirip istenen ekranı seçer.
+- Yenilenince ya da doğrudan açılınca korunması gereken seçimler URL'de anlatılabilir.
+- URL'ye küçük ve paylaşılabilir seçimleri koy; geçici UI ayrıntıları ve özel veriler orada yaşamaz.
 
-**Kendini yokla:** Kullanıcı detay ekranını yenileyince neden yalnız `selectedMovie` state'ine güvenmek yetmez?
+**Yeni terimler**
 
-*Cevap:* Yenileme component belleğini yeniden başlatır; state'in adres karşılığı yoksa hangi detayın açılacağı bilinmez.
+- **History kaydı:** Tarayıcının ziyaret edilen adresler arasında geri ve ileri gitmek için tuttuğu kayıt.
+- **Query string:** URL'de `?` sonrasında yer alan, arama veya sayfa gibi küçük seçimleri taşıyan bölüm.
+- **Route:** Bir adres desenini gösterilecek ekranla eşleyen kural.
+- **SPA:** Sayfa içeriğini yeni belge yüklemeden JavaScript ile değiştiren uygulama biçimi.
+- **Component identity:** React'ın bir bileşeni önceki render'daki bileşen olarak tanıyıp tanımamasını belirleyen kimlik.
 
-**Kendini yokla:** Hover edilen kart rengini URL'de taşımak neden gereksizdir?
+**Kendini yokla:** `setPage('details')` sonrası geri tuşu neden listeye dönmeyebilir?
 
-*Cevap:* Bu geçici görsel durum paylaşılabilir ekran kimliğinin parçası değildir ve geri/ileri geçmişinde korunması beklenmez.
+**Cevap:** State değişikliği tarayıcı history'sine yeni adres eklemediği için geri tuşunun gideceği yeni bir kayıt oluşmamıştır.
+
+**Kendini yokla:** Film kimliğini URL'ye koymak, tüm film nesnesini oraya koymaktan neden daha uygundur?
+
+**Cevap:** Kimlik istenen kaynağı tarif eder; film başlığı ve diğer veriler uygulamanın veri kaynağından bulunabilir.

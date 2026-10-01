@@ -6,27 +6,49 @@ kind: practice
 
 # A11y akışını birleştir
 
-:::pain[Belirti]
-Tek tek çalışan modal ve sekme davranışları bir araya gelince yeni durumlar çıkar. Arka plana tıklayarak kapatma eklenince başlığa tıklamak da pencereyi kapatıyor. Videosu olmayan bir filmde boş Videolar sekmesi klavye sırasına giriyor.
+Bu pekiştirmede fragman dialogunun klavye akışını ve film verisine göre değişen sekmeleri birleştiriyorsun.
+
+:::model[Render → commit → effect]
+React önce DOM'u günceller, sonra effect çalışır. Bir öğe kaldırılınca focus kaybolabilir; dialog kapanınca focus'un nereye döneceğini ve sekme kaldırılınca odağın nerede kalacağını da düşün.
 :::
 
-Bu pekiştirmede bir modal akışını ve veriye göre değişen bir sekme grubunu birleştiriyorsun. İlk görevde içerideki click ile arka plan click'ini ayır; açılış focus'u, iki yönlü Tab döngüsü, Escape ve focus iadesini koru. İkinci görevde sekme listesini film verisine göre kur; kullanılmayan video seçeneği ve paneli gösterme.
+## Dialog içinde kal, sonra geri dön
 
-## Elle dolaşım
+**Event bubbling**, olayın tıklanan öğeden üst öğelere yayılmasıdır. Arka planın click handler'ı başlık tıklamasını da duyabilir. `target` tıklanan öğe, `currentTarget` handler'ın bağlı olduğu öğedir: ikisi aynıysa click arka planın kendisindedir ve dialog kapanabilir.
 
-Fareyi bırakıp önce klavyeyle dene. Tab ile tetikleyiciye gel, Enter ile aç, dialog adını kontrol et, Tab ve Shift+Tab ile sınırları geç, Escape ile kapat. Focus'un açana döndüğünü gör. Sonra arka planı ve dialog içindeki başlığı ayrı ayrı tıkla; yalnızca arka plan davranışının kapatması gerekir.
+**Focus trap**, Tab ve Shift+Tab odağının dialog dışına çıkmasını engelleyen döngüdür. Klavyeyle tetikleyiciye gel, Enter ile aç, iki yönde dolaş ve Escape ile kapat.
 
-Sekmelerde Tab ile seçili öğeye gir, ok tuşlarıyla dolaş. Video verisi yokken son sekmeden ilk sekmeye dönmeyi kontrol et. Sonra veri değiştiğinde seçili öğenin kaybolması durumunu düşün: yeni listede olmayan seçimi göstermek yerine anlamlı bir varsayılan seçilmelidir. Focus kaldırılmış bir sekmedeyse kullanıcı klavyede konumunu da kaybetmemelidir.
+| Eylem | Beklenen sonuç |
+| --- | --- |
+| Fragman düğmesine Enter | Dialog açılır, başlangıç kontrolü focus alır |
+| Son kontrolde Tab | Focus ilk kontrole döner |
+| Dialog başlığında click | Dialog açık kalır |
+| Boş arka planda click veya Escape | Dialog kapanır, focus tetikleyiciye döner |
 
-Bu görevlerde önce her kuralı tek başına çöz, sonra birleşik akışın hangi state'i ve hangi DOM ilişkisini etkilediğini takip et. `target` ile handler sahibini, seçili `value` ile görünen panelleri ayrı ayrı kontrol et. State'te tutulması gerekmeyen bir değeri veriden yeniden hesaplayıp hesaplayamayacağını sor.
+Başlık tıklamasının da dialogu kapatması gerçek bir tuzaktır: bubbling yüzünden handler onu duymuştur. `target` ile `currentTarget`'ı karşılaştır; yalnız arka planın kendisi tıklanınca kapat.
 
-:::sector
-Erişilebilir bileşenler gerçek kullanıcı akışları içinde değerlendirilir. Modal açılıp kapandığında sekme sayfasında klavye odağı kaybolmamalı; veri yenilendiğinde de kullanılmayan kontrol odak sırasına girmemeli. Takım arkadaşından yalnız fareyle değil, klavyeyle de kısa bir tur yapmasını iste.
+## Sekme listesini film verisiyle eşleştir
+
+Video yoksa Videolar sekmesi olmamalı; seçili panel de görünen sekmelerden biri olmalı. Veri sonradan boşalırsa seçimi geçerli sekmeye getir ve focus'u kaldırılan düğmede bırakma.
+
+:::model[Context yayılımı]
+Compound component ailesinin kökü tek seçimi tutar; Trigger ve Panel aynı Context değerini okur. Sekme sayısı film verisiyle değişse de görünür liste, seçim ve panel birbiriyle uyuşmalı.
 :::
+
+Önce modalı klavyeyle dolaş, sonra içeri ve arka plana ayrı ayrı tıkla. Sekmelerde videosu olmayan filmi ve video listesi sonradan boşalan durumu düşün. Her seferinde ekrandaki panelin yanında focus'un nerede olduğunu da kontrol et.
 
 ## Özet
 
-- Dialog içi click ile arka plan click'i aynı şey değildir.
-- Modalın açılış ve kapanış focus'u tek bir akış olarak kalmalı.
-- Sekme listesi gerçekten kullanılabilir veriden türemeli.
-- Veri değişince geçersiz seçimi ve focus'u birlikte ele al.
+- Event bubbling iç tıklamaları dış handler'a ulaştırabilir; `target` ve `currentTarget`'ı ayır.
+- Modal kapanırken focus tetikleyiciye dönmeli; Tab sınırları iki yönde çalışmalı.
+- Sekme, seçim ve panel mevcut film verisiyle eşleşmeli.
+
+**Yeni terimler**
+
+- **Event bubbling:** Olayın tıklanan öğeden üst öğelere yayılması.
+- **Focus trap:** Tab odağının modal dışına çıkmasını engelleyen döngü.
+- **`target` / `currentTarget`:** Tıklanan öğe / handler'ın bağlı olduğu öğe.
+
+**Kendini yokla:** Videolar kaldırılırsa neyi birlikte kontrol edersin?
+
+*Cevap:* Görünen sekmeleri, seçimi, paneli ve focus'un geçerli bir yerde kalmasını.

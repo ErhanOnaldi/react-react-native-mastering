@@ -1,15 +1,14 @@
-Detay sayfasında aynı filme dönüldüğünde Türkçe başlığı hemen göster ve taze veri için gereksiz GET gönderme.
+Detay sayfasında seçilen filmin Türkçe başlığını göster; id değiştiğinde yeni filme ait başlığa geç.
 
 ## Gereksinimler
 
 - Film başlığını `<h2>` içinde göster.
-- Veri gelene kadar `Yükleniyor`, hata durumunda `Hata: ...` metnini göster.
-- 60 saniye içinde aynı film yeniden açıldığında yeni GET atma.
+- Veri gelene kadar `Yükleniyor`, hata durumunda `Hata: Film yüklenemedi` metnini göster.
 - Detay id’si değişince farklı filmin başlığını göster.
 
 ## Örnek
 
-`id=550` → `Dövüş Kulübü`; aynı id ile ekrandan ayrılıp 60 saniye içinde dön → başlık yine görünür, bu akıştaki toplam detay isteği 1.
+`id=550` → `Dövüş Kulübü`; `id=27205` olduğunda → `Başlangıç`.
 
 ## Sözleşme
 

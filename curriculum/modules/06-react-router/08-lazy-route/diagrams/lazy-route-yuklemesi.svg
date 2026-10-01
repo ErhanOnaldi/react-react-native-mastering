@@ -7,15 +7,15 @@
   </defs>
   <rect class="d-success" x="35" y="40" width="210" height="90" rx="12" />
   <text class="d-title" x="140" y="73" text-anchor="middle">İlk açılış</text>
-  <text class="d-code" x="140" y="105" text-anchor="middle">ana ekran chunk'ı</text>
+  <text class="d-code" x="140" y="105" text-anchor="middle">Sinema ana ekranı</text>
   <rect class="d-box" x="320" y="40" width="180" height="90" rx="12" />
   <text class="d-title" x="410" y="73" text-anchor="middle">Router</text>
   <text class="d-code" x="410" y="105" text-anchor="middle">path hazır</text>
   <rect class="d-violet" x="555" y="40" width="180" height="90" rx="12" />
   <text class="d-title" x="645" y="73" text-anchor="middle">İlk ziyaret</text>
-  <text class="d-code" x="645" y="105" text-anchor="middle">ek chunk indir</text>
+  <text class="d-code" x="645" y="105" text-anchor="middle">highlights-route</text>
   <rect class="d-accent" x="555" y="165" width="180" height="70" rx="12" />
-  <text class="d-title" x="645" y="194" text-anchor="middle">Route Component</text>
+  <text class="d-title" x="645" y="194" text-anchor="middle">Öne çıkanlar</text>
   <text class="d-muted" x="645" y="218" text-anchor="middle">render</text>
   <path class="d-line" d="M250 85 H310" marker-end="url(#arrow)" />
   <path class="d-line-accent" d="M505 85 H545" marker-end="url(#arrow)" />

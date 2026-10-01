@@ -8,10 +8,12 @@ it('tüm türler için renk döndürür', () => {
 })
 it('literal ID ve renk tiplerini korur', () => {
   expectTypeOf<GenreId>().toEqualTypeOf<18 | 53 | 35>()
+  expectTypeOf<keyof typeof GENRE_COLORS>().toEqualTypeOf<GenreId>()
   expectTypeOf(GENRE_COLORS[18]).toEqualTypeOf<'indigo'>()
 })
 
 it('route tablosunda da literal yolu korur ve seçilen yolu verir', () => {
+  expectTypeOf<keyof typeof ROUTES>().toEqualTypeOf<'home' | 'details'>()
   expectTypeOf(ROUTES.details).toEqualTypeOf<'/movie/:id'>()
   expect(routeFor('home')).toBe('/')
   expect(routeFor('details')).toBe('/movie/:id')

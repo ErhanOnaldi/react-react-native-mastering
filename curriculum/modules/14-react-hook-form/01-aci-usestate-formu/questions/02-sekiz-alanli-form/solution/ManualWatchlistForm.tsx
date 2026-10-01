@@ -39,7 +39,7 @@ export function ManualWatchlistForm({ onSave }: { onSave: (draft: WatchlistDraft
   }
   return (
     <form onSubmit={submit}>
-      <output aria-label="Render sayısı">{renders.current}</output>
+      <output>{renders.current}</output>
       <label htmlFor="name">Liste adı</label>
       <input id="name" value={name} onChange={(e) => setName(e.target.value)} />
       <label htmlFor="description">Açıklama</label>
@@ -60,7 +60,7 @@ export function ManualWatchlistForm({ onSave }: { onSave: (draft: WatchlistDraft
       <input id="sort" value={sort} onChange={(e) => setSort(e.target.value)} />
       <label htmlFor="note">Not</label>
       <input id="note" value={note} onChange={(e) => setNote(e.target.value)} />
-      {error && <p role="alert">{error}</p>}
+      {error && <p>{error}</p>}
       <button type="submit">Kaydet</button>
     </form>
   )

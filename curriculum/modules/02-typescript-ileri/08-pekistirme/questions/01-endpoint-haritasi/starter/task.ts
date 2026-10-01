@@ -6,14 +6,7 @@ export type Paginated<T> = {
   total_pages: number
   total_results: number
 }
-export type EndpointMap = {
-  '/trending/movie/week': Paginated<Movie>
-  '/movie/popular': Paginated<Movie>
-  '/movie/550': MovieDetails
-}
-export function readEndpoint<K extends keyof EndpointMap>(
-  path: K,
-  responses: EndpointMap,
-): EndpointMap[K] {
-  return {} as EndpointMap[K]
+export type EndpointMap = any
+export function readEndpoint(path: string, responses: any): any {
+  return undefined
 }

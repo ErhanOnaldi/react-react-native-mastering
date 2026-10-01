@@ -23,6 +23,12 @@ describe('iki sayfada seçim paneli', () => {
     await user.keyboard('{ArrowRight}')
     expect(screen.getByRole('radio', { name: 'Tarih' })).toHaveAttribute('aria-checked', 'true')
     expect(screen.getByRole('radio', { name: 'Tarih' })).toHaveFocus()
+    await user.keyboard('{End}')
+    expect(screen.getByRole('radio', { name: 'Tarih' })).toHaveFocus()
+    await user.keyboard('{Home}')
+    expect(screen.getByRole('radio', { name: 'Puan' })).toHaveFocus()
+    expect(screen.getByRole('radio', { name: 'Puan' })).toHaveAttribute('aria-checked', 'true')
+    await user.keyboard('{ArrowRight}')
 
     await user.click(screen.getByRole('button', { name: 'Ana Sayfa' }))
     expect(screen.getByRole('radio', { name: 'Komedi' })).toHaveAttribute('aria-checked', 'true')

@@ -14,9 +14,10 @@ export default defineQuestion({
       explanation: '`useActionState` action imzasına önce state ekler.',
     },
     {
-      text: 'Yalnızca DOM event’i.',
+      text: 'Önceki state ve submit düğmesi bilgisi.',
       correct: false,
-      explanation: 'Form action callback’i event yerine FormData ile çalışır.',
+      explanation:
+        'Action’a submit düğmesi verilmez; ikinci argüman native alanlardan oluşan `FormData` nesnesidir.',
     },
     {
       text: 'Önce FormData, sonra önceki state.',
@@ -24,9 +25,10 @@ export default defineQuestion({
       explanation: 'Argüman sırası tersidir.',
     },
     {
-      text: 'Yalnızca query key.',
+      text: 'Submit event’i ve FormData.',
       correct: false,
-      explanation: 'Query key TanStack Query kavramıdır.',
+      explanation:
+        'Bu imza normal `onSubmit` event handler’ına benzer; `useActionState` action’ı önceki state’i de alır.',
     },
   ],
 })

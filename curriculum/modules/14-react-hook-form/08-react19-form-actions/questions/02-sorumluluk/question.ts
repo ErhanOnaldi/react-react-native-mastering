@@ -18,14 +18,16 @@ export default defineQuestion({
       explanation: 'Bunlar RHF API’leridir.',
     },
     {
-      text: 'RHF, React 19’da artık kullanılamaz.',
+      text: 'RHF alan doğrulamasını yapar ama pending durumunu takip edemez.',
       correct: false,
-      explanation: 'RHF 7 React 19 ile kullanılabilir.',
+      explanation:
+        'RHF kendi form/submit durumunu sunar; ağ mutation’ı için TanStack Query de ayrıca kullanılabilir.',
     },
     {
-      text: 'İki araç birlikte kullanılırsa özel resmi RHF action API’si zorunludur.',
+      text: 'React action dinamik alan dizisini ve her alanın hatasını kendiliğinden yönetir.',
       correct: false,
-      explanation: 'Böyle bir zorunlu entegrasyon API’si yoktur.',
+      explanation:
+        'Action submit/state akışını sağlar; alan dizisi ve alan bazlı hata modeli ayrıca kurulur.',
     },
   ],
 })

@@ -1,68 +1,50 @@
 ---
 title: "Bileşeni kullanıcı gibi test et"
-minutes: 15
+minutes: 16
 kind: concept
 ---
 
 # Bileşeni kullanıcı gibi test et
 
-:::pain[Problem]
-Sinema’daki favori düğmesi tıklanınca ekrandaki yazı değişiyor, ama klavyeyle kullanan biri düğmeyi bulamıyor. Test yalnızca bileşenin içindeki `saved` değişkenini denetlediği için bu sorun yeşil sonuçların arkasında kalıyor.
-:::
-
-## Bileşenin dışarıya verdiği söz
-
-Bir React bileşenini test ederken çoğu zaman önemli olan, içeride hangi state değişkeninin kullanıldığı değil, ekranda ne göründüğü ve kullanıcının ne yapabildiğidir. React Testing Library (RTL), bileşeni DOM’a render eder; sen de bu DOM’u kullanıcıya açık anlamıyla sorgularsın. Bir düğme için rolü ve erişilebilir adı, bir form alanı için rolü ve etiketi ararsın.
-
-Rol, HTML elementinin ve ARIA bilgisinin kullanıcıya ne söylediğini yansıtır. `<button>` doğal olarak button rolündedir; `<input type="search">` searchbox rolünü taşır, sıradan text input ise textbox olur. Düğmenin erişilebilir adı çoğu zaman içindeki görünür metinden, input'un adı ise bağlı label'dan gelir. Testte rol ve ad eşleşmiyorsa önce arayüzün anlamsal HTML'ini kontrol et; sorguyu zorla bir CSS seçicisine çevirmek erişilebilirlik kusurunu saklayabilir.
-
-Bu yaklaşım uygulama ayrıntılarına bağlı testleri azaltır. Bileşenin içindeki state adını değiştirmen, JSX’i bir alt bileşene taşıman ya da CSS sınıfını yeniden adlandırman davranışı değiştirmiyorsa test de bozulmamalıdır. Kullanıcının gördüğü metin veya erişilebilir etkileşim değiştiyse testin bunu fark etmesi gerekir.
-
-0.7’de tanıştığın test anatomisini React arayüzüne uygula:
-
-![Hazırla, çalıştır, doğrula ve hatalı sürümü yakala akışı](diagram:test-anatomisi)
+Bir film kartında “Fragmanı aç” düğmesi olduğunu düşün. Düğmenin içindeki state değişkeninin adını bilmek sana kullanıcının düğmeyi bulabildiğini ya da tıklayınca doğru şeyin olduğunu söylemez. Bileşeni, kullanıcının gördüğü arayüz ve yapabildiği eylem üzerinden sınayalım.
 
 :::model[Test anatomisi]
-Önce başlangıç props’larını ve kullanıcıyı hazırla (Arrange), bileşeni render edip etkileşimi gerçekleştir (Act), sonra ekrandaki gözlenebilir sonucu doğrula (Assert). Test adı da tek bir gereksinim cümlesi olsun. Bileşen testi için önemli fark, “sonuç”un çoğu zaman bir dönüş değeri değil, DOM’da görünen ve erişilebilir arayüz olmasıdır.
+Testte önce başlangıç koşullarını kurarsın, sonra eylemi yapar, en son sonucu doğrularsın. Bileşen testinde sonuç çoğunlukla bir fonksiyonun dönüş değeri değil, sayfada görünen arayüzdür.
+
+![Hazırla, çalıştır, doğrula ve hatalı sürümü yakala akışı](diagram:test-anatomisi)
 :::
 
-RTL ile çalışırken şu kuralları uygula:
+## Önce düğmeyi kullanıcı gibi bul
 
-1. **Bileşeni render etmeden DOM’da arama yapma.** `render(<Component />)` test edilecek arayüzü DOM’a yerleştirir. Dönen `container` üzerinden sınıf veya etiket aramak yerine, sonraki adımda ekrandaki anlamı sorgula.
-2. **Önce kullanıcıya açık rolü ve adı ara.** `screen.getByRole('button', { name: 'Ayrıntıları göster' })`, ekran okuyucunun bulacağı düğmeye benzer. Görünen ad, erişilebilir ad ve rol bir arada kontrol edilmiş olur.
-3. **Etkileşimi kullanıcıya benzet.** `userEvent.setup()` ile bir kullanıcı kur, ardından `await user.click(...)` gibi etkileşimleri bekle. Tarayıcıdaki tek tıklama birden fazla DOM olayı doğurabildiği için, düşük seviyeli tek bir olayı elle yollamak aynı davranışı her zaman temsil etmez.
-4. **Beklentiyi DOM’un sözleşmesine bağla.** Görünür içerik için `toBeInTheDocument`, ARIA durum niteliği için `toHaveAttribute` gibi matcher’lar kullan. Bileşen içindeki değişkeni okumak yerine kullanıcının algıladığı sonucu ölç.
-5. **Beklenen yokluğun türünü seç.** Elemanın hiç bulunmaması ile DOM’da bulunup gizlenmesi farklı durumlardır. Hiç render edilmemesi bekleniyorsa `queryByRole` ile sorgula ve `not.toBeInTheDocument()` kullan; görünürlük söz konusuysa elemanın varlığını tek başına yeterli sayma.
+Tarayıcı, HTML elementlerini bir ağaç yapısında tutar; buna **DOM** denir. React Testing Library (**RTL**), bileşenini bu DOM'a yerleştirip testte arayüzü sorgulamana yardım eden araçtır. `render` bileşeni DOM'a koyar, `screen` ise testin o ekrandaki kontrolleri aramasını sağlar.
 
-## Zaman sırasını izleyelim
+Bir kontrolün **rolü**, arayüzdeki görevini anlatır: `<button>` bir `button`, `<input type="search">` bir `searchbox` rolüne sahiptir. **Erişilebilir ad**, kontrolü tanıtan metindir; çoğunlukla düğmenin yazısı veya input'a bağlanan etikettir. Rolü ve adı birlikte aramak, testin yalnızca “bir element var” demesinden daha anlamlıdır.
 
-Bir gezi kartında ayrıntıların açılıp kapandığını düşün. Başlangıçta düğmenin `aria-expanded` değeri `false`; tıklamadan sonra `true` olmalı ve açıklama DOM’da görünmelidir. Testin her adımında hangi kullanıcı eyleminin hangi görünür sonucu doğurduğunu takip et:
+```tsx check
+import { render, screen } from '@testing-library/react'
+import '@testing-library/jest-dom/vitest'
+import { describe, expect, it } from 'vitest'
 
-| Sıra | Testte olan | Bileşenin arayüzü | Doğrulama |
-| --- | --- | --- | --- |
-| 1 | Test başlangıç props’larını hazırlar | Henüz DOM yok | Arrange |
-| 2 | `render` çağrılır | “Ayrıntılar” düğmesi kapalı görünür | Arayüz DOM’a geldi |
-| 3 | `getByRole` düğmeyi rol ve adıyla bulur | `aria-expanded="false"` | Başlangıç sözleşmesi |
-| 4 | `user.click` düğmeye tıklar | State güncellenir, bileşen yeniden render edilir | Act |
-| 5 | Test aynı düğmeye ve açıklama bölgesine bakar | `aria-expanded="true"`, açıklama görünür | Assert |
+function GenreChip() {
+  return <button type="button">Bilim kurgu</button>
+}
 
-`getByRole` aranan elemanı hemen bulamazsa hata verir. Bu, o anda bulunması gereken bir başlık veya düğme için iyi bir varsayılandır. `queryByRole` ise eşleşme yoksa `null` döndürür; “bu uyarı henüz olmamalı” gibi yokluk beklentilerinde işe yarar. Ağ cevabı gibi sonradan gelecek bir şey beklediğin durumda senkron sorgu yeterli değildir; asenkron sorgular ve ağ taklidi ayrı bir konudur.
+describe('GenreChip', () => {
+  it('türü seçilebilir bir düğme olarak gösterir', () => {
+    render(<GenreChip />)
 
-Bu sorgu biçimleri hata mesajı üretme biçimiyle de farklılaşır. `getBy...` tam bir eşleşme bekler; sıfır veya birden fazla eşleşme hata sayılır. `queryBy...` yokluğu assertion içinde ifade etmeye yarar ama yine de birden fazla eşleşmede hata verir. `findBy...` DOM'da kısa süre içinde oluşacak tek öğeyi bekleyen Promise döndürür ve `await` edilmelidir. Beklentinin zamanını sorgu tipine göre seçersen test gereksiz beklemez, ama geç beliren arayüzü de erkenden sorgulamaz.
-
-## Kırık test, doğru test
-
-Kırık bir test, DOM’un nasıl kurulduğuna bağlanabilir:
-
-```tsx
-const { container } = render(<RouteDetails />)
-const details = container.querySelector('.route-details--open')
-expect(details).not.toBeNull()
+    expect(
+      screen.getByRole('button', { name: 'Bilim kurgu' }),
+    ).toBeInTheDocument()
+  })
+})
 ```
 
-Bu test sınıfın adını doğrular; açıklamanın kullanıcıya sunulduğunu ya da düğmenin erişilebilir olduğunu göstermez. Tasarım sınıfı değişince test kırılabilir, açıklama yanlışken de yeşil kalabilir. `data-testid` de benzer biçimde yalnız testin bildiği bir tutamak sağlar; rol ve erişilebilir ad kullanmak mümkünken ilk tercih olmamalıdır.
+`getByRole` burada adı “Bilim kurgu” olan düğmeyi arıyor. Düğme yoksa veya adı değişmişse sorgu hata verir; test sessizce başka bir elemente tutunmaz. `toBeInTheDocument` gibi bir **matcher**, testte beklediğin sonucu karşılaştıran yardımcıdır.
 
-Şimdi farklı bir örnekte kullanıcı davranışını ölçelim. “Gezi notları” düğmesine basınca bir bölge açılır; açık/kapalı durumu `aria-expanded` ile duyurulur.
+## Tıklamadan sonraki ekranı sırayla izle
+
+Şimdi düğmeye basınca fragman ayrıntılarını açan küçük bir bileşen düşün. **ARIA**, HTML nitelikleriyle yardımcı teknolojilere kontrolün anlamını veya durumunu duyurur; `aria-expanded` içeriğin açık olup olmadığını söyler. **`userEvent`**, testte tıklama ve yazma gibi kullanıcı eylemlerini taklit eden araçtır. Tıklama Promise döndürdüğü için `await` ile tamamlanmasını beklersin; böylece ekrandaki sonucu eylemden önce kontrol etmezsin.
 
 ```tsx check
 import { useState } from 'react'
@@ -71,89 +53,104 @@ import '@testing-library/jest-dom/vitest'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
-function RouteDetails() {
+function TrailerDetails() {
   const [open, setOpen] = useState(false)
 
   return (
     <section>
-      <h2>Göl yolu</h2>
       <button
         type="button"
         aria-expanded={open}
-        aria-controls="route-notes"
         onClick={() => setOpen((value) => !value)}
       >
-        Gezi notları
+        Fragman bilgisi
       </button>
-      {open && (
-        <div id="route-notes" role="region" aria-label="Gezi notları">
-          Patika yağmurdan sonra kaygan olabilir.
-        </div>
-      )}
+      {open && <p>Fragman süresi: 2 dakika</p>}
     </section>
   )
 }
 
-describe('RouteDetails', () => {
-  it('not düğmesine basınca açıklama bölgesini açar', async () => {
+describe('TrailerDetails', () => {
+  it('düğmeye basınca fragman bilgisini açar', async () => {
     const user = userEvent.setup()
-    render(<RouteDetails />)
+    render(<TrailerDetails />)
 
-    const button = screen.getByRole('button', { name: 'Gezi notları' })
+    const button = screen.getByRole('button', { name: 'Fragman bilgisi' })
     expect(button).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByText('Fragman süresi: 2 dakika')).not.toBeInTheDocument()
 
     await user.click(button)
 
     expect(button).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('region', { name: 'Gezi notları' })).toBeInTheDocument()
+    expect(screen.getByText('Fragman süresi: 2 dakika')).toBeInTheDocument()
   })
 })
 ```
 
-İz sürerken başlangıçta `open` değeri `false` olduğu için bölge JSX’te üretilmez. Kullanıcı tıklayınca event handler updater çağırır; React yeni state ile render eder, `aria-expanded` değeri `true` olur ve bölge DOM’a eklenir. Test aynı sırayı izlediğinden, hem kontrolün durumunu hem içeriğin varlığını doğrular. Testte beklenen davranışın tamamı budur; state’in adı ya da HTML’in belirli bir iç sarmalayıcıya sahip olması şart değildir.
+`queryByText`, bulunmaması beklenen metin için kullanılır: eşleşme yoksa `null` verir. Buna karşılık `getByText` o anda bulunması gereken içeriği arar. Bu testte zaman sırası önemlidir:
 
-Bir assertion yazarken tek bir kullanıcı sözleşmesine odaklan. Düğmenin metni değişti mi, `aria-pressed` doğru mu, içerik erişilebilir bir region içinde mi? Bir testte aynı anda on farklı class, internal state ve implementation helper kontrol edersen kalma nedenini ayırt etmek zorlaşır. Kısa, Türkçe bir `it` cümlesi testin gereksinimini okuyan kişiye doğrudan anlatır; arrange, act ve assert blokları da bu cümleyi takip eder.
+| Sıra | Testin yaptığı | Ekranda olan | Neden |
+| --- | --- | --- | --- |
+| 1 | `render` çağrılır | Düğme kapalı, paragraf yok | Başlangıç görünümü kurulur |
+| 2 | `getByRole` düğmeyi bulur | `aria-expanded="false"` | Eylem doğru kontrol üzerinde yapılır |
+| 3 | `await user.click(button)` | Event handler state'i günceller | Kullanıcı tıklamasının tamamlanması beklenir |
+| 4 | Assertion'lar çalışır | Düğme açık, paragraf görünür | Yeni ekran davranışı doğrulanır |
 
-## Sınır durumları ve sık hatalar
+Ne oldu? Başlangıçta `open` false olduğu için paragraf üretilmedi. Tıklama state'i true yaptı; React bileşeni yeni değerle tekrar çizdi ve paragraf DOM'a girdi. Test state değişkenini okumak yerine bu iki görünür işareti kontrol ediyor.
 
-:::mistake[Rol ve ad yerine etikete bağlanmak]
-Belirti → Ekrandaki düğme hâlâ çalışırken test `.details-button` sınıfı bulunamadığı için kalır.  
-Neden → Test görünür davranış yerine CSS düzenini sözleşme yapmıştır.  
-Düzeltme → Düğmeyi `screen.getByRole('button', { name: 'Gezi notları' })` ile bul; sınıfı ancak sınıfın kendisi ürün davranışının parçasıysa sınamak gerekir.
-:::
+## Callback'in gerçekten çağrıldığını da sınayabilirsin
 
-:::mistake[`getByRole` ile henüz olmayan öğeyi aramak]
-Belirti → Kapalı durumda açıklama arandığında test hemen hata verir.  
-Neden → `getByRole` eşleşme bulamazsa test hatası üretir; yokluğu doğrulamak için uygun sorgu değildir.  
-Düzeltme → `expect(screen.queryByRole('region', { name: 'Gezi notları' })).not.toBeInTheDocument()` kullan.
-:::
+Bazı bileşenler kendi başına sonucu değiştirmez; bir eylemin sonucunu callback ile bildirir. Callback, bir bileşene prop olarak verilen ve olay olduğunda çağrılan fonksiyondur. Örneğin not alanına yazılan metni parent'a iletmesini bekleyebilirsin. Testte **mock** (çağrılma biçimini gözleyebildiğin sahte fonksiyon) kullanıp son metnin gerçekten iletildiğini kontrol et.
 
-:::mistake[Etkileşimi beklememek]
-Belirti → Tıklama testi bazen state güncellemesi tamamlanmadan assertion yapar veya kullanıcı davranışını eksik temsil eder.  
-Neden → `user.click` Promise döndürür ve tıklamayı `await` etmeden sonraki satıra geçilmiştir.  
-Düzeltme → `const user = userEvent.setup()` oluştur; `await user.click(button)` yaz.
-:::
+```tsx check
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 
-:::mistake[Her elemana `data-testid` eklemek]
-Belirti → Testler yeşil, ama düğmenin adı boş ve klavyeyle bulunamıyor.  
-Neden → Test kimliği elemanın rolü veya erişilebilir adının yerini tutmaz.  
-Düzeltme → Önce rol + ad, form kontrollerinde etiket, sonra metin sorgusunu dene. `getByTestId` ancak kullanıcıya açık bir sorgu uygun olmadığında son çare olsun.
-:::
+function ActorNote({ onNoteChange }: { onNoteChange: (note: string) => void }) {
+  return (
+    <input
+      type="text"
+      aria-label="Oyuncu notu"
+      defaultValue=""
+      onChange={(event) => onNoteChange(event.currentTarget.value)}
+    />
+  )
+}
 
-:::sector
-Ekipler test adlarını çoğu zaman kabul ölçütü cümlesi gibi yazar: “menü açılınca seçenekleri gösterir.” Böylece ürün, erişilebilirlik ve test kodu aynı davranış etrafında konuşur. `getByRole` kullanımı da yeni bir düğmenin rolünü veya adını eksik bırakmayı erken görünür kılar; test DOM ağacının tesadüfi yapısını sabitlemez.
-:::
+describe('ActorNote', () => {
+  it('yazılan notu bildirir', async () => {
+    const user = userEvent.setup()
+    const onNoteChange = vi.fn()
+    render(<ActorNote onNoteChange={onNoteChange} />)
+
+    await user.type(screen.getByRole('textbox', { name: 'Oyuncu notu' }), 'başrol')
+
+    expect(onNoteChange).toHaveBeenLastCalledWith('başrol')
+  })
+})
+```
+
+Ne oldu? Test, alanı kullanıcı gibi rolü ve adıyla buldu, sonra harfleri yazdı. `vi.fn()` her değişiklikte çağrılan mock'tu; son çağrının ‘başrol’ taşıması, tamamlanan metnin callback'e ulaştığını gösterdi. Böylece test yalnız input'un ekranda oluşmasını değil, yazının bileşen sınırından çıkmasını da denetledi.
+## Sorgu arayüzün anlamına bağlı olsun
+
+Şimdi sık rastlanan bir yanlışın belirtisine bakalım. Bir geliştirici düğmeyi `.green-button` CSS sınıfıyla (HTML elementine görünüş vermek için kullanılan ad) arar; tasarım sınıfı değişince test kalır, ama düğmenin adı yanlış olsa test bunu fark etmeyebilir. Çünkü CSS sınıfı görünüşü tarif eder, kullanıcının kontrolü nasıl bulduğunu değil.
+
+Düzeltmek için önce `screen.getByRole('button', { name: 'Fragman bilgisi' })` gibi rol ve ad kullan. Arama alanı için rol `searchbox`, açıklayıcı ad da etiketin metni olabilir. `data-testid` gibi yalnız teste ait kimlikler, kullanıcıya açık bir rol ve adla sorgulama mümkün değilse son seçenek olsun.
+
+Bulunması gereken elementte `getBy...` sorgusu uygundur; yokluğu doğrularken `queryBy...` kullan. Arayüz hemen değil de daha sonra ortaya çıkacaksa bekleme yapan sorgular da vardır, ancak asenkron arayüz ve ağ davranışını burada genişletmiyoruz.
 
 ## Özet
 
-- Bileşeni `render` et; kullanıcıya açık DOM’u `screen` üzerinden sorgula.
-- Sorgu önceliğinde rol ve erişilebilir ad ilk tercihtir; `data-testid` son çaredir.
-- Etkileşimleri `userEvent.setup()` sonrasında `await` ederek gerçekleştir.
-- Görünür içeriği ve ARIA durumunu DOM üzerinden doğrula.
-- Bulunması gereken öğe için `getByRole`, bulunmaması gereken öğe için `queryByRole` seç.
+- Bileşeni render et, sonra kullanıcıya açık rol ve adla kontrolü bul.
+- Etkileşimi `userEvent` ile yap ve tamamlanmasını `await` et.
+- State'in kendisi yerine DOM'daki metni, ARIA durumunu ve callback sonucunu doğrula.
+- Bulunması beklenen element için `getBy...`, yokluğu sınamak için `queryBy...` kullan.
 
-**Kendini yokla:** Bir düğmenin ekrandaki adı “Kaydet” ise neden `.save-button` yerine rol ve adla ararsın?  
-*Cevap:* Test kullanıcının bulabildiği kontrolü doğrular ve görünüşe ait CSS değişikliklerinden etkilenmez.
+**Yeni terimler:** DOM, tarayıcının HTML elementlerini tuttuğu ağaçtır; RTL, React arayüzünü DOM üzerinden sorgulama aracıdır; rol, kontrolün arayüzdeki görevini söyler; erişilebilir ad, kontrolü tanıtan metindir; ARIA, yardımcı teknolojilere anlam ve durum bildiren HTML nitelikleridir; matcher, testte beklenen sonucu karşılaştırır; mock, testte çağrısı gözlenebilen sahte fonksiyondur; callback, bileşenin dışarı bildirim yapmak için çağırdığı fonksiyondur.
 
-**Kendini yokla:** Bir uyarının kapalı durumda hiç render edilmediğini nasıl doğrularsın?  
-*Cevap:* `queryByRole` ile sorgular, sonucun `not.toBeInTheDocument()` olduğunu beklersin.
+**Kendini yokla:** “Film ara” alanının gerçekten arama alanı ve doğru adla bulunduğunu nasıl sınarsın?
+*Cevap:* `screen.getByRole('searchbox', { name: 'Film ara' })` ile ararım.
+
+**Kendini yokla:** Başlangıçta henüz görünmemesi gereken bir uyarıyı hangi sorguyla kontrol edersin?
+*Cevap:* `queryByRole` ile sorgular ve `not.toBeInTheDocument()` beklentisini yazarım.

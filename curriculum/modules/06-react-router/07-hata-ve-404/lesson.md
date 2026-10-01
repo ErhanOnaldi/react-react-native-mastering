@@ -1,122 +1,126 @@
 ---
 title: "Rota hatası ve 404"
-minutes: 13
+minutes: 12
 kind: concept
 ---
 
 # Rota hatası ve 404
 
-:::pain[Problem]
-Bir kullanıcı `/olmayan` adresini açıyor ve boş ekran görüyor. Başka bir kullanıcı geçerli `/books/42` sayfasında veri yükleme hatası alıyor; onda da hiçbir açıklama yok. İlkinde adres bilinmiyor, ikincisinde çalışan bir sayfanın işlemi başarısız.
-:::
+Sinema'da `/films` film listesini açıyor. Peki `/oyuncular` gibi tanımadığımız bir adres gelirse ne görünsün? Bir de `/films` adresi geçerli olduğu halde sayfa çizilirken hata çıkarsa ne yapalım? Bunlar farklı sorunlar; önce adresin route'la eşleşip eşleşmediğine bakacağız.
 
-## Adres bulunamadı mı, route işlemi mi bozuldu?
+## Tanımadığımız bir adres için ekran
 
-Uygulamada “sayfa yok” ile “sayfa açılırken hata oldu” farklı durumlardır. Eşleşmeyen URL için route ağacında `path: '*'` gibi bir yakalama route'u tanımlanır. Bir route eşleştiği halde loader veya route bileşeni hata verirse data mode'daki hata sınırı devreye girer. Kullanıcıya uygun geri dönüş sağlamak için iki yolu ayrı düşün.
+Bir **route**, adres desenini göstereceği React içeriğine bağlayan tanımdır. Daha önce `path: '*'` yazdığında, başka route'larla eşleşmeyen adreslerin bu route'a düştüğünü gördün. `*` bir **wildcard**'dır: kalan bütün adresleri yakalayan desen.
 
-![Bilinmeyen URL ile eşleşmiş route hatasının ayrı kullanıcı ekranlarına gitmesi](diagrams/404-ve-route-hatasi.svg)
-
-1. **Wildcard route eşleşmeyen adresleri kapsar.** `*` belirli sayfa desenleri eşleşmediğinde son çare route olarak kullanılır. Uygun başlık, ana sayfaya dönüş linki veya arama yolu göster.
-2. **`errorElement` eşleşmiş bir route işleminin hatasını yakalar.** Data route'ta loader, action veya route bileşeninin hatası en yakın hata elementine aktarılabilir. Bir alt route'ta özel hata ekranı tanımlanmışsa hata orada kalabilir; yoksa üst sınıra çıkar.
-3. **`useRouteError()` sonucunu `unknown` gibi ele al.** Her hata Router'ın yapılandırılmış HTTP cevabı değildir. `isRouteErrorResponse` ile response biçimini daraltmadan `.status` okumak güvenli değildir.
-4. **Hata türüne göre kullanıcı mesajı seç.** Router response'u 404 olabilir; başka bir exception ise beklenmeyen teknik hata olabilir. Stack trace veya sunucu ayrıntısını son kullanıcıya basma.
-5. **Her hata ekranına çıkış yolu koy.** Ana sayfa, arama veya geri bağlantısı kullanıcının kilitli ekranda kalmasını önler. Loglama ve geliştirici ayrıntıları kullanıcı mesajından ayrı tutulur.
-
-Bir 404 her zaman `path: '*'` demek değildir. `/books/999` route deseniyle eşleşebilir ama katalogda kitap bulunmayabilir. Bu durumda route içindeki sayfa kendi veri sonucunu “Kitap bulunamadı” olarak gösterir. Wildcard yalnızca route ağacında tanınmayan adresi yakalar.
-
-## İki hata yüzeyini kur
-
-Bir hata ekranını yalnızca root route'a bağlamak, eşleşmeyen her adresi otomatik olarak özel 404 sayfasına dönüştürmez. `errorElement` hata sınırıdır; route eşleşmesi bulunmamasının yerini tutmaz. Bir de hata nesnesini daraltmadan okumak TypeScript ve çalışma zamanı hatasına yol açabilir:
+Sinema'nın basit route listesine bir wildcard ekleyelim:
 
 ```tsx
-function BrokenResponseView() {
-  const error = useRouteError()
-  return <p>{error.status}</p>
+import { Link } from 'react-router'
+
+const routes = [
+  { path: '/', element: <h1>Sinema</h1> },
+  { path: '/films', element: <h1>Filmler</h1> },
+  { path: '*', element: <main><h1>Bu adresi tanımıyorum</h1><Link to="/">Ana sayfaya dön</Link></main> },
+]
+```
+
+`/films` ikinci route'la eşleşir ve film başlığını gösterir. `/oyuncular` ilk iki desenle eşleşmez; son route normal sayfa içeriği gibi render edilir. Buradaki ekranı kendin tasarlarsın: kısa bir açıklama ve ana sayfaya giden `Link` eklemek, kullanıcıyı çıkmazda bırakmaz.
+
+## Eşleşen adresin içindeki başka bir sorun
+
+`/films` adresi tanınan bir adres. Fakat o route'un bileşeni çalışırken bir hata fırlatırsa, bu kez wildcard devreye girmez: adres zaten `/films` route'uyla eşleşmiştir. React Router'ın **route error boundary**'si, route çalışırken çıkan hatada gösterilecek ayrı React içeriğidir. Data mode'da bu içeriği route'un `errorElement` alanıyla belirlersin.
+
+Önce hata ekranının en küçük haline bakalım:
+
+```tsx
+import { Link } from 'react-router'
+
+function FilmPageError() {
+  return <main role="alert"><h1>Film sayfası açılamadı</h1><Link to="/">Filmlere dön</Link></main>
 }
 ```
 
-`error` her zaman `status` alanı taşımaz. Bileşen bir `Error` veya başka bir nesne alabilir. Router response ile genel exception durumunu daraltıp kullanıcı mesajını buna göre üret:
+`useRouteError()` hatayı verir; ama TypeScript bu değerin biçimini önceden bilemez. Ekranda `error.status` yazmak güvenli değildir: bu değer bir Router cevabı, sıradan bir `Error` ya da başka bir şey olabilir. Bu yüzden hatanın türünü kontrol etmeden alanlarını okumayız.
 
 ```tsx check
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
 
-export function RouteFailure() {
+function FilmPageError() {
   const error: unknown = useRouteError()
   const isMissing = isRouteErrorResponse(error) && error.status === 404
-  return (
-    <main role="alert">
-      <h1>{isMissing ? 'Sayfa bulunamadı' : 'Bir şeyler ters gitti'}</h1>
-      <p>{isMissing ? 'Bu adres için bir sayfa yok.' : 'Biraz sonra tekrar deneyebilirsin.'}</p>
-      <Link to="/">Ana sayfaya dön</Link>
-    </main>
-  )
+  return <main role="alert">
+    <h1>{isMissing ? 'Bu film bulunamadı' : 'Film sayfası açılamadı'}</h1>
+    <Link to="/">Sinema ana sayfasına dön</Link>
+  </main>
 }
 ```
 
-Bu hata yüzeyini root route'a bağlayınca, çocuk route'lardaki hata en yakın sınırda görünür. Wildcard sayfası ise normal route içeriği olduğu için kendi 404 açıklamasını render eder. İki ekranda da kullanıcıya yön verir ama beklenmeyen exception'ın içeriğini sızdırmaz.
+`isRouteErrorResponse` true olduğunda hata, React Router'ın HTTP durum kodu taşıyan cevabıdır; bu durumda `status` alanını okuyabiliriz. Örneğin route işlemi 404 cevabı verdiyse kullanıcıya kaynağın bulunmadığını söyleyebiliriz. Başka hata geldiyse genel bir mesaj gösteririz. Böylece tanımadığımız hata metnini sayfaya basmak zorunda kalmayız.
 
-## `/unknown` ve `/broken` adresini izleyelim
+Bu ekranı route'a bağlamak için `errorElement` kullanılır:
 
-Uygulama `/unknown` ile açılır. Router tanımlı route desenlerini sırayla eşleştirir ve wildcard harici bir desen bulamazsa yıldızlı child route'u seçer; `NotFoundPage` normal içerik gibi render edilir. `/broken` ise tanımlı route olduğundan eşleşme vardır. Route'un loader'ı exception fırlatırsa Router normal page element'i yerine en yakın `errorElement` içeriğini gösterir.
+```tsx
+const routes = [
+  {
+    path: '/films',
+    element: <FilmListPage />,
+    errorElement: <FilmPageError />,
+  },
+  { path: '*', element: <UnknownAddressPage /> },
+]
+```
 
-| Adres | Eşleşme | Sonuç | Kullanıcı yüzeyi |
+Artık `/films` içindeki route hatası `FilmPageError`'a gider; `/not-a-page` ise wildcard'ın normal içeriğini açar. Bu iki ekran ayrı kalmalı, çünkü ilkinde tanıdığımız sayfanın çalışması başarısız olmuştur, ikincisinde adres haritamızda böyle bir sayfa yoktur.
+
+![Bilinmeyen URL ile eşleşmiş route hatasının ayrı kullanıcı ekranlarına gitmesi](diagrams/404-ve-route-hatasi.svg "Wildcard bilinmeyen adresi, errorElement route hatasını karşılar.")
+
+## Bir adresi adım adım takip edelim
+
+Şu üç URL'yi route haritasına göre sırayla düşün:
+
+| URL ve durum | Eşleşen route | Gösterilen içerik | Neden? |
 | --- | --- | --- | --- |
-| `/unknown` | Yalnız `*` yakalar | Normal route render edilir | Sayfa bulunamadı + çıkış linki |
-| `/books/999` | `/books/:id` eşleşir | Veri listesinde kayıt yok | Kitap detayının boş/not found durumu |
-| `/broken` | `/broken` route'u eşleşir | Loader hata verir | En yakın `errorElement` |
-| `/broken` altındaki özel child | Child sınırı olabilir | Hata child sınırında kalabilir | Child'a özel hata UI |
+| `/oyuncular` | `*` | Bilinmeyen adres ekranı | Belirli bir route bu adresle eşleşmedi. |
+| `/films` ve route hatası | `/films` | `errorElement` | Adres eşleşti; eşleşen route'un çalışması hata verdi. |
+| `/films/42` ve 42 numaralı film yok | `/films/:id` | Film detayının kendi “film yok” durumu | URL deseni eşleşti; veri bulunmaması route eşleşme hatası değil. |
 
-Buradaki sıra eşleşme katmanı ile route çalıştırma katmanını ayırır. Önce adres hangi route olduğunu seçer. Sonra loader, action veya component yürütülür. Sınırın nerede duracağı route ağacındaki en yakın hata ekranına bağlıdır; her hatayı tek bir global modal yapmak genellikle hangi bölgenin devam edebileceğini belirsizleştirir.
+Son satır özellikle kolay karışır. `/films/:id` adres deseni `/films/42` ile eşleşebilir; içeride film aranır ve sonuç yoksa detay sayfası “Film bulunamadı” gösterebilir. Wildcard yalnızca route haritasında eşleşmeyen adres içindir. Buna karşılık eşleşmiş route'un `errorElement`'i, route çalışırken çıkan hatayı gösterir.
 
-## Güvenli hata mesajı ve üretim sınırı
+Bu ayrım kullanıcıya hangi adımı önereceğini de belirler. Tanınmayan adresi açan kişiye ana sayfaya dönme bağlantısı işe yarar; film detayında kayıt yoksa film listesine dönmek daha uygundur. Beklenmeyen bir hata için “Biraz sonra yeniden dene” diyebilirsin. Her üçünde de ekran sebebi anlaşılır biçimde söyler ve kullanıcının devam edebileceği bir yol bırakır.
 
-`isRouteErrorResponse` ile daraltılan hata `status`, `statusText` ve data bilgileri sunabilir. Buna rağmen sunucudan gelen her metni arayüze aynen koymak doğru değildir. Kullanıcıya ne yapabileceğini anlatan genel mesaj göster; geliştirici loglarında ise yeterli bağlamı kaydet. Kimlik bilgisi veya dahili yol gibi ayrıntılar ekrana sızmamalıdır.
+Hata mesajını doğrudan `String(error)` yapıp ekrana yazdırma. Hata nesnesinde dosya yolu, servis adresi veya geliştiriciye yönelik başka bilgi bulunabilir; bunlar kullanıcıya yardımcı olmaz. Tür kontrolü sana yalnızca karar vermek için gereken güvenli bilgiyi verir: Router cevabı mı ve status 404 mü? Ayrıntılı hata incelemesi geliştirici araçlarında yapılır, kullanıcı ekranında değil.
 
-Bir route hata sınırı kendi alt ağacındaki render işlemlerini yakalarken kökün kendisi için de bir hata sınırı kurmak önemlidir. Hata element'i de render edilemezse daha yukarıda başka bir güvenlik ağı gerekebilir. Bu modülde tek root sınırı ve wildcard yeterli; kapsamı ihtiyacın ötesinde büyütme.
-
-## En yakın sınır neden önemli?
-
-Nested route'larda her route kendi hata UI'sini tanımlayabilir. Bir child route hata verdiğinde Router önce o route'un sınırına bakar; child sınırı yoksa parent'a çıkar. Bu, ortak navigasyonun görünür kalmasına yardım eder: tek bir rapor alanı bozuldu diye tüm uygulamanın baştan kurulması gerekmeyebilir. Ama error element kendi route zincirinden dışarıda bir bilgiyi okumaya çalışırsa aynı hata tekrar oluşabilir; hata ekranı sade tutulmalıdır.
-
-404 durum kodu ve 404 görünümü de aynı şey değildir. Route response `status === 404` olabilir; ayrıca app'in wildcard sayfası da kullanıcıya 404 içeriği gösterir. Film route'u `/movie/:id` ile eşleştiği halde film statik katalogda bulunmazsa kendi ekranı not found mesajı üretir. Hangi katmanda başarısız olduğuna göre URL, kullanıcı mesajı ve analitik olayı farklı olabilir.
-
-Sunucu hata ayrıntıları içerebilir: dosya yolu, SQL açıklaması, iç servis host'u veya kullanıcının görmemesi gereken id. Hata ekranı bunları `String(error)` ile yazdırmamalıdır. React Router'ın response kontrolü status gibi güvenli karar noktalarını daraltır; hata metni kullanıcıya gösterilecek metne dönüştürülmeden önce düşünülmelidir. Geliştirme araçlarında ayrıntı görmek başka, prod arayüzüne sızdırmak başkadır.
-
-Hata sınırı tüm hataları otomatik olarak düzeltmez. Bir event handler içindeki hata veya zamanlayıcı callback'i farklı hata işleme yoluna sahip olabilir; her asynchronous callback'i `errorElement` yakalar varsayımıyla tasarlama. Buradaki route sınırı, Router'ın yönettiği route render ve data işlemlerine aittir. Genel çalışma zamanı gözlemi için uygulama seviyesinde hata izleme ayrıca gerekir.
-
-Bir kullanıcı hatalı URL ile geldiyse ekranın eylemi bağlamlı olmalıdır. Arama detayı bulunmadıysa “Aramaya dön”, genel bilinmeyen yol için “Ana sayfa” uygun olabilir. Bununla birlikte başka bir route'a dönüş linki çalışır bir link olmalı; hatayı gizlemek için otomatik yönlendirme yaparsan kullanıcı yanlış adresin neden açılmadığını anlamayabilir. Hata sayfası sorunu açıklar ve sonraki adımı kullanıcıya bırakır.
+Bir hata sınırı da her JavaScript hatasını yakalayan evrensel bir `try/catch` değildir. Burada React Router'ın yönettiği route ekranı için tanımladığın geri dönüş yüzeyinden söz ediyoruz. Kullanıcıya görünen sayfanın hata halinde de render edilebilmesi için bu ekranı küçük tutmak faydalıdır: basit bir başlık, kısa bir açıklama ve sağlam bir dönüş bağlantısı.
 
 :::mistake[Belirti → neden → düzeltme]
-`/olmayan` özel ekran yerine boş veya genel hata ekranı gösteriyor → yalnızca `errorElement` tanımlanmış, eşleşmeyen yol için normal route yok → wildcard `*` route'u ekle.
+`/oyuncular` genel hata ekranına gidiyor → sadece `errorElement` tanımlanmış, bilinmeyen URL için route yok → route listesine `path: '*'` ekle.
 :::
 
 :::mistake[Belirti → neden → düzeltme]
-Hata ekranı `status` okurken çökmüş → `useRouteError()` sonucu bilinmeyen bir nesne olarak daraltılmamış → `isRouteErrorResponse` ile kontrol et; diğer durumda genel mesaj kullan.
+Hata ekranı `status` alanını okurken hata veriyor → `useRouteError()` sonucu önce tür kontrolünden geçmemiş → `isRouteErrorResponse(error)` ile kontrol et, değilse genel mesaj göster.
 :::
 
-:::mistake[Belirti → neden → düzeltme]
-Kullanıcı hata sayfasında kalıyor ve ne yapacağını bilmiyor → mesaj var ama uygulamaya dönüş bağlantısı yok → güvenli ana sayfa veya arama linki ekle.
-:::
-
-:::model[URL eşleşmesi ve route ağacı]
-URL route zincirini seçer; hata da bu zincirdeki en yakın hata sınırına gider. Yeni ayrım, wildcard'ın eşleşmeyen adres için normal route olması, `errorElement`'in ise eşleşmiş route çalışırken hata yakalamasıdır. Hata yüzeyi ortak layout içinde kalabilir; hangi child'ın başarısız olduğuna göre uygun içerik gösterilir.
-:::
-
-:::sector
-Ürünlerde 404 sayfası ve beklenmeyen hata sayfası ayrı tasarlanır; analitik ve hata izleme sistemleri de bunları farklı olaylar olarak kaydeder. Teknik ayrıntıları kullanıcıdan saklamakla hata bilgisini ekipten saklamak aynı şey değildir: kullanıcıya sade mesaj, gözlem sistemine kontrollü ve güvenli hata bağlamı sunulur.
+:::info[Derinlemesine (isteğe bağlı)]
+Nested route ağacında React Router hatayı önce en yakın üst route'un `errorElement`'ine verir. O seviyede hata ekranı yoksa daha yukarıdaki route'a çıkar; böylece yalnızca hata alan bölümün görünümünü değiştirebilir, ortak layout'u ekranda tutabilirsin. Örneğin filmler alanında özel bir hata ekranı olabilirken uygulamanın geri kalanı kendi ana layout'unda çalışmayı sürdürebilir. Hata sınırını her küçük bileşene koyman gerekmez; kullanıcı deneyiminin farklılaştığı route seviyelerinde karar vermen yeterlidir.
 :::
 
 ## Özet
 
-- Wildcard route tanınmayan URL'yi yakalar; `errorElement` eşleşmiş route çalışırken oluşan hatayı yakalar.
-- Veride bulunmayan kaynak, route eşleşmeyen adresle aynı durum değildir.
-- `useRouteError` sonucunu `isRouteErrorResponse` ile daraltmadan response alanı okuma.
-- Hata ekranında güvenli mesaj, uygun 404 ayrımı ve kullanıcının çıkış yolu olsun.
+- Wildcard `*`, başka route'la eşleşmeyen adresi yakalar.
+- `errorElement`, eşleşmiş route çalışırken hata çıktığında gösterilecek içeriği belirler.
+- Bir URL deseni eşleşse bile o ID'ye ait film veride bulunmayabilir; bu durumu sayfanın kendisi ele alır.
+- `useRouteError()` sonucunu doğrudan okumak yerine `isRouteErrorResponse` ile kontrol et.
 
-**Kendini yokla:** `/books/999` için route eşleşip kitap yoksa neden wildcard çalışmayabilir?
+**Yeni terimler**
 
-*Cevap:* `/books/:id` route'u zaten eşleşmiştir; kaynak bulunmama durumunu detay sayfası ele alır.
+- **Wildcard:** Diğer route desenleriyle eşleşmeyen adresleri yakalayan `*` deseni.
+- **Route error boundary:** Eşleşmiş route çalışırken oluşan hata için gösterilecek React içeriği.
+- **Route response:** Router'ın status gibi HTTP bilgileri taşıyan cevabı.
 
-**Kendini yokla:** `errorElement` neden tek başına bilinmeyen URL için 404 sayfası değildir?
+**Kendini yokla:** `/films/404` URL'si `/films/:id` ile eşleşiyor ama film bulunamıyorsa neden wildcard açılmaz?
 
-*Cevap:* Hata sınırı route çalışma hatalarını yakalar; route ağacında eşleşmeyen adres için ayrıca wildcard tanımı gerekir.
+**Cevap:** Adres deseni eşleşmiştir; film verisinin bulunmaması detay sayfasının ele alacağı bir durumdur.
+
+**Kendini yokla:** Hata ekranında `error.status` değerini okumadan önce ne yaparsın?
+
+**Cevap:** `isRouteErrorResponse(error)` ile Router cevabı olup olmadığını kontrol eder, yalnız doğruysa `status` alanını okurum.

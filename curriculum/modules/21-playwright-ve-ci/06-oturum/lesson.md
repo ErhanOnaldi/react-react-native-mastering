@@ -1,140 +1,123 @@
 ---
 title: "Oturum durumunu sonraki testlere taşı"
-minutes: 14
+minutes: 16
 kind: concept
 ---
 
 # Giriş testini her senaryoda tekrarlama
 
-:::pain[Problem]
-Rezervasyon testleri üyelik formunu her seferinde dolduruyor. Kimlik servisi bazen yavaşlayınca bütün paket uzuyor; bir senaryoda kayıt hatası, diğerinde koltuk seçme hatası var ama ikisi aynı başlangıç adımında kalıyor.
-:::
+Bir Playwright testi her çalıştığında yeni bir **browser context** alır: tarayıcıdaki cookie, localStorage ve sayfa durumunu kendi içinde tutan ayrı bir oturum alanı. Böylece testler birbirlerinin açık sayfasını değiştirmez. Ama her test üyelik formunu doldurup dış kimlik servisini beklerse paket yavaşlar ve basit bir rezervasyon hatasını giriş sorunundan ayırmak zorlaşır.
 
-## Oturum bir başlangıç durumudur
+Girişten sonraki başlangıç durumunu saklayıp başka testlerde kullanabilirsin. Playwright bu cookie ve localStorage kopyasına `storageState` der. Dosya yeni bir context’in başlangıç verisi olur; canlı sayfa veya sunucu veritabanı kopyalanmaz.
 
-:::model[Kaydedilmiş tarayıcı durumu]
-Girişten sonra browser context’in cookie ve localStorage içeriğini bir kez kaydedebilirsin. Sonraki testler bu durumu kendi yeni context’lerinde başlangıç noktası olarak yükler. Bu, canlı context’i testler arasında paylaşmak değildir: her test ayrı tarayıcı durumunda başlar.
+## Önce girişin gerçekten bittiğini bekle
 
-![Bir giriş setup’ı storageState üretir, testler bunu ayrı context’lerde kullanır](diagrams/oturum-yeniden-kullanimi.svg)
-:::
+Üyelik formunu doldurup giriş butonuna tıkladığını düşün. Bu satır hemen ardından çalışırsa oturum henüz tarayıcıya yazılmamış olabilir:
 
-Kesin kurallar:
-
-1. storageState tarayıcı oturum verisini taşır; uygulama veritabanını veya server state’ini kopyalamaz.
-2. Giriş setup’ı yönlendirme veya giriş sonrası görünür durumu bekledikten sonra snapshot alır.
-3. Testler aynı başlangıç kimliğini yüklese de ayrı browser context’lerinde çalışır.
-4. Ana auth yolculuğu en az bir testte boş oturumla giriş formundan başlayıp gerçekten yürünür.
-5. Kimlik dosyası gizli olabilir; gerçek oturumu repoya commit etme, CI’da test için yeniden üret.
-
-## Bir setup’ın ömrünü izleyelim
-
-Etkinlik rezervasyon sayfasında her testin oturum açması gerektiğini düşün. Setup test runner çalışırken giriş formunu doldurur, giriş sonrası profil ekranının görünmesini bekler ve cookie/localStorage verisini kaydeder. Proje bağımlılığı tamamlandıktan sonra rezervasyon testi yeni context açar, dosyayı yükler ve doğrudan rezervasyon sayfasına gider.
-
-| Sıra | Context | Olay | Ne paylaşılır? |
-| --- | --- | --- | --- |
-| 1 | Setup page | Giriş akışı tamamlanır | Başlangıçta henüz kayıt yok |
-| 2 | Setup context | storageState yazılır | Cookie ve localStorage verisi |
-| 3 | Test A context | Kaydedilen veriyle açılır | Oturum başlangıcı |
-| 4 | Test B context | Aynı dosya yüklenir | Aynı kimlik başlangıcı |
-| 5 | Test biter | Context kapanır | Canlı sayfa ve değişiklikleri taşınmaz |
-
-Bu ayrım özellikle testlerin server tarafında ortak kaynak değiştirdiği durumlarda önemlidir. Tarayıcı localStorage’ı ayrı olsa bile iki test aynı uzak hesap üzerinde rezervasyon oluşturuyorsa veri paylaşılmıştır. Her testin benzersiz kayıt kullanması veya fixture sonunda temizlemesi gerekir.
-
-Kırık yaklaşım, her testi giriş ekranından başlatıp aynı yavaş API yolunu tekrar tekrar yürütmektir. Bu, ürünün ana giriş davranışını her senaryoda yeniden test etmez; yalnızca süreyi ve hata noktalarını çoğaltır. Doğru yaklaşım iki tür kanıtı ayırır: bir kritik test boş oturumdan login’i doğrular, login sonrası çok sayıda senaryo kaydedilmiş durumla başlar.
-
-Snapshot’ı giriş isteği başlamadan yazmak çoğu zaman boş oturum dosyası üretir:
-
-~~~ts
-await page.context().storageState({ path: 'playwright/.auth/user.json' })
+```ts
+await page.context().storageState({ path: 'playwright/.auth/member.json' })
 await page.getByRole('button', { name: 'Giriş yap' }).click()
-~~~
+```
 
-Düzeltilmiş sıra önce kullanıcıya görünen başarıyı bekler, sonra kaydeder:
+Belirti, kaydedilen dosyayı kullanan testin yeniden giriş sayfasına dönmesidir. Dosya tıklamadan önce yazılmıştır; yani oturum verisi henüz yoktur.
 
-~~~ts check
+Önce giriş sonrası görünen bir işareti bekle, sonra kaydet:
+
+```ts check
 import { expect, test } from '@playwright/test'
 
-test('rezervasyon üyeliği sonrası oturum saklanır', async ({ page }) => {
+test('üyelikten sonra profil açılır', async ({ page }) => {
   await page.goto('/uye-ol')
   await page.getByLabel('E-posta adresin').fill('ada@example.test')
   await page.getByLabel('Yeni parola').fill('ornek-parola')
   await page.getByRole('button', { name: 'Üyeliği başlat' }).click()
-  await expect(page.getByRole('heading', { name: 'Rezervasyon hesabın hazır' })).toBeVisible()
-  await page.context().storageState({ path: 'playwright/.auth/member.json' })
-})
-~~~
-
-~~~ts
-await page.context().storageState({ path: 'playwright/.auth/user.json' })
-~~~
-
-Snapshot’ı çok erken alırsan dosyaya henüz oturum yazılmamış olabilir. Görünür ve güvenilir bir login sonrası koşulu bekle, sonra kaydet. Uygulama auth bilgilerini yalnızca sessionStorage’a koyuyorsa storageState onu taşımaz; bu durumda başka bir başlangıç stratejisi gerekir.
-
-## Oturum nerede duruyor?
-
-Modül 17’de auth state’in kalıcı kısmını `localStorage`’a koydun. Playwright `storageState()` ile cookie ve localStorage’ı dosyaya kaydedebilir. Yeni bir browser context bu durumla başlar. Bir kez giriş yap, diğer rezervasyon testleri aynı kimlikle başlayabilir.
-
-```ts title="e2e/auth.setup.ts"
-import { test as setup, expect } from '@playwright/test'
-
-setup('etkinlik üyeliği oturumunu kaydet', async ({ page }) => {
-  await page.route('https://members.events.example/session', (route) =>
-    route.fulfill({ json: { id: 12, email: 'ada@example.test', token: 'test-member-token' } }),
-  )
-  await page.goto('/uye-ol')
-  await page.getByLabel('E-posta adresin').fill('ada@example.test')
-  await page.getByLabel('Yeni parola').fill('ornek-parola')
-  await page.getByRole('button', { name: 'Üyeliği başlat' }).click()
-  await expect(page).toHaveURL('/rezervasyonlarim')
+  await expect(page.getByRole('heading', { name: 'Hesabın hazır' })).toBeVisible()
   await page.context().storageState({ path: 'playwright/.auth/member.json' })
 })
 ```
 
-`playwright/.auth` klasörünü `.gitignore`’a ekle: oturum dosyası sırdır. CI’da dosyayı her çalıştırmada test hesabıyla yeniden üret. İlk üyelik akışını yine browser’da yürüt; storageState ile giriş formunu atlayıp route hatasını gizleme.
+Şimdi sıra nettir: formu gönder, uygulamanın giriş sonrası durumunu gösterdiğini doğrula, ancak ondan sonra tarayıcı durumunu dosyaya yaz. Görünür başlık, kullanıcı akışının tamamlandığına dair kanıttır; sabit bir `waitForTimeout` süresinden daha anlamlıdır.
 
-## Kullanım ve sınır
+| Sıra | Nerede? | Olay | Neden bu sıra? |
+| --- | --- | --- | --- |
+| 1 | Setup sayfası | Üyelik formu gönderilir | Oturum akışı başlar. |
+| 2 | Aynı sayfa | `Hesabın hazır` başlığı beklenir | UI girişin tamamlandığını gösterir. |
+| 3 | Setup context | `storageState` dosyası yazılır | Cookie/localStorage artık hazırdır. |
+| 4 | Rezervasyon testi | Yeni context dosyayı yükler | Test hazır başlangıç kimliği alır. |
+| 5 | Test bitişi | Yeni context kapanır | Canlı sayfa sonraki teste taşınmaz. |
 
-Birden çok spec giriş gerektiriyorsa setup project’i dependency yapıp `use.storageState` yolunu ver. Bu, setup sonrasında yazılmış dosyayı okur. `page.context().storageState()` tüm oturumu yakalar; `page.evaluate(() => localStorage...)` ile elle kopyalama hatasına gerek kalmaz.
+![Bir giriş setup’ı storageState üretir, testler bunu ayrı context’lerde kullanır](diagrams/oturum-yeniden-kullanimi.svg "Giriş başlangıcını paylaş; testlerin browser context’lerini ayır.")
 
-Aynı `storageState` ile açılan testler başlangıç kimliğini paylaşır; **canlı browser context’i paylaşmaz**. Bir testin oluşturduğu rezervasyon başka testte otomatik görünmez. Sunucuda ortak kullanıcı verisi varsa her test için ayrı kayıt veya temizleme gerekir.
+## Aynı başlangıçla ayrı testler aç
 
-## Sınır durumları: kimlik, süre ve server verisi
+Tek bir testi state dosyasıyla başlatmak için Playwright testinin `use` ayarına dosya yolunu verebilirsin:
 
-Kaydedilmiş oturum dosyasının içinde token veya kişisel bilgi bulunabilir. Dosyayı kaynak kontrolüne ekleme; dosyanın yolu test çıktılarında görünse bile içeriğini paylaşma. CI’da kimlik test verisiyle üretilmeli ve artifact’lara auth dosyası eklenmemelidir. Teste gereken bilgiyi ver, gerçek kullanıcının oturumunu kopyalama.
+```ts title="playwright.config.ts içinden"
+use: {
+  storageState: 'playwright/.auth/member.json',
+}
+```
 
-Bir oturumun geçerliliği sonsuza kadar sürmez. Token süresi doluyorsa testlerin uzun süre aynı state dosyasını kullanması aniden 401 üretir. Setup projesi her Playwright çalıştırmasında yeniden koşmalı; eğer setup başarısız olmuşsa onu atlayıp eski dosyayı kullanmak yerine test açıkça başarısız olmalıdır. CI’da job başına geçici test verisi üretmek bu davranışı belirginleştirir.
+Bu test dosyadaki başlangıç durumunu kendi context’ine yükler. İkinci test aynı dosyayı kullanabilir; ikisi aynı cookie/localStorage verisiyle başlar ama birbirinin canlı sayfasını paylaşmaz. Biri arama filtresini değiştirirse diğeri o UI değişikliğini görmez.
 
-Birden fazla kullanıcı rolü varsa her role ayrı state dosyası üret. Örneğin organizatör etkinlik oluşturabilir, katılımcı yalnızca koltuk seçebilir. Testin hangi yetkiyi varsaydığı açık olmazsa yanlış hesapla başlayan senaryo beklenmedik 403 alır. Dosya adı rolü anlatabilir ama token içeriğini veya kullanıcı sırrını adın kendisine koyma.
+Birden çok dosya bu oturuma ihtiyaç duyuyorsa Playwright config’te bir **setup project** tanımlayabilirsin. Bu, testten önce çalışan proje grubudur; ona bağımlı proje ancak setup tamamlandıktan sonra başlar:
 
-Süresi dolmuş state’in bilinçli olarak test edildiği senaryoda geçerli state kullanma. Boş context açıp oturumun süresinin dolduğunu tarayıcı davranışıyla üret veya sahte servis cevabını kontrollü biçimde 401 yap. Böylece normal senaryolar taze kimlikle hızlı çalışırken expiry davranışı ayrı ve anlaşılır bir kanıt olur.
+```ts
+projects: [
+  {
+    name: 'auth-setup',
+    testMatch: /auth\.setup\.ts/,
+  },
+  {
+    name: 'chromium',
+    dependencies: ['auth-setup'],
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: 'playwright/.auth/member.json',
+    },
+  },
+]
+```
 
-Storage snapshot’ı localStorage ve cookie başlangıcını kapsar, fakat sessionStorage’ı veya sunucu tarafındaki kullanıcı kayıtlarını otomatik yönetmez. Ayrıca localStorage verisinin kendisi uygulamada beklediğin şemaya uygun mu sorusu önemlidir. Uygulama migration veya parse hatasında oturumu temizliyorsa storageState yüklenmiş görünse bile kullanıcı tekrar login’e dönebilir.
+Setup dosyası formu gerçek browser’da yürütür ve giriş sonrası state’i üretir. Chromium testleri sonra bu dosyayı okur. Böylece girişin çalıştığını en az bir setup akışında görürsün, diğer senaryolar da aynı yavaş akışı tekrar etmek zorunda kalmaz.
 
-Kayıt adımından sonra kullanıcıyı aynı hesapla açılan iki testin farklı server verisi göreceğini varsayma. Context yalıtımı tarayıcı tarafında geçerlidir; API veritabanı ortak olabilir. Her test benzersiz bir kayıt adı kullanabilir, test sonunda kaydı silebilir veya fixture’ın kurduğu server kaynağını temizleyebilir. Temizlik çalışmazsa sonraki koşuların başlangıcı test sırasına bağlı hale gelir.
+Setup başarısızsa bağımlı testlerin başlamaması da önemlidir. Örneğin test hesabının parolası değişmiş ve giriş artık tamamlanmıyorsa eski state dosyasını sessizce kullanmak, bozuk bir setup’ı gizler. Setup projesi her Playwright çalıştırmasında state’i taze üretmeli; giriş sonrası başlık görünmüyorsa hata burada açıkça ortaya çıkmalıdır. CI’da da bu dosyayı test çalışmasından önce saklı bir artifact olarak taşımak yerine, test hesabıyla baştan üret.
 
-Worker scope’u da bir maliyet ve yalıtım seçimi. Pahalı ama değişmeyen bir test kaynağı worker başına kurulabilir; kullanıcıya ait değişebilir oturum state’i genellikle test seviyesinde tutulur. Bir worker’ın state’i diğer worker’a aktarılmaz. Paralellik ayarı artınca aynı uzak hesapta çakışma çıkıyorsa önce ortak server verisini araştır.
+## Hazır oturum ana giriş yolunu gizlemesin
 
-:::mistake[Sık hata]
-**Belirti:** Kaydedilen dosyayla açılan sayfa tekrar girişe yönlenir. → **Neden:** Snapshot giriş tamamlanmadan alınmıştır veya oturum verisi desteklenmeyen depodadır. → **Düzeltme:** Giriş sonrası görünür koşulu bekle ve cookie/localStorage kullanımını doğrula.
-:::
+Bir uygulamanın login akışında hata varsa her testi hazır state ile başlatmak bu hatayı saklayabilir. En az bir E2E akışı boş context’ten başlasın, korumalı bir sayfayı açmaya çalışsın, giriş formunu tamamlasın ve hedef sayfaya ulaştığını doğrulasın. Bu test giriş ekranı ile route bağını gerçekten yürür.
 
-:::mistake[Uzak kullanıcı verisini yalıtılmış sanmak]
-**Belirti:** Bir testin eklediği rezervasyon sonraki testte görünür. → **Neden:** Ayrı context’ler aynı server hesabını kullanıyor. → **Düzeltme:** Test başına benzersiz veri üret veya fixture teardown’ında temizle.
-:::
+Diğer testler ise giriş sonrası işlere odaklanabilir: örneğin profilinde bir filmi favoriye eklemek veya programdan seans seçmek. Bu ayrım her senaryoda aynı yavaş başlangıcı tekrarlamaz ve temel giriş yolculuğuna da gerçek bir kontrol bırakır.
 
-:::sector[Sektörde]
-Giriş UI’sini bir E2E testinde yürüt; diğer testlerde `storageState` ile zamandan kazan. Yetkisiz yönlendirme için ayrıca boş oturumla açılan bir test tut.
+## Tarayıcı state’i uzak veritabanı değildir
+
+storageState iki ayrı testte aynı kullanıcı kimliğini başlatabilir. Yine de her testin browser context’i ayrıdır. Ancak iki test aynı uzak hesapta rezervasyon oluşturursa sunucudaki kayıtlar ortak kalabilir. Bir testin eklediği rezervasyonun sonraki testte görünmesi, tarayıcı yalıtımının değil ortak server verisinin belirtisidir. Test başına farklı kayıt üret veya sonunda kaydı temizle.
+
+State dosyası erişim token’ı veya kişisel bilgi taşıyabilir. `playwright/.auth` yolunu `.gitignore`’a ekle ve gerçek kullanıcının oturumunu repoya koyma. CI’da test hesabıyla her çalıştırmada yeniden üretmek, eski veya paylaşılmış bir oturum dosyasına bel bağlamanı önler.
+
+Bu iki veri alanını karıştırma: context’in localStorage’ı ayrı olsa bile API sunucusu aynı kullanıcı kaydını görür. Bir favori ekleme testi, başka bir testin beklediği favori listesini değiştirebilir. Senaryolar ortak server verisini değiştiriyorsa farklı test hesapları kullanmak veya test sonunda favoriyi kaldırmak gerekir. Başlangıç state’i sadece tarayıcıyı hazırlar; test verisini otomatik temizlemez.
+
+:::info[Derinlemesine (isteğe bağlı)]
+`storageState` cookie ve localStorage’ı kapsar; sessionStorage’ı kendiliğinden kaydetmez. Uygulama kimliği yalnız sessionStorage’da tutuyorsa farklı bir kurulum gerekir. Token süresi doluyorsa setup’ı her Playwright çalıştırmasında yeniden çalıştır; rol bazlı testler için de her role uygun ayrı başlangıç state’i üret.
 :::
 
 ## Özet
 
-- storageState cookie ve localStorage başlangıcını taşır; canlı page’i paylaşmaz.
-- Snapshot’ı login sonrası görünür başarıdan sonra al.
-- Kritik giriş UI’sini boş context ile en az bir kez yürüt.
-- Tarayıcı context’inin ayrı olması ortak server verisini yalıtmaz.
+- `storageState` giriş sonrası cookie ve localStorage’ı bir dosyaya kaydeder.
+- Dosyayı UI girişin bittiğini gösterdikten sonra yaz; kısa süre tahmin edip bekleme.
+- Testler aynı state’i yüklese de kendi ayrı browser context’lerinde çalışır.
+- Giriş akışını boş oturumdan en az bir kez yürü; uzak server kayıtlarını ayrıca yalıt.
 
-**Kendini yokla:** İki test storageState kullansa da neden ayrı context alır?  
-*Cevap:* Aynı başlangıç kimliğini kullanırlar ama sayfa ve tarayıcı değişiklikleri birbirine sızmaz.
+**Yeni terimler:**
 
-**Kendini yokla:** Her test sonunda state neden temizlenmeyebilir?  
-*Cevap:* storageState tarayıcı verisini taşır; uzak server’daki hesap verisini yönetmez.
+- **Browser context:** Cookie, localStorage ve sayfa durumunu tutan ayrı tarayıcı oturumu.
+- **`storageState`:** Cookie ve localStorage başlangıcını saklayan Playwright durumu.
+- **Setup project:** Bağımlı test projelerinden önce çalışan hazırlık projesi.
+
+**Kendini yokla:** Neden `storageState` kaydından önce giriş sonrası başlığı bekliyoruz?
+
+*Cevap:* Böylece dosyaya oturum kurulmadan önceki boş durum değil, hazır giriş durumu yazılır.
+
+**Kendini yokla:** Ayrı context kullanan testlerde bir rezervasyon neden yine de diğerinde görünebilir?
+
+*Cevap:* Rezervasyon server’daki ortak veridir; context ayrılığı browser verisini ayırır, veritabanını değil.

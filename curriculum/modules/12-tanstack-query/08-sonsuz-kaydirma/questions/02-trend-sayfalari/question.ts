@@ -8,7 +8,7 @@ export default defineQuestion({
   files: ['TrendingFeed.tsx'],
   hints: [
     'Yeni sayfayı eskilerin yerine koymak ile aynı listede biriktirmek arasındaki farkı düşün.',
-    '`useInfiniteQuery` içinde `initialPageParam`, `getNextPageParam` ve `maxPages` tanımla.',
+    '`useInfiniteQuery` içinde `initialPageParam` ve `getNextPageParam` tanımla.',
     '`pageParam` ile isteği yap; `data.pages.flatMap(page => page.results)` ile sırayı koru.',
   ],
 })

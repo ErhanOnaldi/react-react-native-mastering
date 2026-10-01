@@ -6,32 +6,49 @@ kind: project
 
 # Sinema modalı ve detay sekmeleri
 
-:::pain[Belirti]
-Sinema'nın detay sayfası uzun: özet, oyuncular, videolar, izleme listesi ve yorum alanları art arda duruyor. Fragman için başka siteye gitmek gerekiyor. Yalnız klavyeyle sayfayı dolaştığında hangi bölümde olduğunu ve açılır pencereyi nasıl kapatacağını kestiremiyorsun.
+Sinema film detayında fragmanı açıp klavyeyle kullanılabilen bir pencerede gezin; özet, oyuncular ve varsa videoları sekmelerle düzenle. Önceki derslerdeki erişilebilir davranışları gerçek film verisine bağlayacaksın.
+
+## Modal parçalarını birleştir
+
+**Compound component**, ortak davranışı paylaşan ama JSX'te ayrı yerleştirilen component ailesidir. Trigger açar, Content dialogu gösterir, Close kapatır. **Context**, aradaki component'lere prop eklemeden ortak değeri alt bileşenlere ulaştırır.
+
+:::model[Context yayılımı]
+Kök Context sağlar, alt parçalar aynı güncel değeri okur. Modal parçaları kökün dışında kullanılırsa eksik Context için anlaşılır hata vermelidir.
 :::
 
-Bu proje, erişilebilir arayüz sözleşmelerini gerçek bir sayfa akışında bir araya getiriyor. Tekrar kullanılabilir bir modal ailesi açılış, klavye dolaşımı ve kapanış focus'unu yönetirken; detay sayfasındaki sekmeler içerik bölümlerini düzenliyor. Fragman verisi filmden geldiği için düğme yalnızca gerçekten açılabilecek bir video olduğunda görünmeli. Film kartındaki ve detay sayfasındaki favori kontrolleri de tutarlı ad ve durum anlatmalı.
+**Dialog**, sayfa üzerinde açılan etkileşimli penceredir. Bir **Portal**, React içeriğini DOM ağacında başka bir yere, burada `document.body` altına yerleştirir. Açılınca focus dialoga, kapanınca tetikleyiciye dönmeli; Tab ve Shift+Tab dialog içinde kalmalı. **`asChild`**, Trigger'ın kendi düğmesi yerine verilen child öğeyi kullanmasını sağlar; böylece button içine button koymazsın.
 
-## Uygularken
+Fragman düğmesi yalnızca filmde video varsa görünür. Sayfadaki video verisinden fragmanı seç; video yoksa düğme üretme.
 
-Önce küçük parçaları tek tek düşün: modalın kapalı/açık durumu, tetikleyici, içerik ve kapatma kontrolü; ardından sekmelerin tek seçimi, trigger-panel ilişkisi ve klavye sırası. Parçaların birlikte kullanıldığı anda Context sınırının nerede başladığını, yanlışlıkla kök dışında kalan bir parçanın nasıl anlaşılır davranacağını kararlaştır.
+## Sekmeleri film verisine bağla
 
-Sonra MovieDetails sayfasındaki veri akışını takip et. Başlık ve fragman aynı filmden gelmeli; oyuncu listesi ve video listesi mevcut veriye dayanmalı. Video yoksa hem gereksiz sekme hem tetikleyici üretme. Var olan sayfa düzenini ve puanlama, izleme listesi, yorum gibi bölümleri koruyarak yeni alanları ekle.
+`tablist`, `tab` ve `tabpanel` rolleri ekran okuyucuya sekme grubu, seçenek ve panel anlamını verir. Trigger ile Panel'in id ilişkisi eşleşmeli; `useId` her grup için benzersiz id tabanı üretir. Video yoksa Videolar Trigger'ı ve Panel'i birlikte gizle.
 
-Focus akışını tarayıcıda kendi elinle dolaş: Tab ile fragman düğmesine gel, Enter ile aç, dialog içinde iki yönde gezin, Escape ile kapat. Ardından sekmelere Tab ile girip ok tuşlarını dene. Ekran okuyucu adı, panel ilişkisi ve focus halkası birlikte anlaşılır olmalı. 550 filmi ve videosu olmayan bir filmi kontrol etmek gerçek veri sınırlarını görünür kılar.
+Fragman düğmesi sekme grubunun dışında ve görünür kalır. Favori düğmesinin erişilebilir adı eylemi, basılı durumu ise seçimi anlatmalı; bu iki bilgi birbiriyle çelişmesin. **Suspense**, veri beklenirken geçici arayüz göstermeye yarar; mevcut yükleme akışını koru.
 
-:::tip[İnceleme sırası]
-Bir davranışı izole kontrol et, sonra gerçek film sayfasında tekrar et. Son olarak klavye ile baştan sona dolaş; focus'un görünür ve beklenen yerde olduğunu doğrula.
+:::model[Render → commit → effect]
+React DOM'u güncelledikten sonra effect çalışır. Focus DOM'a bağlı olduğundan açılışta dialog eklendikten sonra odak ver; kapanışta tetikleyicinin hâlâ sayfada olup olmadığını gözet.
 :::
 
-:::sector
-Ürün ekipleri modal ve tabs gibi temel bileşenleri tasarım sisteminde ortaklaştırır; uygulama sayfası ise gerçek veri, boş durum ve bölüm kompozisyonundan sorumludur. Bu sınırı korumak aynı klavye davranışını farklı sayfalara taşımayı ve hata düzeltmesini kolaylaştırır.
-:::
+Önce modalı, sonra Tabs parçalarını kendi başına ele al; ardından 550 numaralı filmde ve videosu olmayan bir filmde sayfayı fareyle ve klavyeyle dolaş. Bu sıra, hata çıktığında modal davranışını veri koşullarından ayrı incelemene yardım eder.
 
 ## Özet
 
-- Modal davranışı ortak bir API'de; gerçek içerik sayfada kalır.
+- Modal parçaları ortak durumu paylaşır; her parçanın ayrı görevi vardır.
 - Focus açılışta dialoga, kapanışta tetikleyiciye döner.
-- Sekme içeriği erişilebilir isim ve id ilişkisiyle seçime bağlanır.
-- Film verisi eksik olduğunda kullanılmayan etkileşim görünmez.
-- Son kontrolü yalnız fareyle değil, klavye akışıyla yap.
+- Tabs id'leri her Trigger'ı kendi Panel'ine bağlar.
+- Video yoksa Videolar sekmesi, paneli ve fragman tetikleyicisi görünmez.
+- Parçaları ayrı, sonra gerçek film detayında klavyeyle dolaş.
+
+**Yeni terimler**
+
+- **Compound component:** Ortak davranışla çalışan, ayrı yerleştirilebilir component ailesi.
+- **Context:** Değeri aradaki component'lere prop eklemeden alt bileşenlere ulaştırma yolu.
+- **Portal:** React içeriğini DOM ağacında başka bir yere yerleştirme yöntemi.
+- **`asChild`:** Verilen child öğeyi kullanıp fazladan düğüm üretmeme yaklaşımı.
+- **`useId`:** DOM ilişkileri için component örneğine özel id üretir.
+- **Suspense:** Alt arayüz hazır olana kadar geçici içerik göstermeyi sağlar.
+
+**Kendini yokla:** Filmde video yoksa ne görünmemeli?
+
+*Cevap:* Videolar sekmesi ve paneli ile fragman tetikleyicisi.

@@ -17,6 +17,23 @@ function Demo() {
   )
 }
 describe('Klavye Tabs', () => {
+  it('birden fazla grup kullanıldığında id değerlerini ayırır', () => {
+    render(
+      <>
+        <Demo />
+        <KeyboardTabs defaultValue="summary">
+          <KeyboardTabs.List aria-label="Oyuncu bilgileri">
+            <KeyboardTabs.Trigger value="summary">Biyografi</KeyboardTabs.Trigger>
+            <KeyboardTabs.Panel value="summary">Oyuncu biyografisi</KeyboardTabs.Panel>
+          </KeyboardTabs.List>
+        </KeyboardTabs>
+      </>,
+    )
+    const ids = screen.getAllByRole('tab').map((tab) => tab.id)
+    expect(ids.every(Boolean)).toBe(true)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
   it('yalnızca seçili tabı Tab sırasına alır ve panelle iki yönlü bağlar', () => {
     render(<Demo />)
     const list = screen.getByRole('tablist', { name: 'Film bilgileri' })

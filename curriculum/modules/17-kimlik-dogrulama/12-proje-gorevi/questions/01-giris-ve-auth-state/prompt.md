@@ -2,7 +2,7 @@ Sinema uygulamasında kullanıcıların hesaplarıyla oturum açabilmesi, kimlik
 
 ## Gereksinimler
 
-- `auth-api.ts` içindeki oturum açma fonksiyonu kullanıcı adı ve parolayı kimlik sunucusuna iletmeli; başarılı yanıttan kullanıcı kimliği, kullanıcı adı ve belirteç çiftini döndürmelidir.
+- `auth-api.ts` içindeki oturum açma fonksiyonu kullanıcı adı ve parolayı `https://dummyjson.com/auth/login` adresine `POST` ile iletmeli; başarılı yanıttan kullanıcı kimliği, kullanıcı adı ve belirteç çiftini döndürmelidir.
 - Hatalı kimlik bilgilerinde sunucunun döndürdüğü hata mesajı fırlatılmalıdır.
 - `authSlice.ts` başlangıçta boş oturum durumuna sahip olmalı; kimlik belirleme eyleminde kullanıcı ve belirteçleri saklamalı, çıkış eyleminde tüm alanları `null` değerine sıfırlamalıdır.
 - `LoginPage` bileşeni kullanıcıdan bilgileri almalı, geçerli girişte durumu ve depolamayı güncelleyerek profili açmalıdır.

@@ -2,13 +2,27 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'Radix’i açıkça seç',
-  difficulty: 'kolay',
+  title: 'Primitive ailesiyle bağımlılığı eşleştir',
+  difficulty: 'orta',
   concepts: ['shadcn.setup', 'pattern.headless'],
-  question: 'Sinema `radix-ui` kullanıyor. Yeni CLI kurulumunda hangi komut üretilen parçaların aynı primitive ailesini kullanmasını sağlar?',
+  question:
+    'Sinema checkpoint’inde `radix-ui` zaten kurulu ve mevcut Dialog primitive’i Radix API’sini kullanıyor. Yeni eklediğin shadcn bileşeni ise Base UI import ediyor. Bu kaynakları aynı primitive ailesinde tutmak için ne yaparsın?',
   options: [
-    { text: '`pnpm dlx shadcn@latest init -b radix`', correct: true, explanation: 'Doğru. Yeni kurulumun varsayılanı Base UI olduğundan Radix bayrağını açıkça verirsin.' },
-    { text: '`pnpm dlx shadcn@latest init`', explanation: 'Bu komut güncel CLI’da varsayılan Base UI ile başlayabilir; Sinema için seçimi açık yaz.' },
-    { text: '`pnpm add @radix-ui/react-dialog`', explanation: 'Bu tek primitive paketi kurmak CLI’ın bileşen üretim tercihini değiştirmez; kurs unified `radix-ui` kullanır.' },
+    {
+      text: 'Yeni bileşenleri Radix ailesiyle üret; böylece üretilen parçalar mevcut `radix-ui` primitive API’siyle aynı sözleşmeyi kullanır.',
+      correct: true,
+      explanation:
+        'Doğru. shadcn’in primitive aile seçimi üretilen bileşen API’sini belirler; Sinema’nın mevcut Radix koduyla aynı aileyi seçmelisin.',
+    },
+    {
+      text: 'Base UI import’unu `radix-ui` import’una elle değiştirmek; iki ailenin bileşen adları ve props’ları eşdeğerdir.',
+      explanation:
+        'Aileler benzer arayüzler sunsa da export ve props sözleşmeleri aynı değildir; yalnız import adını değiştirmek uyum sağlamaz.',
+    },
+    {
+      text: 'Projeye ikinci primitive paketini ekleyip iki aileyi aynı Dialog içinde karıştırmak; dış görünüşleri eşitlenince davranışları da birleşir.',
+      explanation:
+        'İki aileyi ayrı bileşenlerde birlikte kullanabilirsin, ancak tek bir compound Dialog ağacı paylaşmazlar. Bu görevde amaç mevcut Radix ailesiyle tutarlılık.',
+    },
   ],
 })

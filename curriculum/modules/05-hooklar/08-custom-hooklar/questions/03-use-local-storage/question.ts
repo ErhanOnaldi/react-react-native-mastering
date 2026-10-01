@@ -8,7 +8,7 @@ export default defineQuestion({
   hints: [
     'İlk değer yalnızca ilk render’da storage’dan okunmalı.',
     'Başlangıç okumayı `useState(() => ...)` içine koy; `JSON.parse` hata verebilir, `try/catch` kullan.',
-    'Setter’da değerin fonksiyon olup olmadığını ayır; yeni değeri hem state’e hem `localStorage` içine yaz.',
-    '`JSON.stringify` boşluksuz string üretir; test storage değerini tam string olarak kontrol ediyor.',
+    'Güncelleme parametresi bir değer ya da önceki değeri alan fonksiyon olabilir; ikisini ayırıp state setter’ına aktar.',
+    'Dönüş tipi için `ValueUpdater<T>` kullan; `value` değişimini `JSON.stringify` ile storage içine yaz.',
   ],
 })

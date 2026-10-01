@@ -6,17 +6,17 @@
     </marker>
   </defs>
   <rect class="d-accent" x="35" y="45" width="300" height="72" rx="8"/>
-  <text class="d-title" x="185" y="73" text-anchor="middle">['shows', 'search', 'Dune', 1]</text>
+  <text class="d-title" x="185" y="73" text-anchor="middle">['movies', 'genre', 18, 1]</text>
   <text class="d-muted" x="185" y="98" text-anchor="middle">sonucu belirleyen tüm girdiler</text>
   <rect class="d-success" x="425" y="45" width="300" height="72" rx="8"/>
   <text class="d-title" x="575" y="73" text-anchor="middle">Cache girdisi A</text>
-  <text class="d-code" x="575" y="98" text-anchor="middle">Dune · sayfa 1</text>
+  <text class="d-code" x="575" y="98" text-anchor="middle">Tür 18 · sayfa 1</text>
   <line class="d-line-accent" x1="340" y1="81" x2="420" y2="81" marker-end="url(#key-cache-arrow)"/>
   <rect class="d-box" x="35" y="158" width="300" height="72" rx="8"/>
-  <text class="d-title" x="185" y="186" text-anchor="middle">['shows', 'search', 'Dune', 2]</text>
+  <text class="d-title" x="185" y="186" text-anchor="middle">['movies', 'genre', 18, 2]</text>
   <text class="d-muted" x="185" y="211" text-anchor="middle">tek parça değişti: page</text>
   <rect class="d-warning" x="425" y="158" width="300" height="72" rx="8"/>
   <text class="d-title" x="575" y="186" text-anchor="middle">Cache girdisi B</text>
-  <text class="d-code" x="575" y="211" text-anchor="middle">Dune · sayfa 2</text>
+  <text class="d-code" x="575" y="211" text-anchor="middle">Tür 18 · sayfa 2</text>
   <line class="d-line" x1="340" y1="194" x2="420" y2="194" marker-end="url(#key-cache-arrow)"/>
 </svg>

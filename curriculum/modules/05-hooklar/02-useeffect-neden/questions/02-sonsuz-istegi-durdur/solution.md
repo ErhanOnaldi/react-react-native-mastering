@@ -1,4 +1,4 @@
-Render ekranı hesaplar; fetch dış sistemle senkronizasyon kurar. `useEffect` bu işin yeridir. Buradaki tek istek testi StrictMode sarmalı olmayan örnek için geçerlidir. StrictMode geliştirmede effect yaşam döngüsünü fazladan sınar; genel uygulamada “daima tek ağ isteği” garantisi sanma. Sonraki soruda aynı deseni başka uç noktaya uygula.
+Render ekranı hesaplar; fetch dış sistemle senkronizasyon kurar. `useEffect` bu işin yeridir. `id` dependency'si, aynı bileşen başka bir film için kullanıldığında yeni isteği başlatır.
 
 ## Alternatif ve tuzak
 

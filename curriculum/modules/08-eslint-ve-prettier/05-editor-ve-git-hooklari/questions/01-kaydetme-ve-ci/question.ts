@@ -5,26 +5,34 @@ export default defineQuestion({
   title: 'Kaydetme ve CI',
   difficulty: 'kolay',
   concepts: ['tooling.prettier', 'tooling.scripts'],
-  question:
-    'Sinema’da herkesin editör ayarı farklı. Ortak biçim kuralını hangi düzen güvenceye alır?',
+  question: `Sinema için şu script'ler tanımlı:
+
+\`\`\`json
+{
+  "format": "prettier --write .",
+  "format:check": "prettier --check ."
+}
+\`\`\`
+
+CI'da biçim farkını dosyaları değiştirmeden raporlamak için hangisini çalıştırırsın?`,
   options: [
     {
-      text: 'Repoda Prettier config’i ve CI’da `format:check` script’i.',
+      text: '`format:check`; biçim farkını bildirir, dosyaları yazmaz.',
       correct: true,
-      explanation: 'Config ortak karardır; CI herkesin değişikliğini aynı biçimde denetler.',
+      explanation: '`--check` mevcut dosyaları denetler ve fark bulursa başarısız olur.',
     },
     {
-      text: 'Yalnızca bir geliştiricinin format on save ayarı.',
-      explanation: 'Yerel editör tercihi diğerlerinin dosyasını zorunlu olarak biçimlendirmez.',
+      text: '`format`; aynı anda biçimi kontrol eder ve dosyaları sessizce değiştirmez.',
+      explanation: '`--write` dosyaları değiştirir; kontrol için `--check` gerekir.',
     },
     {
-      text: 'CI’da `prettier --write .` çalıştırmak.',
+      text: "CI'da iki script'i arka arkaya çalıştırmak.",
       explanation:
-        'CI’nın sessiz dosya değiştirmesi yerine `--check` ile başarısız olması gerekir.',
+        'İlki dosyaları yazar; CI farkı göstermek istiyorsa yalnız `format:check` çağırmalıdır.',
     },
     {
-      text: 'Sadece `tsc -b` çalıştırmak.',
-      explanation: 'TypeScript biçim tercihlerini kontrol etmez.',
+      text: 'Yalnız `eslint .` çalıştırmak.',
+      explanation: 'ESLint seçilmiş kod kurallarını inceler; bu script biçim farkını denetlemez.',
     },
   ],
   explanation: '',

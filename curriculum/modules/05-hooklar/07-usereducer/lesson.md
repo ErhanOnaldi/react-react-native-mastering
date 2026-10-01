@@ -1,229 +1,187 @@
 ---
 title: "Bağlantılı durumlar tek akışta"
-minutes: 14
+minutes: 16
 kind: concept
 ---
 
 # Bağlantılı durumlar tek akışta
 
-:::pain[Problem]
-Sinema bilet alma adımında koltuk seçimi, adım durumu, ödeme işlemi ve hata mesajı dört ayrı `useState` ile yönetiliyor. Ödeme başarısız olduğunda hata mesajı yazılıyor ama `isProcessing` açık kalıyor; kullanıcı geri dönüp koltuk değiştirdiğinde eski hata mesajı ekranda asılı kalıyor. Ayrı setter'lar arttıkça arayüz tutarsız ara durumlara saplanıyor.
-:::
-
-## Geçişleri isimlendirmek ve sonlu durum makinesi
-
-Birden fazla state alanı aynı kullanıcı eylemiyle birlikte değişmek zorundaysa, bu alanları ayrı `useState` çağrılarıyla tek tek yönetmek hata payını katlar. Bir fonksiyonda `setLoading(false)` satırını yazmayı unuttuğunda ekran sonsuza dek yükleniyor kalabilir.
-
-`useReducer`, karmaşık state geçişlerini saf bir fonksiyon arkasında toplar. Mantık şudur:
-- State'in **mevcut durumu** bellidir.
-- Bir **olay (action)** meydana gelir ("koltuk seçildi", "ödeme başladı", "hata oluştu").
-- Reducer fonksiyonu bu ikisini alır ve **yeni state** nesnesini safça hesaplayıp döndürür.
-
-![Önceki state ve action'ın saf reducer üzerinden yeni state üretmesi](diagrams/reducer-gecisleri.svg "Reducer dış etki yapmadan yeni state hesaplar.")
-
-Kurallar:
-
-1. **Reducer saf bir fonksiyondur:** `(state, action) => newState`. Aynı girdi her zaman aynı çıktıyı üretir; içinde asla `fetch`, `localStorage`, `Math.random()` veya DOM işlemi yapılamaz.
-2. **Action bir olay adıdır:** Setter fonksiyonu gibi eylem emretmez (`setIsProcessingTrue`); neyin gerçekleştiğini söyler (`payStart`).
-3. **Birlikte değişenler birlikte yazılır:** Bir olay birden fazla alanı etkiliyorsa, o olayın dönüş nesnesinde tüm alanlar tek seferde güncellenir.
-4. **Discriminated Union ile tip güvenliği:** Action tipleri TypeScript `type` birleşimiyle daraltılır. Böylece yanlış payload kullanımı derleme aşamasında yakalanır.
-5. **İmmutability kuralı:** Reducer mevcut `state` nesnesini asla mutasyona uğratmaz; her zaman `{ ...state }` ile yeni bir nesne referansı döndürür.
-
-:::model[TypeScript narrowing]
-`action.type` kontrolü union tipini daraltır. `type: 'selectSeat'` dalında TypeScript `action.seatId` değerinin varlığını garanti ederken, `type: 'payError'` dalında `action.message` alanını zorunlu tutar. Tip sistemi, yanlış verinin yanlış olaya sızmasını derleme anında engeller.
-:::
-
-## Bilet rezervasyonu geçiş tablosu
-
-Karmaşık bir akışı kodlamadan önce durum matrisini çıkarmak en sağlıklı yaklaşımdır:
-
-| Action (`type`) | `step` | `selectedSeats` | `isProcessing` | `error` | Açıklama |
-| --- | --- | --- | --- | --- | --- |
-| `selectSeat` | korunur | yeni koltuk eklenir | korunur | `null` (temizlenir) | Koltuk seçilince hata temizlenir |
-| `deselectSeat` | korunur | koltuk çıkarılır | korunur | `null` (temizlenir) | Koltuk iptali |
-| `proceedToPayment`| `'payment'`| korunur | korunur | `null` | Ödeme adımına geçiş |
-| `payStart` | korunur | korunur | `true` | `null` | İşlem başladı |
-| `paySuccess` | `'success'`| korunur | `false` | `null` | Başarıyla tamamlandı |
-| `payError` | korunur | korunur | `false` | yeni hata metni | **İşlem biter, hata yazılır** |
-| `reset` | `'seats'` | `[]` | `false` | `null` | Baştan başlama |
-
-Bu tablo sayesinde "ödeme patlarsa `isProcessing` ne olur?" sorusunun yanıtı tek bir satırda (`payError`) kilitlenmiş olur.
-
-## Kırık yaklaşım: Dağınık setter zincirleri
+Bir film kartındaki beğeni sayısını göstermek için `useState` yeterlidir. Değişiklik yalnızca bu sayıdaysa, `setLikes(likes + 1)` gibi tek bir güncelleme anlaşılır kalır.
 
 ```tsx
-function handlePaymentFailure(errorMessage: string) {
-  setError(errorMessage)
-  // UNUTULAN SATIR: setIsProcessing(false)
-  // Kullanıcı sonsuza dek dönen bir spinner ile baş başa kalır!
-}
+const [likes, setLikes] = useState(0)
 
-function handleSeatChange(seatId: string) {
-  setSelectedSeats((prev) => [...prev, seatId])
-  // UNUTULAN SATIR: setError(null)
-  // Eski hata mesajı yeni koltuk seçilmesine rağmen ekranda kalır!
+function handleLike() {
+  setLikes((current) => current + 1)
 }
 ```
 
-Setter'lar bileşenin farklı fonksiyonlarına dağıldığında bir alanı güncellemeyi unutmak kaçınılmazdır.
+Bir rezervasyon ekranında ise seçilen koltuklar, adım, işlem durumu ve hata mesajı birbirine bağlıdır. Ödeme başarısız olduğunda hata yazılırken işlem göstergesinin de kapanması gerekir. Birlikte değişen alanlar çoğalınca geçiş mantığını tek yerde tutmak yararlı olur.
 
-## Doğru yaklaşım: Tipli reducer tasarımı
+## Olayı state geçişine dönüştür
 
-Durumları ve olayları eksiksiz tipleştirip tek bir saf fonksiyonda topluyoruz:
+**Reducer**, mevcut state ile gelen olayı alıp yeni state'i döndüren saf fonksiyondur. Olayın kendisine **action** deriz: örneğin "koltuk seçildi" veya "ödeme başarısız oldu". Reducer `useState` setter'ları gibi bileşene dağılmaz; aynı girdileri verdiğinde aynı state'i üretir.
+
+En küçük reducer, bir koltuk sayacını artırabilir:
+
+```ts check
+type SeatCountAction = { type: 'seatSelected' }
+
+function seatCountReducer(count: number, action: SeatCountAction): number {
+  if (action.type === 'seatSelected') return count + 1
+  return count
+}
+```
+
+`seatSelected` action'ı geldiğinde reducer bir fazla sayı döndürür; önceki sayı dışarıdan değiştirilmez. `useReducer`, reducer'ı React state'ine bağlayan Hook'tur. Bu Hook iki değer verir: güncel state ve **dispatch** adlı, action'ı reducer'a ileten fonksiyon. Bileşenin sayacı ekranda göstermesi için şöyle bağlarız:
+
+```tsx
+const [seatCount, dispatch] = useReducer(seatCountReducer, 0)
+
+return <button onClick={() => dispatch({ type: 'seatSelected' })}>
+  Koltuk seç ({seatCount})
+</button>
+```
+
+Tıklamada action gönderilir, reducer yeni sayıyı hesaplar, sonraki render bu sayıyı gösterir. Tek sayı için reducer şart değil; burada yalnızca geçişin şeklini tanıtıyoruz.
+
+## Bir olay birden çok alanı birlikte günceller
+
+Bir film seansında koltuk seçilince hata mesajı temizlenmeli, koltuk bırakılınca da aynı kural geçerli olsun. Action'ların olası biçimlerini TypeScript'te bir **discriminated union** ile yazarız: bu, ortak `type` alanına göre birbirinden ayrılan nesne türlerinin birleşimidir.
+
+```ts
+type SeatState = {
+  selected: string[]
+  error: string | null
+}
+
+type SeatAction =
+  | { type: 'select'; seatId: string }
+  | { type: 'remove'; seatId: string }
+
+function seatReducer(state: SeatState, action: SeatAction): SeatState {
+  switch (action.type) {
+    case 'select':
+      return { selected: [...state.selected, action.seatId], error: null }
+    case 'remove':
+      return {
+        selected: state.selected.filter((id) => id !== action.seatId),
+        error: null,
+      }
+  }
+}
+```
+
+`action.type` değeri `select` olduğunda TypeScript `action.seatId` alanının var olduğunu bilir; iki olayın verileri karışmaz. Yeni diziler oluşturduğumuz için eski state'e dokunmadan seçim listesini ve hata mesajını tek geçişte güncelleriz.
+
+**Immutability**, var olan nesne veya diziyi yerinde değiştirmeyip değişmiş bir kopya üretme kuralıdır. Örnekte `push` yerine yeni dizi döndürürüz; React değişmiş state'i yeni değer olarak işler.
+
+## Rezervasyon akışını adım adım izle
+
+Şimdi bir katman daha ekleyelim: ödeme başlatılır, sonra ya başarılı olur ya hata verir. Her action hangi alanları değiştireceğini bilir; bir olayla birlikte değişen alanlar reducer'ın aynı dönüş değerinde güncellenir.
 
 ```ts check
 export type BookingState = {
-  step: 'seats' | 'payment' | 'success'
+  step: 'seats' | 'payment' | 'done'
   selectedSeats: string[]
-  isProcessing: boolean
+  processing: boolean
   error: string | null
 }
 
 export type BookingAction =
-  | { type: 'selectSeat'; seatId: string }
-  | { type: 'deselectSeat'; seatId: string }
-  | { type: 'proceedToPayment' }
-  | { type: 'payStart' }
-  | { type: 'paySuccess' }
-  | { type: 'payError'; message: string }
-  | { type: 'reset' }
+  | { type: 'chooseSeat'; seatId: string }
+  | { type: 'startPayment' }
+  | { type: 'paymentFailed'; message: string }
+  | { type: 'paymentSucceeded' }
 
-export function bookingReducer(state: BookingState, action: BookingAction): BookingState {
+export function bookingReducer(
+  state: BookingState,
+  action: BookingAction,
+): BookingState {
   switch (action.type) {
-    case 'selectSeat':
+    case 'chooseSeat':
       return {
         ...state,
         selectedSeats: [...state.selectedSeats, action.seatId],
         error: null,
       }
-    case 'deselectSeat':
-      return {
-        ...state,
-        selectedSeats: state.selectedSeats.filter((id) => id !== action.seatId),
-        error: null,
-      }
-    case 'proceedToPayment':
-      if (state.selectedSeats.length === 0) {
-        return { ...state, error: 'Lütfen en az bir koltuk seçin' }
-      }
-      return { ...state, step: 'payment', error: null }
-    case 'payStart':
-      return { ...state, isProcessing: true, error: null }
-    case 'paySuccess':
-      return { ...state, isProcessing: false, step: 'success', error: null }
-    case 'payError':
-      return { ...state, isProcessing: false, error: action.message }
-    case 'reset':
-      return { step: 'seats', selectedSeats: [], isProcessing: false, error: null }
+    case 'startPayment':
+      return { ...state, step: 'payment', processing: true, error: null }
+    case 'paymentFailed':
+      return { ...state, processing: false, error: action.message }
+    case 'paymentSucceeded':
+      return { ...state, step: 'done', processing: false, error: null }
   }
 }
 ```
 
-Bileşen tarafında bu yapıyı kullanmak tek bir satıra bakar:
-```tsx
-const [state, dispatch] = useReducer(bookingReducer, initialBookingState)
-```
-
-Artık butonlar yalnızca olay bildirir: `dispatch({ type: 'payStart' })`.
-
-## Reducer'ı test etmek neden bu kadar kolaydır?
-
-Reducer'ın saf fonksiyon olmasının en büyük ödülü test yazarken ortaya çıkar. Bir React bileşenini test etmek için DOM ortamı kurmak (jsdom), bileşeni render etmek ve butonlara tıklamak gerekir. Oysa bir reducer'ı test etmek için yalnızca saf JavaScript yeterlidir:
-
-```ts
-// Saf birim testi (Bileşen veya DOM gerekmez):
-const prevState: BookingState = {
-  step: 'payment',
-  selectedSeats: ['A1', 'A2'],
-  isProcessing: true,
-  error: null,
-}
-
-const nextState = bookingReducer(prevState, {
-  type: 'payError',
-  message: 'Kart limiti yetersiz',
-})
-
-// Doğrudan iddialar:
-expect(nextState.isProcessing).toBe(false)
-expect(nextState.error).toBe('Kart limiti yetersiz')
-expect(nextState.selectedSeats).toEqual(['A1', 'A2'])
-```
-
-Bu sadelik sayesinde onlarca farklı uç durumu saniyeler içinde, sıfır maliyetle test edebilirsin.
-
-## Action adları emir değil, olay anlatmalıdır
-
-Action adlandırmasında düşülen en büyük hata, fonksiyon adlarını taklit etmektir:
-
-| Kötü Adlandırma (Emir) | İyi Adlandırma (Olay) | Neden? |
-| --- | --- | --- |
-| `setProcessingTrue` | `payStart` | Reducer'a ne yapacağını söyleme; neyin başladığını söyle |
-| `clearErrorAndSetSeats` | `selectSeat` | Olay bir tanedir; hangi alanların temizleneceği reducer'ın iş kuralıdır |
-| `setStepSuccess` | `paySuccess` | Adım değişimi başarının doğal bir sonucudur |
-
-Olay odaklı adlandırma, bileşeni iş kurallarından soyutlar. Bileşen sadece "ödeme başladı" der; kaç state alanının nasıl değişeceği reducer'ın içindedir.
-
-## Action'dan ekrana geçişi adım adım izleyelim
-
-Bir reducer çağrısında React, mevcut state'i ve dispatch edilen action'ı reducer'a verir. Reducer yeni nesneyi hesaplar; React bu sonucu sonraki render'da state olarak kullanır. Dispatch çağrısı bileşenin içindeki state'i anında değiştirmez. Event handler aynı render'ın snapshot'ını okumaya devam eder.
+Her action yeni bir `BookingState` döndürür. `...state` mevcut alanları korur; ilgili olayın değiştirdiği alanlar yeni nesnede güncellenir. Örneğin `paymentFailed` hem işlemi kapatır hem mesajı yazar; ayrı setter'lardan birini unutma riski azalır.
 
 | An | State | Action / işlem | Sonraki ekranda |
-|---|---|---|---|
-| İlk render | isProcessing false, error null | henüz yok | işlem düğmesi açık |
-| Tıklama | aynı snapshot | dispatch(payStart) | reducer true ve null üretir |
-| Yeni render | isProcessing true | handler tamamlandı | spinner görünür |
-| İstek reddi | önceki state korunur | dispatch(payError) | reducer false ve hata metni üretir |
-| Sonraki render | isProcessing false | hata artık state'te | spinner kapanır, hata görünür |
+| --- | --- | --- | --- |
+| İlk render | `processing: false`, `error: null` | henüz yok | Ödeme düğmesi görünür |
+| Ödemeye tıklama | handler'ın elinde hâlâ eski state | `dispatch({ type: 'startPayment' })` | Reducer işlem state'ini hazırlar |
+| Yeni render | `processing: true` | handler tamamlanmıştır | Yükleniyor göstergesi görünür |
+| İstek reddedilir | önceki render'ın state'i | handler `paymentFailed` gönderir | Reducer işlem durumunu kapatır ve mesajı yazar |
+| Sonraki render | `processing: false`, hata metni dolu | yeni state | Gösterge kapanır, hata görünür |
 
-Bu akışta ağ isteği handler'da, state geçişinin hesabı reducer'dadır. Handler Promise'in sonucunu bekler ve dispatch ile sonucu bildirir. Reducer'ı Strict Mode gibi geliştirme denetimlerinde tekrar çalıştırmak sonucu değiştirmemelidir; saf olma şartı bu yüzden yalnız test kolaylığı değil, React'in güvenli hesaplama beklentisidir.
+`dispatch` çağrısı handler içindeki `state` değişkenini anında değiştirmez; handler başladığı render'ın state değerini görmeye devam eder. Yeni değer reducer'ın sonucudur ve sonraki render'da görünür.
 
-Başlangıç state'i de geçerli bir ekranı temsil etsin. İlgisiz alanları boş bırakıp ilk action'ın onları kurmasını beklemek, arada tutarsız render üretir. Reducer içindeki her action için korunan alanları bilinçli seç: yeni state nesnesi oluşturmak tek başına kuralı sağlamaz, içteki dizi veya nesneyi de değiştiriyorsan onun için de yeni referans üretmelisin. Bilinmeyen action tipi varsa TypeScript union'ı ve exhaustive check tüm dalların ele alınmadığını görünür kılabilir.
+![Önceki state ve action'ın saf reducer üzerinden yeni state üretmesi](diagrams/reducer-gecisleri.svg "Reducer dış etki yapmadan yeni state hesaplar.")
 
-:::mistake[Handler'da dispatch sonrası state'in değiştiğini varsaymak]
-**Belirti:** dispatch(payStart) sonrasında aynı handler içindeki state.isProcessing hâlâ false okunuyor. **Neden:** Handler o render'ın state snapshot'ını kapatmıştır. **Düzeltme:** Sonraki kararları handler'da güncellenmiş state arayarak değil, action sonucunu ve yeni render'ı kullanarak kur.
-:::
+### Ağ işi handler'da, state hesabı reducer'da
 
-## Sınır durumları ve sık hatalar
+Ödeme isteği gibi dış dünyayla konuşan işi reducer'ın içine koymayız. Event handler isteği başlatabilir ve sonucuna göre action dispatch edebilir; reducer yalnızca o action'a uygun state'i hesaplar.
 
-:::mistake[Sık hata: Reducer içinde asenkron iş veya fetch başlatmak]
-Belirti → Reducer gövdesinde `fetch('/api/pay')` çağrısı yapmak.  
-Neden → Reducer'ın saf fonksiyon kuralını ihlal etmek.  
-Düzeltme → Reducer ASLA yan etki yapmaz. Ağ isteği bileşenin olay yöneticisinde (`handlePay`) başlar; istek başlamadan önce `dispatch({ type: 'payStart' })`, yanıt gelince `dispatch({ type: 'paySuccess' })` veya `dispatch({ type: 'payError', message })` fırlatılır.
-:::
+```tsx
+async function handlePayment() {
+  dispatch({ type: 'startPayment' })
 
-:::mistake[Sık hata: State'i doğrudan mutasyona uğratmak]
-Belirti → `state.selectedSeats.push(action.seatId)` yazıp `return state` dönmek.  
-Neden → Dizi mutasyonu referansı değiştirmez; React referans aynı kaldığı için bileşeni render etmez.  
-Düzeltme → Her zaman yeni dizi ve yeni nesne referansı döndür:
-```ts
-return {
-  ...state,
-  selectedSeats: [...state.selectedSeats, action.seatId]
+  try {
+    await sendBookingRequest()
+    dispatch({ type: 'paymentSucceeded' })
+  } catch {
+    dispatch({ type: 'paymentFailed', message: 'Ödeme tamamlanamadı' })
+  }
 }
 ```
+
+Burada ağ isteği handler içinde gerçekleşir. Başarı veya hata action'ı geldikten sonra reducer yeni ekran durumunu üretir; böylece aynı state/action çifti her zaman aynı sonucu verir.
+
+:::mistake[Reducer'da state'i doğrudan değiştirmek]
+**Belirti:** `state.selectedSeats.push(action.seatId)` sonrası seçim ekranda görünmez ya da state başka yerde de değişmiş gibi davranır. **Neden:** `push` eski diziyi yerinde değiştirir ve aynı nesne referansı kalır. **Düzeltme:** `[...state.selectedSeats, action.seatId]` ile yeni dizi oluştur ve yeni state nesnesi döndür.
 :::
 
-:::mistake[Sık hata: Her küçük state için reducer açmak]
-Belirti → Bir arama input'u ve bir boolean modal açık/kapalı durumu için devasa reducer'lar yazmak.  
-Neden → Aşırı mühendislik (over-engineering).  
-Düzeltme → Birbirinden bağımsız basit değerler için `useState` kullanmaya devam et. Reducer, durumların birbiriyle bağlantılı olduğu durumlarda anlam kazanır.
+:::mistake[Her şeyi reducer'a taşımak]
+**Belirti:** Tek bir arama kutusu için uzun bir `switch` ve çok sayıda action oluşur. **Neden:** Birbirinden bağımsız basit değerler de gereksiz yere bir akışa bağlanmıştır. **Düzeltme:** Az ve bağımsız state alanları için `useState` kullan; birlikte değişmesi gereken alanlar çoğalınca reducer'ı seç.
 :::
 
-:::sector
-Modern frontend mimarilerinde (özellikle Redux Toolkit, Zustand veya XState kullanan ekiplerde) reducer disiplini standarttır. İş mantığını kullanıcı arayüzünden (UI) izole etmek, aynı mantığın hem web uygulamasında hem de mobil uygulamada (React Native) test edilip yeniden kullanılabilmesini sağlar.
-:::
+## Yeni akış ne kazandırır?
+
+Reducer dış sistemlere dokunmadığı için doğrudan fonksiyon gibi incelenebilir: belirli bir state ve action verip dönen state'in doğru olduğunu kontrol edersin. DOM kurmak veya butona tıklamak gerekmez. Aynı saf hesaplamanın tekrar çalışması da sonucu değiştirmez; React geliştirme sırasında hesaplamaları denetleyebilir.
+
+Bu yaklaşım her state için gerekli değildir. Reducer, bir olay birden çok alanı etkilediğinde geçişleri görünür kılar ve her dalın hangi alanları değiştirdiğini tek yerde toplar.
 
 ## Özet
 
-- Birbirine bağlı birden fazla state alanı varsa `useReducer` tutarlılık sağlar.
-- Reducer saf fonksiyondur: yan etki barındırmaz, dış dünyaya dokunmaz.
-- Action adları emir değil olay anlatır (`selectSeat`, `paySuccess`).
-- Discriminated union ile action payload'ları tam tip güvenliğine kavuşur.
-- Reducer'lar DOM bağımlılığı olmadan saf birim testleriyle hızla doğrulanabilir.
+- `useReducer` state değişimlerini `(state, action) => newState` akışında toplar.
+- Action adları ne olduğunu söyler; reducer olayın state'te hangi alanları değiştireceğine karar verir.
+- Reducer saf kalır: ağ isteği handler'da yapılır, sonucu action olarak reducer'a gönderilir.
+- Yeni state ve içindeki değişen diziler yeni değer olmalıdır; eskisini yerinde değiştirme.
+- Bağlantılı alanlar için reducer kullan; basit ve bağımsız değerlerde `useState` yeterlidir.
 
-**Kendini yokla:** `bookingReducer` içinde neden `fetch('/api/book')` çağrısı yapamayız?  
-*Cevap:* Çünkü reducer saf bir hesaplama fonksiyonu olmak zorundadır; yan etkiler React'in render döngüsünü bozar. Ağ isteği event handler içinde başlatılır ve sonuçlar reducer'a action olarak gönderilir.
+**Yeni terimler:**
 
-**Kendini yokla:** Reducer içinde `state.selectedSeats.push('B3')` yazıp `return state` yaparsak React arayüzü neden güncellenmez?  
-*Cevap:* Çünkü `state` nesnesinin bellek referansı değişmemiştir; React referans eşitliği (`Object.is`) gördüğünde hiçbir şeyin değişmediğini varsayar.
+- **Reducer:** Mevcut state ve action'dan yeni state üreten saf fonksiyon.
+- **Action:** Gerçekleşen olayı ve gerekirse ona ait veriyi taşıyan nesne.
+- **Dispatch:** Action'ı reducer akışına ileten fonksiyon.
+- **Discriminated union:** Ortak bir `type` alanıyla ayrılan TypeScript nesne türleri.
+- **Immutability:** Mevcut nesneyi değiştirmeden yeni nesne veya dizi üretme yaklaşımı.
+
+**Kendini yokla:** Ödeme isteğini neden reducer'ın içinde başlatmıyoruz?
+
+*Cevap:* Ağ isteği dış etkidir ve aynı state/action çağrısında tekrarlanmamalıdır; handler isteği yapıp sonucu action olarak bildirir.
+
+**Kendini yokla:** `dispatch({ type: 'startPayment' })` sonrasında aynı handler'daki `state.processing` hemen `true` olur mu?
+
+*Cevap:* Hayır. Handler o render'ın state değerini görür; yeni değer sonraki render'da görünür.

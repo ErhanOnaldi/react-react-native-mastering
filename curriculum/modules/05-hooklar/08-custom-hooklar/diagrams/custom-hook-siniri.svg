@@ -13,12 +13,12 @@
 
   <rect class="d-accent" x="300" y="75" width="160" height="120" rx="8"/>
   <text class="d-title" x="380" y="105" text-anchor="middle">Custom hook</text>
-  <text class="d-code" x="380" y="132" text-anchor="middle">useMovieSearch</text>
+  <text class="d-code" x="380" y="132" text-anchor="middle">useMovieDetails</text>
   <text class="d-muted" x="380" y="157" text-anchor="middle">state + effect</text>
 
   <rect class="d-violet" x="525" y="95" width="160" height="80" rx="8"/>
   <text class="d-title" x="605" y="125" text-anchor="middle">Dış sistem</text>
-  <text class="d-muted" x="605" y="150" text-anchor="middle">timer, storage, ağ</text>
+  <text class="d-muted" x="605" y="150" text-anchor="middle">film API'si</text>
 
   <line class="d-line" x1="235" y1="135" x2="296" y2="135" marker-end="url(#hook-ok)"/>
   <line class="d-line" x1="460" y1="135" x2="521" y2="135" marker-end="url(#hook-ok)"/>

@@ -4,23 +4,25 @@ export default defineQuestion({
   title: '201 sonrası liste',
   difficulty: 'kolay',
   concepts: ['query.invalidation', 'query.keys'],
-  question: 'POST 201 döndü, Puanladıklarım listesi yine boş. Neden?',
+  question:
+    "POST başarılı oldu. Açık `Puanladıklarım` ekranı `useQuery({ queryKey: ['ratings', sessionId], ... })` kullanıyor ve eski listeyi gösteriyor. Hangi kod, bu oturumun listesini başarıdan sonra sunucudan yeniden aldırır?",
   options: [
     {
-      text: 'Mutation query cache’ini hangi key’in etkilendiğini bilmeden güncellemez.',
+      text: "`onSuccess: () => client.invalidateQueries({ queryKey: ['ratings', sessionId] })`",
       correct: true,
-      explanation: 'POST başarısı, liste key’ini otomatik değiştirmez.',
-    },
-    {
-      text: '`staleTime` 0 ise POST listeyi otomatik doldurur.',
       explanation:
-        'Stale olmak yazma cevabını listeye dönüştürmez; etkin query yeniden okunmalıdır.',
+        'Başarı callback’i yalnız aynı session ile başlayan rating sorgularını stale yapar.',
     },
     {
-      text: 'React her render’da cache’i sunucuyla birleştirir.',
-      explanation: 'Render cache içeriğini okur; sunucudan kendiliğinden yeni veri üretmez.',
+      text: "`onSuccess: () => client.setQueryData(['ratings', sessionId], [])`",
+      explanation:
+        'Bu işlem listeyi yeniden okumaz; cache’i boş bir diziyle değiştirip kayıtları kaybettirir.',
+    },
+    {
+      text: "`onSuccess: () => client.invalidateQueries({ queryKey: ['ratings'] })`",
+      explanation: 'Bu daha geniş key başka oturumların rating listelerini de stale yapar.',
     },
   ],
   explanation:
-    'İlgili listeyi invalidation ile yenile veya kesin yeni veriyi setQueryData ile yaz.',
+    'Mutation etkilediği query’yi kendiliğinden bulmaz; ilgili key’i açıkça invalidate et.',
 })

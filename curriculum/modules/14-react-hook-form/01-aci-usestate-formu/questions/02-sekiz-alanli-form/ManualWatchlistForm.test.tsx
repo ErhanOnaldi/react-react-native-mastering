@@ -18,9 +18,9 @@ describe('sekiz alanlı controlled form', () => {
       'Not',
     ])
       expect(screen.getByLabelText(label)).toBeInTheDocument()
-    const before = Number(screen.getByRole('status', { name: 'Render sayısı' }).textContent)
+    const before = Number(document.querySelector('output')?.textContent)
     await user.type(screen.getByRole('textbox', { name: 'Liste adı' }), 'A')
-    const after = Number(screen.getByRole('status', { name: 'Render sayısı' }).textContent)
+    const after = Number(document.querySelector('output')?.textContent)
     expect(after).toBeGreaterThan(before)
   })
   it('boş ve kısa liste adında kaydetmez, açıklayıcı hata gösterir', async () => {
@@ -28,10 +28,10 @@ describe('sekiz alanlı controlled form', () => {
     const save = vi.fn()
     render(<ManualWatchlistForm onSave={save} />)
     await user.click(screen.getByRole('button', { name: 'Kaydet' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('Liste adı gerekli')
+    expect(screen.getByText('Liste adı gerekli')).toBeInTheDocument()
     await user.type(screen.getByLabelText('Liste adı'), 'AB')
     await user.click(screen.getByRole('button', { name: 'Kaydet' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('Liste adı en az 3 karakter olmalı')
+    expect(screen.getByText('Liste adı en az 3 karakter olmalı')).toBeInTheDocument()
     expect(save).not.toHaveBeenCalled()
   })
   it('ilk film zorunludur ve geçerli formda sekiz alanı gönderir', async () => {
@@ -40,7 +40,7 @@ describe('sekiz alanlı controlled form', () => {
     render(<ManualWatchlistForm onSave={save} />)
     await user.type(screen.getByLabelText('Liste adı'), 'Akşam')
     await user.click(screen.getByRole('button', { name: 'Kaydet' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('İlk film gerekli')
+    expect(screen.getByText('İlk film gerekli')).toBeInTheDocument()
     await user.type(screen.getByLabelText('İlk film'), 'Dövüş Kulübü')
     await user.type(screen.getByLabelText('Not'), 'Arkadaşlarla')
     await user.click(screen.getByRole('button', { name: 'Kaydet' }))

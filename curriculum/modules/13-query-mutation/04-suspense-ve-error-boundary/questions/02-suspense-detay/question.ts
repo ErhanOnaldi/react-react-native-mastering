@@ -1,14 +1,14 @@
 import { defineQuestion } from '@rm/content/define'
 export default defineQuestion({
   type: 'code',
-  title: 'Detayı Suspense ile oku',
+  title: 'Detayın bekleme ve hata sınırlarını kur',
   difficulty: 'orta',
   concepts: ['query.suspense', 'react.suspense', 'react.error-boundary'],
   files: ['MovieDetail.tsx'],
   hints: [
-    'Bekleme ve hata UI’ının bileşenin içinde mi, yoksa onu saran ağaçta mı olması gerektiğini düşün.',
-    '`useSuspenseQuery` başarıda tanımlı `data` verir; query key kaydın id’sini içermeli.',
-    '`queryKey: ["movie", id]`, `queryFn: () => load(id)` ve `<h1>{data.title}</h1>` kullan.',
-    'Bileşende `isPending` dalı ekleme; dışarıdaki sınırlar fallback ve hatayı yönetir.',
+    'İçerik hazır değilken hangi sarmalayıcının beklediğini, hata olunca hangisinin yakaladığını düşün.',
+    'İçerik bileşeninde `useSuspenseQuery`; dışında `<Suspense>` ve hata sınırı kullan.',
+    '`queryKey: ["movie", id]`, `queryFn: () => load(id)`; bekleme metni `Film yükleniyor…` olsun.',
+    'Hata sınırı `getDerivedStateFromError` ile hata durumunu işaretleyip `role="alert"` göstermeli.',
   ],
 })

@@ -1,10 +1,11 @@
-Sayfa numarası 1–500 aralığında bir tam sayı olmalıdır. Geçerli değeri koru; aralık dışı veya tam sayı olmayan değeri açıkça reddet.
+TMDB sayfa numarası 1–500 aralığında bir tam sayı olmalı. `requirePage` geçerli değeri aynen döndürür, geçersiz değerde açık bir `RangeError` üretir. Bu davranışın sınırlarını test et.
 
 ## Gereksinimler
 
-- 1 ve 500 geçerlidir ve aynı sayı olarak döner.
-- 0, negatif, ondalık ve 500’den büyük değerler RangeError üretir.
-- Hata mesajı tam olarak: Sayfa 1 ile 500 arasında olmalı
+- 1 ve 500 aynı sayı olarak dönmeli.
+- 0, negatif, ondalık ve 500’den büyük değerler reddedilmeli.
+- Hata türü `RangeError`, mesajı `Sayfa 1 ile 500 arasında olmalı` olmalı.
+- Testler geçerli sınırları ve geçersiz değerleri ayrı davranış adlarıyla göstermeli.
 
 ## Örnek
 
@@ -17,5 +18,6 @@ Sayfa numarası 1–500 aralığında bir tam sayı olmalıdır. Geçerli değer
 
 ## Sözleşme
 
-- Düzenlenecek dosya: requirePage.ts
-- Export: requirePage(page: number): number
+- Yazılacak dosya: `requirePage.test.ts`
+- Test edilecek modül: `@impl/requirePage`
+- Export: `requirePage(page: number): number`

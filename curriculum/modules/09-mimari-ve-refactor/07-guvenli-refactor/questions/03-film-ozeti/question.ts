@@ -8,13 +8,14 @@ export default defineQuestion({
   files: ['describeMovie.ts', 'formatMovieYear.ts'],
   hints: [
     'Hangi gözlenen değerlerin refactor öncesiyle aynı kalması gerekiyor?',
-    'Saf tarih biçimleyici çıkarmak için yeni dosya ve export sözleşmesini kullan.',
-    'Yıl hesabını bir kez üret; etiket seçimiyle ortak çıktı cümlesini ayır.',
-    'Boş tarihi de taşı; yalnız normal tarihle aynı davranışı varsayma.',
+    'Yeni tarih fonksiyonunun hem dolu hem boş girdide eski çıktıyı üretmesi gerekiyor.',
+    'Taşıdığı kuralı `formatMovieYear` içinde uygula; `describeMovie` bu dışa aktarılan fonksiyonu kullansın.',
+    'Etiketleri tek tabloda seçip, ortak cümleyi tür dallarından sonra bir kez kur.',
   ],
   rubric: [
-    'Yıl hesaplaması bir yerde yapılır; üç dala kopyalanmaz.',
-    'Etiket seçimi açık ve tüm Kind seçeneklerini kapsar.',
+    '`formatMovieYear` dolu ve boş tarih için doğru çıktıyı üretir.',
+    '`describeMovie` yıl üretmek için `formatMovieYear` fonksiyonunu çağırır.',
+    'Etiket seçimi üç Kind seçeneğini kapsar ve ortak çıktı biçimi tekrarlanmaz.',
     'Davranış, boş tarih dahil, refactor öncesiyle aynıdır.',
   ],
 })

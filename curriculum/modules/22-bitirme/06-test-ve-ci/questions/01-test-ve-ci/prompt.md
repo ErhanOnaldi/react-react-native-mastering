@@ -10,7 +10,7 @@ Projenin test altyapısını ve sürekli entegrasyon hattını şu standartlara 
 2. **Birim ve Entegrasyon Test Paketi:**
    - En az **4 ayrı test dosyasında toplam 12 test** bulunmalıdır.
    - En az bir test DOM olmadan saf mantığı (örneğin Zod şema doğrulaması veya yerel depolama ayrıştırması) sınamalıdır.
-   - En az üç test `screen` rol/metin sorgularıyla kullanıcıya görünen çıktıları doğrulamalıdır.
+   - En az üç ayrı test dosyasında `screen` rol/metin sorgularıyla kullanıcıya görünen çıktılar doğrulanmalıdır.
    - En az bir test kullanıcı etkileşimini (`user-event`), en az bir test ise `server.use` ile sunucu hata yolunu (500 veya 404) denemelidir.
    - Tüm test adları Türkçe ve gözlenebilir bir kullanıcı gereksinimini anlatan cümle olmalıdır.
 3. **Uçtan Uca (E2E) Testler:**

@@ -13,14 +13,16 @@ export default defineQuestion({
       explanation: 'Daha sade API küçük yüzeylerde yararlı olabilir.',
     },
     {
-      text: 'TMDB için otomatik TanStack Query invalidation sağlamak.',
+      text: 'Uygulama büyüyünce Redux DevTools ve middleware kurallarını otomatik eklemek.',
       correct: false,
-      explanation: 'Zustand sunucu cache invalidation aracı değildir.',
+      explanation:
+        'Zustand küçük bir store sunar; Redux Toolkit’in middleware ve DevTools kurulumunu otomatik devralmaz.',
     },
     {
-      text: 'Redux reducer testlerini imkânsız kılmak.',
+      text: 'Birçok feature için ortak reducer/action düzenini zorunlu hale getirmek.',
       correct: false,
-      explanation: 'Araç seçimi diğer kütüphanenin test kabiliyetini yok etmez.',
+      explanation:
+        'Bu RTK’nin ekip kuralları açısından avantajı olabilir, Zustand’ın küçük uygulamadaki sade başlangıç avantajı değil.',
     },
   ],
 })

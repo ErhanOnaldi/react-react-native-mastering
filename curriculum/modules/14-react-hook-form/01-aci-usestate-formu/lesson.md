@@ -1,129 +1,148 @@
 ---
 title: "Controlled form her tuşta ne yapar?"
-minutes: 14
+minutes: 13
 kind: concept
 ---
 
 # Controlled form her tuşta ne yapar?
 
-:::pain[Liste ekranındaki sayaç]
-Sinema'da sekiz alanlı liste formunda ada tek harf yazınca render sayacı artıyor. Kaydet'e basınca form çalışıyor; ama her alan için ayrı state, change handler ve submit nesnesi taşıyorsun. Yeni bir input eklemek üç ayrı yere dokunmayı gerektiriyor.
-:::
+React'te state kullandığın bir input'ta `value` değerini state'ten verir, `onChange` ile kullanıcının yeni yazısını state'e aktarırsın. Bu tür input'a **controlled input** denir: ekranda görünen değerin kaynağı React state'idir. Önce tek alanla bu bağı kuralım.
 
-## Bir tuşun React içindeki yolu
+## Bir alanın değerini React'e bağla
 
-Controlled input'ta React state alanın değerinin kaynağıdır. `value` ekrana yazılacak değeri, `onChange` ise yeni değeri React'e geri taşır. Bu bağ açıkça kuruludur; maliyeti de açıktır: her değer değişimi state güncellemesi, dolayısıyla ilgili bileşen ağacı için yeni bir render isteğidir.
-
-![Tetikleme, render, commit ve effect sırasını gösteren diyagram](diagram:render-commit)
-
-Kesin model şöyle işler:
-
-1. Tarayıcı input'a karakter ekler ve `onChange` olayını çağırır.
-2. Handler, o render'ın state fotoğrafını okuyup `setState` ile güncelleme kuyruğa koyar.
-3. React bileşeni yeni state ile yeniden çalıştırır. Bu aşama UI ağacını hesaplar; DOM'u henüz değiştirmez.
-4. React hesaplanan farkı DOM'a uygular (commit). Input'un `value` prop'u yeni karakteri içerir.
-5. Bu işlem için effect yazdıysan commit'ten sonra çalışır. Form değerini state'ten türetmek için effect gerekmez.
-
-![Her render'ın kendi state fotoğrafını gösteren diyagram](diagram:state-snapshot)
-
-Her render kendi değişken değerlerini görür. `setName(name + '!')` çağrısı o anda ekrandaki `name` değişkenini değiştirmez; yeni render için güncelleme kuyruğa ekler. React bazı olaylardaki birden çok güncellemeyi gruplayabilir. Bu yüzden “sekiz state var, sekiz render olur” sonucu çıkmaz; bir tuşta tek handler çalışır, React render'ı uygun zamanda planlar.
-
-## Sekiz alanın bakım maliyeti
-
-Aşağıdaki küçük gezi planı formu farklı alanlara sahip; ama her controlled metin alanında aynı döngüyü görebilirsin:
-
-```tsx
-import { useState } from 'react'
-
-type TripDraft = { city: string; nights: string }
-
-export function TripForm({ onSave }: { onSave: (draft: TripDraft) => void }) {
-  const [city, setCity] = useState('')
-  const [nights, setNights] = useState('')
-
-  return (
-    <form onSubmit={(event) => {
-      event.preventDefault()
-      onSave({ city, nights })
-    }}>
-      <label htmlFor="trip-city">Şehir</label>
-      <input id="trip-city" value={city} onChange={(event) => setCity(event.target.value)} />
-      <label htmlFor="trip-nights">Gece</label>
-      <input id="trip-nights" value={nights} onChange={(event) => setNights(event.target.value)} />
-      <button type="submit">Planla</button>
-    </form>
-  )
-}
-```
-
-Bu örnek iki alanlıdır; değerlerin nasıl akıp geri döndüğünü saklamaz. Sekiz alanlı formda aynı bağlantıyı sekiz kez kurarsın. Form bileşeninde başlık, yardım metni ve tüm alanlar varsa bu bileşen her tuşta tekrar çalışır. React DOM'da yalnızca gereken input değerini güncelleyebilir; render hesabı yine yapılmıştır.
-
-Bir render sayacı bunu görünür kılar ama performans ölçüm aracı değildir. Geliştirme StrictMode'u render çağrılarını fazladan gösterebilir; üretim ve geliştirme sayıları birebir karşılaştırılmaz. Doğru soru sayaç kaç yazdı değil, yazma olayının hangi bileşenleri yeniden çalıştırdığı ve bunun gerçek kullanıcı gecikmesi yaratıp yaratmadığıdır.
-
-## Sayı ve metin alanlarının farkı
-
-`input type="number"` bile `event.target.value` üzerinden metin verir. Kullanıcı alanı boş bırakabilir, ara bir değer yazabilir veya tarayıcıya göre geçersiz bir metin oluşturabilir. Bu yüzden sayı olarak kullanacağın bir alanı form state'inde string tutup submit sırasında dönüştürmek çoğu zaman daha güvenlidir. Sayı dönüşümünde boş metni ayrıca ele al; `Number('')` sıfırdır ve bu sonuç çoğu formda istenmez.
-
-Checkbox için `checked` boolean değerdir; metin input'undaki `value` ile aynı alanı kullanmazsın. Select de çoğunlukla string değer üretir. Alan başına tipleri doğru seçmek, submit nesnesindeki veriyi öngörülebilir kılar.
-
-## Önce kırık örnek, sonra düzeltme
-
-Controlled input'ta `value` verip değişim handler'ı eklememek alanı yazılamaz yapar. React her render'da eski değeri geri koyar:
-
-```tsx
-function FrozenCity() {
-  return <input aria-label="Şehir" value="İzmir" />
-}
-```
-
-Bu örnek bilerek kırık; konsolda controlled input için uyarı da görürsün. Kullanıcıya yazma izni vereceksen değişen değeri state'e geri bağla:
+Sinema'daki bir gösterim için kısa bir başlık yazdığını düşün. Bu ilk örnekte sadece metin alanı ve state var:
 
 ```tsx check
 import { useState } from 'react'
 
-export function EditableCity() {
-  const [city, setCity] = useState('İzmir')
-  return <input aria-label="Şehir" value={city} onChange={(event) => setCity(event.target.value)} />
+export function ScreeningTitle() {
+  const [title, setTitle] = useState('')
+  return <input aria-label="Gösterim başlığı" value={title} onChange={(event) => setTitle(event.target.value)} />
 }
 ```
 
-İkinci parça tek başına derlenir. `onChange` olayı input değerini alır; setter yeni render ister; yeni `value` ekrana yazılır. Bu çevrimin her tuşta tekrarlanması kontrollü yaklaşımın davranışıdır, bug değildir.
+Input'a `A` yazınca `onChange` yeni metni `setTitle`'a verir. State değiştiği için React bileşeni yeniden çalıştırır; buna **render** denir. Yeni render `value="A"` üretir ve input'ta yazdığın harf kalır. `value` ve `onChange` birlikte bu döngüyü kurar.
 
-## Sık karşılaşılan sapmalar
+![Her render'ın kendi state fotoğrafını gösteren diyagram](diagram:state-snapshot)
 
-:::mistake[Input her tuşta eski harfe dönüyor]
-**Belirti:** Yazdığın harf görünür görünmez kayboluyor. → **Neden:** `value` sabit veya state'e bağlı, ama `onChange` yok ya da yanlış alanı güncelliyor. → **Düzeltme:** Her controlled alanda `value` ile aynı alanı güncelleyen handler kur.
-:::
+`value` tek başına yeterli değildir. Değer sabit kalırsa kullanıcı yazarken React aynı eski değeri tekrar verir. Şimdi aynı formun başlığına bir not alanı ekleyelim:
 
-:::mistake[Render sayısı sekiz kat arttı sanılıyor]
-**Belirti:** Sekiz state olduğu için her tuşta sekiz ayrı render bekleniyor. → **Neden:** State değişkeni sayısı render sayısını belirlemez; güncelleme ve React'in batching kararı belirler. → **Düzeltme:** Tek etkileşim öncesi/sonrası sayacı karşılaştır; sonucu StrictMode ve bileşen sınırlarıyla birlikte yorumla.
-:::
+```tsx
+const [title, setTitle] = useState('')
+const [note, setNote] = useState('')
 
-:::mistake[Kaydet'te eski değer gidiyor]
-**Belirti:** Son yazılan karakter submit verisinde yok. → **Neden:** Olay içinde eski render'dan gelen bir değer başka bir state güncellemesiyle birleştirilmiş olabilir. → **Düzeltme:** Alanların güncel state'ini submit anında oku; çoklu güncellemelerde önceki state'e dayalıysa updater biçimini kullan.
-:::
+return (
+  <>
+    <input aria-label="Gösterim başlığı" value={title} onChange={(event) => setTitle(event.target.value)} />
+    <textarea aria-label="Gösterim notu" value={note} onChange={(event) => setNote(event.target.value)} />
+  </>
+)
+```
 
-:::sector
-Ekipler form performansını “state kullanıyor” diye değil, gerçek etkileşim ve Profiler kaydıyla değerlendirir. Küçük formda controlled yaklaşım basit ve yerindedir. Alan sayısı, doğrulama ve hata durumları arttığında tekrarlanan bağlama kodu ayrı bir form aracını değerlendirmek için somut gerekçe verir.
-:::
+Başlığa yazınca yalnız `title` değişir; `note` state'i kendi değerini korur. İki alan aynı bileşende olduğu için bileşen yeniden çalışır, ama bu diğer alanın silindiği anlamına gelmez. State değişkenlerinin sayısı da render sayısını çarpmaz: bu olayda bir setter çağrısı yaptın.
 
-## Render maliyetini nasıl yorumlamalı?
+Render, bileşenin arayüzü yeniden hesaplamasıdır; tarayıcıdaki bütün input'ların silinip yeniden yaratılması değildir. React mevcut arayüzle yeni sonucu karşılaştırır ve gerekli DOM değişikliğini uygular. Bu yüzden aynı formdaki not alanı değerini korurken başlık alanı yeni metni gösterebilir.
 
-Bir render, React bileşen fonksiyonunun tekrar çalışmasıdır; commit ise React'in DOM'a gerekli değişikliği uygulamasıdır. Her render'da tarayıcı tüm sayfayı yeniden boyamaz. Yine de büyük bir form bileşeninde pahalı hesaplama, çok sayıda alt bileşen veya binlerce seçeneği yeniden üretmek varsa yazma başına render hissedilebilir gecikmeye dönüşebilir. Render sayacı bu zincirin yalnız ilk bölümünü gösterir; kullanıcı deneyimini Profiler ve gerçek cihaz ölçümüyle değerlendir.
+![Tetikleme, render, commit ve effect sırasını gösteren diyagram](diagram:render-commit)
 
-State'i dar bir alan bileşenine taşımak bazı küçük formlarda hesaplamayı azaltabilir. Fakat alan değerleri ortak bir submit nesnesinde toplanacak, alanlar birbirini doğrulayacak ve reset edilecekse state'i parçalara ayırmak veri akışını da karmaşıklaştırabilir. Her render'ı kusur saymak yerine bileşen sınırı ve veri sahibi üzerinden karar ver. RHF'nin kaydedilmiş input yaklaşımı, özellikle çok sayıda alanda ortak toplama/doğrulama ihtiyacını azaltır; küçük arama kutusuna sırf render oluyor diye form kütüphanesi eklemen gerekmez.
+Effect adımı bu modülde değil, sonraki Hook derslerinde ele alınır.
 
-Bu ayrım `useEffect` ihtiyacını da netleştirir. Input state'inden başka bir değeri hesaplamak için effect eklemek render → commit → effect → state update biçiminde fazladan tur yaratabilir. Örneğin karakter sayısı `text.length` ile doğrudan hesaplanabilir. Effect dış sistemle eşleşmek içindir; input değişikliğini tekrar state'e kopyalayan mekanizma değildir.
+## Submit'te alanları bir araya getir
 
-Controlled yaklaşımın bir başka yararı, React'in her anda hangi değeri göstereceğini bilmesidir. Anlık biçimlendirme, koşullu alan veya yazı yazarken filtreleme gerektiğinde bu kontrol işe yarar. Maliyet, state'in formun ihtiyaç duyduğu her davranış için ayrıca düzenlenmesidir. Bir araç seçerken kontrolün getirdiği faydayı tekrar eden kod ve render sınırıyla birlikte tart.
-Render'ı çocuklara bölmek de maliyeti sihirli biçimde yok etmez. Üst form state'i değişince üst bileşen tekrar çalışır; normal koşulda çocuk bileşen fonksiyonları da parent render zincirinin parçasıdır. `memo` gibi sınırlar ancak props değişmiyorsa bazı çocukların işini atlayabilir ve gereksiz memo kullanımı bakım maliyetini artırır. Formu parçalamadan önce Profiler'da gerçekten pahalı olan kısmı belirle.
+İki alanlı formda submit callback'i, o render'daki güncel state değerlerini tek nesnede alabilir. Form gönderiminde tarayıcının sayfayı yenilemesini `preventDefault()` ile durduruyoruz:
 
-Bu nedenle “RHF daha hızlıdır” gibi mutlak bir cümle kurmak doğru olmaz. Daha az kontrollü state güncellemesi çoğu büyük formda gereksiz render işini azaltabilir; ama bütün form state'ini `watch` ile üst seviyede okuyup her harfte tüm ekranı güncellersen bu avantajı kendin geri alırsın. Abonelikleri kullanan bileşenin yakınında tutmak önemlidir.
+```tsx
+type ScreeningDraft = { title: string; note: string }
 
-## Hatırla ve kendini yokla
+function ScreeningForm({ onSave }: { onSave: (draft: ScreeningDraft) => void }) {
+  const [title, setTitle] = useState('')
+  const [note, setNote] = useState('')
 
-- Controlled input'ta React state değerin kaynağıdır; `onChange` yeni değeri state'e döndürür.
-- Her tuşta state güncellemesi render planlar, fakat DOM'da yalnız gereken fark commit edilebilir.
-- Render sayısı, state adediyle çarpılmaz; sayı alanları da çoğunlukla metin olarak başlar.
+  return <form onSubmit={(event) => {
+    event.preventDefault()
+    onSave({ title, note })
+  }}>
+    <input aria-label="Gösterim başlığı" value={title} onChange={(event) => setTitle(event.target.value)} />
+    <textarea aria-label="Gösterim notu" value={note} onChange={(event) => setNote(event.target.value)} />
+    <button type="submit">Kaydet</button>
+  </form>
+}
+```
 
-**Kendini yokla:** `value` verilip `onChange` eklenmeyen input neden yazılamaz? Çünkü her render eski değeri tekrar verir. `type="number"` alanında neden boş metni `Number`'a çevirmeden kontrol edersin? Çünkü boş metin sıfıra dönüşür.
+Örneğin başlığa `Gece gösterimi`, nota `Yönetmen söyleşisi` yazıp kaydedersen callback bu iki güncel değeri birlikte alır. Her alan için state, `value`, `onChange` ve submit nesnesinde bir karşılık kurduk. İki alanda bu tekrar kolay izleniyor; sekiz alanda aynı dört bağlantıyı ayrı ayrı tutmak ve yeni alan eklerken hepsini eşlemek daha çok el işi demek.
+
+Submit'in ne zaman hangi değeri gördüğünü küçük bir iz tablosunda takip edelim:
+
+| Sıra | Olay | `title` state'i | Callback |
+|---|---|---|---|
+| 1 | Form ilk açılır | `''` | Henüz çağrılmaz |
+| 2 | Kullanıcı `Gece` yazar | `'Gece'` | Henüz çağrılmaz |
+| 3 | Kullanıcı `Kaydet`'e basar | `'Gece'` | `{ title: 'Gece', note: ... }` alır |
+
+Submit handler, `title` değişkenini son render'dan okur. Bir karakteri doğrudan callback'e göndermiyoruz; önce state'i güncelliyoruz, sonra form gönderilince alanları topluyoruz.
+
+Kaydetmeden önce basit kuralları kendin de kontrol edebilirsin. Örneğin gösterim başlığı boş kalmamalı ve en az üç karakter olmalıysa submit handler'da kontrol edip sorun varsa callback'ten önce çık:
+
+```tsx
+function save(event: React.FormEvent<HTMLFormElement>) {
+  event.preventDefault()
+  const cleanTitle = title.trim()
+  if (!cleanTitle) {
+    setMessage('Gösterim başlığı gerekli')
+    return
+  }
+  if (cleanTitle.length < 3) {
+    setMessage('Başlık en az 3 karakter olmalı')
+    return
+  }
+  setMessage('')
+  onSave({ title: cleanTitle, note })
+}
+```
+
+İlk başarısız koşulda `return` çalıştığı için `onSave` çağrılmaz; iki koşul da geçince değerler gönderilir. `trim()` başındaki ve sonundaki boşlukları yok sayar. Bu elle yazılmış yaklaşım küçük formlarda anlaşılırdır; birden çok alanda aynı kontrolleri sürdürmek zorlaşınca sonraki derslerde form kütüphanesi bu işi üstlenir.
+
+## Metin, sayı ve checkbox aynı türde değil
+
+Bir etkinliğin yaş sınırı `input type="number"` ile yazdırılsa da tarayıcıdaki `event.target.value` metindir. Kullanıcı alanı boş bırakabileceğinden veya yazarken geçici bir metin girebileceğinden, controlled formda değeri önce string tutup kaydetme anında dönüştürmek genellikle daha kolaydır. `Number('')` sonucu `0` olduğu için boşluğu dönüştürmeden önce ayrıca ele al.
+
+Checkbox farklıdır: `value` yerine `checked` boolean değerini state'e bağlarsın. Kullanıcı kutuyu işaretleyince `event.target.checked` sana `true` ya da `false` verir. Metin input'undaki `event.target.value` ile checkbox'ın `checked` değerini karıştırma; biri metin, diğeri açık/kapalı bilgisidir.
+
+## Yazı input'ta kaybolursa
+
+Gerçek bir başlangıç hatası, `value` verip değişim handler'ını unutmak:
+
+```tsx
+function FrozenTitle() {
+  return <input aria-label="Gösterim başlığı" value="Gece gösterimi" />
+}
+```
+
+Bu input yazılamaz; her render'da aynı başlık geri verilir. Kullanıcı yazabilsin istiyorsan değerin değişmesine izin ver:
+
+```tsx check
+import { useState } from 'react'
+
+export function EditableTitle() {
+  const [title, setTitle] = useState('Gece gösterimi')
+  return <input aria-label="Gösterim başlığı" value={title} onChange={(event) => setTitle(event.target.value)} />
+}
+```
+
+Şimdi yazdığın harf state'e gider ve bir sonraki render'ın `value` değeri olur. Belirti “harf yazıyorum ama input eski metne dönüyor” ise önce `onChange`'in doğru state'i güncelleyip güncellemediğine bak.
+
+Controlled yaklaşımın güçlü yanı, input'un anlık değerini React kodunda kullanabilmendir; örneğin yazarken başlık önizlemesi gösterebilirsin. Bedeli ise her alanın state bağlantısını ve submit'teki eşleşmesini kendin sürdürmendir. Alan sayısı ve ortak davranışlar arttığında bir form kütüphanesi bu tekrarı azaltabilir; küçük tek alanlı aramada `useState` gayet yeterlidir.
+
+## Özet
+
+- Controlled input'un görünen değerini React state'i belirler; `onChange` yeni değeri state'e taşır.
+- State değişince bileşen yeniden çalışır (**render**); diğer state alanları korunur.
+- Submit'te güncel state değerlerini bir nesnede birleştirebilirsin.
+- Metin alanı string, checkbox ise `checked` üzerinden boolean verir.
+
+**Yeni terimler:**
+
+- **Controlled input:** Değeri React state'inden gelen ve değişimi handler ile state'e yazılan input.
+- **Render:** State değişikliğinden sonra React bileşen fonksiyonunun yeniden çalışması.
+
+**Kendini yokla:** `value` var ama `onChange` yoksa neden yazamazsın? React her render'da aynı değeri input'a verir. İki state alanın varsa birinin değişmesi diğerini siler mi? Hayır; değişmeyen state korunur.

@@ -1,43 +1,77 @@
 ---
-title: "Kopyalanan davranışı hook’a taşı"
-minutes: 14
+title: "Tekrar kullanılabilir davranış: custom hook"
+minutes: 17
 kind: concept
 ---
 
-# Kopyalanan davranışı hook’a taşı
+# Tekrar kullanılabilir davranış: custom hook
 
-:::pain[Problem]
-Sinema uygulamasının üç farklı sayfasında aynı tarayıcı mantığı kopyalanmış: bağlantı koptuğunda uyarı vermek için `online`/`offline` olaylarını dinlemek, sayfa başlığını değiştirmek ve bileşen kapandığında eski başlığı geri yüklemek. Bir sayfada temizlik (cleanup) fonksiyonu unutulduğunda bellek sızıntısı oluyor ve aynı hatayı düzeltmek için üç farklı dosyada arama yapmak gerekiyor.
-:::
+Bir film kartı bileşeni `useState` ile küçük bir açık/kapalı tercihi tutabilir. Başka bir bileşen de kendi `useState` çağrısıyla benzer bir tercih tutabilir. Bu kodu tekrar kullanmak için yalnızca görünümü değil, state ve Effect gibi React davranışlarını da bir fonksiyonda toplayabilirsin: bu fonksiyona **custom hook** denir.
 
-## Custom hook sınırları ve zihinsel model
+Custom hook JSX üretmez; onu çağıran bileşene değer, fonksiyon ya da dış sistemle kurulan bir ilişki verir. Bileşen görünümü çizer, hook tekrar kullanılacak davranışı yürütür.
 
-Custom hook, React'in yerleşik hook'larını (`useState`, `useEffect`, `useRef`, `useReducer`) kullanarak yeniden kullanılabilir bir **durum ve davranış mantığı** paketleyen fonksiyondur.
+## Bir state davranışını isimlendirelim
 
-Bileşenlerden (components) en temel farkı şudur: **Custom hook JSX döndürmek zorunda değildir.** Çağıran bileşene bir veri, bir durum (state), bir eylem fonksiyonu veya sadece bir senkronizasyon davranışı sunar.
-
-![Component, custom hook ve dış sistem arasındaki sınır](diagrams/custom-hook-siniri.svg "Custom hook davranışı toplar; her çağrı kendi state'ine sahiptir.")
-
-Kesin kurallar:
-
-1. **İsim `use` ile başlamalıdır:** `useOnlineStatus`, `useDocumentTitle` gibi. Bu isim React derleyicisine ve linter'a "bu fonksiyon içinde hook çağrısı yapabilir" sinyali verir.
-2. **Yalnızca üst seviyede çağrılır:** Hook'lar döngülerin (`for`), koşulların (`if`) veya iç içe fonksiyonların içinde çağrılamaz. React, hook'ların çağrılma sırasına dayanır.
-3. **Her çağrı bağımsız state alır:** Bir custom hook iki ayrı bileşende çağrıldığında, o iki bileşen aynı state'i paylaşmaz. Custom hook küresel bir depo (global store) değildir; mantığın kopyalanmasını sağlayan bir şablondur.
-4. **Temizlik sorumluluğunu gizler:** Dış sisteme abone olma ve abonelikten çıkma mantığı hook'un içinde paketlenir; çağıran bileşenin bu karmaşıklığı bilmesi gerekmez.
-5. **Arayüzden bağımsız sözleşme:** Hook arayüzün nasıl görüneceğini bilmez; yalnızca saf veri ve eylem üretir.
-
-:::model[Effect yaşam döngüsü]
-Custom hook içindeki bir `useEffect` de aynı kurulum ve temizlik (cleanup) kurallarına tabidir. Mantığı bir hook dosyasına taşımak yaşam döngüsünü değiştirmez; yalnızca o döngünün sorumluluğunu bileşenin omuzlarından alıp tek bir test edilebilir birime devreder.
-:::
-
-## Kırık yaklaşım: Mantığın bileşenlere kopyalanması
-
-Diyelim ki kullanıcının internet bağlantısının kopup kopmadığını takip etmek istiyoruz. Bunu her bileşende elle yaparsak:
+Önce basit bir state hook'u düşün. `useState`'i biliyorsun; aşağıdaki fonksiyon onu tek bir amaca bağlayıp çağıran yere geri veriyor:
 
 ```tsx
-// Üç farklı bileşende aynı kod kopyalanıyor:
-function MovieList() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
+import { useState } from 'react'
+
+function usePreviewOpen() {
+  return useState(false)
+}
+```
+
+`usePreviewOpen` özel bir React API'si değil; bizim yazdığımız sıradan bir JavaScript fonksiyonu. İçinde `useState` çağrıldığı için adına `use` ile başlıyoruz. Bileşen bunu çağırınca React o bileşen için bir açık/kapalı state'i tutuyor.
+
+Bir sonraki adımda bu tuple'ı kullanıp film önizlemesinin görünümünü bileşende bırakıyoruz:
+
+```tsx
+function PreviewButton() {
+  const [isOpen, setIsOpen] = usePreviewOpen()
+
+  return (
+    <button type="button" onClick={() => setIsOpen(!isOpen)}>
+      {isOpen ? 'Önizlemeyi kapat' : 'Önizlemeyi aç'}
+    </button>
+  )
+}
+```
+
+Tıklama state'i değiştirir; React bileşeni yeniden çalıştırır ve yeni metin görünür. Bu örnek henüz büyük bir soyutlama kazandırmıyor; önemli olan, custom hook'un bileşen içindeki state gibi React'in render akışına katılmasıdır.
+
+## Aynı davranış, ayrı state
+
+Şimdi Sinema sayfasında iki ayrı film kartının önizleme düğmesi olduğunu düşün. Her kart `usePreviewOpen()` çağırabilir:
+
+```tsx
+function MovieCard({ title }: { title: string }) {
+  const [isOpen, setIsOpen] = usePreviewOpen()
+
+  return (
+    <section>
+      <h2>{title}</h2>
+      <button type="button" onClick={() => setIsOpen(!isOpen)}>
+        {isOpen ? 'Önizlemeyi kapat' : 'Önizlemeyi aç'}
+      </button>
+    </section>
+  )
+}
+```
+
+İki `MovieCard` ekranda duruyorsa her birinin kendi `isOpen` değeri vardır. İlk kartı açmak ikinci kartı açmaz; hook'un kodu ortaktır, state'i ise hook'u çağıran bileşen örneğine aittir. İki bileşenin aynı state'i paylaşmasını istiyorsan state'i ortak bir üst bileşene taşıman ya da Context kullanman gerekir.
+
+## Dış sistem davranışını tek yere alalım
+
+Bir hook yalnızca state döndürmek zorunda değildir. Tarayıcı bağlantı durumunu izleme işi de Sinema'nın farklı sayfalarında kullanılabilir. `online` ve `offline`, tarayıcının ağ bağlantısı değiştiğinde gönderdiği olaylardır:
+
+```tsx
+import { useEffect, useState } from 'react'
+
+function useOnlineStatus(): boolean {
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
+  )
 
   useEffect(() => {
     function handleOnline() { setIsOnline(true) }
@@ -45,44 +79,6 @@ function MovieList() {
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
-
-    // BİR BİLEŞENDE BU CLEANUP'I UNUTURSAN BELLEK SIZINTISI OLUŞUR:
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
-
-  if (!isOnline) return <p>İnternet bağlantısı kesildi!</p>
-  return <div>Film Listesi</div>
-}
-```
-
-Bu mantık 5 sayfada tekrarlandığında kod tabanı `addEventListener` kalıntılarıyla dolar.
-
-## Doğru yaklaşım: Davranışı hook'a paketlemek
-
-Bu tüm tarayıcı abonelik mantığını bağımsız bir custom hook'a taşıyoruz:
-
-```ts check
-import { useEffect, useState } from 'react'
-
-export function useOnlineStatus(): boolean {
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator !== 'undefined' ? navigator.onLine : true,
-  )
-
-  useEffect(() => {
-    function handleOnline() {
-      setIsOnline(true)
-    }
-    function handleOffline() {
-      setIsOnline(false)
-    }
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
@@ -93,154 +89,125 @@ export function useOnlineStatus(): boolean {
 }
 ```
 
-Artık herhangi bir bileşende bu bilgiyi kullanmak tek bir temiz satıra dönüşür:
+Hook tarayıcı olaylarını dinler, bileşene yalnızca `boolean` verir. `MovieGrid` bu değere bakıp bağlantı uyarısı gösterir; uyarının metni ve görünümü bileşenin kararıdır. Böylece iki ayrı sayfa davranışı tekrar kullanabilir ama her biri kendi bağlantı state'ini tutar.
+
+Bu örnekte `useEffect` dış sistemle ilişkiyi kurup bileşen ayrılırken temizliyor. Custom hook'a taşımak bu zamanlamayı değiştirmez; yalnızca sorumluluğu tek yerde toplar. `addEventListener` ve `removeEventListener` aynı handler fonksiyonlarını kullanmalıdır; yoksa tarayıcı eklenen dinleyiciyi bulup kaldıramaz.
+
+React'in hazırladığı görünümü sayfaya uyguladığı adıma **commit** denir. Dinleyiciler ilk render sırasında değil, bu adımdan sonra eklenir:
+
+| Zaman | Ne olur? | Tarayıcıdaki dinleyiciler |
+|---|---|---|
+| İlk render | Başlangıç bağlantı değeri okunur, görünüm hazırlanır | Henüz eklenmedi |
+| İlk commit sonrası | Effect çalışıp iki olayı dinlemeye başlar | `online` ve `offline` birer kez |
+| Bağlantı kesilir | `handleOffline` `false` state'i ister | Aynı dinleyiciler durur |
+| Yeni render ve commit | Uyarı görünür | Dinleyiciler durur |
+| Bileşen kaldırılır | Cleanup iki dinleyiciyi kaldırır | Hiçbiri kalmaz |
+
+Tablo, dinleyicilerin commit sonrasında başladığını ve bileşen kaldırılınca temizlendiğini gösteriyor.
+
+## Parametre değişince Effect yenilenir
+
+Bir custom hook parametre de alabilir. Sekme başlığını film adına göre ayarlayan bu hook, `title` değiştiğinde tarayıcı başlığını günceller:
 
 ```tsx
-function MovieList() {
-  const isOnline = useOnlineStatus()
-  if (!isOnline) return <p>İnternet bağlantısı kesildi!</p>
-  return <div>Film Listesi</div>
-}
-```
-
-Bileşen `window.addEventListener`'dan, event adlarından ve cleanup fonksiyonundan tamamen habersizdir. Yalnızca ihtiyacı olan `boolean` değeri okur.
-
-## İkinci örnek: Sayfa başlığını senkronize eden hook (`useDocumentTitle`)
-
-Sadece state döndüren değil, yalnızca bir yan etkiyi yöneten custom hook'lar da yazılabilir. Örneğin film detayına girildiğinde tarayıcı sekmesinin başlığını değiştiren ve bileşen unmount olduğunda eski başlığı geri yükleyen bir hook tasarlayalım:
-
-```ts check
-import { useEffect } from 'react'
-
-export function useDocumentTitle(title: string) {
+function useMovieTitle(title: string) {
   useEffect(() => {
-    // 1. Mevcut başlığı sakla
-    const previousTitle = document.title
-
-    // 2. Yeni başlığı yaz
     document.title = `${title} | Sinema`
-
-    // 3. Unmount anında veya başlık değiştiğinde eski başlığı geri koy
-    return () => {
-      document.title = previousTitle
-    }
   }, [title])
 }
 ```
 
-Kullanımı son derece zariftir:
+Hook JSX döndürmez; bileşen yalnızca `useMovieTitle(movie.title)` çağrısını yapar. `title` değişince Effect yeniden çalışır çünkü bu değer Effect'in kullandığı bağımlılıklar arasındadır. Böylece hook güncel film adını kullanır.
+
+Zamanlayıcıda da aynı fikir geçerlidir. Bir **timer**, belirli bir süre sonra çalışan tarayıcı işidir. Sinema'da kapanış bildirimi gösterirken hook timer kurabilir; kullanıcı yeni bir bildirim açarsa önceki timer temizlenir ve yeni süre başlar. `setTimeout` gecikme bitince bir kez çalışan timer kurar; `clearTimeout` bekleyen işi iptal eder.
+
 ```tsx
-function MovieDetailsView({ movieTitle }: { movieTitle: string }) {
-  useDocumentTitle(movieTitle)
-  return <h1>{movieTitle}</h1>
+function useHideNoticeAfter(open: boolean, delay: number, hide: () => void) {
+  useEffect(() => {
+    if (!open) return
+
+    const timerId = window.setTimeout(hide, delay)
+    return () => window.clearTimeout(timerId)
+  }, [open, delay, hide])
 }
 ```
 
-## Hook'lar durum paylaşır mı? (En kritik yanlış anlama)
+Burada yeni olan, Effect'in üç değere bağlı olmasıdır. `open` kapanırsa, süre değişirse ya da `hide` fonksiyonunun kimliği değişirse React eski timer'ı temizleyip güncel değerlerle yenisini kurar. Arama girdisini gecikmeli kullanma gibi bir davranış da state ve timer ile kurulabilir; temel nokta, yeni değer geldiğinde önceki bekleyen işi temizlemektir.
 
-Yeni başlayanların en sık düştüğü yanılgı şudur: "İki bileşende `useOnlineStatus()` çağırırsam aynı state'i mi paylaşırlar?"
+Zamanı sırayla izleyince neden cleanup gerektiği daha açık:
 
-**Hayır!** Custom hook'lar mantığı paylaşır, bellekteki veriyi değil:
-
-```text
-Component A ─── çağırır ───► useOnlineStatus() ───► State A (bellekte bağımsız)
-Component B ─── çağırır ───► useOnlineStatus() ───► State B (bellekte bağımsız)
-```
-
-Eğer iki bileşenin gerçekten aynı durum verisini paylaşmasını istiyorsan, state'i ortak bir ebeveyne taşımalı ya da Context API kullanmalısın.
-
-## Koşullu hook çağrısı neden yasaktır?
-
-React, bir bileşenin hangi hook'unun hangi değere ait olduğunu isimleriyle değil, **çağrılma sıralarıyla** (call index) takip eder:
-
-```text
-1. Render:
-  1. useState (isOnline)
-  2. useEffect (dinleyici)
-
-2. Render:
-  1. useState (isOnline)
-  2. useEffect (dinleyici)
-```
-
-Eğer bir hook'u `if` bloğu içine koyarsan:
-
-```tsx
-// KESİNLİKLE YASAK (React kural ihlali):
-if (isLoggedIn) {
-  useDocumentTitle("Profilim") // Çağrı sırası kayar ve React çöker!
-}
-```
-
-Koşullu bir davranış istiyorsan, koşulu hook'un **dışına değil içine parametre olarak** taşımalısın:
-
-```tsx
-// DOĞRU YOL:
-useDocumentTitle(isLoggedIn ? "Profilim" : "Ziyaretçi")
-```
-
-### Bir hook çağrısının render'dan temizliğe izi
-
-Hook'a taşımak, Effect'in ne zaman çalıştığına dair yeni bir kural üretmez. Aşağıdaki sıra, iki render arasındaki farkı gösterir:
-
-| Zaman | Olan | Tarayıcı kaydı |
+| Zaman | Olan | Bekleyen timer |
 |---|---|---|
-| İlk render | isOnline başlangıç değeri okunur, JSX hazırlanır | henüz listener yok |
-| İlk commit sonrası | Effect kurulur ve iki listener eklenir | online/offline dinleyicileri birer kez |
-| offline olayı | handler true yerine false state'i ister | React yeni görünüm hazırlar |
-| ikinci commit | bileşen bağlantı uyarısını gösterir | aynı listener'lar kalır |
-| bileşen kapanır | cleanup iki listener'ı kaldırır | abonelik kalmaz |
+| 0 ms | Bildirim açılır, 800 ms'lik timer kurulur | İlk timer |
+| 500 ms | Yeni bildirim gelir; Effect cleanup çalışır | İlk timer iptal edilir |
+| 500 ms | Yeni kurulum 800 ms bekler | İkinci timer |
+| 1.300 ms | Süre dolar ve `hide` çalışır | Timer kalmaz |
 
-Buradaki ilk render ile Effect kurulumu arasındaki kısa aralık önemlidir: tarayıcı durumu render sırasında okunur; olay dinleme ise commit'ten sonra başlar. Bir custom hook bu aralığı ortadan kaldırmaz. Ayrıca Effect bağımlılıkları değişirse React önce eski Effect'in cleanup'ını, sonra yeni Effect'in kurulumunu çalıştırır. Dinlenen kaynağa göre handler referansının aynı kalması gerekir; add ve remove işlemlerine farklı fonksiyon verirsen kaldırma gerçekleşmez.
+İlk timer'ı iptal etmeseydik ikinci bildirim açıldıktan 300 ms sonra kapanırdı; kullanıcının yeni bildirim için beklemesi gereken süreyi eski timer bozardı. Bir değer ancak bir süre değişmeden kaldıktan sonra kullanılacaksa da aynı temizlik kuralı gerekir.
 
-## Hook mu, bileşen mi, paylaşılan store mu?
+## Değer saklamak ve ağ verisini sunmak
 
-Bir parçayı ayırmadan önce çıktısına bak. Ekran öğeleri ve kendi görsel sınırı varsa bileşen; JSX gerektirmeyen, bir bileşenin çağırdığı tekrar kullanılabilir state/Effect mantığı varsa custom hook; birden fazla ağaç dalı arasında tek bir ortak değer senkronize edilecekse Context veya external store düşün. Hook çağrılarının state'i kendiliğinden ortaklaştırmadığını önceki örnek gösterdi. Bu ayrım API tasarımını da sadeleştirir: useOnlineStatus() yalnızca boolean döndürebilir, useDisclosure() ise open, openDialog ve closeDialog gibi açık bir sözleşme sunabilir.
+Custom hook'lar bir değeri React state'iyle senkron tutarken başka bir yere de kaydedebilir. Örneğin tarayıcının `localStorage` alanındaki favori tercihleri sayfa yenilense de kalır. Okuma pahalı ya da hataya açık olabileceğinden başlangıçta bir kez yapılır; `useState(() => readSavedValue())` biçimindeki fonksiyon, ilk state değerini üretir. Saklı metin bozuk JSON ise `JSON.parse` hata fırlatabilir; bu durumda başlangıç değerine dönmek gerekir.
 
-Hook'u gereksiz yere genel hale getirme. İlk kullanımda tek bir sağlam isim ve dönüş tipi belirle; gerçekten farklı tüketiciler çıktının farklı parçalarını istiyorsa API'yi genişlet. Her olası seçeneği boolean parametreye dönüştürmek (useThing(true, false, true)) çağrı yerinde anlamı siler. Nesne parametresi ya da ayrı niyetli fonksiyonlar daha okunurdur.
+State setter'ı hem yeni bir değer hem de önceki değeri alıp yenisini üreten fonksiyon kabul edebilir. Bu iki biçim, aynı anda gelen güncellemelerde son değeri kaybetmeyi önler; önceki state'e dayalı ekleme/çıkarma için fonksiyon biçimi kullanılır. Güncel state değiştiğinde aynı değeri JSON metnine çevirip storage'a yazarsın. `useLocalStorage` gibi generic bir hook'ta `T`, çağıranın sakladığı değerin tipini taşır: dizi verildiyse okuma ve dönen state de o dizi tipiyle kullanılır.
 
-:::mistake[Hook içine görsel kararları gömmek]
-**Belirti:** Bağlantı durumu hook'u kendi içinde belirli bir uyarı metni ve CSS sınıfı döndürüyor. **Neden:** Davranışla sunum aynı sorumlulukta birleşmiş. **Düzeltme:** Hook durum bilgisini döndürsün; metni ve görünümü tüketen bileşen seçsin.
+Ağ isteği de hook'un içine alınabilecek bir davranıştır. URL yokken istek başlatmamak, URL değişince önceki işi temizlemek ve sonucu `idle`, `loading`, `success` ya da `error` gibi ayrı durumlarla sunmak, hook'un API'sini kullanışlı kılar. Örneğin film ayrıntısı için veri isteyen `useMovieDetails(url)` bileşene `data` ve durum bilgisini verir; bileşen yalnızca yükleniyor, hata ya da film görünümünü seçer. Custom hook burada yeni bir fetch kuralı icat etmez; daha önce gördüğün Effect ve istek temizliğini tekrar kullanılabilir sınırda toplar.
+
+![Component, custom hook ve dış sistem arasındaki sınır](diagrams/custom-hook-siniri.svg "Custom hook davranışı toplar; her çağrı kendi state'ine sahiptir.")
+
+## Hook çağrısının sırası sabit kalır
+
+React hook state'lerini fonksiyon adlarına göre bulmaz; her render'da hook çağrılarının sırasını izler. Bu nedenle bileşen bir render'da üç hook, diğerinde iki hook çağırmamalıdır.
+
+```tsx
+function MovieDetails({ visible }: { visible: boolean }) {
+  const online = useOnlineStatus()
+  useMovieTitle(visible ? 'Film ayrıntısı' : 'Sinema')
+
+  return <p>{online ? 'Çevrimiçi' : 'Çevrimdışı'}</p>
+}
+```
+
+İki çağrı da her render'da aynı sıradadır. `visible` koşulu yalnızca hook'a verilen değeri değiştirir. Bu nedenle hook çağrısı `if` içine değil, bileşenin ya da başka bir custom hook'un en üst seviyesine yazılır.
+
+| Render | 1. hook çağrısı | 2. hook çağrısı |
+|---|---|---|
+| `visible = true` | `useOnlineStatus` | `useMovieTitle('Film ayrıntısı')` |
+| `visible = false` | `useOnlineStatus` | `useMovieTitle('Sinema')` |
+
+Yanlışlıkla `if (visible) useMovieTitle(...)` yazarsan `visible` değiştiğinde çağrı listesi kayar. Belirti olarak React hook sırası hakkında hata verebilir veya state'i yanlış çağrıyla eşleştirebilir. Düzeltme: hook'u her render'da çağırıp koşulu parametrede belirt; hook içinde davranış gerekmiyorsa erken çık.
+
+:::mistake[Hook'u koşulun içine koymak]
+**Belirti:** Hook kuralları uyarısı çıkar ya da `visible` değişince beklenmedik state görünür. **Neden:** Bir render'da hook çağrılıyor, diğerinde atlanıyor. **Düzeltme:** Hook'u üst seviyede koşulsuz çağır; koşullu davranışı parametreyle bildir.
 :::
 
-:::mistake[Effect'i taşırken bağımlılıkları sabit bırakmak]
-**Belirti:** Parametre değiştiği halde eski değerle çalışan dinleyici kalıyor. **Neden:** Bağımlılık listesi hook'a taşınırken eksik bırakılmış. **Düzeltme:** Effect'in okuduğu reaktif değerleri bağımlılıklara koy; yeni kurulumdan önce eski aboneliğin temizleneceğini hesaba kat.
-:::
+## Ne zaman hook, ne zaman bileşen?
 
-## Sınır durumları ve sık hatalar
+Bir parçanın JSX'i ve kendi görsel sınırı varsa bileşen olarak düşün. Tekrar kullanılan state veya Effect davranışı varsa, ekranda kendi başına bir öğe üretmese bile custom hook olabilir. Hook'un dış dünya ile kurduğu ilişkiyi (örneğin event listener, timer, fetch) kendi içinde tamamlaması, onu kullanan bileşeni bu ayrıntılardan uzak tutar.
 
-:::mistake[Sık hata: Hook fonksiyonunun başına use koymayı unutmak]
-Belirti → Fonksiyonda `useState` çağrılıyor ama adı `getOnlineStatus` yapılmış; linter hook kurallarını denetlemiyor.  
-Neden → React linter kuralları `use` önekiyle başlayan fonksiyonları tarar. İsim düzeltilmezse yanlışlıkla bir event handler içinde çağrılabilir ve çalışma zamanında çöker.  
-Düzeltme → İçinde hook çağrılan her fonksiyona `use` öneki ver (`useOnlineStatus`).
-:::
+Hook'un çıktısını ihtiyaca göre küçük ve anlaşılır tut. `useOnlineStatus()` için `boolean` yeterliyse nesne ve seçenekler eklemek çağrı yerini zorlaştırır. Hook'a taşındı diye state paylaşılmaz, Effect'in yaşam döngüsü değişmez ve koşullu hook çağrısı doğru hale gelmez.
 
-:::mistake[Sık hata: Hook'tan devasa ve ilgisiz nesneler döndürmek]
-Belirti → Bir hook'un hem arama metnini, hem kullanıcı profilini, hem tema ayarını tek bir tuple'da dönmesi.  
-Neden → Tek sorumluluk ilkesinin (Single Responsibility) unutulması.  
-Düzeltme → Her custom hook tek bir işe odaklanmalıdır. İhtiyaç duyulan parçalar bileşende birleştirilir.
-:::
-
-:::mistake[Sık hata: localStorage okumasını render'da doğrudan yapmak]
-Belirti → Bileşen her render olduğunda `localStorage.getItem` çalışıyor ve arayüz yavaşlıyor.  
-Neden → Senkron tarayıcı disk okuması maliyetlidir.  
-Düzeltme → Storage okumasını lazy state başlatıcısı (`useState(() => readStorage())`) içinde yalnızca ilk render'da yap.
-:::
-
-:::sector
-Kurumsal React mimarilerinde "Headless UI" yaklaşımı tamamen custom hook'lara dayanır. Örneğin erişilebilir bir açılır menü (dropdown) veya modal tasarlarken, klavye yönetimi ve açık/kapalı mantığı bir custom hook'ta (`useDropdown`, `useModal`) toplanır; görsel tasarım (HTML/Tailwind) ise tamamen ürünü geliştiren ekibe bırakılır. Bu sayede mantık ve stil birbirinden kusursuzca ayrılır.
+:::info[Derinlemesine (isteğe bağlı)]
+Hook testlerinde `renderHook`, bir hook'u küçük bir test bileşeninde çalıştırır; fake timers ise beklemeden zamanın ilerletilmesini sağlar. Bu araçlar hook'un nasıl çağrıldığını sınar, Hook çağrı sırası kuralını değiştirmez.
 :::
 
 ## Özet
 
-- Custom hook, React hook'larını kullanarak yeniden kullanılabilir davranış üreten fonksiyondur.
-- Adı mutlaka `use` ile başlamalıdır ve koşulsuz olarak en üst seviyede çağrılmalıdır.
-- Her custom hook çağrısı kendi bağımsız yerel state'ine sahiptir; global depo değildir.
-- Dış sistem bağlantılarını ve temizlik (cleanup) işlerini bileşenden soyutlar.
-- Koşullu mantık hook çağrısına değil, hook parametrelerine uygulanır.
+- Custom hook, React hook'larını bir davranışta toplayan ve JSX döndürmesi gerekmeyen fonksiyondur.
+- Hook kodu paylaşılır; hook içindeki state her çağıran bileşene özeldir.
+- Dış sistem bağlantısı kuran Effect, cleanup ile dinleyici ya da timer'ı kaldırır.
+- Hook'ları her render'da aynı sırada ve üst seviyede çağır; koşulu parametreye taşı.
 
-**Kendini yokla:** Bir custom hook'u iki farklı bileşende çağırdığımızda ne olur?  
-*Cevap:* İki bileşen de aynı mantığı yürütür ancak her biri bellekte kendi bağımsız state kopyasına sahip olur.
+**Yeni terimler:**
 
-**Kendini yokla:** Hook'lar neden `if` koşulu veya döngü içinde çağrılamaz?  
-*Cevap:* Çünkü React hook durumlarını isimleriyle değil, render anındaki çağrılma sırasıyla eşleştirir. Koşullu çağrı bu sırayı bozar ve uygulamanın çökmesine yol açar.
+- **Custom hook:** React hook'ları kullanan ve tekrar kullanılabilir davranış sağlayan fonksiyon.
+- **Commit:** React'in hazırladığı görünümü sayfaya uyguladığı adım.
+- **Timer:** Belirlenen süre sonunda çalışan tarayıcı işi.
+
+**Kendini yokla:** Aynı custom hook'u iki `MovieCard` çağırırsa açık/kapalı değer ortak mıdır?
+
+*Cevap:* Hayır. Her kart kendi bileşen state'ini tutar; paylaşım için state'i yukarı taşımak veya Context kullanmak gerekir.
+
+**Kendini yokla:** Hook'u yalnızca `visible` doğruyken çağırmak yerine ne yaparsın?
+
+*Cevap:* Hook'u her render'da aynı yerde çağırır, `visible` değerini parametre olarak veririm.

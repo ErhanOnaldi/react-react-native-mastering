@@ -12,14 +12,16 @@ export default defineQuestion({
       explanation: 'Reducer saf dönüşümü yapar; aboneler sonucu okur.',
     },
     {
-      text: 'Önce localStorage reducer’dan yazılır, sonra action yaratılır.',
+      text: 'Action creator reducer’ı hemen çalıştırır; sonra store state’i günceller.',
       correct: false,
-      explanation: 'Yan etki reducer’ın görevi değildir; listener ayrı çalışır.',
+      explanation:
+        'Action creator action nesnesi üretir. Reducer ancak action dispatch edilince çalışır.',
     },
     {
-      text: 'TMDB yeniden fetch edilmeden favori değişemez.',
+      text: 'Action yalnız UI etiketini değiştirir; store’da favori listesi aynı kalır.',
       correct: false,
-      explanation: 'Favori ID’si client state’tir; ağ şart değildir.',
+      explanation:
+        'Store’a bağlanmış reducer state’i değiştirir; UI değişikliği yeni selector değerinden gelir.',
     },
   ],
 })

@@ -8,6 +8,7 @@ export function ProfiledMovies({
   titles: string[]
   onCommit: ProfilerOnRenderCallback
 }) {
+  // Liste commit'lerini ölçen sarmalayıcıyı ekle.
   return (
     <ul>
       {titles.map((title) => (

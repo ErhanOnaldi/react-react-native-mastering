@@ -13,12 +13,14 @@ export default defineQuestion({
       explanation: 'Click birkaç DOM olayı gönderebilir; assertion önce başlamamalı.',
     },
     {
-      text: 'React click handler’ları daima fetch yapar',
-      explanation: 'Handler senkron da olabilir; await gereği user-event API’sinden gelir.',
+      text: 'Yalnız click handler Promise döndürüyorsa await gerekir',
+      explanation:
+        'Beklenen şey handler’ın işi değil; user-event’in tıklama etkileşimini tamamlamasıdır.',
     },
     {
-      text: 'await olmadan buton hiç tıklanmaz',
-      explanation: 'Etkileşim başlayabilir; sorun bitmeden assertion koşmasıdır.',
+      text: 'await, React state güncellemesini test dışına taşımak için gerekir',
+      explanation:
+        'Etkileşimi beklemek gerekir; React güncellemeleri RTL ve user-event akışında ele alınır.',
     },
   ],
 })

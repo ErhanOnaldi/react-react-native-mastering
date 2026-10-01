@@ -13,7 +13,7 @@ Uygulamanın kodlamasına geçmeden önce, tüm bilgi akışını tek bir sahipl
 2. **Mimari Karar Kayıtları (`docs/adr/`):**
    - `0001-....md`: Sunucu verisinin (arama, eser, yazar) nasıl yönetileceğine ve önbellekleneceğine dair karar.
    - `0002-....md`: Okuma listesinin nerede tutulacağına, tarayıcıda nasıl kalıcı hale getirileceğine ve bozuk depolama verisinin nasıl ele alınacağına dair karar.
-   - *(İsteğe bağlı)* `0003-....md`: Klasör yapısı (feature-based) ve modül sınırları kararı.
+   - *(İsteğe bağlı)* `0004-....md`: Klasör yapısı (feature-based) ve modül sınırları kararı. `0003` numarası test stratejisi ADR'si için ayrılmıştır.
    - Her ADR'de şu bölümler yer almalıdır: **Durum, Tarih, İlgili gereksinimler, Bağlam, Karar, Değerlendirilen alternatifler (en az iki somut seçenek), Sonuçlar (kazançlar ✅ ve bedeller ⚠️)**.
 
 ## Örnek

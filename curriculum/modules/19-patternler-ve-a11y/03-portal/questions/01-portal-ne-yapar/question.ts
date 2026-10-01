@@ -14,17 +14,14 @@ export default defineQuestion({
       explanation: 'Doğru. Portal yalnızca DOM yerini değiştirir; a11y davranışını kurmaz.',
     },
     {
-      text: 'React Context bağını yeniden kurmak.',
-      explanation: 'Portal DOM yerini değiştirse de React ağacındaki Context bağı korunur.',
-    },
-    {
-      text: 'Bütün event handlerları yeniden bağlamak.',
+      text: 'Portala taşınan alt ağacın Context değerini tekrar provider ile vermek.',
       explanation:
-        'React event’leri portalda da React ağacına göre yayılır; mevcut handlerlar çalışabilir.',
+        'Portal DOM ağacını değiştirir, React bileşen ağacındaki yeri değiştirmez; Context değeri korunur.',
     },
     {
-      text: 'Modalı mutlaka kartın içinde CSS ile saklamak.',
-      explanation: 'Portalın amacı kartın kırpma sınırından çıkmaktır.',
+      text: 'React click handler’larının çalışması için onları DOM’daki yeni ebeveyne taşımak.',
+      explanation:
+        'Portal içindeki React event’leri React ağacına göre yayılır; DOM ebeveynine göre yeniden bağlama gerekmez.',
     },
   ],
 })

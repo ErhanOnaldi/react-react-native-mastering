@@ -1,128 +1,75 @@
 ---
 title: "Kopyaladığın kodun sahibi sensin"
-minutes: 13
+minutes: 14
 kind: concept
 ---
 
 # Kopyaladığın kodun sahibi sensin
 
-:::pain[Problem]
-Sinema'nın film menüsüne klavye ile açılma, yön tuşlarıyla gezinme, Escape ile kapanma ve kapandığında odağı tetikleyiciye geri verme özellikleri gerekiyor. Görsel bir `<div>` çizmek kolay; bu davranışları her menüde baştan yazmak hem zaman alıyor hem de küçük farklarla erişilebilirliği bozuyor.
-:::
+Sinema'da aynı görünüme sahip birden fazla düğme var: filme git, favoriye ekle, listeyi aç. Bir düğmenin rengini değiştirmek için her ekrandaki kodu aramak yerine görünümü ortak bir bileşende tutmak işini kolaylaştırır. shadcn/ui bu bileşeni kapalı bir paketin içinden sunmaz; seçtiğin kaynak dosyasını projenin içine kopyalar.
 
-## Kaynak kodunun yeri, sorumluluğun yeri
+## Önce küçük bir bileşen, sonra sahipliği
 
-shadcn/ui sana tek bir kapalı bileşen paketinden `Button` import ettirmez. CLI seçtiğin bileşenin kaynak kodunu uygulamana kopyalar. Sonrasında `src/components/ui` altındaki dosya senin uygulama kodundur: inceleyebilir, değiştirebilir, test edebilir ve kendi tasarım kararlarına uydurabilirsin. Bu sahiplik rahatlık kadar sorumluluk da getirir; upstream'de çıkan değişiklik dosyana kendiliğinden gelmez.
+Kendi yazdığın bir bileşen zaten sana tanıdık:
 
-Kopyalama, alttaki her bağımlılığı kopyalamaz. Üretilen dosya `radix-ui`, `class-variance-authority` veya `lucide-react` import ediyorsa bu paketler uygulamanın normal bağımlılıklarıdır. Paket yöneticisi manifestte bu bağımlılıkları görmelidir. `shadcn` komutu ise genellikle dosya üretmek ve yapılandırmayı güncellemek için çalışır; tarayıcıda kullanılacak bir `shadcn` Button runtime paketi bekleme.
-
-Bu ayrım bakım kararını görünür yapar:
-
-1. **Üretilen bileşen kaynak dosyadır.** Görünüş ve public prop'lar projede düzenlenir.
-2. **Import edilen paket hâlâ bağımlılıktır.** Uygulama onu `package.json` içinde bildirir ve lockfile sürümünü sabitler.
-3. **CLI yapılandırması üretim tarifidir.** `components.json` CLI'a stil ailesi, CSS yolu, alias'lar ve çıktı konumlarını söyler.
-4. **Kopya güncellemesi bir bakım işidir.** Yerel farkı upstream değişikliğiyle ekip karşılaştırır, test eder ve bilinçli aktarır.
-
-![CLI yapılandırmasından uygulama kaynaklarına, oradan paket bağımlılıklarına giden ilişkiyi gösteren diyagram](diagrams/sahiplik.svg)
-
-## Üç ayrı çözümleyici, üç ayrı sözleşme
-
-Bir `@/components/ui/button` import'u geliştirme sunucusunda çalışsın diye tek bir ayar yetmez. TypeScript, shadcn CLI ve Vite dosya yolunu ayrı ayrı yorumlar. TypeScript'in `paths` ayarı editöre ve `tsc`'ye yol gösterir; Vite runtime sırasında kendi modül çözümlemesini yapar. CLI ise `components.json` içindeki alias haritasını kullanarak yeni kaynak dosyalarına import yazar.
-
-Sinema'da `@/*` alias'ını kök `tsconfig.json`'a, `tsconfig.app.json`'a ve `vite.config.ts`'e tanıtmak gerekir. Vite 8'de `resolve.tsconfigPaths: true` kullanılabiliyorsa ayrıca elle alias tanımı gerekmeyebilir. `components.json` içindeki `aliases.utils` değeri ise yardımcı fonksiyonun yerini söyler. CLI varsayılanı `src/lib/utils.ts` olabilir; projede `src/shared/lib/cn.ts` zaten varsa bu yolu seçmek aynı yardımcıyı iki kez üretmez.
-
-Her ayarın sahibi bellidir:
-
-| Ayar | Tüketen | Eksikse görülen belirti |
-| --- | --- | --- |
-| `tsconfig` `paths` | TypeScript ve editör | Tip kontrolü import'u bulamaz. |
-| Vite alias çözümü | Vite ve Vitest | Derleme ya da dev sunucusu import'u bulamaz. |
-| `components.json` alias | shadcn CLI | Yeni dosyalar yanlış import yolu üretir. |
-
-Tailwind v4'te tema CSS üzerinden tanımlanır. `components.json` içinde CSS değişkenli tema seçimi yapılabilir; eski `tailwind.config.js` dosyasını sırf CLI kurulumunda bekleme.
-
-## Davranışı primitive'e, ürünü bileşene bırak
-
-Bir menünün klavye ve focus davranışı uygulama genelinde yeniden kullanılan bir problemdir. Radix gibi headless primitive, bu etkileşimi yönetir; uygulamadaki kopyalanmış dosya ise primitive'i ürünün görünüşü ve API'siyle birleştirir. `Dialog` için başlık, açıklama, açma düğmesi ve kapatma kontrolü gibi parçalar bir araya gelir. `DropdownMenu` seçim ve menü öğesi rollerini, ok tuşu hareketini ve kapanış davranışını sağlar.
-
-Bu katmanlar birbirinin yerine geçmez. `role="menu"` yazmak klavye modelini uygulamaz. Primitive'in yalnız görünüşünü kullanıp etkileşim sözleşmesini atlamak da yeterli değildir. Tersine, erişilebilir davranışa sahip bir primitive bile ürünün Türkçe adını, doğru bağlantısını ve gerçek favori state'ini senin yerine bilemez.
-
-19. modüldeki **compound component** ve **asChild** modelleri burada yeniden kullanılır. Compound API, tek bir dialogun parçalarını ortak bağlamda tutar. `asChild` ise primitive'in oluşturacağı DOM öğesini çocuk bağlantıyla değiştirir; `<a>` içine `<button>` yerleştirmez. `Slot` bunu yaparken props ve class'ları çocuğa geçirir. Link semantiği link olarak kalır, klavye ile Enter davranışı da tarayıcının link davranışıdır.
-
-Küçük bir örnekte, film bağlantısı buton görünümüne sahip olabilir. Kodun dışarıya sunduğu `variant` tipi, stil sözlüğünün anahtarlarından türetilebilir; yeni stil anahtarı eklenince ikinci bir elle yazılmış union güncelliğini kaybetmez.
-
-```tsx
-import { Slot } from 'radix-ui'
-import { cva } from 'class-variance-authority'
-import type { ReactNode } from 'react'
-import { cn } from '@/shared/lib/cn'
-
-const linkStyles = cva('inline-flex items-center rounded-md px-3 py-2', {
-  variants: {
-    tone: { accent: 'bg-primary text-primary-foreground', quiet: 'border border-input' },
-  },
-  defaultVariants: { tone: 'accent' },
-})
-
-type LinkTone = 'accent' | 'quiet'
-
-function CatalogLink({
-  asChild = false,
-  tone = 'accent',
-  className,
-  children,
-}: {
-  asChild?: boolean
-  tone?: LinkTone
-  className?: string
-  children: ReactNode
-}) {
-  const Element = asChild ? Slot.Root : 'button'
-  return <Element className={cn(linkStyles({ tone }), className)}>{children}</Element>
+```tsx check
+function FilmEtiketi({ title }: { title: string }) {
+  return <span className="rounded bg-muted px-2 py-1">{title}</span>
 }
 ```
 
-Bu parça şematik bir örnektir: gerçek bir button ayrıca button props'larını ve ref'ini taşır; bir link de `href` alır. Önemli fikir, görsel API'nin bir bileşende, klavye davranışının ise onu kullanan primitive'de kalmasıdır. `class-variance-authority` stil seçeneklerini üretir; `cn` koşullu sınıfları birleştirip Tailwind çakışmalarını çözer.
+`FilmEtiketi` projenin kaynak kodudur. Dosyayı değiştirince uygulamanın kullandığı kod da değişir. shadcn/ui ile eklenen Button veya Card için de durum aynıdır: CLI kaynak dosyasını üretir, sonra o dosya senin uygulama kodun olarak yaşar.
 
-## Kurulumu izleyelim
+Burada **upstream**, bileşenin geldiği asıl proje ve onun daha yeni sürümleri demektir. Yerel kopyada yaptığın değişiklik upstream'den kendiliğinden gelmez. Yeni bir sürüm yayımlandığında kendi dosyanı inceleyip hangi değişikliği alacağına sen karar verirsin; bunun nedeni dosyanın artık projenin parçası olmasıdır.
 
-Sinema'da yeni bir bileşen eklerken şu sırayı izle:
+### Bir bileşeni eklerken ne kopyalanır?
 
-| Adım | Okunan bilgi | Sonuç |
-| --- | --- | --- |
-| Kurulum seçimi | Projenin primitive ailesi Radix | CLI çağrısında aile açıkça seçilir. |
-| Dosya tarifi | CSS yolu ve alias'lar | CLI doğru import'ları yazar. |
-| Kaynak üretimi | İstenen bileşen adları | Dosyalar uygulama içinde oluşur. |
-| Paket kontrolü | Üretilen dosyanın import'ları | Gerekli runtime bağımlılıkları manifestte görünür. |
-| Davranış kontrolü | Yerel kaynak ve ürün kullanımı | Değişiklikler uygulamanın kendi testleriyle korunur. |
+Bir Button dosyasının `class-variance-authority` paketini kullandığını düşün:
 
-Yeni kurulumlarda CLI'ın primitive varsayılanını varsayma. Sinema Radix kullandığı için aileyi komutta açıkça seçersin: `pnpm dlx shadcn@latest init -b radix`. Sonra yalnız ihtiyaç duyulan bileşenleri eklersin. Üretilmiş dosyanın package import'larını okuyup manifestle karşılaştırmak, başka makinede eksik paket sürprizini önler.
+```tsx check
+import { cva } from 'class-variance-authority'
 
-## Önce kırık, sonra doğru beklenti
+const buttonStyles = cva('inline-flex rounded px-3 py-2', {
+  variants: {
+    tone: { primary: 'bg-primary text-primary-foreground', quiet: 'border' },
+  },
+})
+```
 
-Kendi menünü yalnızca açılıp kapanan bir panel gibi kurarsan görsel olarak yeterli görünebilir:
+Dosya projene kopyalanır; `class-variance-authority` paketi kopyalanmaz. Paketlerin ve sürümlerinin listelendiği `package.json` dosyasına **manifest** denir. Uygulama çalışırken import edilen paket manifestin `dependencies` alanında bulunmalıdır. Bu ayrım, kod başka bir bilgisayara taşındığında paketin de kurulmasını sağlar.
+
+**Headless primitive**, görünüşü belirlemeden etkileşim davranışını sağlayan bir bileşendir. Örneğin Radix'in menü primitive'i açılma, klavye ile gezinme ve kapanma gibi işleri üstlenebilir; kopyalanan kaynak ise Sinema'nın renklerini, metnini ve ürün API'sini belirler. Böylece davranışı yeniden yazmazsın ama ürüne özgü kararları korursun.
+
+### Aynı aileyi seçmek neden önemli?
+
+Sinema'nın mevcut Dialog'u Radix kullanıyorsa yeni menüyü de Radix ailesinden üretmek, iki bileşenin benzer etkileşim ve props sözleşmelerini kullanmasını sağlar. Base UI ve Radix benzer sorunları çözse de bileşen adları ve props'ları birebir aynı değildir. Yalnızca import adını değiştirerek bir aileyi diğerine çeviremezsin.
+
+Yeni CLI kurulumunda bu seçimi açıkça belirtebilirsin: `pnpm dlx shadcn@latest init -b radix`. Böylece CLI yeni kaynakları Sinema'nın kullandığı primitive ailesine göre üretir; sonrasında yalnızca ihtiyaç duyduğun bileşenleri eklersin.
+
+Bir primitive'in sağladığı davranış, yalnızca `role="menu"` yazmaktan fazlasıdır. Menüde Tab, ok tuşları ve Escape için tutarlı bir etkileşim beklenir. Tekerleği tekrar icat etmek yerine primitive'in bu davranışını kullanırsın; yine de menü metnini, bağlantısını ve filmle ilgili eylemi uygulama seçer.
+
+Kendi menünü yalnız açılıp kapanan bir `div` olarak kurarsan fareyle çalışıyor gibi görünür:
 
 ```tsx
 function BrokenPicker() {
   const [open, setOpen] = React.useState(false)
-  return <div onClick={() => setOpen(!open)}>{open ? 'Ayarlar' : 'Seçenekler'}</div>
+  return <div onClick={() => setOpen(!open)}>{open ? 'Türler' : 'Tür seç'}</div>
 }
 ```
 
-Burada klavye kullanıcısı için odaklanabilir kontrol yok; rol, ad ve Escape davranışı da yok. `onClick` eklemek bu sözleşmeyi tamamlamaz.
+Bu örnekte klavyeyle focus alınabilecek bir kontrol, menü rolü veya Escape ile kapanma davranışı yok. Click handler yalnızca fare tıklamasına tepki verir; görsel olarak açılır panelin tamamını etkileşimli yapmaz.
 
-Primitive ile doğru sorumluluk paylaşımında:
+Radix primitive'ini kullanınca temel etkileşim parçaları açıkça görünür:
 
-```tsx check
-import { DropdownMenu } from 'radix-ui'
-
-export function PreferenceMenu() {
+```tsx
+function GenreMenu() {
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger aria-label="Görünüm seçenekleri">Görünüm</DropdownMenu.Trigger>
+      <DropdownMenu.Trigger>Türler</DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content>
-          <DropdownMenu.Item>Liste görünümü</DropdownMenu.Item>
+          <DropdownMenu.Item>Aksiyon</DropdownMenu.Item>
+          <DropdownMenu.Item>Bilim kurgu</DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
@@ -130,38 +77,77 @@ export function PreferenceMenu() {
 }
 ```
 
-Uygulama hâlâ öğenin metnini ve ne yapacağını seçer. Primitive ise açılma/kapanma, focus ve klavye etkileşimlerini sağlar. Gerçek ürün bileşeninin class'ları ve API'si kopyalanan kaynakta yaşar.
+Burada uygulama menü metnini ve seçimleri verir; primitive açılma, kapanma ve klavye etkileşimini yönetir. Portala taşınsa da menü aynı primitive ağacının parçasıdır. Doğru primitive'i seçmek bakım işini azaltır, ama film türü seçilince hangi filtre uygulanacağını hâlâ sen yazarsın.
 
-## Sınır durumları ve sık hatalar
+Bir bileşenin varyantlarını `filmTones` adlı nesnede tuttuğunu düşün. TypeScript'te `typeof filmTones` nesnenin tipini verir; `keyof typeof filmTones` ise anahtar adlarını (`featured`, `quiet`, `alert`) bir tip olarak çıkarır. Böylece yeni görünüm nesneye eklenince props tipi de o anahtarı kabul eder; görünüm listesiyle elle yazılmış bir union birbirinden kopmaz.
 
-:::mistake[TypeScript geçiyor, Vite bulamıyor]
-Belirti → Editör import'u tamamlıyor ve `tsc -b` geçiyor; Vite `Failed to resolve import` diyor. Neden → `paths` TypeScript içindir, Vite kendi çözümlemesini kullanır. Düzeltme → `vite.config.ts`'te alias tanımla veya Vite 8'in `resolve.tsconfigPaths` seçeneğini kullan.
+:::model[Primitive ve ürün bileşeni]
+Primitive etkileşim kurallarını yönetir; kopyalanan UI bileşeni görünüşü ve Sinema'ya ait API'yi verir. Biri diğerinin yerine geçmez: primitive film bağlantısını bilemez, uygulama da klavye davranışını eksiksiz biçimde sıfırdan yazmak zorunda kalmaz.
 :::
 
-:::mistake[Dosya var, bağımlılık yok]
-Belirti → Başka makinede kurulum sonrası `class-variance-authority` bulunamadı hatası çıkıyor. Neden → Kaynak projeye kopyalanmış olsa da import edilen paket otomatik olarak kaynak kodla birlikte taşınmaz. Düzeltme → Runtime import'larını `package.json` bağımlılıkları olarak kaydet, lockfile'ı güncelle.
+## Bir import yolunu üç araç okur
+
+Şimdi `@/components/ui/button` gibi kısa bir yol düşün. Bu **alias**, uzun bir dosya yoluna verilen takma addır. TypeScript, Vite ve shadcn CLI bu yolu farklı zamanlarda ve farklı amaçlarla çözer.
+
+| Ayar | Kim okur? | Eksik olduğunda ne görürsün? |
+| --- | --- | --- |
+| `tsconfig` içindeki `paths` | TypeScript ve editör | Tip kontrolü import'u bulamaz. |
+| Vite alias çözümü | Vite ve Vitest | Dev sunucusu veya derleme import'u bulamaz. |
+| `components.json` içindeki alias | shadcn CLI | Yeni dosyanın import'u yanlış yere yazılır. |
+
+Örneğin `tsc -b` geçiyor, editör de import'u buluyor ama `pnpm dev` sırasında Vite `Failed to resolve import` diyor. Bu belirti TypeScript ayarının tek başına yetmediğini gösterir: Vite'ın da `@` yolunu çözebilmesi gerekir. Vite 8'de `resolve.tsconfigPaths: true` kullanılabilir; diğer kurulumlarda Vite alias'ını ayrıca tanımlarsın.
+
+`components.json` ise CLI'ın tarifidir: CSS dosyasının, yardımcıların ve bileşenlerin nereye yazılacağını belirtir. Örneğin projede `cn` yardımcısı `src/shared/lib/cn.ts` içindeyse, CLI'a bunu söylemek aynı işi yapan ikinci bir yardımcı dosyasının oluşmasını önler. Tailwind v4 CSS üzerinden yapılandırıldığı için sırf shadcn kurulumu adına eski bir `tailwind.config.js` beklemen gerekmez.
+
+![shadcn CLI yapılandırması uygulama kaynak dosyalarına ve onların runtime paketlerine bağlanır](diagrams/sahiplik.svg)
+
+## Toplu export'u kullanırken yan etkiye dikkat et
+
+Bir dosyadan birden çok bileşeni dışarı açan dosyaya **barrel** denir. Örneğin `components/ui/index.ts`, Button ve Card'ı tekrar dışarı aktarabilir. Böylece çağıran kod kısa görünür:
+
+```tsx
+import { Button } from '@/components/ui'
+```
+
+Şimdi aynı barrel'ın dışarı aktardığı bir dosyanın import sırasında tema kaydı yaptığını düşün. Named import ile yalnız Button'ı istemen, modül değerlendirilirken o yan etkinin hiç çalışmayacağını garanti etmez. Yan etki, bir dosyanın sadece yüklenmesiyle ekranda render etmeden yaptığı iştir. Kaydı açık bir uygulama başlangıç noktasına taşımak ve gerekirse Button'ı kendi dosyasından import etmek, bu işi görünür kılar.
+
+İzleyebileceğin sıra basit: önce CLI'ın yazdığı dosyayı aç, import'larını oku, sonra bu paketlerin manifestte bulunduğunu kontrol et. Ardından import yollarının TypeScript ve Vite tarafından çözüldüğünü ayrı ayrı doğrula. Son olarak bileşeni klavye ile kullan; ekranda görünmesi tek başına etkileşimin doğru olduğunu kanıtlamaz.
+
+## Birkaç gerçek tuzak
+
+:::mistake[Editör buluyor, uygulama bulamıyor]
+Belirti → Editör import'u tamamlıyor, `tsc` geçiyor ama Vite hata veriyor. Neden → `paths` TypeScript'e yol gösterir; Vite'ın kendi çözümlemesi de ayarlanmalıdır. Düzeltme → Vite alias'ını tanımla veya uygun Vite 8 ayarını kullan.
 :::
 
-:::mistake[Menü görünür ama kullanılamaz]
-Belirti → Fareyle açılıyor, Tab ya da ok tuşlarıyla içine girilemiyor. Neden → Görsel rol veya click handler, tam klavye etkileşim modelini sağlamaz. Düzeltme → Primitive'in trigger, içerik ve item parçalarını birlikte kullan; en az bir kez klavyeyle dene.
+:::mistake[Dosya kopyalandı ama paket bulunamadı]
+Belirti → Uygulama başka makinede kurulunca `class-variance-authority` eksik diyor. Neden → CLI kaynak dosyasını kopyalamıştır, npm paketini projeye gömmemiştir. Düzeltme → Runtime import'unu manifestin `dependencies` alanında bildir.
 :::
 
-:::mistake[Barrel import'u yan etki çalıştırıyor]
-Belirti → Sadece Button kullanılan sayfa tema kaydı gibi alakasız bir işi başlatıyor. Neden → Toplu export dosyası import edilen tüm modülleri değerlendirebilir. Düzeltme → Yan etkiyi açık kurulum noktasına taşı ve gerekiyorsa bileşeni doğrudan dosyasından import et.
+:::mistake[Menü fareyle çalışıyor, klavyeyle çalışmıyor]
+Belirti → Tıklayınca menü açılıyor ama Tab veya ok tuşlarıyla içine girilemiyor. Neden → Bir click handler veya `role` tam etkileşim davranışını sağlamaz. Düzeltme → Primitive'in trigger, içerik ve öğe parçalarını kullan; klavyeyle açıp kapatmayı da dene.
 :::
 
-:::sector
-Takım, üretilen UI dosyalarını üçüncü taraf paket kodu değil ürün kaynak kodu gibi inceler. Bileşen değişikliği API, klavye davranışı, kontrast ve testlerle birlikte gözden geçirilir. Bir upstream güncellemesi geldiğinde geliştiriciler yerel özelleştirmeleri diff üzerinden seçerek taşır; otomatik sürüm yükseltmesine güvenmez.
+:::info[Derinlemesine (isteğe bağlı)]
+Compound component, aynı arayüzün `Dialog.Root`, `Dialog.Trigger` ve `Dialog.Content` gibi parçalarını ortak bir bileşen ailesinde sunar. `asChild` ise primitive'in varsayılan DOM öğesini çocuk öğeyle değiştirmeye yarar; Radix `Slot` props ve class'ları tek çocuğa aktarır. Böylece gerçek bir `<a>` link olarak kalır, içine ikinci bir `<button>` yerleşmez. `cva` varyant sınıflarını seçer; `cn` gibi bir yardımcı koşullu class'ları birleştirip Tailwind çakışmalarını çözer. Bu ayrıntılar yararlı ama her kopyalanan bileşenin iç yapısını burada ezberlemek gerekmiyor.
 :::
 
 ## Özet
 
-- CLI bileşen kaynaklarını projeye kopyalar; import edilen runtime paketleri manifestte yine yer alır.
-- `components.json`, TypeScript `paths` ve Vite alias'ı farklı araçların farklı ihtiyaçlarını karşılar.
-- Radix primitive etkileşim davranışını taşır; yerel kaynak dosya ürün API'sini ve görünümünü taşır.
-- Compound component parçaları ve `asChild` modeli 19. modülden devam eder.
-- Üretilen kodun güncelleme ve test sorumluluğu uygulama ekibindedir.
+- shadcn/ui bileşen kaynağını projeye kopyalar; dosyanın bakımını artık proje yapar.
+- Kaynak dosya ile import edilen paket ayrıdır; runtime paketleri manifestte bildirilir.
+- Headless primitive etkileşim davranışını, yerel bileşen görünüş ve ürün kararlarını taşır.
+- TypeScript, Vite ve CLI alias ayarlarını kendi amaçları için okur; birinin çalışması diğerini yapılandırmaz.
+- Barrel import'ları modülleri yükleyebilir; import sırasındaki yan etkileri görünür bir başlangıç noktasına taşı.
 
-Kendini yokla: `tsc` geçerken Vite alias hatası vermesi ne anlatır? Cevap: TypeScript yolu bulmuştur ama Vite'ın çözümleyicisi aynı alias ile yapılandırılmamıştır.
+**Yeni terimler**
 
-Kendini yokla: Kopyalanmış Button `cva` import ediyorsa paketi nerede bildirirsin? Cevap: Uygulamanın `package.json` dosyasındaki runtime `dependencies` alanında.
+- **Upstream:** Yerel kopyanın geldiği asıl proje ve onun yayımladığı değişiklikler.
+- **Manifest:** Projenin paket ve sürüm listesini taşıyan `package.json` dosyası.
+- **Headless primitive:** Görünüşten bağımsız etkileşim davranışı sağlayan bileşen.
+- **Alias:** Uzun bir kaynak yolunun yerine kullanılan kısa yol.
+- **Barrel:** Birden fazla modülün export'unu tek dosyada toplayan dosya.
+- **Yan etki:** Bir modül yüklenirken, render'dan bağımsız olarak yaptığı işlem.
+
+Kendini yokla: TypeScript import'u bulduğu halde Vite neden bulamayabilir? Cevap: TypeScript ve Vite ayrı çözümleyiciler kullanır; Vite alias'ı ayrıca ayarlanmalıdır.
+
+Kendini yokla: Bir UI dosyasını kopyalamak onun import ettiği paketi de kopyalar mı? Cevap: Hayır. Paket manifestte bağımlılık olarak bildirilir ve paket yöneticisi tarafından kurulur.

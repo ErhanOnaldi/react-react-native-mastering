@@ -3,7 +3,7 @@ Puanladıklarım başka route’ta da görünüyor, bu yüzden geçici puan orta
 ## Gereksinimler
 
 - Cache key’i `['ratings', sessionId]`; değer `{ id, title, rating }[]`.
-- `rate` fonksiyonu `{ movieId, value, title }` alır ve başarısız HTTP cevabında reject olur.
+- `rate(input)` verilen puanı kaydeder; işlem başarısızsa Promise’i reject olur.
 - İşlem başlamadan eski listeyi al; optimistic sonuçta kayıt yoksa ekle, varsa puanını güncelle.
 - Hata halinde önceki cache değerini geri yükle.
 - İşlem başarıyla ya da hatayla tamamlandığında ilgili listeyi yeniden doğrula.
@@ -15,7 +15,8 @@ Başlangıç `[{ id: 550, title: 'Dövüş Kulübü', rating: 7 }]`; 8,5 yazmas�
 
 ## Sözleşme
 
-- `useOptimisticRating.ts` dosyasından `useOptimisticRating(sessionId)` named export et.
+- `useOptimisticRating.ts` dosyasından `useOptimisticRating(sessionId, rate)` named export et.
+- `rate(input: { movieId: number; value: number; title: string }): Promise<void>`.
 - Hook sonucu mutation sonucu olmalı ve değişkenleri `{ movieId: number; value: number; title: string }` kabul etmeli.
 
 ## Kısıtlar

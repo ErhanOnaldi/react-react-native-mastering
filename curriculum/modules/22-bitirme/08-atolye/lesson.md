@@ -1,34 +1,45 @@
 ---
-title: "Kitaplık bağlamında bağımsızlık"
-minutes: 6
+title: "Kitaplık atölyesi"
+minutes: 5
 kind: practice
 ---
 
-# Kitaplık bağlamında bağımsızlık
+# Kitaplık atölyesi
 
-:::pain[Problem]
-Öğrenirken görev metinleri sana hangi dosyayı açacağını, hangi hook'u çağıracağını ve hangi export adını kullanacağını söyledi. Ancak bağımsız bir projede karşına sadece şu sorunlar çıkar: kitap araması sayfalanınca geri tuşunun eski sonucu unutması, bir kitaptan diğerine geçildiğinde yazar bilgisinin eski kitapta takılı kalması, veya iki farklı API sınırı arasında seçim yapma zorunluluğu.
+Bu son atölyede hazır adımları takip etmek yerine Kitaplık kararlarını kendin uygularsın. İki kısa kod çalışmasında arama sayfasının geçmiş/önbellek davranışını ve eser değişince yazar bilgisinin güncellenmesini ele alırsın. İki proje çalışmasında da kendi kitap keşif ekranını kurar ve bir API sınırına dair kararını belgelersin.
 
-Bu son Atölye'de sana rehberlik eden hazır bir iskelet yok. Yalnızca kullanıcı belirtileri, iş gereksinimleri ve testlerin aradığı sözleşmeler var.
+:::model[URL ve sorgu önbelleği]
+Arama metni, sayfa ve açık eser URL’den gelir; Query key de bu girdilere göre veriyi ayırır. URL değişince ekrandaki veri doğru anahtardan okunmalı. Geri tuşuyla dönmek, aynı URL ve sorgu kimliğine dönmektir.
 :::
 
-Bu ders, Modül 22 boyunca inşa ettiğin Kitaplık zihniyetini tamamen bağımsız olarak sınadığın bir uygulama alanıdır. Kodlama kararları, state ayrımı ve veri sınırları tamamen senin sorumluluğundadır.
-
-## Neler ölçülüyor ve nasıl çalışacaksın?
-
-Bu atölyede dört bağımsız görev seni bekliyor:
-
-1. **Kitap arama ve geri dönüş (`code`):** Kullanıcı bir kitap arayıp sayfalar arasında gezindiğinde ve geri tuşuna bastığında, eski sonuçların gereksiz ağ isteği atılmadan önbellekten anında gelmesi ölçülür. Arama metni ve sayfa numarası URL üzerinde tek bir doğruluk kaynağı olarak yönetilmelidir.
-2. **Eser değişince yazarın güncellenmesi (`code`):** Bir eserden diğerine geçildiğinde, yazar sorgusunun eski eserin önbelleğinde takılı kalmadan yeni eserin anahtarına göre doğru güncellenmesi sınanır. Bağımlı sorgu yaşam döngüsü ve bulunamayan yazar durumu denetlenir.
-3. **Okuma listesi tasarlama (`project`):** `projects/atolye` içinde Open Library verileriyle çalışan tam bir kitap keşif ve kişisel liste ekranı kurarsın. Arama/eser sunucu verisi, kalıcı okuma listesi ve geçici ekran durumlarının birbirinden temiz biçimde ayrılıp ayrılmadığı ölçülür.
-4. **Kitaplık kararlarını kaydetme (`project`):** Arama sonucundaki özet yazar bilgisi ile ayrı bir yazar uç noktasına gitmek arasındaki mimari ödünleşimi değerlendirir, seçimini `KARAR.md` dosyasında gerekçelendirirsin.
-
-## Çalışma yöntemi
-
-- Kod görevlerinde (`01` ve `02`) doğrudan bileşen dosyası üzerinde çalış ve `pnpm validate:content -m 22` komutuyla testlerini doğrula.
-- Mimari görevlerde (`03` ve `04`) `projects/atolye` dizininde çalış. Ekranı tarayıcıda açıp klavye erişilebilirliğini ve hata durumlarını elle test et.
-- Mimari görevleri tamamladığında platformdaki **“AI review prompt'unu kopyala”** düğmesini kullanarak kodunu ve karar notlarını değerlendir.
-
-:::sector[Mülakatlarda Atölye Deneyimi]
-Yazılım mülakatlarında sana sıfırdan bir problem verildiğinde ölçülen şey API ezberin değil, belirsizlik karşısındaki duruşundur: "Önce problemi sınırlandırdım, URL'i tek kaynak yaptım, önbellek stratejisini belirledim ve depolama sınırını korudum." Bu dört görev, o mülakat masasında kendi başına karar verebildiğini kanıtlar.
+:::model[State kategorileri]
+Arama/eser yanıtları sunucu verisi, adres seçimi URL state’i, okuma listesi kalıcı istemci verisidir. Form taslağı gönderilene kadar geçicidir. Aynı bilgiyi iki yerde saklamamaya ve türetilmiş değerleri kaynaktan hesaplamaya dikkat et.
 :::
+
+:::model[ADR]
+ADR, mimari kararın gerekçesini ve bedelini saklar. İki yaklaşımı, kullanıcı ihtiyacına ve projenin ölçeğine göre karşılaştır; seçimin neden uygun olduğunu ve hangi bakım maliyetini kabul ettiğini yaz.
+:::
+
+## Nasıl ilerleyeceksin?
+
+Her çalışmaya önce görünen belirtiden başla: geri gidince eski sonuç gelmiyor mu, yoksa eser değişince yazar mı takılı kalıyor? Beklenen davranışı bir cümleyle yaz, hangi state kategorisinin bu davranışta söz sahibi olduğunu belirle, sonra küçük değişikliklerle ilerle. Her adımda URL, ekrandaki metin ve istek/önbellek davranışını birlikte kontrol et.
+
+Bağımsız ekranı kurarken önce arama ve seçili eser akışını, sonra yerel okuma listesini ekle. API verisini ve kullanıcının sakladığı veriyi dış girdiler olarak ele al; eksik, bulunamayan veya hatalı veride kullanıcıya anlaşılır durum göster. Son çalışmada API’den gelen yazar özetiyle ayrı yazar isteğini karşılaştır: ek istek ve bakım maliyeti karşılığında kullanıcı ne kazanıyor?
+
+:::mistake[İlk çalışan seçeneği belgelememek]
+Belirti: karar notunda yalnızca seçilen yaklaşımın adı var. Neden: alternatifler ve kabul edilen bakım maliyeti yazılmamış. Düzeltme: seçimini en az bir gerçek alternatifle kıyasla ve hangi koşulda yeniden değerlendireceğini belirt.
+:::
+
+## Özet
+
+- URL, önbellek ve yerel liste farklı veri sahipleridir.
+- Önce kullanıcı belirtisini ve beklenen davranışı tanımla, sonra kodu değiştir.
+- Bağımsız ekranda hata, boş sonuç ve eksik veri durumlarını da ele al.
+- Karar notu seçeneğin yanında gerekçeyi ve bedeli taşır.
+
+**Yeni terimler:** Atölye: daha az yönlendirmeyle önceki kavramların birlikte uygulandığı çalışma. Bakım maliyeti: seçilen yaklaşımın ileride gerektireceği ek iş.
+
+### Kendini yokla
+
+1. Eser değiştiğinde yazarın da değişmesini hangi iki değeri izleyerek anlarsın? **Cevap:** URL’deki eser kimliğini ve ona bağlı yazar anahtarını.
+2. Yazar için ayrı istek atmak ne kazandırabilir, neye mal olur? **Cevap:** Daha zengin yazar bilgisi sağlayabilir; ek ağ isteği ve hata/önbellek yönetimi getirir.

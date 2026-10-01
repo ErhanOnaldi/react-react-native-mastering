@@ -1,50 +1,33 @@
 ---
-title: "Kurallar ve veri değişimi"
-minutes: 5
+title: "Kurallar ve dönüşen değerler"
+minutes: 4
 kind: practice
 ---
 
-# Kurallar ve veri değişimi
+# Kurallar ve dönüşen değerler
 
-:::pain[Problem]
-İzleme planında bitiş tarihi başlangıçtan önce seçilebiliyor; kimse uyarmıyor. Taslak formunda başka bir kayıt seçilince eski değerler kalıyor, boş tarih ise bazen sorunsuz bazen hatalı ele alınıyor.
-:::
+Atölyede iki form davranışını ele alacaksın. İzleme planında başlangıç ve bitiş tarihleri ayrı ayrı geçerli olsa bile aralarındaki sıra yanlış olabilir. Taslak düzenleyicideyse boş tarih alanı formda `''` olurken kayıt verisinde “tarih yok” anlamına gelmelidir.
 
 :::model[Tip derlemede, veri çalışma anında]
-Form alanları kullanıcı girdisidir; Zod parse etmeden önce güvenilir kabul edilmez. Birden çok alanı ilgilendiren kural nesne düzeyinde kurulur. Yeni bir taslak seçildiğinde ise formun başlangıç değerleri değişmiştir; şema doğrulaması ile form state'inin yenilenmesi ayrı işlerdir.
+Formdaki ham değer, şemaya giren **input** değeridir; parse işleminden çıkan doğrulanmış veya dönüştürülmüş değer **output** değeridir. Birden fazla alanı ilgilendiren ilişkiyi nesnenin tamamı üzerinden düşün; dönüştürme gereken alanda input ile output'ın farklı olabileceğini unutma.
 :::
 
-## Önce davranışı tarif et
+## Belirtiyi sözleşmeye çevir
 
-İki alıştırmada da amaç, Zod API'sini ezbere çağırmak değil, ekrandaki duruma göre doğru sözleşmeyi seçmek. İlk formda her tarih ayrı ayrı geçerli olabilir ama aralarındaki sıra yanlış olabilir. İkinci formda aynı bileşen farklı taslak verisi alır; ekranda yeni taslağın değerleri görünmeli. Ayrıca tarih alanı boş bırakılabiliyorsa boş metin ile hatalı tarih metnini ayır.
+İlk formda ters tarih aralığının hangi alanda hata göstermesi gerektiğini ve geçerli aralıkta callback'e ne gideceğini netleştir. İkinci formda üç durumu ayır: taslak tarihi alanda gösterilir, boş tarih kayıt sözleşmesine uygun değere dönüşür, dolu ama geçersiz metin ise kaydı durdurur.
 
-Görevlerde beklenen davranışları kısa bir tabloya çevir:
-
-| Girdi / olay | Beklenen sonuç |
-| --- | --- |
-| Bitiş tarihi başlangıçtan önce | İlgili alan altında hata, form gönderilmez |
-| Geçerli tarih aralığı | Submit callback'i girilen değerleri alır |
-| Başka taslak seçildi | Başlık ve tarih yeni taslaktan görünür |
-| Tarih alanı boş | “Tarih yok” olarak kabul edilebilir |
-| Tarih alanına anlamsız metin | Açıklayıcı hata, kayıt yapılmaz |
-
-Önce belirtileri yeniden üret, sonra hangi katmanın karar vermesi gerektiğini bul. Bir tarih ilişkisi şema kuralıdır ve kullanıcıya hangi alanın yanlış olduğunu söylemelidir. Prop değişince alanların yenilenmesi ise RHF form state'ine yeni başlangıç değerini uygulatma problemidir. Boş stringin “değer girilmedi” anlamına gelmesi de formun ham değerini submit sözleşmesine dönüştürme kararıdır.
-
-İpuçlarına takıldığında sırayla bak: önce sorunun ne zaman ortaya çıktığını ayır; sonra uygun şema veya form API'sini seç; en sonda yalnızca gerekli iskeleti uygula. İki problemi tek dev şemada çözmeye çalışma. Ayrı sorumlulukları ayrı adımlarda düşünmek, yeni belirtiyi gördüğünde nereden başlayacağını öğretir.
-
-:::mistake[Sık hata]
-Belirti → Başka kayıt seçilse de önceki başlık ekranda kalır. Neden → Form varsayılanları yalnızca ilk mount'ta alınmıştır. Düzeltme → Yeni draft geldiğinde form state'ini o kayıtla yeniden eşitle.
-:::
-
-:::sector
-Ürün formlarında boş tarih, tarih bilinmiyor anlamına gelebilir; hatalı tarih metni ise kullanıcının düzeltmesi gereken bir girdidir. Bu iki durumu API payload'ına aynı string olarak yollama. Form state'ini ve kayıt sözleşmesini açık tutmak, düzenleme ekranlarında eski verinin yanlış kayda yazılmasını önler.
-:::
+Her görevde önce beklenen davranışı bir cümleyle yaz, sonra hangi alanların birlikte değerlendirilmesi gerektiğini bul. Son adımda hata mesajının alanla erişilebilir biçimde ilişkili kaldığını ve callback'in doğru değerleri aldığını kontrol et.
 
 ## Özet
 
-- Alanlar arası koşulu nesne sözleşmesinde tanımla ve hatayı doğru alana bağla.
-- Seçili kayıt değişince formun gösterdiği değerleri yeni kayda eşitle.
-- Boş girdi ile biçimi yanlış girdiyi ayrı durumlar olarak ele al.
+- Alanlar tek tek geçerli olsa da aralarındaki kural bozulabilir.
+- Formun ham değeri ile parse sonrası callback değeri farklı olabilir.
+- Boş girdi ile biçimi geçersiz girdi için ayrı davranış belirle.
 
-**Kendini yokla:** İki tarih de biçim olarak geçerliyse tarih aralığı kuralı neden hâlâ kalabilir?  
-*Cevap:* Alanların tek tek doğruluğu aralarındaki sıralamayı garanti etmez.
+**Kendini yokla:** Başlangıç ve bitiş tarihleri ayrı ayrı geçerliyse neden hâlâ hata çıkabilir?
+
+*Cevap:* Bitiş tarihi başlangıçtan önce olabilir; iki alanın ilişkisi ayrıca kontrol edilir.
+
+**Yeni terimler:**
+- Input — şemaya verilen ham değer.
+- Output — şema parse edildikten sonra çıkan değer.

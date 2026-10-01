@@ -76,6 +76,27 @@ describe('QuizView', () => {
     expect(screen.getByRole('button', { name: 'Cevapla' })).toBeDisabled()
   })
 
+  it('şıkları karışık sırada gösterse de orijinal index ile cevaplar', async () => {
+    const user = userEvent.setup()
+    let sent: unknown
+    server.use(
+      http.post('/api/questions/0.1.1/answer', async ({ request }) => {
+        sent = await request.json()
+        return HttpResponse.json(answer(false, 1))
+      }),
+    )
+    const many = {
+      ...question,
+      options: ['a', 'b', 'c', 'd', 'e', 'f'].map((t, index) => ({ index, html: `<p>${t}</p>` })),
+    }
+    renderWithProviders(<QuizView question={many} />)
+
+    await user.click(screen.getByLabelText('b'))
+    await user.click(screen.getByRole('button', { name: 'Cevapla' }))
+    await screen.findByText(/Tam olarak değil/)
+    expect(sent).toEqual({ selected: [1] })
+  })
+
   it('doğru cevapta tebrik eder ve sonraki soruya bağlantı verir', async () => {
     const user = userEvent.setup()
     server.use(http.post('/api/questions/0.1.1/answer', () => HttpResponse.json(answer(true, 0))))

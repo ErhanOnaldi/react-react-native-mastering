@@ -1,37 +1,35 @@
 ---
 title: "Sinema için lint ve format kapısı"
-minutes: 6
+minutes: 8
 kind: project
 ---
 
 # Sinema için lint ve format kapısı
 
-:::pain[Problem]
-Sinema’da film kimliği değişince eski detay kalabiliyor. Kullanılmayan import’lar dosyalarda birikmiş, farklı editör tercihleri de PR diff’ini biçim satırlarıyla dolduruyor. Araçları öğrendin; şimdi bu geri bildirimi gerçek projede tekrarlanabilir hale getir.
+Sinema’da şimdiye kadar yazdığın React koduna bu kez ortak kalite kontrolleri ekleyeceksin. İlk görevde ESLint ayarlarını projeye bağlayıp bulduğu gerçek sorunları kaynak kodda düzelt; film detayının kimlik değişince güncel kalmasını da koru. İkinci görevde biçim tercihlerini ortaklaştır, dosya istisnalarını belirle ve yazan komutla yalnızca kontrol eden komutu ayır.
+
+:::model[Effect yaşam döngüsü]
+Effect, bağlı olduğu değer değişince önce eski çalışmasının cleanup’ını yapar, sonra yeni değerle yeniden çalışır. Film kimliği değişirken isteğin ve cleanup’ın bu sıraya uyup uymadığını hatırla.
 :::
 
-## Proje çalışmasının kapsamı
-
-İki görev önce ESLint’i proje kaynaklarına bağlayacak, ardından Prettier tercihlerini ve komutlarını ekleyeceksin. İlk bölümde TS/TSX dosyalarının gerçekten lint edildiğini, React’e özgü hataların raporlandığını ve film kimliği değişiminde detayın güncellendiğini hedefle. İkinci bölümde tek tırnak, noktalı virgülsüz biçim ve Tailwind v4 class sıralamasını ortaklaştır; geliştirme ve CI için ayrı komutlar tanımla.
-
-Buradaki önemli karar, hata mesajını susturmak değil, kaynak niyetine göre düzeltmektir. Film değişimini denetleyen effect yeni kimliği izlemeli ve eski istek sonradan dönüp yeni sonucu ezmemelidir. Biçimleme ise davranışa dokunmadan görünüş farklarını azaltmalıdır.
-
-## Çalışma sırası
-
-Önce proje kökünde lint yapılandırmasını kur ve TS/TSX kaynaklarında raporun gerçekten üretildiğini gözle. Hook ve React component dosyalarını ayrı ayrı düşün; sonra detay sayfasının route değişimindeki davranışını düzelt. Format config’ini ve ignore listesini ekledikten sonra yazma komutuyla mevcut dosyaları biçimle, CI’da kullanacağın kontrol komutunun temiz olduğunu doğrula.
-
-İki görevin sonunda Sinema’da ortak kalite komutları ve okunabilir config bulunmalı. Lint, uygulama davranışı testlerinin yerine geçmez; formatter da hatalı veriyi düzeltmez. İkisi sonraki modülde yapacağın refactor öncesi daha anlaşılır bir kod tabanı hazırlar.
-
-:::sector
-Ekipler bu tür kalite kapılarını mevcut projeye küçük değişiklikler halinde ekler. Önce gerçek lint raporunu okuyup kaynakta düzeltme yapar, sonra formatı uygular ve CI’da yalnız kontrol çalıştırır. Böylece config, günlük geliştirme ve PR incelemesinin ortak parçası olur.
+:::model[Yarış koşulu]
+İki istek farklı sırada dönebilir: önce başlayan eski isteğin cevabı, yeni isteğin cevabından sonra gelebilir. Ekranın en güncel kimliğe ait sonucu göstermesi için eski cevabın yeni sonucu ezmesini önlemen gerekir.
 :::
+
+## Sinema’da çalışma sırası
+
+Önce lint ayarlarının kaynak dosyalara uygulandığını gör ve raporları tek tek oku. Bir uyarıyı kuralı kapatarak gizlemek yerine, kodun niyetine uygun düzeltmeyi yap. Ardından detay sayfasında film kimliği değiştiğinde hangi sonucun ekrana geldiğini düşün.
+
+Sonra biçim tercihlerini ve biçimleme dışında kalacak dosyaları tanımla. Yazma komutunu bir kez çalıştırıp değişiklikleri gözden geçir; kontrol komutunun dosyaları değiştirmeden fark bulup bulmadığını ayrıca dene. Son olarak arama, TMDB ve gezinme davranışlarının hâlâ yerinde olduğunu doğrula.
+
+Bu iki görev sana araç ayarlarını uygulamanın gerçek davranışıyla birlikte ele alıştırıyor. Lint kod hakkında belirli sorunları bildirir; uygulamanın doğru davrandığını tek başına kanıtlamaz. Prettier görünüşü ortaklaştırır, iş mantığını düzeltmez.
 
 ## Özet
 
-- Lint config’i TS/TSX kaynaklarına gerçekten uygulanmalı.
-- Detay kimliği değişince yeni film gösterilmeli; gereksiz eski sonuç yazmamalı.
-- Prettier görünüşü düzenler; `format:check` yalnız farkı raporlar.
-- Kaynak kod hatalarını susturmak yerine niyete uygun düzelt.
+- ESLint’in bildirdiği gerçek sorunları kaynak kodda çöz.
+- Film kimliği değişince en güncel filmin gösterildiğini kontrol et.
+- Biçimleme ve biçim kontrolü ayrı işlerdir; kontrolün dosya yazmaması gerekir.
+- Araçları ekledikten sonra uygulamanın mevcut davranışını yeniden gözden geçir.
 
-**Kendini yokla:** Proje lint’ten geçse bile neden detay sayfasını route değişiminde gözlemlemelisin?
-*Cevap:* Lint statik kuralları denetler; kullanıcı davranışının doğru olduğunu kanıtlamaz.
+**Kendini yokla:** Lint temiz olsa bile film kimliği değişimini neden ayrıca kontrol etmelisin?
+*Cevap:* Lint kuralları kaynak kodu inceler; sayfanın doğru filmi gösterdiğini kanıtlamaz.

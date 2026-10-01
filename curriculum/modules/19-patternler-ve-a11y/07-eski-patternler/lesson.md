@@ -1,146 +1,161 @@
 ---
-title: "Eski kodu okuyabilmek"
-minutes: 14
+title: "Eski React pattern'lerini okuyabilmek"
+minutes: 15
 kind: concept
 ---
 
-# Eski kodu okuyabilmek
+# Eski React pattern'lerini okuyabilmek
 
-:::pain[Belirti]
-Sinema'ya eski bir UI paketinden video oynatıcı geldi. Bir yerde `<ClipData render={(clip) => ...} />`, başka yerde `withSession(Player)` görüyorsun. Bir arkadaşın `withSession(Player)` çağrısını component gövdesine taşıdı. Favoriye her tıklamada oynatıcı başa dönüyor ve ses düzeyi sıfırlanıyor.
-:::
+Sinema'nın film kartında süreyi ve yönetmen adını gösterdiğini düşün. Bu bilgiyi başka bir ekranda da kullanmak istiyorsun, ama iki ekranın görünümü farklı. Bunu paylaşmanın iki eski yolu, veriyi bir callback'e veren **render prop** ve bir component'i sarmalayan **Higher-Order Component (HOC)**. İsimleri uzun; ikisinin yaptığı işi küçük örneklerde göreceğiz.
 
-## Mantığı paylaşmanın eski biçimleri
+## Veriyi al, görünümü sen çiz
 
-React ekosistemi zaman içinde aynı ihtiyaca farklı API'ler geliştirdi: ortak davranışı birden çok ekranda kullanmak, görünümü uygulamaya bırakmak veya component'e yeni bir yetenek eklemek. Render props ve Higher-Order Component (HOC) eski kodda sık görünür. Yeni her yerde bunları kullanman gerekmez; fakat bir kod tabanında hook'larla birlikte bulunabilirler. Bir pattern'in yaşlı olması onun hatalı olduğu anlamına gelmez.
+Önce render prop'un en küçük hali: `FilmInfo` bir film veriyor, `render` fonksiyonu bu veriyi alıp JSX üretiyor.
 
-:::model[State ağaçtaki konum ve key'e bağlıdır]
-React state'i aynı component tipinin aynı ağaç konumunda sürmesini bekler. Her render'da farklı component tipi üretirsen React önceki alt ağacı unmount eder, yenisini mount eder ve yerel state'i sıfırlar. Bu bağlamda HOC'nin oluşturduğu component kimliğine dikkat et.
-:::
+```tsx check
+import type { ReactNode } from 'react'
 
-![State'in ağaç konumu ve key'e göre korunması ya da sıfırlanması](diagram:agac-ve-kimlik)
-
-Kurallar:
-
-1. **Render prop bir fonksiyondur.** Data sağlayan component, veriyi `render` veya `children` callback'ine verir; çağıran taraf JSX'i seçer.
-2. **Render prop içinde state sahibi görünümü üretir.** Fonksiyon sıradan JavaScript callback'idir; kendi başına Hook değildir.
-3. **HOC component alıp component döndürür.** `withSession(Page)` gibi bir sarmalayıcı dışarıda oluşturulur ve ek prop ya da davranış ekler.
-4. **HOC çağrısını component render'ında yapma.** Her çağrıda yeni fonksiyon/component tipi üretilebilir; alt ağacın kimliği değişip state sıfırlanır.
-5. **Bugünkü karşılığı ihtiyaca göre seç.** Mantık/veri paylaşımı çoğu zaman custom hook ile; ağaç düzeyinde yetki/tema çevreleme ise layout, Context veya açık composition ile çözülür.
-6. **Çalışan eski kodu biçim uğruna taşıma.** Değişiklikten önce davranışı sabitle ve somut problem olup olmadığını belirle.
-
-Render prop şu anlama gelir: “veriye ben ulaşırım, görünümü sen çizersin.” Örneğin `ClipData` detay endpoint'ini yükleyip bir `clip` değeri sunar. Callback bir `<h2>` döndürebilir; aynı veriyle liste satırı veya boş durum tasarımı da üretilebilir. Bu esneklik kullanışlıdır, fakat callback katmanı JSX'i iç içe geçirerek okuması zor hale getirebilir.
-
-Hook'lar birçok render prop kullanımını sadeleştirdi. `useClip(id)` gibi bir hook veriyi component'e döndürür, JSX ise aynı component'te açık kalır. Hook çağrısı her render'da aynı sırada olmalı; render prop callback'i içinde hook çağırmak güvenli bir pattern değildir. Eski kodu taşırken render prop fonksiyonunun koşullu çağrılıp çağrılmadığını ve hook kurallarının ihlal edilip edilmediğini incele.
-
-## Component kimliğini adım adım izle
-
-HOC bir `Player` component'ini alıp `SessionPlayer` sarmalayıcısını üretir. Bu fonksiyon aynı yaşam süresince aynı referans olmalıdır:
-
-| Yer | `withSession(Player)` sonucu | React yorumu |
-| --- | --- | --- |
-| Modül yüklenirken bir kez | `SessionPlayer` referansı oluşturulur | Component tipi sabit |
-| Ebeveyn ilk render | Aynı `SessionPlayer` render edilir | State kendi ağacında kurulur |
-| Ebeveyn tekrar render | Aynı referans kullanılır | React state'i korur |
-| Her render içinde HOC çağrılır | Yeni `SessionPlayer` fonksiyonu oluşur | Eski alt ağaç unmount, state kaybı |
-
-React component identity yalnızca JSX değişkeninin isminden gelmez; function referansı/type ve ağaç konumu önemlidir. `const Guarded = withSession(Player)` component gövdesinde tanımlı görünse de her gövde çalışışında yeni function üretir. Bu, sıradan `useMemo` ile düzeltilecek bir kullanım değildir; HOC'yi modül kapsamına taşı veya açık bir wrapper component'i bir kez tanımla.
-
-## Kırık yaklaşım, modern okuma
-
-Kırık kullanımda wrapper her render'da yeniden kurulur:
-
-```tsx
-function ClipPage() {
-  const [favorite, setFavorite] = useState(false)
-  const AuthorizedPlayer = withSession(Player)
-  return <AuthorizedPlayer favorite={favorite} />
+type Film = { title: string }
+function FilmInfo({ render }: { render: (film: Film) => ReactNode }) {
+  return <>{render({ title: 'Kayıp Şehir' })}</>
 }
 ```
 
-Doğru eski kullanım, HOC'yi modül seviyesinde oluşturur:
+`render` burada sıradan bir JavaScript fonksiyonu: film nesnesini alıp React'in ekrana çizebileceği bir değer döndürüyor. Veri sağlayan component filmi biliyor; onu hangi HTML ile göstereceğine karar vermiyor. Bu ayrım, iki ekran aynı veriyi kullanırken farklı görünüm istediğinde işine yarar.
+
+İkinci adımda aynı veriyi iki ayrı görünümle kullan. Yeni fikir yalnızca callback'in çağrıldığı yerdir:
 
 ```tsx check
-import { useState } from 'react'
 import type { ReactNode } from 'react'
 
-type Props = { volume: number }
-function Player({ volume }: Props) {
-  return <output>{volume}</output>
+type Film = { title: string; director: string }
+function FilmInfo({ render }: { render: (film: Film) => ReactNode }) {
+  return <>{render({ title: 'Kayıp Şehir', director: 'Ece Yalın' })}</>
 }
-function withSession(Component: (props: Props) => ReactNode) {
-  return function SessionGuard(props: Props) {
+
+export function FilmRow() {
+  return <FilmInfo render={(film) => <p>{film.title}</p>} />
+}
+```
+
+Burada `FilmInfo` yeni bir yönetmen alanı sundu; `FilmRow` yalnızca başlığı gösteriyor. Başka bir çağıran aynı callback'te yönetmen adını veya bir düğmeyi gösterebilir. Görünüm seçimi çağıranda olduğu için render prop'un kısa özeti “veri bende, çizim sende”dir.
+
+Üçüncü örnek, callback'i adlandırılmış `render` prop'u yerine `children` olarak alıyor. Bu da aynı fikirdir; prop adı farklı olsa bile değer yine bir fonksiyondur.
+
+```tsx check
+import type { ReactNode } from 'react'
+
+type Film = { title: string }
+function FeaturedFilm({ children }: { children: (film: Film) => ReactNode }) {
+  return <>{children({ title: 'Gece Seansı' })}</>
+}
+
+export function FeaturedCard() {
+  return <FeaturedFilm>{(film) => <strong>{film.title}</strong>}</FeaturedFilm>
+}
+```
+
+`children` fonksiyonuna da veri verildi ve çağıran JSX döndürdü. Bazı eski kütüphanelerde bunu görürsün. Callback'in kendisi bir component değildir; bu yüzden callback'in içine Hook koyma. Callback'i çağıran kod onu koşullu ya da bir render'da birden fazla kez çalıştırabilir; Hook'lar ise component gövdesinde sabit sırada çağrılmalıdır.
+
+## Davranışı component'e ekle
+
+Şimdi farklı bir ihtiyaca bakalım: birkaç film sayfasına aynı oturum kontrolünü eklemek istiyorsun. Bir **Higher-Order Component (HOC)**, component alan ve yeni bir component döndüren JavaScript fonksiyonudur. Aşağıdaki örnekte HOC henüz oturum denetlemiyor; yalnızca sarmalama biçimini gösteriyor.
+
+```tsx check
+import type { ComponentType } from 'react'
+
+type FilmProps = { title: string }
+function withFilmLabel(Component: ComponentType<FilmProps>) {
+  return function LabeledFilm(props: FilmProps) {
+    return <Component {...props} />
+  }
+}
+```
+
+`withFilmLabel` component tipi alıp başka bir component tipi döndürdü. Gerçek bir HOC, wrapper içinde erişim denetimi yapabilir veya ek prop sağlayabilir. Bir **wrapper**, başka bir component'i çevreleyip onun öncesinde ya da çevresinde iş yapan sarmalayıcı component'tir.
+
+Şimdi HOC sonucunu component gövdesinin dışında, bir kez üret:
+
+```tsx check
+import type { ComponentType } from 'react'
+
+type FilmProps = { title: string }
+function Poster({ title }: FilmProps) {
+  return <h2>{title}</h2>
+}
+function withFilmLabel(Component: ComponentType<FilmProps>) {
+  return function LabeledFilm(props: FilmProps) {
     return <Component {...props} />
   }
 }
 
-const SessionPlayer = withSession(Player)
-
-export function ClipPage() {
-  const [favorite, setFavorite] = useState(false)
-  return <SessionPlayer volume={favorite ? 0.8 : 0.5} />
+const LabeledPoster = withFilmLabel(Poster)
+export function FilmPage() {
+  return <LabeledPoster title="Gece Seansı" />
 }
 ```
 
-Bu örnek HOC'nin gerçek auth politikasını temsil etmez; component kimliği için sınırlandırılmış bir örnektir. Bir HOC incelerken prop'ları sarılan bileşene nasıl aktardığını, aynı isimli prop'u ezip ezmediğini, `ref`'i taşıyıp taşımadığını ve wrapper'ın display name/debug görünürlüğünü kontrol et. Özellikle `ref`, normal prop gibi davranmayabilir; React 19'da ref'i prop alan yeni fonksiyon bileşenleri yazılabilir ama eski HOC'ler `forwardRef` ile özel aktarım uygulamış olabilir.
+`LabeledPoster` aynı component tipi olarak kalır. **Component tipi**, React'in hangi component'i çizdiğini belirleyen component fonksiyonudur; bu kimlik sabitse React tekrar render sırasında aynı component'i tanır. State bu yüzden korunur: React state'i aynı component tipinin ağaçtaki aynı konumunda tutar; tipi değişmiş gibi görünürse önceki component kaldırılıp yenisi eklenir.
 
-Render prop'ta ise isimli callback veya `children` fonksiyonu görebilirsin:
+## HOC render sırasında kurulursa ne olur?
 
-```tsx check
-import type { ReactNode } from 'react'
+Şu hatalı biçimde HOC çağrısı `FilmPage` gövdesinin içinde duruyor:
 
-type Session = { userName: string }
-
-export function SessionInfo({ render }: { render: (session: Session) => ReactNode }) {
-  const session = { userName: 'Ece' }
-  return <>{render(session)}</>
+```tsx
+function FilmPage() {
+  const LabeledPoster = withFilmLabel(Poster)
+  return <LabeledPoster title="Gece Seansı" />
 }
 ```
 
-Bu callback hangi veriyi alıyor ve çağıranın JSX seçmesine ne kadar izin veriyor, API'yi okurken bakacağın temel sorulardır. Callback component'te koşullu veya tekrarlı çalışabilir; bu nedenle Hook çağrısını callback içine koyma. Ekran her satırda özelleştirilmiş UI istiyorsa render prop hâlâ uygun olabilir. Sadece data state'i okumaksa hook çoğu zaman daha sade bir çağrı yüzeyi verir.
+`FilmPage` her render olduğunda `withFilmLabel` yeni bir fonksiyon üretir. Bu fonksiyon yeni component tipi olduğu için React eski ağacı kaldırıp yenisini kurar; içindeki input veya oynatıcı state'i başlangıç değerine dönebilir. Belirti, favoriye bastığında oyuncunun ses düzeyinin sıfırlanması gibi görünür. Çözüm HOC sonucunu component gövdesinin dışına taşımaktır; `useMemo` ile gizlemek yerine component tipini gerçekten sabit yerde tanımla.
 
-TypeScript'te eski paketlerde declaration merging de karşına çıkabilir: aynı isimli `interface` bildirimleri alanları birleştirirken aynı kapsamda type alias tekrar tanımlanamaz. Bu, runtime component davranışı değil, tip sisteminin bildirim birleştirme kuralıdır. Eski interface'i genişletmeden önce paket tiplerinin bilinçli augmentation noktası olup olmadığını anla; yeni API'de beklenmedik birleşmeye güvenme.
+![State aynı ağaç konumu ve key ile korunur, component tipi ya da konum değişince sıfırlanır](diagram:agac-ve-kimlik)
 
-## Belirti → neden → düzeltme
+Sıra şöyle ilerler:
 
-:::mistake[Belirti: Oyuncu state'i her ebeveyn render'ında siliniyor]
-Belirti → Ses, oynatma zamanı veya input değeri başa dönüyor.  
-Neden → HOC component'in içinde çağrılmış ve her render'da yeni tür üretilmiş.  
-Düzeltme → HOC sonucunu modül kapsamında bir kez oluştur.
+| Adım | Ne çalışır? | React ne görür? |
+| --- | --- | --- |
+| Modül ilk yüklendiğinde | `withFilmLabel(Poster)` bir kez çağrılır | `LabeledPoster` tipi oluşturulur |
+| `FilmPage` ilk render | `<LabeledPoster />` çizilir | Alt ağacın state'i kurulur |
+| `FilmPage` tekrar render | Aynı `LabeledPoster` kullanılır | Alt ağacın state'i korunur |
+| HOC `FilmPage` içinde çağrılır | Yeni `LabeledPoster` fonksiyonu çıkar | Eski alt ağaç kaldırılır, state sıfırlanır |
+
+Bu sıra, sorunun neden hata mesajı vermeden ortaya çıktığını açıklar: JavaScript kodu çalışır, ama React component tipinin değiştiğini görür.
+
+## Eski kodu okurken neye bakmalı?
+
+Render prop'ta verinin callback'e nasıl verildiğini ve callback'in ne döndürdüğünü izle. HOC'de ise wrapper'ın ne eklediğine ve HOC çağrısının nerede yapıldığına bak. İkisi de kendi başına global state değildir; veri component'ler arasında taşınabilir ama görünüm ve state'in sahibi hâlâ component ağacındadır.
+
+Hook'lar bu iki pattern'in pek çok kullanımını daha kısa hale getirdi. Örneğin veri okumak için `useFilm(id)` çağırıp JSX'i aynı component'te yazabilirsin. Yeni bir component gerekmiyorsa custom hook daha düz bir akış verir; fakat eski kodu yalnızca sözdizimi farklı diye taşımak gerekmez. Somut bir hata veya bakım ihtiyacı varsa değiştir, yoksa davranışı koru.
+
+:::mistake[Belirti: Alt component'in state'i kayboluyor]
+Belirti → Ebeveyn render'ından sonra oynatıcı başa dönüyor ya da input temizleniyor.  
+Neden → HOC her render'da yeni component tipi üretiyor.  
+Düzeltme → HOC sonucunu component tanımının dışında bir kez oluştur.
 :::
 
-:::mistake[Belirti: Render prop callback'inde Hook hatası]
-Belirti → Hook sırası uyarısı çıkıyor veya state farklı satıra bağlanıyor.  
-Neden → Callback her render'da aynı sırada çağrılmayabilir.  
-Düzeltme → Hook'u callback dışındaki component gövdesinde çağır veya mantığı custom hook'a çıkar.
+:::mistake[Belirti: Hook sırası uyarısı alıyorsun]
+Belirti → Render prop callback'inde Hook çağırınca Hook sırası değişebiliyor.  
+Neden → Callback'in ne zaman ve kaç kez çağrılacağını component'in Hook sıralaması gibi düşünmüşsün.  
+Düzeltme → Hook'u gerçek component'in gövdesinde çağır veya paylaşılacak mantığı custom hook'a taşı.
 :::
 
-:::mistake[Belirti: HOC bir üst prop'u sessizce siliyor]
-Belirti → Sayfa prop'u ile wrapper'ın sağladığı aynı adlı alan çakışınca beklenmeyen değer kullanılıyor.  
-Neden → Prop spread sırası bir kaynağı diğerinin üstüne yazmış.  
-Düzeltme → HOC'nin ürettiği prop'ları ve dışarıdan gelenleri type/API sözleşmesinde ayır.
-:::
-
-:::mistake[Belirti: Sadece style değişikliği için tüm eski API taşınıyor]
-Belirti → Büyük refactor sonrası kullanıcı davranışı değişiyor, fayda görünmüyor.  
-Neden → Amaç gerçek bakım/performans sorunu yerine sözdizimini modernleştirmek olmuş.  
-Düzeltme → Önce mevcut davranışı testle sabitle; refactor'u belirli bir soruna bağla.
-:::
-
-:::sector
-Büyük React kod tabanlarında HOC, render prop, hook ve Context aynı anda bulunabilir. Bakım görevi sırasında pattern adını görmek yerine state'in nerede tutulduğunu, component tipinin nerede üretildiğini ve verinin nasıl aktığını izle. Ekibe yeni bir API ekliyorsan varsayılan olarak hook/composition değerlendirilir; HOC ise component sınırına gerçekten çapraz bir davranış ekleyecekse seçilir.
+:::info[Derinlemesine (isteğe bağlı)]
+Eski TypeScript paketlerinde **declaration merging** (aynı adlı `interface` bildirimlerinin alanlarını birleştirme) ve **module augmentation** (bir modülün tip bildirimini genişletme) görebilirsin. Bunlar runtime'daki component davranışını değiştirmez. HOC'lerde `ref` aktarımı, prop isimlerinin çakışması ve `displayName` (debug araçlarında görünen component adı) da ek ayrıntılardır; kütüphane sözleşmesini okurken kontrol et, ilk okuman için bu ayrıntılar şart değil.
 :::
 
 ## Özet
 
-- Render prop veriyi callback ile sunar; çağıran çizimi belirler.
-- HOC component alıp sarmalayıcı component üretir.
-- HOC render sırasında çağrılırsa yeni component tipi alt state'i sıfırlar.
-- Hook birçok davranış paylaşımını sadeleştirir, ama eski API'leri tanımak bakım için gerekir.
-- Refactor biçim için değil, kanıtlanmış bakım ihtiyacı için yapılır.
+- Render prop veriyi callback'e verir; çağıran JSX'i seçer.
+- HOC component alır ve wrapper component döndürür.
+- HOC sonucunu component render'ında üretmek component tipini değiştirip alt state'i sıfırlayabilir.
+- Hook'lar aynı paylaşım ihtiyacını çoğu zaman daha basit biçimde çözer; çalışan eski kodu gerçek bir ihtiyaç olmadan taşıma.
 
-**Kendini yokla:** HOC sonucunu component gövdesinde üretmek alt component state'ini neden sıfırlayabilir?  
-*Cevap:* Her render yeni function/type verdiği için React eski component'i yenisiyle değiştirir.
+**Yeni terimler:** Render prop — veriyi bir render callback'ine veren prop; HOC — component alıp yeni component döndüren fonksiyon; wrapper — başka component'i çevreleyen sarmalayıcı; component tipi — React'in ağaçtaki component kimliğini belirleyen fonksiyon.
 
-**Kendini yokla:** Render prop callback'i içinde neden Hook çağırmamalısın?  
-*Cevap:* Callback'in çalışma sayısı/sırası Hook kurallarının beklediği sabit sırayı garanti etmez.
+**Kendini yokla:** Render prop ile HOC arasındaki görünür fark nedir?  
+*Cevap:* Render prop çağırana callback içinde JSX seçtirir; HOC çağırana sarmalanmış component verir.
+
+**Kendini yokla:** HOC sonucunu neden component gövdesinde üretmemelisin?  
+*Cevap:* Her render'da yeni component tipi çıkabilir ve React alt ağaç state'ini sıfırlayabilir.

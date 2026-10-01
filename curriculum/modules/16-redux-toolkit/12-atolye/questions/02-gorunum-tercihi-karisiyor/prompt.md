@@ -1,4 +1,4 @@
-Film keşif ekranında görünüm seçince içerik kayboluyor; tür filtresine gidip dönünce kişisel seçim unutuluyor. Ekran bu iki davranışı düzeltmeli.
+Film keşif ekranında görünüm seçince içerik kayboluyor; tür filtresine gidip dönünce kişisel seçim unutuluyor. Ekran bu iki davranışı düzeltmeli. Bu görünüm ve favori bilgileri başka ekranlarla paylaşılmıyor: bu görevde Redux gerekli mi, karar ver ve seçtiğin state sahibini kullan.
 
 ## Gereksinimler
 

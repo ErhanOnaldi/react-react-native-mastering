@@ -1,18 +1,12 @@
-Sinema seansına ek koltuk ekleyen bir sayaç yaz. Bir tıklama üç koltuk eklemeli ve sonraki tıklamalar önceki sayının üstüne eklenmelidir.
+Sinema seansında bir tıklama üç bilet ekleyen `TicketCounter` bileşenini yaz. Birden fazla artış aynı kullanıcı eyleminde uygulanmalıdır.
 
 ## Gereksinimler
 
-- Başlangıç değeri 0 olmalıdır.
-- Düğme başlangıçta `Koltuk: 0` göstermelidir.
-- Her tıklama sayıyı tam 3 artırmalıdır.
-- İki tıklama sonrası ekranda `Koltuk: 6` görünmelidir.
-
-## Örnek
-
-Başlangıç 0 → bir tıklama 3 → ikinci tıklama 6.
+- Başlangıçta düğmede “Bilet: 0” görünmelidir.
+- Her tıklamada sayı 3 artmalıdır.
+- İki tıklama sonunda düğmede “Bilet: 6” görünmelidir.
 
 ## Sözleşme
 
 - Dosya ve export: `TicketCounter.tsx` → named export `TicketCounter`
-- Props: yok
-- Arayüz: sayaç değeri düğmenin erişilebilir adında görünür.
+- Props yok; düğme sayaç değerini erişilebilir adında gösterir.

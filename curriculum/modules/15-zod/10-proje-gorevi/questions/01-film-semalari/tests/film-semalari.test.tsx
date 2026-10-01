@@ -1,4 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
+import type {
+  CastMember,
+  CrewMember,
+  Genre,
+  Movie,
+  MovieDetails,
+  Video,
+} from '@project/src/features/movies/types'
+import { z } from 'zod'
 import { catalog, TMDB_BASE } from '@test-utils'
 import {
   movieSchema,
@@ -7,6 +16,21 @@ import {
 } from '@project/src/features/movies/api/schemas'
 
 describe('Sinema film şemaları', () => {
+  it('film tiplerini şemaların çıktılarından türetir', () => {
+    expectTypeOf<Movie>().toEqualTypeOf<z.infer<typeof movieSchema>>()
+    expectTypeOf<MovieDetails>().toEqualTypeOf<z.infer<typeof movieDetailsSchema>>()
+    expectTypeOf<Genre>().toEqualTypeOf<z.infer<typeof movieDetailsSchema>['genres'][number]>()
+    expectTypeOf<CastMember>().toEqualTypeOf<
+      NonNullable<z.infer<typeof movieDetailsSchema>['credits']>['cast'][number]
+    >()
+    expectTypeOf<CrewMember>().toEqualTypeOf<
+      NonNullable<z.infer<typeof movieDetailsSchema>['credits']>['crew'][number]
+    >()
+    expectTypeOf<Video>().toEqualTypeOf<
+      NonNullable<z.infer<typeof movieDetailsSchema>['videos']>['results'][number]
+    >()
+  })
+
   it('Türkçe TMDB listesini doğrular', () => {
     expect(
       movieListSchema.parse({

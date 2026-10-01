@@ -21,7 +21,7 @@ export default defineQuestion({
   hints: [
     'Arama metnini ve sayfa numarasını doğrudan URL sorgu parametrelerinden türetmelisin; input değişiminde URL’yi güncellemek ve gereksiz istekleri geciktirmek ana hedeftir.',
     'URL senkronizasyonu için `useSearchParams` hook’unu, tuş vuruşlarını bekletmek için projedeki `useDebounce` hook’unu kullanabilirsin.',
-    '`const [searchParams, setSearchParams] = useSearchParams()`; `const query = searchParams.get("q") ?? ""`; `const debouncedQuery = useDebounce(query.trim(), 350)`. Eğer `debouncedQuery` boşsa istek atmadan yönlendirme metnini göster; doluysa `tmdbFetch("/search/movie", { query: debouncedQuery, page })` çağrısı yap.',
+    'Arama değerinin akışını kur: URL’den oku, input değişince URL’yi güncelle, istek öncesi kısa bir duraklama uygula ve boş değerde aramayı atla.',
     'Kullanıcı arama kutusunu her değiştirdiğinde `searchParams.delete("page")` çağrısı yapmayı unutursan, eski aramadan kalan yüksek sayfa numarası (ör. `page=4`) yeni aramada boş sonuç dönmesine neden olur.',
   ],
 })

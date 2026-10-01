@@ -4,20 +4,25 @@ export default defineQuestion({
   title: 'Neden istekler bitmiyor?',
   difficulty: 'kolay',
   concepts: ['react.render-cycle', 'react.useEffect', 'react.state'],
-  question: 'Render içinde `fetch(...).then(setMovie)` var. Cevap geldiğinde ne olur?',
+  question: `Bileşen gövdesinde şu kod var:
+
+\`fetch('/movie/550').then((response) => response.json()).then(setMovie)\`
+
+İlk cevap geldiğinde sırada ne olur?`,
   options: [
     {
-      text: 'State güncellenir, yeniden render olur ve yeni fetch başlar.',
+      text: 'State güncellenir, bileşen yeniden render olur ve gövdedeki fetch tekrar başlar.',
       correct: true,
-      explanation: 'Dış etki render içinde olduğu için her cevap yeni istek zinciri başlatır.',
+      explanation:
+        'setMovie yeni render ister; render gövdesindeki istek de her çağrıda yeniden başlar.',
     },
     {
-      text: 'React aynı filme yapılan ikinci isteği otomatik engeller.',
-      explanation: 'React fetch için otomatik cache veya tekilleştirme yapmaz.',
+      text: 'State değişir ama aynı props geldiği için bileşen yeniden render edilmez.',
+      explanation: 'State güncellemesi render ister; aynı props olması bu güncellemeyi engellemez.',
     },
     {
-      text: '`setMovie` yalnızca ilk render’da çalışır.',
-      explanation: 'Her tamamlanan Promise callback’i setState çağırabilir.',
+      text: 'Promise ikinci render tamamlanana kadar bekler ve o render’da çalışır.',
+      explanation: 'Promise callback’i cevap gelince çalışır; React onu render sırasına ertelemez.',
     },
   ],
 })

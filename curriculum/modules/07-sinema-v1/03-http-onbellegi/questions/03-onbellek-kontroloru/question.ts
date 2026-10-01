@@ -2,13 +2,13 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'code',
-  title: 'Cache-Control yönergelerini ayrıştır ve tazeliği kontrol et',
-  difficulty: 'orta',
-  concepts: ['web.http-cache', 'ts.functions', 'ts.object-types'],
+  title: 'Saklanan cevap doğrudan kullanılabilir mi?',
+  difficulty: 'kolay',
+  concepts: ['web.http-cache', 'ts.functions'],
   files: ['cacheControl.ts'],
   hints: [
-    'Başlık metnini virgülle ayırıp trim ettikten sonra küçük harfe çevirerek yönergeleri tek tek incele.',
-    'max-age=N veya s-maxage=N gibi değer içeren yönergeleri eşittir karakterinden bölüp sayıya çevir (Number veya parseInt).',
-    'Tazelik kontrolünde noStore veya noCache bayrakları varsa doğrudan false dön; maxAge tanımlıysa ageSeconds < maxAge koşulunu test et.',
+    'Önce cevabın doğrudan kullanılamayacağı yönergeleri denetle.',
+    'Doğrudan kullanım için maxAge bilgisi bulunmalı ve cevap bu süreden genç olmalı.',
+    'noCache veya noStore varsa false dön. Diğer durumda maxAge tanımlıysa ageSeconds değerini onunla karşılaştır.',
   ],
 })

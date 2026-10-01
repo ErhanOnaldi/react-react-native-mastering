@@ -1,116 +1,108 @@
 ---
-title: "Tipin susturduğu çökme"
-minutes: 13
+title: "Tipin göremediği veri"
+minutes: 12
 kind: concept
 ---
 
-# Tipin susturduğu çökme
+# Tipin göremediği veri
 
-:::pain[Problem]
-TMDB, Dövüş Kulübü detayında `title: null` döndürdü. `getJson<MovieDetails>` başlığı string sanıyordu; `movie.title.toUpperCase()` çağrısı sayfayı çökertti. Derleme yeşildi, çünkü TypeScript ağ cevabını hiç görmemişti.
-:::
+Sinema uygulamasında bir filmi API'den alıp kartta gösteriyorsun. Kodda title alanını string diye yazmış olabilirsin; ama bu yazı, sunucunun gerçekten metin gönderdiğini kontrol etmez. Bunu anlamak için tanıdık bir TypeScript örneğinden başlayalım.
 
-## Derleyicinin göremediği sınır
+## Tip, gerçek veriyi kontrol etmez
 
-TypeScript, kaynak kodundaki değerlerin nasıl kullanılacağını denetler. Ama JSON, URL, form alanı ve environment değişkeni uygulama çalışırken gelir. Derleyici bunların gelecekte hangi biçimde olacağını bilemez. Bir generic dönüş tipi, `as` ifadesi veya interface yazmak gelen baytları incelemez; bunlar yalnızca kodun derleme zamanı iddialarıdır.
+TypeScript, kodu yazarken alanları doğru kullanmana yardım eder. Uygulama çalışırken bu tip açıklamaları JavaScript'ten silinir. API cevabı ise o anda gelir; derleyici cevabı önceden göremez.
 
-:::model[Tip derlemede, veri çalışma anında]
-TypeScript tipleri derleme sırasında kontrol edilir ve JavaScript çıktısında silinir. Dışarıdan gelen değerin tipi başlangıçta bilinmiyorsa `unknown` olarak tut; Zod şeması çalışma anında onu denetler. Başarılı parse, doğrulanmış çıktıyı verir; başarısız parse, verinin kullanıldığı yere ulaşmasını engeller.
-:::
-
-![Tiplerin derleme zamanında silinip dış verinin doğrulanması gerektiğini gösteren akış](diagram:ts-derleme-ve-calisma)
-
-![Bilinmeyen dış verinin doğrulamayla tipli veriye ya da hataya ayrıldığını gösteren akış](diagram:zod-sinir)
-
-Bu sınırın kesin kuralları şöyle:
-
-1. **Dış kaynak kuralı:** Ağ cevabı, URL değeri, kullanıcı girdisi ve çalışma zamanı ayarı tipli kabul edilmeden önce doğrulanmalıdır.
-2. **Dürüst başlangıç kuralı:** Kaynağın içeriğini henüz kanıtlamadıysan değeri `unknown` olarak ele al. `any`, kontrolleri kapatır; `unknown`, kullanmadan önce kontrol istemeye devam eder.
-3. **Tip iddiası kuralı:** `getJson<MovieDetails>()` veya `raw as MovieDetails` gerçek veriyi değiştirmez ve alanları kontrol etmez.
-4. **Sınır kuralı:** Doğrulamayı veriyi alan bileşenlerde tekrarlamak yerine API client, form submit veya config okuyucu gibi giriş noktasında yap.
-5. **Sonuç kuralı:** Doğrulama başarılıysa yalnızca parse edilmiş değeri sonraki katmana ver; başarısızsa kontrollü hata akışına geç.
-
-Type guard ile bir alanı doğrulayabilirsin. Fakat nesnenin kendisi, alanların varlığı, diziler ve her dizi öğesi için ayrı ayrı kanıt gerekir. İki alanlı küçük bir nesnede bu yöntem anlaşılır kalır; yanıt büyüyüp `credits.cast[].name` gibi iç içe yapılar eklenince kontrol kodu iş mantığını gölgelemeye başlar. Şema, beklenen yapıyı tek bir yerde görünür kılar.
-
-## Bir başlığın yolculuğunu izleyelim
-
-| An | İşlem | `title` hakkındaki bilgi |
-| --- | --- | --- |
-| 1 | `fetch` tamamlanır, JSON okunur | İçerik dış kaynaktan geldi; henüz `unknown` |
-| 2 | `movieSchema.safeParse(raw)` çalışır | Şema nesneyi ve başlık alanını denetler |
-| 3a | `success === true` | `result.data.title` şemanın çıktısıdır ve stringtir |
-| 3b | `success === false` | Hata bilgisi vardır; bozuk başlık film nesnesine verilmez |
-| 4 | UI doğrulanmış sonucu alır | `.toUpperCase()` geçerli string üzerinde çalışır |
-
-Bu akışta TypeScript ile Zod farklı zamanlarda farklı işler yapar. TypeScript, üçüncü adımın başarı kolunda `result.data.title` alanını string olarak tanır. Zod ise uygulama çalışırken gerçek değeri kontrol etmiştir. Derleme zamanı tipi çalışma zamanı doğrulamasının yerine geçmez; doğrulamanın sonucu, daha sonra güvenle kullanılacak tipe dönüşür.
-
-## Önce iddia, sonra kanıt
-
-Aşağıdaki generic, gövdenin şeklini kontrol etmez:
-
-```ts
-async function getJson<T>(url: string): Promise<T> {
-  const response = await fetch(url)
-  return (await response.json()) as T
-}
-```
-
-Çağrı `getJson<MovieDetails>(...)` olduğunda fonksiyon JSON'u `MovieDetails` gibi ele alır. Sunucu `title: null` gönderirse değer yine null'dır; yalnızca TypeScript itiraz etmeyi bırakır. Hatanın daha sonra `toUpperCase`, liste render'ı veya başka bir kullanım sırasında görünmesi, onu çözmeyi zorlaştırır.
-
-Bir ayraç kartında beklenen veri çok küçükse şema ile güvenli bir yedek seçebilirsin:
+![TypeScript tiplerinin derlemede silinip API verisinin çalışma anında doğrulanması gerektiğini gösteren akış](diagram:ts-derleme-ve-calisma)
 
 ```ts check
-import { z } from 'zod'
-
-const badgeSchema = z.object({ label: z.string().min(1) })
-function badgeText(raw: unknown): string {
-  const result = badgeSchema.safeParse(raw)
-  return result.success ? result.data.label : 'Etiket kullanılamıyor'
-}
-console.log(badgeText({ label: 'Yeni' }))
+type Movie = { title: string }
+const raw: unknown = JSON.parse('{"title":null}')
+const movie = raw as Movie
+console.log(movie.title.toUpperCase())
 ```
 
-Burada bozuk kayıt bir kartı düşürmek zorunda değildir; kart kendi güvenli metnini gösterebilir. Aynı tercihi bütün sistem için kural hâline getirme. API isteğinin temel verisi bozuksa Query'nin başarı verisi gibi saklamaktansa sorguyu hataya taşımak daha doğru olabilir. Hata politikasını sınırın ve ekranın sorumluluğuna göre seç.
+Bu kodun derlenmesi, raw içindeki değeri değiştirmez: movie.title hâlâ null olur. as Movie yalnızca “bu değeri Movie gibi kullanacağım” iddiasıdır. toUpperCase() çağrısında uygulama hata verir; çünkü gerçek değer string değildir.
 
-Şemayı kurmak da tek başına yeterli değildir; onu gerçek giriş noktasında çağırmalısın. JSON `unknown` okunur, sonra parse edilir. Bir kez parse edilmiş sonucu aynı veriyi tüketen kartlara geçirmek, her kartın kendi küçük doğrulayıcısını yazmasından daha tutarlıdır. Yine de bir bileşen ayrı bir kullanıcı girdisi alıyorsa, o yeni sınır için doğrulama gerekir.
+Buradaki unknown, henüz biçimini kanıtlamadığımız değerin dürüst tipidir. Bu değeri kullanmadan önce kontrol etmen gerekir. Bir API cevabını baştan Movie diye adlandırmak daha kısa görünür, ama yanlış cevaba karşı koruma sağlamaz. TypeScript sana uygulama kodunda yardımcı olur; sunucunun göndereceği değeri önceden görmez.
 
-TypeScript'in `strict` ayarı çalışma zamanı verisini denetlemez. Derleyicinin verdiği “bu kullanım tutarlı” mesajı, “sunucu bu alanı gerçekten gönderdi” anlamına gelmez. İki güvence birlikte çalışır: çalışma zamanındaki şema dış değeri sınar; çıkarılan TypeScript tipi başarılı parse sonrasındaki kodu korur.
+## Aynı iddia generic fonksiyonda da var
 
-## Sınırın yerini doğru seç
+Bir generic, fonksiyona çağrıldığı yerde değişebilen bir tip parametresi ekler. T gibi bir ad, fonksiyonun değerleri nasıl kullandığını tarif edebilir; ancak kendi başına gelen JSON'u incelemez.
 
-Doğrulama noktası, girdinin güvenilmeyen dünyadan uygulamanın kendi koduna geçtiği yerdir. Fetch cevabında bu nokta API client; formda resolver ya da submit sınırı; config'te uygulama başlangıcıdır. Aynı ham nesne üç farklı bileşende tüketiliyorsa doğrulamayı her tüketiciye koymak, birinin kontrolü unutmasına açık kapı bırakır. API client'ta parse edilmiş değeri döndürmek bütün çağıranlara aynı garantiyi verir.
+```ts check
+function movieTitle<T extends { title: string }>(movie: T): string {
+  return movie.title.toUpperCase()
+}
 
-Her girdiyi aynı hata davranışına zorlamak da doğru değildir. Ana detay verisi bozuksa query'yi hata durumuna geçirmek, yarım bir film objesi göstermemekten daha güvenlidir. Küçük bir kart özeti ise bağımsız olarak çökerse bütün sayfayı düşürmek yerine yedek metin sunabilir. Bu karar veri sözleşmesini gevşetmez; doğrulama başarısızlığının kullanıcıya nasıl sunulacağını belirler.
+const movie = JSON.parse('{"title":null}') as { title: string }
+console.log(movieTitle(movie))
+```
 
-Şema alanları tam ihtiyaç kadar seçilmelidir. Kullanılmayan her API alanını ilk günden doğrulamak gereksiz bakım yükü yaratır. Ancak alanın opsiyonelliği, null olabilirliği ve boş metne izin verilip verilmeyeceği bilinçli olarak belirlenmelidir. Kullanmadığın bir nested alanı şimdilik kapsam dışında bırakabilirsin; kullandığın başlığın null olmasına sessizce izin veremezsin. Bu ayrım şemanın okunabilirliğini ve servis değişikliklerinde hata yerinin bulunmasını kolaylaştırır.
+Fonksiyonun çağrıldığı yerde TypeScript, title alanının string olduğunu kabul eder ve fonksiyonun alanı kullanmasına izin verir. Fakat JSON.parse satırında dış veriyi kontrol etmedik; title yine null olduğundan çağrı çalışma anında hata verir. Generic'i bu kez hasarlı veriye temas eden başka bir fonksiyonda gördük: kısıt yazmak bile sunucu cevabını sınamıyor. Generic kullanışlıdır, fakat onu veri denetimiyle karıştırmamalısın.
 
-## Sık yanılgılar
+Bir fonksiyonun çağrıldığı tip ile çalışması, API sözleşmesini doğruladığı anlamına gelmez. Tip bilgisi uygulama kodunun parçaları arasında taşınır; gerçek cevapla karşılaştırma ayrıca yapılmalıdır. Burada ilk örneğe göre tek yenilik, aynı temelsiz varsayımın bir yardımcı fonksiyonun arkasında da saklanabilmesidir.
 
-:::mistake[Tip iddiasını kanıt sanmak]
-**Belirti →** Derleme başarılıdır ama başlık kullanımında `null` hatası çıkar. **Neden →** Generic veya `as` yalnızca derleyiciye bir iddia verdi. **Düzeltme →** JSON'u `unknown` al ve kullanmadan önce çalışma zamanı şemasıyla doğrula.
-:::
+## Küçük bir kontrol neyi kanıtlar?
 
-:::mistake[`any` ile bilinmeyeni geçiştirmek]
-**Belirti →** `raw.title.toUpperCase()` satırı hiçbir tip uyarısı vermeden çalışır ve çöker. **Neden →** `any` sonraki erişimlerde kontrolü kapattı. **Düzeltme →** Girişte `unknown` kullan; doğrulama başarılı olmadan alanı okuma.
-:::
+Bu kez JSON'u unknown tutup başlığın türünü gerçekten kontrol edelim. Bir type guard, değerin belli bir biçimde olduğunu sınayan ve TypeScript'e bu sonucu bildiren kontroldür; burada da her iki işi yapıyor.
 
-:::mistake[Doğrulamayı geç kullanmak]
-**Belirti →** Hata ağ cevabı geldikten birkaç bileşen sonra görülür. **Neden →** Ham veri uygulama içinde dolaştı ve birden çok tüketici varsayım yaptı. **Düzeltme →** Parse işlemini API client gibi sınır katmanına al ve yalnızca doğrulanmış sonucu döndür.
-:::
+```ts check
+type Movie = { title: string }
 
-:::sector
-Ekipler API client'larda dış gövde tipini `unknown` başlatır ve endpoint şemasını client çağrısında zorunlu tutar. Hata kaydında hangi endpoint'in, hangi alan yolunda bozulduğu tutulur; kullanıcıya ise servis iç yapısını açığa çıkarmayan kısa bir mesaj gösterilir. Böylece yeni geliştirici de “generic yazılmış, o hâlde güvenlidir” varsayımıyla ham veriyi UI'a taşıyamaz.
+function isMovie(value: unknown): value is Movie {
+  return typeof value === 'object' && value !== null &&
+    'title' in value && typeof value.title === 'string'
+}
+
+const raw: unknown = JSON.parse('{"title":"Gece Yolculuğu"}')
+if (isMovie(raw)) console.log(raw.title.toUpperCase())
+```
+
+Kontrol başarılıysa raw.title string'dir ve onu güvenle kullanabilirsin. Fakat bu kontrol sadece başlığı sınar. Poster yolu, puan veya iç içe bir oyuncu listesi de kullanacaksan her birini ayrıca kontrol etmen gerekir. Küçük bir cevap için bu açık olabilir; alanlar arttıkça kontrol fonksiyonu uzar. Güvence, kontrolün gerçekten baktığı alanlarla sınırlıdır.
+
+| Sıra | Ne çalışır? | raw hakkında ne biliyoruz? |
+| --- | --- | --- |
+| 1 | JSON metni nesneye çevrilir | Hâlâ unknown; alanlara güvenemeyiz |
+| 2 | isMovie(raw) nesne ve title alanını sınar | Kontrol henüz tamamlanmadı |
+| 3a | Kontrol true döner | title kesinlikle string |
+| 3b | Kontrol false döner | Değeri film başlığı gibi kullanmayız |
+| 4 | Başarılı kolda toUpperCase() çalışır | String üzerinde güvenli kullanım |
+
+Bu sırada önce dış veriyi sınar, sonra alanı okuruz. Kontrol başarısızsa ekrana bozuk başlığı göndermek yerine sınırda hata yolu seçilebilir. “Hata sınırda görünür” demek, bozuk verinin uygulamanın içinde ilerlemeden kaynağa yakın yerde reddedilmesidir. Bu tercih hatayı daha erken ve veriyi ilk alan yerde görünür kılar.
+
+## Sinema'da kontrolü nereye koyarsın?
+
+API cevabını birden fazla film kartı kullanıyorsa her kartın kendi kontrolünü yazması kolayca tutarsızlık yaratır. Veriyi alan API client'ta kontrol edip doğrulanmış sonucu döndürmek, bütün kartların aynı kurala uymasını sağlar. Bu giriş noktasına uygulamanın sınırı diyebiliriz: dış dünyanın değeri, uygulamanın kendi koduna burada girer.
+
+![Bilinmeyen dış verinin doğrulamadan sonra tipli veriye ya da hataya ayrıldığı akış](diagram:zod-sinir)
+
+Bir film detay sayfasında başlık veya puan beklenen biçimde değilse, detay verisini hatalı sonuç olarak işaretlemek mantıklıdır. Tek bir küçük poster bilgisi bozuksa kart yedek görsel gösterebilir. Kontrolün kendisi aynı soruyu yanıtlar—“bu değer beklenen biçimde mi?”—ama hatayı kullanıcıya nasıl göstereceğin ekranın ihtiyacına bağlıdır. Veriyi reddetmek ve kullanıcıya ne göstermek gerektiği iki ayrı karardır.
+
+Örneğin başlık eksik geldiğinde kartın boş bir `h1` göstermesi, hatayı ortadan kaldırmaz; yalnızca daha az görünür yapar. Kaynağa yakın yerde durdurursan log veya hata durumu, sorunun film cevabında olduğunu daha erken gösterir. Bir yedek metin seçiyorsan da bunu doğrulama başarılıymış gibi yapmak yerine kartın bilinçli görünüm kararı olarak uygula.
+
+El yazımı kontroller doğru çalışabilir, ancak her alan için tür, eksiklik ve olası alt değerleri takip etmek gerekir. Bir başlık kontrolü, nesnenin kalan alanlarını veya dizi elemanlarını kendiliğinden doğrulamaz. Sonraki derste bu kuralları bir şemada tarif edip gerçek değere uygulayacağız. Şema, kontrolün yerine geçen bir tip etiketi değil; değeri gerçekten sınayan tarif olacak.
+
+## Yanlış giden kısa yol
+
+:::mistake[Generic'i API garantisi sanmak]
+**Belirti →** Kod derlenir ama title.toUpperCase() sırasında çöker. **Neden →** Çağrıda verilen tip parametresi cevabı incelemedi. **Düzeltme →** Dış cevabı unknown kabul et ve uygulama içinde kullanmadan önce gerçek kontrol uygula.
 :::
 
 ## Özet
 
-- TypeScript derleme zamanı kodunu denetler; HTTP cevabını çalışırken incelemez.
-- Generic ve `as` gerçek veride doğrulama yapmaz.
-- Dış girdiyi önce `unknown` kabul et, şemada doğrula, başarılı sonucu kullan.
-- Doğrulamayı her ekranda tekrarlamak yerine veri giriş sınırına koy.
+- TypeScript tipi derleme sırasında yardım eder; API cevabını çalışırken kontrol etmez.
+- as Movie ve getJson<Movie>() gerçek veriye kanıt eklemez.
+- unknown değeri kullanmadan önce kontrol et; başarılı kontrolden sonra güvenli biçimde kullan.
+- Kontrolü dış verinin uygulamaya girdiği yerde yapmak, hatanın yayılmasını önler.
 
-**Kendini yokla:** `getJson<Movie>()` sunucunun doğru `Movie` döndürdüğünü kanıtlar mı?  
-*Cevap:* Hayır; generic derleme zamanı iddiasıdır. JSON'u ayrıca doğrulamalısın.
+**Yeni terimler:**
+- unknown: Biçimi henüz bilinmeyen ve kontrol edilmeden kullanılamayan değer.
+- generic: Bir fonksiyonun çağrılırken belirlenen tip parametresi.
+- type guard: Değerin biçimini sınayıp sonucu TypeScript'e bildiren kontrol.
+- uygulama sınırı: Dış verinin uygulama koduna ilk girdiği yer.
 
-**Kendini yokla:** Bozuk bir liste yanıtında hangi katman hatayı ilk yakalamalı?  
-*Cevap:* JSON'u alan API client; veri UI'a veya cache'e ulaşmadan.
+**Kendini yokla:** getJson<Movie>() cevabın Movie olduğunu kanıtlar mı?
+*Cevap:* Hayır. Generic yalnızca tip iddiası taşır; gerçek değeri kontrol etmez.
+
+**Kendini yokla:** isMovie yalnızca title alanını sınarsa posterPath alanına güvenebilir misin?
+*Cevap:* Hayır. Yalnızca kontrol ettiği biçim hakkında güvence verir.

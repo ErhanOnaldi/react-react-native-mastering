@@ -1,5 +1,5 @@
 import { describe, expect, it, expectTypeOf } from 'vitest'
-import { createWatchlist } from '@exercise/watchlist'
+import { createWatchlist, formatWatchlist } from '@exercise/watchlist'
 import type { WatchlistValues } from '@exercise/watchlist'
 
 describe('izleme listesi tipi', () => {
@@ -14,5 +14,9 @@ describe('izleme listesi tipi', () => {
   })
   it('boolean yerine string görünürlüğü reddeder', () => {
     expect(() => createWatchlist({ name: 'Klasikler', isPublic: 'false' })).toThrow()
+  })
+  it('çıkarılan tipi izleme listesi etiketinde kullanır', () => {
+    expect(formatWatchlist({ name: 'Klasikler', isPublic: true })).toBe('Klasikler (Herkese açık)')
+    expect(formatWatchlist({ name: 'Klasikler', isPublic: false })).toBe('Klasikler (Özel)')
   })
 })

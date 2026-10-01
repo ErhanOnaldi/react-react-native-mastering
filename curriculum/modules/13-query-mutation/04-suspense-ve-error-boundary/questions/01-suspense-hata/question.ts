@@ -7,13 +7,13 @@ export default defineQuestion({
   question: '`useSuspenseQuery` ile ilk GET 500 döndüğünde hangi sınır gerekir?',
   options: [
     {
-      text: '<Suspense> fallback’i hatayı gösterir.',
-      explanation: 'Suspense yüklemeyi yakalar; hata için ErrorBoundary gerekir.',
-    },
-    {
       text: 'ErrorBoundary hatayı yakalar; Suspense ilk yüklemeyi gösterir.',
       correct: true,
       explanation: 'İki sınırın sorumluluğu ayrıdır.',
+    },
+    {
+      text: '<Suspense> fallback’i hatayı gösterir.',
+      explanation: 'Suspense yüklemeyi yakalar; hata için ErrorBoundary gerekir.',
     },
     {
       text: '`isPending` dalı sayfada hatayı yakalar.',

@@ -42,7 +42,7 @@ describe('Sinema form ve env şemaları', () => {
     await user.click(screen.getByRole('button', { name: '4 yıldız' }))
     await user.type(screen.getByRole('textbox', { name: 'Yorum' }), '   ')
     await user.click(screen.getByRole('button', { name: 'Gönder' }))
-    expect(screen.getByText('Yorum gerekli')).toBeInTheDocument()
+    expect(screen.getByText('Yorum gerekli')).toHaveAttribute('role', 'alert')
     expect(requests('/comments/add')).toHaveLength(0)
   })
   it('env tokenını trimler ve başlığa varsayılan verir', async () => {

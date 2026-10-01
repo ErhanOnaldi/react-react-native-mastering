@@ -1,38 +1,32 @@
 ---
-title: "Kendi kararınla state ve bileşen"
-minutes: 5
+title: "Atölye: state ve bileşen API'si"
+minutes: 6
 kind: practice
 ---
 
-# Kendi kararınla state ve bileşen
+# Atölye: state ve bileşen API'si
 
-:::pain[İşaret sıra değişince yanlış karta gidiyor]
-Popüler filmleri sıraladığında favori başka satırda görünmeye başlıyor. Filtre paneli içinse tek bir prop ya da yerleştirilebilir küçük parçalarla iki geçerli API kurabilirsin. Bu atölyede veri kimliği ile görünüm kararını birbirinden ayırıp seçimini gerekçelendireceksin.
-:::
-
-## Önce gözlenebilir davranışı sabitle
-
-İlk görevde sıralama değişse de favori aynı filme bağlı kalmalı. Veri id'si öğeyi tanımlar; sıralama yalnız görünüm sırasını değiştirir. Kaynak listeyi değiştirmeden Türkçe başlık sırası üret ve favoriyi id üzerinden takip et.
-
-İkinci görevde filtre paneli için iki API'den birini seç. Sabit ve az sayıda görünüm için tek yapılandırma prop'u daha kısa olabilir. Bir ekran farklı kontroller yerleştirecekse composition parçaları daha fazla esneklik verir. İki yaklaşım da geçerlidir; kod yorumunda seçimin bakım maliyetini ve diğer seçeneğin ödünleşimini açıkla.
+İlk alıştırmada popüler filmleri Türkçe başlığa göre sıralar ve favorileri sıralama boyunca aynı filmlerde tutarsın. İkincisinde başlık filtresi kurar, tekrar kullanılabilir panelin nasıl yapılandırılacağına karar verirsin.
 
 :::model[Ağaçta kimlik ve key]
-React listede child'ları kararlı key ile eşler; film id'si sıralama ve ters çevirme boyunca değişmez. Yeni bağlamda görünür sıra ve favori state'i aynı bilgi değildir: sıra bir görünüm, favori id'si kullanıcı seçimidir.
+Liste sırası görünüm bilgisidir; id filmin kimliğidir. Favorileri id'lerle sakla ve her satıra sabit id'den `key` ver. Böylece sıralama, favori durumunu başka satıra taşımaz.
 :::
 
-## Çalışma sırası
+:::model[Composition]
+Composition, bileşenleri içerik vererek bir araya getirmektir; `children` bunun yaygın yoludur. Bu atölyede tek bir yapılandırma prop'u daha küçük bir API sunabilir, ayrı içerik parçaları ise farklı yerleşimler için esneklik verir. Seçimini panelin kaç farklı biçimde kullanılacağını düşünerek yap ve somut ödünleşimi kod yorumunda belirt.
+:::
 
-Her görevde önce dosya ve export sözleşmesini, sonra gereksinimleri oku. Önizlemede yalnız bir mutlu adımı değil, ters sıralamayı geri almayı veya input'u temizlemeyi de dene. Kod tasarım kararı istiyorsa gerekçeyi yorumda yaz; dosya içindeki somut davranışla eşleştir.
+## Davranışı önce görünür kıl
+
+Favorileri işaretledikten sonra sırayı ters çevir. İşaretlerin aynı filmlerle kalıp kalmadığını ve tek favoriyi kaldırınca diğerinin durduğunu kontrol et. Kaynak listeyi yerinde sıralama; kopya listeyi Türkçe başlıklara göre sırala.
+
+Filtre panelinde “Film ara” alanının etiketi ve değeri açık olsun. Büyük/küçük harf farkı aramayı bozmamalı; Türkçe harfler de eşleşmeli. Alan temizlenince bütün filmlerin geri geldiğini dene. Panel belirli film adlarını kendi içine gömmemeli.
 
 ## Özet
 
-- State'i öğe kimliğine bağla, sıra numarasına değil.
-- Sıralama için kaynak diziyi mutasyona uğratma.
-- Component API'si seçerken kullanım esnekliği ile yüzey alanı maliyetini tart.
+- Film id'siyle state tut; sıra index'ini kimlik olarak kullanma.
+- Sıralanmış görünümü yeni dizi olarak üret.
+- Component API'sini gerçek kullanım biçimine göre seç ve ödünleşimi açıkla.
 
-**Kendini yokla:** Filtre panelinin API'si için tek doğru tasarım var mı?  
-*Cevap:* Hayır; iki seçenek de gereksinimi karşılayabilir. Kullanım ve genişleme maliyetini açıklamak gerekir.
-
-:::sector
-Kod incelemelerinde “çalışıyor mu?” yanında “bu sınırı neden böyle seçtin?” sorusu da önemlidir. Kısa bir gerekçe, sonraki geliştiricinin component API'sini yeni ekrana taşırken kararın bağlamını korumasına yardım eder.
-:::
+**Kendini yokla:** Filtre panelinin tasarımı için tek doğru API var mı?
+*Cevap:* Hayır; kullanım biçimine uyan seçeneği seçip maliyetini gerekçelendirmek gerekir.

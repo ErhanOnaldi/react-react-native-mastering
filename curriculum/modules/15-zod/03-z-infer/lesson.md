@@ -1,121 +1,141 @@
 ---
-title: "Şemadan tip çıkar"
-minutes: 13
+title: "Şemadan tipi çıkar"
+minutes: 12
 kind: concept
 ---
 
-# Şemadan tip çıkar
+# Şemadan tipi çıkar
 
-:::pain[Problem]
-İzleme listesi formunda name artık zorunlu, ama ayrı yazılmış WatchlistValues içinde opsiyonel kalmış. Form hata göstermiyor; kayıt fonksiyonu da formun göndermeyeceği bir değeri bekliyor.
-:::
+Şema, çalışma anında bir değerin kurallara uyup uymadığını kontrol eder. TypeScript ise kodunu yazarken hangi alanları kullanabileceğini denetler. Aynı alanları hem şemada hem de ayrı bir type açıklamasında yazarsan zamanla biri değişip öteki unutulabilir. Zod'un **z.infer** özelliği, TypeScript tipini şemadan üretir.
 
-## Kural ile tipi aynı yerden üret
+## Önce iki alan, sonra çıkarılmış tip
 
-Şema çalışma zamanında veriyi kontrol eder. TypeScript tipi ise derleme sırasında uygulama kodunun hangi alanları kullanabileceğini belirler. Bu iki tarif ayrı ayrı yazılırsa biri değişip diğeri eski kalabilir. Zod, şemadan doğrulanmış çıktının tipini çıkarmana izin verir: z.infer<typeof schema>.
-
-:::model[Tip derlemede, veri çalışma anında]
-Şemaya gelen dış değer parse edilene kadar bilinmez. Parse başarılı olunca data hem çalışma zamanı kontrolünden geçmiştir hem de TypeScript'in kullanacağı bir tipe sahiptir. z.infer yalnızca bu başarılı çıktının tipini çıkarır; kendi başına hiçbir değeri denetlemez.
-:::
-
-![Bilinmeyen dış verinin doğrulamayla tipli veriye ya da hataya ayrıldığını gösteren akış](diagram:zod-sinir)
-
-Şema ve tip ilişkisini okurken bu kesin kuralları kullan:
-
-1. z.infer<typeof schema> şemanın çıktı tipidir; typeof ile şema değişkeninin türünü alıp infer'e verirsin.
-2. Parse başarılı olduğunda result.data bu çıktı tipine sahiptir. result.error yalnızca başarısız kolda bulunur.
-3. Dönüşüm içermeyen şemada z.input<typeof schema> ile z.output<typeof schema> çoğunlukla aynıdır.
-4. .trim(), .transform() veya z.coerce gibi işlemler girdi biçimini çıktıdan ayırabilir. Form ham girdiyi tutarken submit fonksiyonu dönüştürülmüş çıktıyı alabilir.
-5. Bir TypeScript tipi, şemadaki çalışma zamanı koşullarını kodlamaz. Örneğin string boş metin değerini de içerir; .min(1) kuralı parse sırasında çalışır.
-
-Bu kurallar tipleri hangi katmanda kullanacağını açıklar. Formun register ettiği değerler kullanıcının yazdığı biçimde durabilir. Geçerli değer için trim uygulanıp sayıya dönüştürülebilir. Dolayısıyla “formun tipi” tek bir şey değildir: form elemanının kabul ettiği ham değer ile iş kuralından geçen submit değeri farklıysa ikisini ayırmak gerekir.
-
-## parse sonrasında değer nasıl daralır?
-
-İzleme listesi adı string, görünürlük ise boolean olmalı. Şema ve tip şöyle bağlanır:
+Sinema'daki bir gösterim etiketi için kısa bir şema yazalım. **z.infer<typeof ...>** ifadesi şemada tarif edilen alanların TypeScript tipini çıkarır; **typeof** burada değişkenin tipini almak için kullanılır.
 
 ```ts check
 import { z } from 'zod'
 
-const listSchema = z.object({
-  name: z.string().trim().min(1),
-  isPublic: z.boolean(),
+const screeningTagSchema = z.object({
+  label: z.string(),
+  featured: z.boolean(),
 })
-type ListValues = z.infer<typeof listSchema>
+type ScreeningTag = z.infer<typeof screeningTagSchema>
+```
 
-function makeList(raw: unknown): ListValues {
-  return listSchema.parse(raw)
+**ScreeningTag** artık **{ label: string; featured: boolean }** ile aynı alan yapısına sahiptir. Bunu ayrıca elle yazmadık; alanları değiştirdiğinde tip de aynı şemadan yeniden çıkarılır. Bu adım bir tipi üretir, henüz hiçbir gerçek nesneyi kontrol etmez.
+
+## Çıkarılan tipi fonksiyonda kullan
+
+Şimdi bu tipi alan bir yardımcı fonksiyon tanımlayalım. Fonksiyon yalnızca doğrulanmış bir etiketi ekrana hazır metne çevirsin.
+
+```ts check
+import { z } from 'zod'
+
+const screeningTagSchema = z.object({
+  label: z.string(),
+  featured: z.boolean(),
+})
+type ScreeningTag = z.infer<typeof screeningTagSchema>
+
+function tagText(tag: ScreeningTag): string {
+  return tag.featured ? '★ ' + tag.label : tag.label
 }
-const list = makeList({ name: '  Akşam Filmleri  ', isPublic: false })
-console.log(list.name)
 ```
 
-Fonksiyonun dışındaki çağıran unknown verir. parse çalışırken nesne ve iki alan doğrulanır; name kırpılır. Fonksiyon başarılıysa çıktı ListValues tipindedir. Şemada isPublic alanını kaldırırsan çıkarılan tip de değişir ve kullanan kodda eski alana erişim derleme hatası verir.
+TypeScript, tagText çağrısında label ve featured alanlarının var olduğunu bilir. featured alanını şemadan kaldırırsan çıkarılan tip de değişir; tagText içindeki eski alan kullanımı derleme hatasına dönüşür. Tek şema böylece çalışma zamanı kuralının ve sonraki kodun alan şeklinin ortak kaynağı olur.
 
-| Adım | Değer / tip | Sonraki katmanın görebildiği |
+Bu fonksiyonun parametre tipi, ona verilen nesnenin API'den geldiğini veya geçerli olduğunu ispatlamaz. Yalnızca TypeScript kodunda gerekli alanların bulunduğunu söyler. Dış veri için gerçek kontrolü ayrıca çağırmalısın.
+
+## Tip çıkarımı ile parse'ı birleştir
+
+Bir film gösterim notunun boş olmayan salon adı ve dakikayla ifade edilen başlangıç saati olsun. Bu örnekte min(1) değeri çalışma anında sınar; z.infer ise şemanın alan biçimini çıkartır.
+
+```ts check
+import { z } from 'zod'
+
+const screeningNoteSchema = z.object({
+  room: z.string().trim().min(1),
+  startsAtMinute: z.number().int().positive(),
+})
+type ScreeningNote = z.infer<typeof screeningNoteSchema>
+
+function readScreeningNote(raw: unknown): ScreeningNote {
+  return screeningNoteSchema.parse(raw)
+}
+
+const note = readScreeningNote({ room: '  Mavi Salon  ', startsAtMinute: 90 })
+console.log(note.room)
+```
+
+Çağıran taraf unknown verir; fonksiyon önce gerçek değeri parse eder, sonra ScreeningNote biçiminde döndürür. Çıktıda room boşluklardan arındırılmıştır. z.infer ile çıkarılan alan tipi yine string olur; min(1) gibi içerik koşulunu TypeScript'in string tipi tek başına taşımaz.
+
+| Adım | Ne olur? | Sonraki kodun gördüğü |
 | --- | --- | --- |
-| 1. Ham değer alınır | unknown | Hiçbir alan güvenilir değil |
-| 2. listSchema.parse(raw) çağrılır | Gerçek nesne kontrol edilir | Hata varsa fonksiyon dönmez |
-| 3. name trimlenir | '  Akşam Filmleri  ' → 'Akşam Filmleri' | Dönüşüm uygulanmış çıktı |
-| 4. ListValues döner | { name: string; isPublic: boolean } | Alanlar tipli biçimde kullanılabilir |
+| 1 | Dış değer unknown olarak alınır | Alanlara henüz güvenilmez |
+| 2 | screeningNoteSchema.parse(raw) çağrılır | Alanlar ve kurallar gerçek değer üzerinde sınanır |
+| 3 | room çevresindeki boşluklar temizlenir | Çıktıda Mavi Salon bulunur |
+| 4 | Parse başarılı olur | note tipi ScreeningNote olur |
+| 5 | Kural tutmaz | Fonksiyon hata verir; geçersiz sonuç dönmez |
 
-Tablodaki son satır boş metni yasaklamaz. ListValues['name'] hâlâ string olur. "".length > 0 gibi bir kuralı derleyici tipinin otomatik taşımasını bekleme; bu kural ancak parse sırasında sınanır. Tam da bu nedenle tipi şemadan çıkarmak ile gerçek veriyi parse etmek birbirinin alternatifi değil, aynı akışın iki adımıdır.
+Tablo, çalışma zamanı kontrolüyle TypeScript tipinin farklı işler yaptığını gösterir. Şema boş adı reddeder; çıkarılan room: string tipi ise yalnızca bu alanın metin olduğunu belirtir. Hem doğrulama hem tip kullanımı gerekir: biri değeri kontrol eder, diğeri kontrol edilmiş çıktıyla yazdığın kodu korur.
 
-## İki ayrı kaynak neden sürüklenir?
+![Bilinmeyen dış verinin doğrulamayla tipli veriye ya da hataya ayrıldığı akış](diagram:zod-sinir)
 
-Şemayı ve interface'i elle yazdığını düşün:
+## Ayrı tip yazınca hangi risk doğar?
 
-```ts
-type ListValues = { name?: string; isPublic: boolean }
-const listSchema = z.object({ name: z.string().min(1), isPublic: z.boolean() })
+Aşağıdaki iki tanımı karşılaştıralım:
+
+```ts check
+import { z } from 'zod'
+
+const screeningTagSchema = z.object({ label: z.string(), featured: z.boolean() })
+type ScreeningTag = { label: string; featured?: boolean }
 ```
 
-Burada TypeScript name alanının eksik olmasına izin verirken Zod bunu reddeder. İki kaynak ilk gün benzer görünebilir; iş kuralı değişince birini güncelleyip diğerini atlamak kolaydır. Ayrı tipi kaldırıp type ListValues = z.infer<typeof listSchema> dediğinde aynı şema değişikliği her iki katmana yayılır.
+Burada elle yazılan tip featured alanını opsiyonel sayıyor, oysa şema zorunlu tutuyor. İki tanım bugün benzer görünse bile alan kuralı değişince aralarındaki farkı fark etmeyebilirsin. **type ScreeningTag = z.infer<typeof screeningTagSchema>** yazınca bu ikinci kaynak ortadan kalkar.
 
-z.infer kısa ve doğru seçimdir, ama adı doğrulama değildir. Şu kullanımda tip çıkarılmış olsa da raw hâlâ parse edilmemiştir:
+Bu, z.infer'in şemayı çalıştırdığı anlamına gelmez. Şöyle yazarsan dış veri hâlâ sınanmamıştır:
 
-```ts
-const raw: unknown = getData()
-const values = raw as ListValues
+```ts check
+import { z } from 'zod'
+
+const screeningTagSchema = z.object({ label: z.string(), featured: z.boolean() })
+type ScreeningTag = z.infer<typeof screeningTagSchema>
+const raw: unknown = JSON.parse('{"label":"Gece Seansı","featured":"evet"}')
+const tag = raw as ScreeningTag
+console.log(tag.label)
 ```
 
-Bir assertion, unknown değerini dış kaynakta denetim yapmadan ListValues gibi göstermiş olur. Güvenli sınır listSchema.parse(raw) veya bir hata UX'i gerektiğinde safeParse(raw) çağrısıdır. Şemadan türeyen tipi parse edilmiş veriyi alan fonksiyonlarda, kayıt tipinde ve submit callback'inde kullan.
+**as ScreeningTag** TypeScript'e iddia verir, fakat JSON'daki featured: "evet" değerini boolean yapmaz ve şemayı çalıştırmaz. Dış veri için screeningTagSchema.parse(raw) ya da başarısızlığı ekranda ele alacağın yerde safeParse(raw) çağrısı gerekir. Parse edilmiş başarılı çıktıyı ScreeningTag kullanan fonksiyonlara aktarabilirsin.
 
-Input ve output farkı küçük bir trim'de bile faydalı olabilir. String alanı formda boşluklarla tutulur; schema .trim() çağrısında başarılı değer kırpılmış olur. İki taraf da TypeScript açısından string olsa da veri içeriği farklıdır. Sayı coercion'ında fark daha görünürdür: form input'u string, submit değeri number olur. Bir sonraki dönüşüm katmanında z.input ve z.output bu ayrımı açıkça adlandırır.
+## Gerçek bir hata ve düzeltmesi
 
-Bir callback'in tipi, sonraki katmana ne tür değer alacağı konusunda söz verir. Şema output tipi oluştururken z.infer bu sözün kısa adıdır. Bu nedenle fonksiyon imzası için çıkarılmış tipi kullanmak işe yarar; fakat fonksiyona gelen değerin gerçekten o tipte olduğunu ispatlamaz. Dışarıdan unknown alan createList fonksiyonu önce parse yapmalı, ancak sonra ListValues döndürmelidir.
-
-Şemalar çalışma zamanında hata üretebildiği için tip çıkarımı iki yanlış beklentiyi çözmez. z.infer içine name: string yazılması, trim sonrası boş değerin kabul edilip edilmeyeceğini söylemez. Ayrıca tip üretmek, ham API verisindeki ilave key'lerin nasıl ele alınacağını tek başına belirlemez; bu şema davranışıdır. Compile-time imzayı ve runtime parse politikasını ayrı ayrı okuyabilmelisin.
-
-Şemadan tip çıkarmak düzenleme sırasında refactor'ı da güvenli kılar. Alanı yeniden adlandırınca parse sonrası o alanı kullanan kod derleyici uyarısı alır; şemayı çağıran sınır testleri ise eksik alanın çalışma anında reddedildiğini doğrular. İki çeşit geri bildirim farklı hataları yakalar. Tip kontrolü kullanan kodu, parse ise gerçek girdi örneklerini sınar.
-
-## Sık yanılgılar
-
-:::mistake[z.infer'i çalışma zamanı filtresi sanmak]
-Belirti → Bozuk API nesnesi fonksiyona girer ve alan okumasında çöker. Neden → Tip çıkarıldı ama hiçbir parse çağrısı yapılmadı. Düzeltme → Dış değeri şemayla parse et; başarılı çıktıyı z.infer tipindeki fonksiyona geçir.
+:::mistake[z.infer'i doğrulama sanmak]
+**Belirti →** TypeScript tag.featured kullanımına izin verir ama ekranda metin yerine beklenmeyen bir değer çıkar. **Neden →** Tip şemadan çıkarıldı, ancak gerçek raw değerinde şema hiç çalışmadı. **Düzeltme →** Dış veriyi önce şemayla parse et; başarılı parse sonucunu çıkarılmış tipteki fonksiyona ver.
 :::
 
-:::mistake[String tipinin boş değeri engellediğini sanmak]
-Belirti → Boş liste adı TypeScript'ten geçip kayda ulaşır. Neden → string boş metni de kapsar. Düzeltme → .trim().min(1) gibi çalışma zamanı kuralını şemada tanımla.
-:::
+TypeScript tipleri kod değişirken sana hızlı uyarı verir; parse ise uygulama çalışırken API'nin veya kullanıcının verdiği gerçek değeri denetler. Şemadan tip çıkarmanın nedeni bu iki katmanda alan tanımını eşitlemektir, birini diğeriyle değiştirmek değil.
 
-:::mistake[Input ve output'u tek tipte zorlamak]
-Belirti → Sayı bekleyen submit handler string alıyor veya RHF generic hatası çıkıyor. Neden → Coercion öncesi ve sonrası tip aynı varsayıldı. Düzeltme → Ham form alanı için z.input, dönüştürülmüş değer için z.output kullan.
-:::
+Bu ortak kaynağın yararı alan değişikliğinde daha net görünür. Diyelim ki gösterim etiketindeki `featured` alanını `isFeatured` diye yeniden adlandırdın. Şemayı ve çıkarılan tipi kullandığında, `tagText` içindeki eski alan kullanımı TypeScript tarafından hemen bulunur; elle yazılmış, unutulmuş bir tip ise eski adı sessizce taşımaya devam edebilir.
 
-:::sector
-Ekipler şemayı, formun ham değer tipini ve API'ye giden parse edilmiş tipi aynı modülde dışa aktarır. Bu, alan kuralı değiştiğinde üç ayrı interface aramayı önler. Yine de infer tipinin “geçerli içerik” garantisi vermediği code review'da açıkça tutulur; garanti, parse edilmiş değer için vardır.
-:::
+Çıkarılmış tipi başka fonksiyonların parametresi yapmak da aynı tutarlılığı korur. Örneğin bir kart metni oluşturan fonksiyon veya sıralama yardımcısı `ScreeningTag` alabilir. Her fonksiyona ayrı nesne tipi yazmana gerek kalmaz; alanların şekli tek yerden gelir. Yine de bu fonksiyonlara dışarıdan gelen ham nesneyi doğrudan verme: API cevabını alan yerde parse et, sonra tipli sonucu paylaş.
+
+Şema ile tipi yan yana tuttuğunda iki farklı soruya cevap alırsın: “Bu gerçek değer kuralları geçti mi?” ve “Bu fonksiyon hangi alanları kullanabilir?” Kod incelemesinde bu ayrımı korumak, z.infer'i sihirli güvenlik etiketi gibi okumaktan kaçınmana yardım eder. Alan yapısını tekrar kullanırsın; runtime kontrolünün atlandığı durum yine görünür kalır.
 
 ## Özet
 
-- z.infer<typeof schema> şemanın doğrulanmış çıktı tipidir.
-- Dış değer ancak parse çağrısı gerçekten çalıştıktan sonra doğrulanmış olur.
-- string tipi boş metni yasaklamaz; içerik kuralı çalışma zamanında kalır.
-- Dönüşüm varsa ham form girdisi ve submit çıktısı için z.input/z.output ayır.
+- z.infer<typeof schema> şemanın tarif ettiği alan yapısının TypeScript tipini çıkarır.
+- Çıkarılan tipi parametrelerde ve parse edilmiş değerleri kullanan fonksiyonlarda kullanabilirsin.
+- Tip çıkarmak gerçek bir değeri kontrol etmez; dış veri için şemayı parse et.
+- string boş metni de içerir; min(1) gibi içerik koşulları parse sırasında çalışır.
 
-**Kendini yokla:** z.infer tek başına unknown bir cevabı güvenli yapar mı?  
-*Cevap:* Hayır. Şema parse edilmelidir.
+**Yeni terimler:**
+- z.infer: Zod şemasının TypeScript tipini türeten araç.
+- typeof: Burada bir şema değişkeninin TypeScript tipini ifadeye taşıyan operatör.
+- parse edilmiş çıktı: Şemadaki gerçek kontrollerden başarıyla geçmiş değer.
 
-**Kendini yokla:** .trim() uygulanmış string şemasında formun ham değeri ve parse çıktısı neden farklı olabilir?  
-*Cevap:* Form boşlukları tutar; başarılı çıktı trimlenmiş string içerir.
+**Kendini yokla:** z.infer<typeof schema> tek başına API verisini kontrol eder mi?
+*Cevap:* Hayır. Tipi çıkarır; gerçek değer için şemayı çalıştırmalısın.
+
+**Kendini yokla:** min(1) kuralı çıkarılan string tipinde boş metni dışlar mı?
+*Cevap:* Hayır. Bu kural parse sırasında sınanır, TypeScript'in string tipi boş metni de kapsar.

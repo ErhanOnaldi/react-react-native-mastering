@@ -1,3 +1,3 @@
 ## Neden böyle?
 
-Dizinin yalnız dışını kopyalayıp `movie.vote_count++` yapmak iç nesneyi hâlâ mutasyona uğratır. `map` yeni dizi, object spread ise değişen film için yeni nesne oluşturur. Değişmeyen film aynı referansta kalabilir. Bu yaklaşım Sinema’daki daha karmaşık yerel state değişikliklerinin temelidir.
+Her tıklama eski film listesinden yeni bir liste üretir. Yalnız seçilen film yeni nesne olur ve oy sayısı artar; diğer filmler olduğu gibi kalır. Updater önceki state'i alır, böylece art arda tıklamalar sonuca eklenir.

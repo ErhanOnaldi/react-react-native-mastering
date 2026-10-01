@@ -7,9 +7,9 @@ export default defineQuestion({
   concepts: ['router.search-params', 'react.useEffect.deps', 'react.race-conditions'],
   files: ['SearchPage.tsx'],
   hints: [
-    'Adres değişirken ekrandaki son sonucu hangi arama çalışması yazıyor?',
-    'URL’deki `q` her değiştiğinde yeni aramayı başlat; önceki çalışmanın geç gelen sonucunu geçersiz kıl.',
-    'Effect içinde her `q` için ayrı geçerlilik işareti tut; cleanup onu kapatsın, cevap yalnızca hâlâ güncelse listeyi değiştirsin.',
+    'URL değişirken hangi sorgu için istek başlatılmalı, hangi sorgunun sonucu ekranda kalmalı?',
+    "`useEffect` içinde `q` değişimine bağlı isteği başlat; effect'in cleanup'ında eski isteğin sonucunu geçersiz kıl.",
+    'Her effect çağrısında `let active = true` tut. Cleanup bunu `false` yapsın; `.then` içinde yalnız `active` ise `setMovies` çağır.',
   ],
   preview: { entry: 'Preview.tsx' },
 })

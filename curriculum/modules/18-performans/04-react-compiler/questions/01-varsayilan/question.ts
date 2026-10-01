@@ -5,23 +5,25 @@ export default defineQuestion({
   title: 'Yeni kodda varsayılan',
   difficulty: 'kolay',
   concepts: ['perf.compiler'],
-  question: 'Compiler 1.0 etkin ve saf bir bileşen yazıyorsun. Ne yaparsın?',
+  question: `React Compiler etkin bir Sinema sayfasında arama sorgusu değişince sonuç listesi güncellenmeli; sayaç değişince aynı filtre hesabı tekrarlanmamalı. Yeni kod için nasıl başlarsın?`,
   options: [
     {
-      text: 'Önce compiler’a bırakır, ölçülmüş özel ihtiyaçta el yazısı memo kullanırım',
+      text: 'Önce normal bileşen kodunu yazar, derleyicinin tekrarlanan işi azaltmasını bekler ve sonucu ölçerim.',
       correct: true,
       explanation:
-        'Güncel öneri otomatik memoization ile başlayıp özel kontrolü ölçerek eklemektir.',
+        'Derleyici uygun hesapları otomatik koruyabilir. Hangi işin atlandığını yine ölçerek doğrularsın.',
     },
     {
-      text: 'Her ifadeye useMemo eklerim',
+      text: 'Filtreyi hiçbir koşulda yeniden hesaplamamak için sonuçları sabitlerim.',
       correct: false,
-      explanation: 'Bu okunurluğu ve dependency bakımını gereksiz artırır.',
+      explanation:
+        'Arama sorgusu değiştiğinde sonuç da değişmelidir; eski listeyi sabitlemek doğru davranışı bozar.',
     },
     {
-      text: 'Eski tüm memo çağrılarını topluca silerim',
+      text: 'Sayaç state’ini her sonuç satırına taşırım ki bütün liste güncellensin.',
       correct: false,
-      explanation: 'Mevcut memo davranışı bazı durumlarda sözleşme olabilir.',
+      explanation:
+        'Sayaç değişikliği filtre girdisi değildir; state’i satırlara taşımak gereksiz render alanını büyütür.',
     },
   ],
 })

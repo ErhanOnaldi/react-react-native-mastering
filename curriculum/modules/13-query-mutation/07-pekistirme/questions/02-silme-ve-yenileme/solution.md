@@ -1,3 +1,3 @@
 ## Neden böyle?
 
-POST ve DELETE aynı listeyi etkiler ama hata halinde invalidation yapmamak gereksiz GET’i önler. Key içinde sessionId bulunması farklı oturumların cache’lerini ayırır. Form modülünde aynı mutation kalıbını yorum gönderme için kullanacaksın.
+`onMutate` eski listeyi context’e koyup silinen satırı immutable `filter` ile çıkarır. `remove` reject ederse `onError` snapshot’ı geri yükler; başarıda `onSuccess` yalnız bu session’ın listesini yeniler. Silme başarısızken cache’i yeniden okumak gerekmez, çünkü sunucudaki kayıt değişmemiştir.

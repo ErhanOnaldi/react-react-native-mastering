@@ -4,7 +4,7 @@ Sinema projesine tek komutla yerelde çalıştırılabilen test altyapısı ekle
 
 - Vite yapılandırması DOM test ortamını kullansın ve test API’lerini global değişken olarak açmasın.
 - package.json içinde tek seferlik test çalıştırma script’i bulunsun.
-- Proje bağımlılıklarında Vitest ve jsdom olsun; sürümler kök catalog ile eşleşsin.
+- Proje bağımlılıklarında Vitest ve jsdom olsun; sürümler kök `pnpm-workspace.yaml` içindeki catalog (ortak sürüm tablosu) ile eşleşsin.
 - Dört biçimleme durumunu Türkçe davranış adlarıyla sınayan gerçek assertion’lar ekle.
 - Beklenen değerlerden biri geçici olarak değiştirildiğinde test komutu başarısız olmalı; sonra doğru beklentiyi geri koy.
 
@@ -27,5 +27,5 @@ Sinema projesine tek komutla yerelde çalıştırılabilen test altyapısı ekle
 
 ## Kısıtlar
 
-- Mevcut Vite ayarlarını ve project alias’larını koru.
-- Bağımlılık sürümleri kök workspace catalog’undaki sürümlerle aynı olmalı.
+- Mevcut Vite ayarlarını ve proje import takma adlarını koru.
+- Bağımlılık sürümleri kök workspace’teki ortak sürüm tablosunda yazanlarla aynı olmalı.

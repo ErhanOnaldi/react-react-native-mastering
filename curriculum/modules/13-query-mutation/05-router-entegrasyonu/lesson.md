@@ -1,130 +1,136 @@
 ---
 title: "Route geçişinde veriyi hazırla"
-minutes: 13
+minutes: 16
 kind: concept
 ---
 
 # Route geçişinde veriyi hazırla
 
-:::pain[Problem]
-Harita ekranında bir durağa dokunuyorsun. Adres hemen değişiyor, ardından boş panel ve spinner görünüyor; ancak listedeki durak kartında gerekli isim ve kimlik zaten biliniyordu. Veri yalnızca detay bileşeni render olunca isteniyor.
-:::
+Sinema’da bir film kartına basınca adres `/movie/550` olabilir. Film kimliği bu URL’de zaten duruyor; detay sayfası açıldığında aynı filmi tekrar arayıp beklemek zorunda kalmamak için route geçişi sırasında isteği başlatabilirsin. Önce URL’deki değerin ne olduğunu, sonra geçişi yöneten parçanın ne yapacağını görelim.
 
-## URL ile cache’in görevini ayır
+## URL’den güvenli bir kimlik çıkar
 
-React Router’daki `loader`, bir route’a geçerken route verisini hazırlayabilir. TanStack Query’deki `QueryClient`, aynı verinin cache’ini ve yenilenmesini yönetir. Bu iki sistem aynı verinin sahibi olmamalıdır. URL, kullanıcının hangi durağı açtığını söyler; query key de sunucu cevabının hangi kayda ait olduğunu belirler.
+Route, URL’nin bir biçimine karşılık gelen ekran tanımıdır. Örneğin `/movie/:id`, son parçayı `id` parametresi olarak verir. URL dışarıdan değiştirilebilir; bu nedenle `params.id` değerini güvenilir bir sayı gibi kullanma. Önce sayıya çevir, sonra bunun pozitif bir tam sayı olduğunu doğrula.
 
-:::model[URL state]
-URL, paylaşılabilir ve yenilenebilir gezinme state’inin kaynağıdır. Route eşleşmesi URL’den parametreleri çıkarır; loader navigasyon sırasında veri hazırlayabilir. Bu yeni bağlamda loader adresin yerine geçmez ve kendi kopya state’ini oluşturmaz: URL’den kimliği alır, aynı Query cache key’i için veriyi hazırlar.
-:::
+İlk örnek yalnızca bu dönüşümü yapıyor. Henüz istek yok; tek yeni fikir URL’den gelen metnin kontrol edilmesi. `Number('abc')`, `NaN` üretir. Bu değeri query key’e veya API yoluna verirsen anlamlı olmayan bir film isteği başlatmış olursun.
 
-:::model[Query cache yaşam döngüsü]
-`ensureQueryData` aynı key’de veri varsa onu döndürür, yoksa queryFn’i çalıştırır. Tek başına bir observer kurmaz; component aynı query key ile `useSuspenseQuery` veya `useQuery` kullanarak cache’e abone olur. Böylece loader geçişi hızlandırırken cache’in tazelik ve invalidation kuralları component’te yaşamaya devam eder.
-:::
-
-## Loader veriyi sahiplenmez, hazırlar
-
-React Router’ın Data mode’unda loader navigasyon sırasında çalışır. `queryClient.ensureQueryData(options)` cache’deki veriyi döndürür veya yoksa bir kez fetch eder. Loader sonucu `useLoaderData` ile component’e kopyalanırsa Query cache’inden ayrılmış ikinci bir veri kaynağı ortaya çıkar. Bunun yerine component aynı key/options ile Query’ye abone olur.
-
-Kurallar:
-
-1. Route parametresi URL’den gelir ve dış girdi gibi doğrulanır. `Number('abc')` değeri `NaN` üretir; bu değeri query key’e koyma.
-2. Geçersiz parametre için `loader` açık bir route hatası üretir ve ağ isteğini başlatmaz.
-3. Geçerli parametre için loader, component’in kullanacağı aynı `queryOptions` tarifini `ensureQueryData`’ya verir.
-4. `ensureQueryData` cache’de veri varsa stale olsa bile varsayılan olarak hemen geri döner; stale veri için `revalidateIfStale` seçeneği ayrıca istenebilir.
-5. Component aynı key’e abone olunca cache değişikliklerini, invalidation’ı ve sonraki refetch’leri görür.
-6. Loader yalnızca cache’i hazırlıyor; uygulamanın loading ve hata sınırlarını route ağacında ayrıca kurmalısın.
-
-`ensureQueryData` Promise’i route geçişini bekletir. Bu davranış kısa ve kritik veride yararlıdır; büyük ve yavaş bölümler route’u bloke edecekse Suspense ile geç yüklemek daha iyi hissedilebilir. Karar kullanıcı deneyimiyle ilgilidir: başlık olmadan sayfa anlamlı mı, yoksa doğru route’a geçiş için başlık şart mı?
-
-## Navigasyonu zaman sırasıyla izle
-
-`/station/42` adresine geçiyoruz. `stationOptions(42)` hem loader hem component tarafından kullanılır.
-
-| Zaman | Router | Query cache | UI |
-| --- | --- | --- | --- |
-| t0 | Link tıklanır, `/station/42` eşleşir | Henüz değişiklik yok | Eski route görünür |
-| t1 | Loader `id` değerini doğrular | Key `['stations', 42]` aranır | Geçiş sürer |
-| t2 | Cache miss ise queryFn başlar | İstek devam eder | Router pending UI gösterebilir |
-| t3 | Loader Promise çözülür | Sonuç key’e yazılmıştır | Yeni route render edilir |
-| t4 | Component aynı options ile abone olur | Aynı veriyi görür | Durak adı görünür, ikinci GET yok |
-
-Cache hit varsa t2’de ağ gerekmez. `staleTime` 0 ise `ensureQueryData` stale cevabı döndürebilir; component bağlandığında normal refetch kuralları ayrıca çalışabilir. “Aynı key” tek başına bütün ağ davranışını açıklamaz; tazelik ayarını da bil.
-
-## Kırık iki yol ve doğru bağlantı
-
-İlk kırık yol, loader’ın ve component’in farklı key kullanmasıdır. Loader `['stations', id]`, component `['station', id]` kullanırsa cache paylaşılmaz ve ikinci istek gelebilir. İkinci kırık yol, loader’ın sonucu route state’ine kopyalayıp Query subscription’ını atlamaktır; daha sonra mutation invalidation’ı sayfayı güncellemez.
-
-```ts
-// Kırık: iki ayrı kaynak ve kimlik
-loader: ({ params }) => fetchStation(Number(params.id))
-// component: useSuspenseQuery({ queryKey: ['station', id], queryFn: ... })
+```ts check
+export function readMovieId(rawId: string | undefined): number {
+  const id = Number(rawId)
+  if (!Number.isInteger(id) || id <= 0) throw new Error('Geçersiz film adresi')
+  return id
+}
 ```
 
-Aşağıdaki örnek farklı bir kaynak kullanır ve `queryOptions` tarifini paylaşır:
+Ne oldu? `/movie/550` için fonksiyon `550` döndürür; `/movie/abc`, boş değer veya sıfır için hata verir. Bu kontrol URL biçiminin doğru olup olmadığını söyler, filmin API’de gerçekten var olduğunu değil. Kaynak yoksa API isteği sonradan 404 döndürebilir. İki soruyu ayırmak, bozuk URL için gereksiz istek atmamanı sağlar.
+
+## Route geçişi sırasında isteği başlat
+
+React Router’ın **Data mode**’u, route tanımlarını `createBrowserRouter` ve `<RouterProvider>` ile kurup geçiş öncesi çalışan `loader` gibi özellikleri ekleyen çalışma biçimidir. `loader`, route’a geçerken çalışan veri hazırlama fonksiyonudur. Kullanıcı linke bastığında router hedef route’u bulur, loader’ı çalıştırır ve loader tamamlanınca yeni route’u gösterir.
+
+Bu sırada TanStack Query’deki `QueryClient` aynı film cevabını cache’te saklayabilir. **Cache**, daha önce alınmış verinin sonraki kullanım için tutulduğu yerdir. `ensureQueryData`, verilen query key için cache’de veri varsa onu döndürür; yoksa queryFn’i çalıştırıp sonucu cache’e koyar. İkinci örnekte loader, film kimliğini kontrol ettikten sonra Query’den filmi hazırlıyor.
+
+```ts check
+import { QueryClient } from '@tanstack/react-query'
+
+type Movie = { id: number; title: string }
+declare function fetchMovie(id: number): Promise<Movie>
+
+export function makeMovieLoader(client: QueryClient) {
+  return async ({ params }: { params: { id?: string } }) => {
+    const id = Number(params.id)
+    if (!Number.isInteger(id) || id <= 0) throw new Error('Geçersiz film adresi')
+    return client.ensureQueryData({
+      queryKey: ['movie', id],
+      queryFn: () => fetchMovie(id),
+    })
+  }
+}
+```
+
+Ne oldu? Geçersiz `id` için loader hata verir ve `fetchMovie` çalışmaz. Geçerli kimlikte `ensureQueryData` film verisini hazırlar; aynı key ile tekrar çağrılırsa cache’deki sonucu kullanabilir. Loader’ın burada veriyi döndürmesi, route geçişini verinin hazır olmasına bağlar. Bu seçim kısa ve sayfa için temel bilgide kullanışlıdır; büyük, yavaş ve ekranın geri kalanı için şart olmayan içerik geç yüklenebilir.
+
+Bir loader’ın çalışması, Query’nin bileşendeki işini bitirdiği anlamına gelmez. Loader yalnızca route açılmadan önce cache’i hazırlar. Bileşen aynı query key ile `useQuery` veya `useSuspenseQuery` çağırınca cache’e **abone olur**: cache değiştiğinde yeni sonucu görür, invalidation ve refetch davranışına katılır. Loader sonucunu `useLoaderData` ile yerel state’e kopyalarsan bu canlı bağlantıdan ayrılıp ikinci bir veri kaynağı yaratabilirsin.
+
+## İki taraf aynı query tarifini paylaşsın
+
+Üçüncü örnekte query tanımını `queryOptions` fonksiyonuna alıyoruz. Bu yardımcı, key ve queryFn’i tek bir tarifte bir araya getirir; loader ve bileşen aynı tarifi çağırabilir. Yeni olan ortak tarif; loader’ın cache’i hazırlaması ve component’in cache’e abone olması önceki örnekteki gibi kalır.
 
 ```tsx check
 import { queryOptions, useSuspenseQuery, QueryClient } from '@tanstack/react-query'
 
-type Weather = { city: string; degrees: number }
-declare function getWeather(cityId: number): Promise<Weather>
-const weatherOptions = (cityId: number) =>
-  queryOptions({ queryKey: ['weather', cityId], queryFn: () => getWeather(cityId) })
+type MovieCredits = { cast: string[] }
+declare function fetchCredits(movieId: number): Promise<MovieCredits>
 
-export async function weatherLoader(
-  client: QueryClient,
-  rawId: string | undefined,
-) {
-  const cityId = Number(rawId)
-  if (!Number.isInteger(cityId) || cityId <= 0) throw new Error('Geçersiz şehir')
-  await client.ensureQueryData(weatherOptions(cityId))
+const creditsOptions = (movieId: number) =>
+  queryOptions({
+    queryKey: ['movie', movieId, 'credits'],
+    queryFn: () => fetchCredits(movieId),
+  })
+
+export async function creditsLoader(client: QueryClient, movieId: number) {
+  await client.ensureQueryData(creditsOptions(movieId))
   return null
 }
 
-export function WeatherPanel({ cityId }: { cityId: number }) {
-  const { data } = useSuspenseQuery(weatherOptions(cityId))
-  return <p>{data.city}: {data.degrees}°</p>
+export function CreditsPanel({ movieId }: { movieId: number }) {
+  const { data } = useSuspenseQuery(creditsOptions(movieId))
+  return <p>Oyuncu sayısı: {data.cast.length}</p>
 }
 ```
 
-Burada `loader` imzasını uygulama router’ı kendi `LoaderFunctionArgs` tipiyle uyarlar. Örnek, doğrulamadan önce query başlatmama ve aynı options nesnesini kullanma fikrini gösterir. Gerçek loader’da `queryClient` tek uygulama istemcisinden gelmelidir; route başına yeni `QueryClient` oluşturmak cache’i böler.
+Ne oldu? Loader film oyuncu bilgisini aynı key ile cache’e alır; `CreditsPanel` o veriyi okur ve sonraki cache değişikliklerini izler. Query tanımının iki kopyası olmadığı için key’in bir yerde `credits`, diğer yerde `cast` yazılması gibi ayrışmalar azalır. Uygulamada `QueryClient` tek kez oluşturulup loader’a verilir; her navigasyonda yeni client oluşturmak, önceden dolmuş cache’e erişimi keser.
 
-## Sınırlar ve hata yolu
+Geçiş sırasını `/movie/550` için izleyelim. Cache key, Query’de belli bir cevabı bulmak için kullanılan kimliktir. Router loader’ı hedef route’un parçasıdır; React bileşenleri ancak loader tamamlandıktan sonra yeni route’ta render olur.
 
-Loader’daki hata ile component query hatası iki farklı anda oluşabilir. Loader Promise’i reddedilirse Router route error element’ine geçebilir. Component’in ilk query yüklemesi Suspense altındaysa, query hatası uygun Error Boundary’ye yükseltilmelidir. Aynı mesajı iki yerde gösterip kullanıcıyı şaşırtmamak için hata sahipliğini belirle.
+| Zaman | Router | Query cache | Kullanıcının gördüğü |
+| --- | --- | --- | --- |
+| t0 | Film linkine basılır, `/movie/550` eşleşir | Değişiklik yok | Önceki route |
+| t1 | Loader `id` değerini metinden sayıya çevirip doğrular | Henüz query yok | Navigasyon sürüyor |
+| t2 | Loader `ensureQueryData` çağırır | Cache boşsa GET başlar | Router bekleme UI’ı gösterebilir |
+| t3 | Loader Promise’i çözülür | Film `['movie', 550]` key’iyle cache’te | Detay route render edilir |
+| t4 | Bileşen aynı key’e abone olur | Aynı film verisini okur | Film başlığı görünür |
 
-`ensureQueryData` navigasyon sırasında ağ isteği başlatabilir. Kullanıcı navigasyonu iptal etse bile Query isteğinin yaşamı kendi cancellation sinyaliyle yönetilir; loader’ın kendi `fetch` çağrısı ile queryFn içinde ayrı bir fetch başlatma. Tek bir veri kimliği için tek queryFn tanımı kullanmak cache ve retry davranışını tutarlı yapar.
+Cache’de veri varsa t2’de GET gerekmez. Cache’de eski veri olsa bile `ensureQueryData` varsayılan olarak onu hemen döndürebilir; “loader çağrıldı” demek “kesinlikle yeni GET başladı” demek değildir. Cache’in tazelik süresi ve refetch davranışı bu karardan ayrıdır. Loader beklerken görünen route-level pending UI ile bileşenin Suspense fallback’i de farklı beklemelerdir: ilki navigasyon tamamlanmadan, ikincisi render edilen alt içerik veri beklerken görünür.
 
-Loader içinde route parametresini bir kere sayıya çevirmek yetmez; güvenli aralık ve domain kuralını da uygulama belirlemelidir. Bir film id’si pozitif integer olabilir, ama URL’deki her pozitif sayı gerçekten bir film değildir. Bu ikinci hata API’den 404 olarak gelir ve route error UI’ına gider. Parametre kontrolü formatı, query sonucu ise kaynağın varlığını doğrular.
-
-`ensureQueryData` önceden yüklenmiş cache’den hemen dönebilir; bu nedenle loader her navigasyonda loading ekranı gösterecek diye düşünme. Cache boşsa router geçişi bekletebilir. React Router `useNavigation` ile üst seviye pending UI gösterebilir; bu görünüm route loader’ının tamamlanmasını bekleyen navigasyona aittir. Component içindeki Suspense fallback’i ise component query’sinin beklemesine aittir. Ekranda iki farklı bekleme göstergesi görüyorsan hangisinin route, hangisinin alt ağaç sahipliğinde olduğunu belirle.
-
-:::mistake[Aynı veriyi iki kere istemek]
-Belirti → Route açılırken iki aynı GET görünüyor. Neden → Loader ve component ayrı key/options kullanıyor veya loader doğrudan fetch yapıp component Query’yi başlatıyor. Düzeltme → İki tarafta aynı queryOptions tarifini ve tek QueryClient’ı kullan.
+:::mistake[Loader ve component ayrı key kullanıyor]
+Belirti → Route açılışında aynı film için iki GET görüyorsun. Neden → Loader `['movie', id]`, component `['movies', id]` gibi başka bir key kullanıyor. Query key eşitliği, cache kaydının ortak olup olmadığını belirler. Düzeltme → Ortak bir `queryOptions` fonksiyonu tanımla ve iki tarafta da onu kullan.
 :::
 
-:::mistake[Geçersiz id ile istek]
-Belirti → `/station/nope` için `/api/stations/NaN` isteği gidiyor. Neden → Parametre sayı yapılmış ama integer/pozitif kontrolü yok. Düzeltme → Loader’da doğrula; geçersiz değerde query’yi çağırmadan route hatası üret.
+:::mistake[Geçersiz id API’ye gidiyor]
+Belirti → `/movie/nope` açılınca `NaN` içeren bir istek çıkıyor. Neden → Parametre sayı yapılmış ama tam sayı ve pozitif olma koşulları denetlenmemiş. Düzeltme → Loader içinde query başlamadan önce `Number.isInteger` ve aralık kontrolü yap.
 :::
 
-:::mistake[Loader sonucunu kopyalamak]
-Belirti → Puan değişince route’taki detay eski kalıyor. Neden → `useLoaderData` verisi React Router state’inde kaldı; Query cache’i izlenmiyor. Düzeltme → Loader cache’i hazırlar, component aynı query’ye abone olur.
+:::mistake[Loader verisini kopyalayıp aboneliği bırakmak]
+Belirti → Film puanı değişti, ama route’taki oyuncu sayısı veya detay eski kaldı. Neden → Loader’ın döndürdüğü veri Query cache’inden ayrı tutuluyor. Düzeltme → Loader cache’i hazırlasın; bileşen aynı key/options ile Query hook’una bağlansın.
 :::
 
-:::sector
-Ekipler query tarifini `queryOptions` içinde bir kere tanımlayıp component, prefetch ve loader’da paylaşır. Bu, query key’in uygulama genelinde tek sözleşme olmasını sağlar. Loader’ı tüm veriyi route state’ine dönüştürmek için değil, kritik verinin navigasyon zamanını seçmek için kullanırlar.
+Loader içindeki hata ile bileşen query’sinin hatası farklı zamanda oluşabilir. Loader reddedilirse React Router’ın route hata UI’ı devreye girer. Component içindeki ilk query yüklemesi Suspense kullanıyorsa bekleme için Suspense, render sırasında yükselen hata için Error Boundary gerekir. Kullanıcı aynı sorun için iki farklı genel mesaj görmesin diye her hata yolunun hangi sınırda gösterileceğini seç.
+
+:::info[Derinlemesine (isteğe bağlı)]
+`ensureQueryData` cache’de stale veri bulduğunda varsayılan olarak onu döndürür. Stale iken arka planda yenileme istemek için `revalidateIfStale` seçeneği vardır; route’un her geçişte taze veri beklemesi gerekip gerekmediğine göre seç. Router’ın `LoaderFunctionArgs` tipi, router’dan gelen parametre ve istek bilgilerini ayrıntılı biçimde tipler; burada yalnızca `params.id` alanını kullandık.
 :::
 
 ## Özet
 
-- URL hangi kaydın açıldığını, query key sunucu cevabının kimliğini taşır.
-- Loader aynı Query cache’ini hazırlar; verinin ikinci sahibi olmaz.
-- Geçersiz route parametresi query çalışmadan reddedilir.
-- Loader ve component aynı queryOptions/key tarifini kullanır.
-- `ensureQueryData` stale cevabı varsayılan olarak döndürebilir; tazelik politikası ayrıca seçilir.
+- URL parametresi metindir ve API isteğinden önce doğrulanmalıdır.
+- Data mode loader’ı route geçişinde çalıştırır; TanStack Query veriyi QueryClient cache’inde tutar.
+- `ensureQueryData` aynı key’in verisini döndürür veya yoksa getirir; kendi başına bileşeni cache’e abone etmez.
+- Loader ve component aynı query key/options tarifini kullanır; hook bileşeni canlı cache güncellemelerine bağlar.
+- Route loader’ının beklemesi ile içerikteki Suspense beklemesi ayrı UI sınırlarıdır.
 
-**Kendini yokla:** Loader aynı veriyi önceden aldıysa component Query hook’u neden yine çağırır?  
-Cevap: Query cache’ine abone olup invalidation ve refetch değişikliklerini izlemek için.
+**Yeni terimler**
 
-**Kendini yokla:** Loader’daki `ensureQueryData` cache’de stale veri bulursa her zaman GET başlatır mı?  
-Cevap: Hayır. Varsayılan olarak cache’deki veriyi döndürür; stale iken yenileme istenirse `revalidateIfStale` seçeneği kullanılabilir.
+- **Data mode:** React Router’da loader ve navigasyon verisi gibi özellikleri sağlayan router çalışma biçimi.
+- **Loader:** Route gösterilmeden önce geçiş sırasında çalıştırılan veri hazırlama fonksiyonu.
+- **Cache:** Önceden alınan veriyi sonraki kullanım için tutan depo.
+- **Query key:** Query cache’inde bir veri kaydını tanımlayan değer dizisi.
+- **Abone olmak:** Bileşenin cache değişikliklerini izleyip yeni veride yeniden render olması.
+
+**Kendini yokla:** Loader filmi cache’e aldıysa bileşen neden query hook’u çağırır?
+
+Cevap: Aynı cache kaydına abone olup sonraki güncellemeleri ve invalidation’ı görmek için.
+
+**Kendini yokla:** URL’deki `abc` değeri neden query key’e eklenmeden önce kontrol edilir?
+
+Cevap: Sayıya çevrildiğinde `NaN` olur; bu kimlikle anlamsız bir istek başlatmamak için.

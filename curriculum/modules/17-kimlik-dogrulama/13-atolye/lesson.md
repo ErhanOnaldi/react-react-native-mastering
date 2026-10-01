@@ -6,33 +6,61 @@ kind: practice
 
 # Oturum ve hata akışı
 
-:::pain[Arayüzde takılan oturumlar ve gizemli hatalar]
-Kullanıcı giriş yapıp sayfayı yenilediğinde profil yüklenmiyor ve giriş formunda takılı kalıyor. Bir başka senaryoda oturum süresi dolan kullanıcı "Profili yenile" butonuna bastığında ekran sonsuza dek "Yükleniyor" durumunda asılı kalıyor. Yanlış şifre girildiğinde ise ya hata mesajı hiç okunmuyor ya da kullanıcının yazdığı uzun kullanıcı adı silinip gidiyor. Kullanıcıların güvenini en çok sarsan hatalar, oturum ve kimlik akışındaki bu pürüzlerdir.
+Bu atölyede üç kısa Sinema akışındaki belirtiyi inceleyip onaracaksın: kayıtlı oturumla açılış, süresi dolan oturum ve başarısız girişten sonra yeniden deneme. Görevler çözüm yolunu adım adım söylemez. Önce belirtiyi üret, sonra hangi state, istek ya da ekrandaki mesajın beklenmedik kaldığını bul.
+
+:::model[Effect yaşam döngüsü]
+Effect, render’dan sonra çalışan bir React işlevidir. Dependency (effect’in izlediği değer) değişince önceki effect’in cleanup’ı (önceki çalışmayı kapatan fonksiyon) çalışır, ardından yeni effect başlar. İstek cevabı geç gelirse cleanup yardımıyla artık geçerli olmayan cevabın ekranı değiştirmesini engelle.
 :::
 
-## Bağımsız atölye deneyimi
+İlk akışta, tarayıcıda zaten token varken profilin açılışta görünmesini ve profil isteğinin bir kez gitmesini takip et. Ardından normal form girişini dene. İki yolu da şu sırayla izle: bileşen hangi başlangıç değerini aldı, hangi olay istek başlattı, cevap gelince hangi ekran göründü? Bu sıra, başlangıçta token’ın kaybolduğu yerle aynı isteğin iki kez başladığı yeri ayırmana yardım eder.
 
-Bu Atölye çalışmasında, kimlik doğrulama akışlarında sıkça karşılaşılan üç kritik belirtiyi bağımsız bir mühendis gibi teşhis edip çözeceksin. 
+:::model[Token yenileme]
+Access token ile yapılan istek `401` (kimlik bilgisi kabul edilmedi yanıtı) alırsa refresh token yeni bir token çifti almak için kullanılır; profil isteği yeni access token’la tekrar denenir. Bu yenileme de başarısız olabilir, bu yüzden her hata yolunun kullanıcıyı bekleme durumundan çıkardığını kontrol et.
+:::
 
-Atölye görevleri, önceki derslerdeki rehberli adımlardan farklı olarak **daha az yönlendirme** içerir:
-- Sana hangi hook'u, hangi state yapısını veya hangi yardımcı kütüphaneyi kullanacağın söylenmez.
-- Yalnızca kullanıcının karşılaştığı **belirti**, beklenen **iş gereksinimi** ve testlerin bağlandığı **giriş noktası** (public entry point) verilir.
-- Çözüm mimarisi tamamen senin kararına bırakılmıştır.
+İkinci akışta önce süresi dolmuş oturumla profil yenilemeyi dene, sonra yanlış parola ve doğru parolayla giriş sırasını izle. Beklenen geçişi tabloya dök:
 
-Çalışırken bir noktada takılırsan, her sorudaki ipuçlarını sırayla açabilirsin:
-1. **1. Kademe (Yön):** Hangi yaşam döngüsü adımına veya duruma bakman gerektiğini hatırlatır.
-2. **2. Kademe (Yöntem):** İlgili React veya JavaScript yöntemini önerir.
-3. **3. Kademe (İskelet):** Takıldığın düğümü çözecek kısa bir kod örneği sunar.
+| Olay | Beklenen durum |
+| --- | --- |
+| Profil isteği başlar | Bekliyor |
+| Access token reddedilir | Token yenileme deneniyor |
+| Yenileme başarılı olur | Profil yeniden istenir, sonra görünür |
+| Yenileme başarısız olur | Bekleme biter; tekrar giriş yolu görünür |
+| Giriş yeniden gönderilir | Önceki hata mesajı yeni denemeye taşınmaz |
 
-## Atölye görevlerinin odak alanları
+Bu sırayı görmek, yalnızca ekrandaki sonuca bakmaktan daha yararlıdır: sonsuz yüklenme çoğunlukla bekleme state’inin bir hata dalında kapanmamasını, eski hata metni ise yeni denemenin eski state’i temizlememesini işaret eder.
 
-Atölyede çözeceğin üç zorlu senaryo:
+:::model[Yarış koşulu]
+Birden fazla asenkron iş farklı sırada tamamlanabilir. Token değiştiğinde önceki isteğin cevabı sonradan gelirse güncel hesabın ekranını ezmemeli; eski sonucu yok say ya da isteği iptal et.
+:::
 
-### 1. Oturum Dönüşü (`01-oturum-donusu`)
-Kullanıcı normal şekilde giriş yaptığında profil görüntüleniyor; ancak tarayıcıda zaten geçerli bir oturum jetonu varken (örneğin sayfa yenilendiğinde) ekran profile ulaşamıyor ve ağ günlüğünde mükerrer istekler fırlıyor. Bileşenin başlangıç durumunu ve yaşam döngüsü etkilerini denetleyerek oturumun tek bir istekle sorunsuz açılmasını sağlayacaksın.
+Son akışta yanlış bilgilerle gönderim yapıp uyarının göründüğünü ve kullanıcı adının korunduğunu kontrol et. İstek sürerken düğmeye art arda basmayı da dene: tek gönderim tek ağ isteği olmalı. Ekran okuyucuya hata bildiren `role="alert"` bir işarettir; hata mesajının yalnızca görünür olması herkesin onu duyacağı anlamına gelmez.
 
-### 2. Süresi Dolan Oturum (`02-suresi-dolan-oturum`)
-Oturum süresi dolduğunda profil yenileme eyleminin kilitlenmesini engelleyecek, arka plandaki yenileme akışını onaracaksın. Ayrıca hatalı bir denemenin ardından doğru bilgilerle tekrar denendiğinde eski hata mesajlarının ekranda asılı kalmasını önleyeceksin.
+:::mistake[Yükleniyor durumunda kalma]
+Belirti → profil yenileme başarısız olunca ekranda bekleme sürüyor. Neden → hata dalı state’i başka bir duruma geçirmiyor. Düzeltme → isteğin başarı, hata ve yenileme başarısızlığı yollarının her birinde hangi ekranın gösterileceğini tek tek izle.
+:::
 
-### 3. Giriş Hatası ve Düzeltme (`03-giris-hatasi-ve-duzeltme`)
-Kullanıcı dostu, erişilebilir bir giriş paneli inşa edeceksin. Hatalı denemede kullanıcı adını koruyacak, `role="alert"` ile hatayı duyuracak ve işlem sürerken mükerrer tıklamaların ek ağ isteği üretmesini engelleyeceksin.
+## Nasıl çalış
+
+Her senaryoda aynı küçük döngüyü kullan: belirtileri yeniden üret, ilgili state ve istek sırasını not et, bir davranışı düzelt, sonra aynı denemeyi tekrarla. Takılırsan ipuçlarını sırayla aç; önce yönü bulmaya çalış, sonra yönteme bak, en son kısa iskeleye geç. Böylece hazır çözümü kopyalamadan kendi teşhisini yaparsın.
+
+## Özet
+
+- Açılışta kayıtlı token ve formdan gelen token aynı profil akışına ulaşmalı.
+- Her istek yolunda başarı ve hata sonrasında arayüzün hangi durumda olduğunu izle.
+- Yenileme başarısızsa bekleme bitmeli; yeni giriş denemesi eski hatayı taşımamalı.
+- Kullanıcı adı korunmalı, hata erişilebilir olmalı ve sürmekte olan gönderim tekrarlanmamalı.
+
+**Terimler**
+
+- **Cleanup:** Dependency değişince ya da component kaldırılınca önceki effect’i kapatan fonksiyon.
+- **401:** İsteğin geçerli kimlik bilgisiyle yetkilendirilmediğini bildiren HTTP yanıt kodu.
+- **Race condition (yarış durumu):** İşlerin farklı bitiş sırası yüzünden eski sonucun güncel ekranı bozması.
+
+**Kendini yokla:** Yenileme isteği de başarısız olursa arayüz neden yüklenmede kalmamalı?
+
+Cevap: Kullanıcının beklemesini bitirip tekrar giriş yapabileceği bir duruma geçmeli.
+
+**Kendini yokla:** Başarısız girişten sonra kullanıcı adı neden silinmemeli?
+
+Cevap: Kullanıcı yalnızca hatalı bilgiyi düzeltebilsin; tekrar baştan yazmak zorunda kalmasın.

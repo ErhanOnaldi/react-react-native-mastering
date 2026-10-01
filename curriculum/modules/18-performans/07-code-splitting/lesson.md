@@ -1,226 +1,125 @@
 ---
 title: "Kodu gerektiğinde yükle"
-minutes: 17
+minutes: 14
 kind: concept
 ---
 
 # Kodu gerektiğinde yükle
 
-:::pain[Problem]
-Kullanıcı film sitesinin ana sayfasına giriyor. DevTools Network sekmesini açıp baktığında, tarayıcının 3.2 megabaytlık devasa bir `index.js` dosyası indirmeye çalıştığını görüyorsun. Kullanıcı yalnızca arama çubuğunu görüp 3 tane popüler filme bakacaktı.
+Sinema ana sayfasında film başlıkları, arama alanı ve küçük kartlar var. Film trivia paneli ise yalnızca bazı kişiler tarafından açılıyor ve grafik çizim kodu taşıyor. Ana sayfaya giren herkes bu panelin kodunu da indirmek zorunda mı? Önce iki küçük dosya ile bunun ne anlama geldiğine bakalım.
 
-Fakat senin uygulaman; kullanıcının henüz hiç açmadığı film detay sayfasını, bilet satın alma ve koltuk seçimi modülünü, yönetici panelini ve 800 kilobaytlık interaktif grafik kütüphanesini tek bir dev pakete gömmüş! Zayıf bir 4G mobil bağlantısında bu paketin inmesi, ayrıştırılması (parse) ve çalıştırılması 5 saniye sürüyor. Kullanıcı beyaz ekrana bakmaktan sıkılıp sekmeyi kapatıyor.
+## İki dosya, iki farklı yükleme
 
-Kullanıcının o an ihtiyaç duymadığı kodu ona zorla indirtmek, modern web performansının en büyük günahlarından biridir.
-:::
+`import` ile bağladığın bir modül, uygulamanın ilk yüklenen JavaScript paketine katılabilir. **Kod bölme (code splitting)** bu paketi ayrı indirilebilen dosyalara ayırır. Bu dosyalardan her birine **chunk** denir.
 
-## Kod Bölme (Code Splitting) zihinsel modeli
-
-Kod bölme, tek parça (monolithic) devasa bir JavaScript paketini, ihtiyaç duyuldukça parça parça (chunk) indirilebilen küçük dosyalara ayırma tekniğidir.
-
-Zihinsel modelini şu iki temel seviyede kur:
-
-### 1. Route Düzeyinde Bölme (Route-based Splitting)
-En büyük performans kazancı burada elde edilir:
-- Kullanıcı ana sayfayı (`/`) açtığında yalnızca ana sayfanın 80 KB'lık JavaScript kodu iner.
-- Kullanıcı film detayına (`/movie/550`) tıkladığında, React Router arka planda detay sayfasının modülünü (`movie-details-[hash].js`) indirir ve ekrana basar.
-- Kullanıcının hiç ziyaret etmediği Yönetici Paneli (`/admin`) kodu ise sıradan bir kullanıcının telefonuna hayatı boyunca tek bir bayt dahi inmez!
-
-### 2. Bileşen Düzeyinde Bölme (Component-based Splitting)
-Aynı sayfa içinde yer alan ancak her kullanıcının açmadığı ağır bileşenler için kullanılır:
-- Bir detay sayfasındaki ağır oyuncu kadrosu paneli, gelişmiş bir metin editörü veya açılır bir modal diyalog.
-- Sayfa açıldığında bu ağır bileşenlerin kodu indirilmez. Kullanıcı örneğin "Tüm Oyuncuları Göster" butonuna bastığında veya sekme açıldığında o bileşenin paketi dinamik olarak talep edilir.
-
-## React.lazy ve Suspense anatomisi
-
-React, bileşen düzeyinde kod bölme için yerleşik iki araç sunar:
+Şimdilik küçük, her zaman gereken başlık bileşenini normal import edelim:
 
 ```tsx
-import { lazy, Suspense } from 'react'
+import { MovieTitle } from './MovieTitle'
 
-// Modül seviyesinde dinamik import
-const HeavyPanel = lazy(() => import('./HeavyPanel'))
-
-export function Page() {
-  return (
-    <Suspense fallback={<p>Yükleniyor...</p>}>
-      <HeavyPanel />
-    </Suspense>
-  )
+export function MoviePage() {
+  return <MovieTitle title="Aşk" />
 }
 ```
 
-Bu mekanizmanın 3 kesin kuralı vardır:
+Tarayıcı `MoviePage` kodunu istediğinde `MovieTitle` da aynı ilk yükleme yolundadır. Bu iyi bir seçimdir: başlık ekranda hemen görünür ve bileşen küçüktür. Her dosyayı ayrı indirmek de ücretsiz değildir; her istek zaman ve ağ işi getirir.
 
-1. **`React.lazy` default export bekler:** Dinamik `import('./HeavyPanel')` çağrısı yapılan dosyanın varsayılan export'a (`export default`) sahip olması gerekir.
-2. **`Suspense` sınırı zorunludur:** `lazy` ile yüklenen bileşen indirilene kadar bir Promise fırlatır (suspend eder). Eğer bu bileşeni bir `<Suspense fallback={...}>` içine sarmazsan, React ne göstereceğini bilemez ve tüm uygulama beyaz ekran vererek çöker.
-3. **`lazy` tanımı modül seviyesinde olmalıdır:** `lazy` fonksiyonu **asla** bir bileşenin gövdesinde çağrılmaz! Dosyanın en üst seviyesinde bir kez tanımlanmalıdır.
-
-## Bir sayfa ziyaretinde adım adım iz sürelim
-
-Bir kullanıcının ana sayfaya girip ardından detay sayfasına tıkladığı senaryoda tek parça paket ile bölünmüş paketi karşılaştıralım:
-
-| Adım | Kullanıcı Hareketi | Tek Parça Paket (Bölünmemiş) | Kod Bölmeli Paket (Split) | Ağ ve Süre Kazancı |
-|---|---|---|---|---|
-| 1 | `site.com/` açıldı | `index.js` indirilir: **3.200 KB** | `main.js` indirilir: **140 KB** | **İlk açılış 4 kat daha hızlı!** |
-| 2 | İlk boyama (FCP) | 4.2 saniye sürer | 0.8 saniyede biter | Kullanıcı hemen içeriği görür. |
-| 3 | Kullanıcı detay linkine tıklar | Kod zaten bellekteydi; sayfa açılır | Tarayıcı `detail-[hash].js` dosyasını çeker: **90 KB** | Anlık bir istek atılır (~120 ms). |
-| 4 | Ağdan dosya inerken | - | `Suspense fallback` ekranda görünür | Kullanıcı sistemin çalıştığını anlar. |
-| 5 | Modül indi | Sayfa güncellenir | Detay bileşeni ekrana basılır | Kusursuz akış tamamlanır. |
-
-İlk açılışta 3.2 MB yerine 140 KB indirmek, sitenin LCP (Largest Contentful Paint) metriğini doğrudan yeşil bölgeye (iyi) taşır.
-
-## React Router 8'de Data Route Lazy Yükleme
-
-React Router 8, data route mimarisinde kod bölmeyi mükemmel şekilde destekler. Bir route nesnesinde `lazy` fonksiyonu kullanılır:
-
-```tsx title="src/router.tsx"
-import { createBrowserRouter } from 'react-router'
-
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <HomePage />,
-  },
-  {
-    // path statik olarak ana router dosyasında kalır!
-    path: '/invoices/:id',
-    // Modül ancak kullanıcı bu yola gittiğinde indirilir
-    lazy: () => import('./routes/invoice-detail'),
-  },
-])
-```
-
-Ve `./routes/invoice-detail.tsx` dosyası route bileşenini ve varsa loader'ını export eder:
-
-```tsx title="src/routes/invoice-detail.tsx"
-// React Router 8 bu export'ları tanır:
-export function Component() {
-  return <div>Fatura Detayı</div>
-}
-
-export async function loader({ params }: LoaderArgs) {
-  return fetchInvoice(params.id)
-}
-```
-
-> [!IMPORTANT]
-> `path` alanı **asla** lazy modülünün içine gizlenemez! Router, kullanıcının girdiği URL ile hangi route'un eşleştiğini anında bilmek zorundadır. Bu yüzden `path: '/invoices/:id'` statik kalır; indirilecek kod ise `lazy` içine konur.
-
-## Kod örneği: Fatura detayında ağır analitik grafiği
-
-Şimdi bir fatura detay sayfasında, her kullanıcının açmadığı devasa bir analitik grafik panelini bileşen düzeyinde nasıl böleceğimizi kodlayalım.
-
-### Kırık yaklaşım: lazy tanımını bileşen gövdesinde yapmak
-
-Geliştiricilerin düştüğü en yaygın ve tehlikeli tuzak:
+Şimdi sayfaya yalnızca kullanıcı isterse açacağı trivia panelini ekleyelim. **Dinamik import**, `import()` biçimidir; modülün yüklenmesini ihtiyaç anına erteleyebilir. React'in `lazy` fonksiyonu bu import'u bileşen olarak kullanmamızı sağlar.
 
 ```tsx
-// YANLIŞ: Her render'da yeni bir bileşen tipi üretir!
-export function BrokenInvoiceView() {
-  // HATA! Her render'da lazy() baştan çağrılır!
-  const LazyChart = lazy(() => import('./AnalyticsChart'))
-
-  return (
-    <div>
-      <h2>Fatura #1042</h2>
-      <Suspense fallback={<p>Yükleniyor...</p>}>
-        <LazyChart />
-      </Suspense>
-    </div>
-  )
-}
-```
-
-Bu bileşende herhangi bir state değiştiğinde `BrokenInvoiceView` render edilir. Her render'da `lazy()` yeni bir bileşen referansı üretir; React eski bileşeni unmount edip yenisini mount eder. Sonuç: Grafik sürekli yanıp söner, içindeki tüm yerel state kaybolur ve sonsuz bir yükleniyor titremesi başlar!
-
-### Doğru yaklaşım: Modül seviyesinde lazy ve Suspense
-
-```tsx title="CleanInvoiceView.tsx"
 import { lazy, Suspense, useState } from 'react'
 
-export interface InvoiceData {
-  id: string
-  client: string
-  total: number
+const TriviaPanel = lazy(() => import('./TriviaPanel'))
+
+export function MoviePage() {
+  const [showTrivia, setShowTrivia] = useState(false)
+  return (
+    <main>
+      <h1>Aşk</h1>
+      <button onClick={() => setShowTrivia(true)}>Trivia'yı göster</button>
+      {showTrivia && (
+        <Suspense fallback={<p>Trivia yükleniyor…</p>}>
+          <TriviaPanel />
+        </Suspense>
+      )}
+    </main>
+  )
 }
+```
 
-// DOĞRU: lazy tanımı bileşenin DIŞINDA, dosyanın en üstündedir!
-const LazyAnalyticsChart = lazy(() => import('./MockAnalyticsChart'))
+İlk açılışta panel henüz istenmediği için onun kodu indirilmez. Düğmeye basınca React bileşeni ister; indirme sürerken `Suspense` içindeki **fallback** yani geçici bekleme içeriği görünür. Modül tamamlanınca panel yerini alır. `lazy` tanımını component'in dışına koyduk; böylece aynı component türü her render'da korunur.
 
-export function CleanInvoiceView({ invoice }: { invoice: InvoiceData }) {
-  const [showAnalytics, setShowAnalytics] = useState(false)
+Üçüncü adımda aynı fikri daha gerçekçi bir dosya yapısında düşünelim: film detayının ana bölümü hemen gelir; yalnızca detay içindeki geniş oyuncu bilgisi isteyen kullanıcı için indirilir. Bu, paneli açılışta gizlemenin ötesinde, dosyanın ilk pakette yer almamasını da sağlar.
 
+```tsx
+const CastBiography = lazy(() => import('./CastBiography'))
+
+function MovieDetail({ showCast }: { showCast: boolean }) {
   return (
     <article>
-      <header>
-        <h2>Fatura: {invoice.id}</h2>
-        <p>Müşteri: {invoice.client}</p>
-        <strong>Tutar: {invoice.total} ₺</strong>
-      </header>
-
-      <section>
-        <button onClick={() => setShowAnalytics((prev) => !prev)}>
-          {showAnalytics ? 'Grafiği Gizle' : 'Gelişmiş Analitiği Göster'}
-        </button>
-
-        {showAnalytics && (
-          // Suspense sınırı yükleme sırasında kullanıcıya dürüst bir gösterge verir
-          <Suspense fallback={<p className="loading-state">Grafik modülü yükleniyor...</p>}>
-            <LazyAnalyticsChart invoiceId={invoice.id} />
-          </Suspense>
-        )}
-      </section>
+      <h1>Bir Zamanlar Anadolu'da</h1>
+      {showCast && (
+        <Suspense fallback={<p>Oyuncu bilgileri yükleniyor…</p>}>
+          <CastBiography />
+        </Suspense>
+      )}
     </article>
   )
 }
 ```
 
-Bu doğru kurguda:
-1. `LazyAnalyticsChart` modül ilk yüklendiğinde bir kez tanımlanır.
-2. Kullanıcı "Gelişmiş Analitiği Göster" butonuna basana kadar grafik kütüphanesinin tek bir satırı dahi indirilmez.
-3. Butona basıldığı anda tarayıcı arka plandan dosyayı çeker, bu sırada ekranda `"Grafik modülü yükleniyor..."` görünür.
-4. Dosya indiğinde grafik kusursuzca ekrana boyanır.
+İlk örnekte hep gereken küçük parçayı aynı yüklemede tuttuk; ikincide isteğe bağlı paneli; üçüncüde ise gerçek bir detay sayfasındaki daha ağır ve koşullu bölümü ayırdık. Ortak karar şu: yalnızca anlamlı büyüklükte ve ilk ekranda gerekmeyen kodu sonrasına bırak.
 
-## Sınır durumları ve sık yapılan hatalar
+Bu kararın etkisini iki ölçekte düşün. Kullanıcı trivia'yı hiç açmazsa hem panel kodunu hem onu kullanan grafik paketini ilk ziyaretinde indirmeyebilir. Ancak panel çok küçükse, onu sonradan istemenin ağ gecikmesi birkaç kilobayt tasarruftan daha görünür olabilir. Bu yüzden kodu satır sayısına göre değil, boyutuna ve ne sıklıkta gerektiğine göre değerlendir.
 
-:::mistake[1. Her küçük butonu ve kartı lazy yapmak]
-- **Belirti:** Sayfa açılırken ekranda yüzlerce küçük yükleniyor spinner'ı beliriyor, sayfa yamalı bir bohça gibi parça parça açılıyor.
-- **Neden:** Her `lazy` modülü ayrı bir HTTP isteğidir. 10 satırlık basit bir butonu lazy yapmak, tasarruf ettiğin 200 bayttan çok daha fazla ağ gecikmesi (network round-trip) üretir.
-- **Düzeltme:** Yalnızca sayfa düzeyindeki route'ları (route-based) veya ağır harici kütüphane içeren büyük alt panelleri (charts, rich text editors, 3D viewers) böl.
+## Bir tıklamayı zaman çizelgesinde izleyelim
+
+Kodu bölünce yeni bir bekleme noktası oluşur. Sırasını izlemek, neden fallback gerektiğini açıklar.
+
+| An | Ne çalışır? | Kullanıcının gördüğü |
+|---|---|---|
+| Sayfa açılır | Başlık ve ana sayfa kodu yüklenir | Film başlığı |
+| Düğmeye basılır | `showTrivia` true olur, React paneli ister | Panel henüz hazır değil |
+| Dosya indirilir | Dinamik import tamamlanmayı bekler | “Trivia yükleniyor…” |
+| Modül hazır olur | React paneli render eder | Trivia içeriği |
+
+İstek başarısız olursa `Suspense` hata mesajı göstermez; o yalnızca beklemeyi gösterir. İndirme hatası için uygulamanın hata sınırına ayrıca ihtiyaç olabilir. Bu ayrım önemlidir: “henüz gelmedi” ile “yüklenemedi” aynı durum değildir.
+
+Fallback'i de panelin kapladığı yere uygun seç. Kısa bir metin, kullanıcının beklediğini anlatır; koca boş alan ise sayfanın bozulduğu izlenimini verebilir. Bekleme içeriğinin amacı yeni bir yükleme efekti eklemek değil, indirme sürerken arayüzün ne yaptığını anlaşılır kılmaktır.
+
+:::mistake[Her render'da yeni lazy component oluşturmak]
+**Belirti:** Panel açıkken başka state değişince içerik titrer veya panelin kendi durumu sıfırlanır. **Neden:** `lazy(() => import(...))` component fonksiyonunun içinde çağrıldığında her render'da yeni bir component türü oluşur. **Düzeltme:** `lazy` tanımını dosyanın en üst seviyesinde bir kez yap.
 :::
 
-:::mistake[2. Suspense sınırını unutup uygulamayı patlatmak]
-- **Belirti:** `lazy` ile böldüğün sayfayı açtığında konsolda `A component suspended while rendering, but no fallback UI was specified` hatası çıkar ve tüm sayfa çöker.
-- **Neden:** `lazy` bileşeni indirilene kadar bir Promise fırlatır. En yakın ebeveynde bir `<Suspense fallback={...}>` yoksa React ne göstereceğini bilemez.
-- **Düzeltme:** `lazy` bileşenini mutlaka anlamlı bir fallback (spinner, iskelet ekran) taşıyan `Suspense` ile sarmala.
-:::
+## Derlemede dosyaların ayrıldığını gör
 
-:::mistake[3. Route eşleşme yolunu lazy modülün içine yazmak]
-- **Belirti:** React Router URL'ye gidildiğinde 404 verir ya da route'u bulamaz.
-- **Neden:** Router URL'ye baktığında hangi dosyayı indireceğini bilmek için `path` bilgisine önceden ihtiyaç duyar.
-- **Düzeltme:** `path` daima statik konfigürasyonda kalmalıdır: `{ path: '/detay', lazy: () => import(...) }`.
-:::
+Kodda `lazy` yazmak niyetimizi anlatır; dağıtıma gidecek dosyaları görmek için production build üretip çıktıya bakarız. Build, uygulamanın dağıtılmaya hazır dosyalarını oluşturur. Geliştirme sunucusundaki hızlı yenileme mesajı bu çıktının kanıtı değildir.
 
-:::sector[Sektörde nasıl kullanılır?]
-Kurumsal projelerde bundle yönetimi için şu standartlar uygulanır:
+Sinema'da üç seçim yapabilirsin: ufak başlık ve düğmeleri ilk dosyada bırak; ağır trivia veya biyografi panelini ihtiyaç anında yükle; dosyaların gerçekten ayrıldığını build çıktısında ya da tarayıcının Network panelinde kontrol et. Bu nedenle “daha fazla chunk = daha hızlı” diye düşünme. Bölme ilk açılıştaki işi azaltabilir, ancak gereksiz parçalar indirme gecikmesi ve yükleme anı ekler.
 
-1. **Bundle Bütçeleri (Bundle Budgets):** CI/CD boru hattına kurallar konur. Örneğin: "İlk giriş paketi (`main.js`) gzip sonrası 150 KB'ı geçerse build başarısız sayılsın!".
-2. **Rollup Visualizer:** `pnpm build` çalıştırıldığında projedeki hangi kütüphanenin ne kadar yer kapladığını gösteren interaktif haritalar (treemap) üretilir. Böylece istemeden pakete giren devasa paketler hemen tespit edilip lazy yüklemeye alınır.
+Build çıktısındaki dosya adları hash içerebilir ve build aracı bazı modülleri ortak bir chunk'ta birleştirebilir. Bu beklenen bir sonuçtur; ölçmek istediğin şey panelin kodunun ilk ekranı açarken indirilip indirilmediğidir. Network panelinde sayfayı yenileyip panel dosyasının başlangıçta mı, düğmeye bastıktan sonra mı istendiğine bak. Böylece kaynak koddaki `lazy` ifadesini değil, ziyaretçinin gerçekten aldığı dosyaları doğrularsın.
+
+Route düzeyinde de aynı fikir uygulanabilir: her URL'nin ekranı ayrı modüle taşınabilir. React Router'ın data route `lazy` ayarı, bileşen düzeyindeki React `lazy` kullanımından ayrı bir API'dir.
+
+:::info[Derinlemesine (isteğe bağlı)]
+React `lazy` ile yüklenen modülün varsayılan export'u gerekir. React Router data route'larında ise route'un eşleşmesi için `path` önceden bilinmeli, route modülünün geri kalanı `lazy` ile gelebilir. Büyük uygulamalarda bundle analyzer ile hangi kütüphanelerin çıktı dosyalarını büyüttüğünü incelemek de yararlıdır.
 :::
 
 ## Özet
 
-- Kod bölme, uygulamanın devasa JavaScript paketini ihtiyaç anında indirilen parçalara ayırarak ilk yükleme süresini (FCP/LCP) dramatik şekilde düşürür.
-- En yüksek kazanç Route düzeyinde kod bölmeyle (React Router `lazy`) elde edilir.
-- Bileşen düzeyinde kod bölme için `React.lazy(() => import('./Component'))` ve `<Suspense fallback={...}>` ikilisi kullanılır.
-- `lazy()` tanımı asla bileşen gövdesinde yapılmaz; modül seviyesinde olmalıdır.
-- Her şeyi bölmek gereksiz ağ trafiği yaratır; yalnızca büyük rotalar ve ağır bileşenler bölünmelidir.
+- Kod bölme, ilk yüklemede gerekmeyen kodu ayrı chunk'lara taşır.
+- Küçük ve her ekranda gereken parçaları bölmek çoğu zaman bekleme maliyetine değmez.
+- `lazy` bileşenini dosya seviyesinde tanımla; yükleme süresini `Suspense` fallback'i ile görünür kıl.
+- Production build ve Network paneli, modülün ayrı yüklendiğini görmeye yardım eder.
 
-### Kendini yokla
+**Yeni terimler**
 
-1. **Soru:** Bir bileşeni `const Panel = lazy(() => import('./Panel'))` şeklinde böldün; ancak `<Suspense>` kullanmadın. Sayfayı açtığında ne olur?
-   - **Cevap:** React çalışma anında bir hata fırlatır (`A component suspended while rendering...`) ve en yakın Error Boundary yoksa tüm sayfa beyaz ekrana düşerek çöker.
+- **Kod bölme:** JavaScript'i farklı zamanlarda indirilebilen parçalara ayırma.
+- **Chunk:** Build'in ürettiği indirilebilir JavaScript dosyalarından biri.
+- **Dinamik import:** `import()` ile modülü ihtiyaç anında isteme.
+- **Fallback:** Beklenen içerik hazır olana kadar gösterilen geçici UI.
 
-2. **Soru:** React Router 8'de `lazy` kullanılırken neden `path` bilgisi lazy modülün içine konamaz?
-   - **Cevap:** Çünkü tarayıcı adresi değiştiğinde Router'ın hangi modülü indireceğine karar verebilmesi için URL eşleşmesini (`path`) henüz o modülü indirmeden önce bilmesi şarttır.
+**Kendini yokla**
+
+1. Trivia paneli açılana kadar neden indirmeyi bekletebiliriz? Çünkü çoğu ziyaretçi paneli açmıyorsa, ilk yüklemeye gereksiz kod eklememiş oluruz.
+2. `Suspense` fallback'i hangi durumu bildirir? Bileşenin kodu bekleniyor; yüklemenin başarısız olduğunu tek başına bildirmez.

@@ -9,6 +9,10 @@ describe('OptimisticFavorite', () => {
     await waitFor(() => expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true'))
     expect(save).toHaveBeenCalledWith(true)
   })
+  it('ilk renderda aria-pressed başlangıç değerini yansıtır', () => {
+    render(<OptimisticFavorite initial={true} save={vi.fn(async () => {})} />)
+    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true')
+  })
   it('başarısız kayıt sonrası gerçek duruma döner', async () => {
     const save = vi.fn(async () => {
       throw new Error('ağ hatası')

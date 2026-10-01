@@ -1,9 +1,9 @@
-Film kartına fareyle gelindiğinde detayını hazırla ki detay açılışında aynı film için ikinci GET gitmesin.
+Film kartının üzerine fareyle gelindiğinde detayını hazırla ki detay açılışında aynı film için ikinci GET gitmesin.
 
 ## Gereksinimler
 
 - Film başlığını erişilebilir button olarak göster.
-- Pointer kartın üzerine girdiğinde `id`’ye ait detay verisini hazırla.
+- Fare işaretçisi button'ın üzerine girdiğinde `id`’ye ait detay verisini hazırla.
 - Aynı id’nin hazır detayını okuyunca ikinci GET oluşmasın.
 - Farklı id başka detay cevabı kullansın.
 

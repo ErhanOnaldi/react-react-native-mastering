@@ -8,7 +8,7 @@ Yükleme sırasında yer tutucu alanı koru; arama alanı da doğal input davran
 - Dış class padding çakışmasını override edebilsin.
 
 ## Örnek
-`aria-label="Albüm ara"` ve `placeholder="Başlık"` ile verilen Input erişilebilir `textbox` olur; `px-6` verilirse `px-3` kalmaz.
+`aria-label="Film ara"` ve `placeholder="Başlık"` ile verilen Input erişilebilir `textbox` olur; `px-6` verilirse `px-3` kalmaz.
 
 ## Sözleşme
 - Dosya ve export: `LoadingFields.tsx` → `Skeleton` (`div`) ve `Input` (`input`).

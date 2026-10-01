@@ -1,6 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 export interface Draft {
   id: string
@@ -8,13 +6,6 @@ export interface Draft {
   /** Boş string "tarih yok" demektir. */
   dueDate: string
 }
-
-const draftSchema = z.object({
-  title: z.string().trim().min(1, { error: 'Başlık gerekli' }),
-  dueDate: z.string().optional(),
-})
-
-type DraftValues = z.infer<typeof draftSchema>
 
 export function DraftEditor({
   draft,
@@ -27,8 +18,7 @@ export function DraftEditor({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<DraftValues>({
-    resolver: zodResolver(draftSchema),
+  } = useForm({
     defaultValues: { title: draft.title, dueDate: draft.dueDate },
   })
 

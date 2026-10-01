@@ -6,219 +6,173 @@ kind: concept
 
 # Memo gerçekten ne zaman gerekir?
 
-:::pain[Problem]
-Geliştirdiğin katalog sayfasında 500 ürün listeleniyor. Her ürün için karmaşık bir iskonto ve vergi algoritması çalıştırılıyor. Kullanıcı arayüzün sağ üst köşesindeki "Karanlık Mod" anahtarına dokunuyor. Ekranda sadece arka plan renginin siyah olması gerekirken, tarayıcı 350 milisaniye boyunca kilitleniyor.
+Önceki derste gördün: bir parent render olunca çocukları da yeniden çalışabilir. Bu tek başına sorun değildir. Profiler'da pahalı bir alt ağaç gereksiz yere çalışıyorsa, üç aracı ayrı ayrı düşünebilirsin: `memo` bileşen çağrısını, `useMemo` hesaplanan değeri, `useCallback` ise fonksiyon referansını korumaya yarar. Aynı “memo” sözcüğüne benzemeleri, aynı işi yaptıkları anlamına gelmez.
 
-Kullanıcı arama yapmadı, ürün listesi değişmedi, fiyatlar aynı kaldı; ancak tema state'i değiştiği için tüm sayfa baştan render oldu ve 500 ürünün ağır matematiksel hesaplaması gereksiz yere tekrar çalıştırıldı. Daha da kötüsü: bir geliştirici "Ben kartları `memo()` ile sarmıştım, neden yine çalıştılar?" diye soruyor. Çünkü kartlara her render'da satır içi yeni bir fonksiyon (`onSelect={() => ...}`) aktarılıyordu.
-:::
+Bir değeri tekrar kullanmak üzere saklamaya **memoization** denir. Amaç her render'ı yok etmek değil; aynı girdilerle yapılan pahalı işi yeniden yapmamak ya da `memo` ile sarılı çocuğa gereksiz yere yeni prop vermemektir. Önce en küçük örnekle başlayalım.
 
-:::model[Render nedenleri ve memo sınırları]
-Önceki derste kurduğumuz modeli hatırla:
+## Değişmeyen prop'u alan çocuk
 
-![Render tetikleyicileri ve memo sınırları](diagram:render-nedenleri)
+Sinema ana sayfasındaki `FeaturedLabel` yalnızca sabit bir başlık gösteriyor olsun. Parent'ın sayaç state'i değişince parent yeniden render olur. Çocuk değişen hiçbir veri almıyorsa `memo` ile bu parent kaynaklı çağrıyı atlayabiliriz:
 
-Bir üst bileşen render olduğunda, altındaki çocuk bileşenlerin propları değişmemiş olsa bile çocuklar da yeniden çağrılır. `React.memo` bu dalgayı durdurabilir; ancak tek bir şartla: **Çocuğa aktarılan tüm propların referans eşitliği (`Object.is`) korunmalıdır!**
-:::
+```tsx check
+import { memo, useState } from 'react'
 
-## Üç aracın kesin anatomisi ve zihinsel modeli
+const FeaturedLabel = memo(function FeaturedLabel({ title }: { title: string }) {
+  return <h2>Öne çıkan: {title}</h2>
+})
 
-React performans optimizasyonunda üç ayrı araç sunar. Bu araçlar birbirinin yerine geçmez; her biri problemin farklı bir halkasını çözer:
-
-### 1. `React.memo(Component)` — Bileşen render'ını atlamak
-- **Ne iş yapar:** Bir React bileşenini sarar. Ebeveyn bileşen render olduğunda, çocuğun aldığı proplar öncekiyle yüzeysel olarak eşitse (`prevProps[key] === nextProps[key]`), çocuğun fonksiyonunu tekrar çalıştırmayı atlar (skip).
-- **Ne zaman işe yarar:** Çocuk bileşen çok büyük bir alt ağaç içeriyorsa ve ebeveyni sık sık render oluyorsa.
-- **Nasıl bozulur:** Ebeveyn çocuğa her render'da yeni bir nesne referansı (`{}`), yeni bir dizi (`[]`) veya yeni bir fonksiyon (`() => {}`) geçirirse `memo` anında çöker; çünkü `{} === {}` her zaman `false`'tur!
-
-### 2. `useMemo(() => value, [deps])` — Hesaplanan değeri saklamak
-- **Ne iş yapar:** Bir fonksiyonun ürettiği değeri (sayı, dizi, nesne) belleğe alır (memoize eder). Bağımlılık dizisindeki (`deps`) değerler değişmediği sürece o fonksiyonu bir daha çalıştırmaz; önceki sonucu döndürür.
-- **Ne zaman işe yarar:** 
-  1. Gerçekten CPU tüketen ağır hesaplamalarda (örneğin binlerce öğelik dizileri sıralama, filtreleme, karmaşık veri dönüştürme).
-  2. `memo` ile sarılmış bir alt bileşene aktarılan bir nesne veya dizi prop'unun referansını sabit tutmak gerektiğinde.
-
-### 3. `useCallback(fn, [deps])` — Fonksiyon referansını sabitlemek
-- **Ne iş yapar:** Bir fonksiyonun kendisini bellekte tutar. `useMemo(() => fn, [deps])` yazmanın kısa yoludur.
-- **Kritik kural:** `useCallback` fonksiyonun çalışma hızını artırmaz! İçindeki kodu hızlandırmaz. Yalnızca o fonksiyonun **bellek adresini (referansını)** render'lar arasında sabit tutar.
-- **Ne zaman işe yarar:** `memo` ile sarılmış bir alt bileşene prop olarak bir event handler (örneğin `onSelect`, `onToggle`) verirken, alt bileşenin `memo` kontrolünü kırmamak için kullanılır.
-
-## Bir sayfa etkileşiminde adım adım iz sürelim
-
-Bir ürün kataloğunda kullanıcının tema değiştirmesi ve ardından yeni bir ürün eklemesi durumunda bu üç aracın birlikte nasıl çalıştığını izleyelim:
-
-| Render Döngüsü | Tetikleyici | `products` Değişti mi? | `useMemo(filterProducts)` | `useCallback(onSelect)` | `MemoCard` Davranışı |
-|---|---|---|---|---|---|
-| **Render 1 (İlk açılış)** | Sayfa yüklendi | Evet (ilk veri) | Hesaplandı (~40 ms) | Fonksiyon üretildi (Ref A) | 500 kart render edildi |
-| **Render 2** | `setTheme('dark')` | **HAYIR** | **ATLANDI (0 ms, eski sonuç döndü)** | **ATLANDI (Ref A korundu)** | **500 KART ATLANDI (0 render!)** |
-| **Render 3** | Yeni ürün eklendi | **EVET** | Yeniden hesaplandı (~42 ms) | Bağımlılığı yoksa Ref A korundu | Yalnızca verisi değişen kartlar çizildi |
-
-Render 2 anına dikkat et: Tema değiştiğinde `useMemo` sayesinde 40 ms'lik ağır filtreleme atlandı. `useCallback` sayesinde kartlara iletilen fonksiyonun referansı değişmedi. Kartlar da `memo` ile korunduğu için 500 kartın hiçbiri render edilmedi! Ekran anında karanlık moda geçti.
-
-:::model[Closure ve bayat değer]
-Modül 5'te kurduğumuz tehlikeli tuzağı hatırla:
-
-![Callback fonksiyonu oluştuğu render'ın değerlerini yakalar](diagram:closure-bayat-deger)
-
-`useCallback` kullanırken bağımlılık dizisini eksik bırakırsan (`[]`), fonksiyon ilk render'ın değişkenlerini closure içine hapseder. Kullanıcı arama filtresini değiştirse bile callback hâlâ eski filtre değeriyle işlem yapar (stale closure).
-:::
-
-## Kod örneği: Cihaz listesi ve ping sıralaması
-
-Şimdi bir sistem izleme panelinde sunucu cihazlarının gecikme sürelerine (ping) göre sıralanmasını inceleyelim.
-
-### Kırık yaklaşım: Referans eşitliğini her render'da bozan kod
-
-```tsx
-// YANLIŞ: memo hiçbir işe yaramaz, hesaplama her tuşta tekrarlanır
-export function DeviceMonitor({ devices }: { devices: Device[] }) {
-  const [filterText, setFilterText] = useState('')
-  const [refreshCount, setRefreshCount] = useState(0)
-
-  // 1. Ağır sıralama her sayaç artışında boş yere baştan çalışır!
-  const sorted = devices.sort((a, b) => a.ping - b.ping) // Üstelik giriş dizisini mutasyona uğratıyor!
-
+export function HomeHeader() {
+  const [visits, setVisits] = useState(0)
   return (
-    <div>
-      <button onClick={() => setRefreshCount((c) => c + 1)}>Yenile {refreshCount}</button>
-      <input value={filterText} onChange={(e) => setFilterText(e.target.value)} />
-
-      {sorted.map((device) => (
-        // 2. Her render'da yeni inline ok fonksiyonu aktarılıyor!
-        // DeviceCard memo ile sarılmış olsa bile props değişti sanacak!
-        <DeviceCard
-          key={device.id}
-          device={device}
-          onPing={() => console.log('Ping:', device.id)}
-        />
-      ))}
-    </div>
+    <header>
+      <button onClick={() => setVisits((value) => value + 1)}>Ziyaret {visits}</button>
+      <FeaturedLabel title="Yol" />
+    </header>
   )
 }
 ```
 
-Bu kodda `refreshCount` arttığında:
-1. `devices.sort` gereksiz yere çalışır ve orijinal diziyi bozar.
-2. `onPing` prop'una her döngüde `() => ...` ile yeni bir fonksiyon referansı oluşturulur.
-3. `DeviceCard` bileşeni `memo` ile sarılmış olsa dahi, `onPing !== prevProps.onPing` olduğu için tüm kartlar tekrar render edilir.
+Butona bastığında `HomeHeader` çalışır, fakat `FeaturedLabel` aynı `title` değerini aldığı için atlanabilir. `memo`'nun yaptığı şey budur: çocuğun kendi state'i değişirse yine render olur; `memo` onu kapatmaz.
 
-### Doğru yaklaşım: useMemo, useCallback ve memo uyumu
+## Nesne ve fonksiyonlar neden farklı görünür?
+
+Şimdi tek yeni ayrıntı: `memo` props'ları `Object.is` ile karşılaştırır. Bu karşılaştırmaya **referans eşitliği** denir; nesne ve fonksiyonlarda içerik aynı görünse bile bellekteki kimliklerinin aynı olup olmadığı önemlidir.
+
+Parent şöyle bir prop verirse her çalıştığında yeni nesne yaratır:
+
+```tsx
+<MoviePoster movie={{ id: 7, title: 'Yol' }} />
+```
+
+İki nesnenin alanları aynı olsa da referansları farklıdır. Bu yüzden `memo(MoviePoster)` yeni prop geldiğini görür ve çocuğu render eder. `memo` veri içeriğini derinlemesine incelemez; bu davranış, karşılaştırmanın ucuz ve öngörülebilir kalmasını sağlar.
+
+## Pahalı hesaplamayı gerektiğinde yap
+
+Bir film sayfasında kullanıcı türe göre seçim yapıyor olsun. Gösterilecek sonuçların filtrelenmesi büyük bir katalogda zaman alıyorsa, `useMemo` hesaplamayı yalnızca katalog veya tür seçimi değişince yenileyebilir:
 
 ```tsx check
-import { memo, useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-export interface Device {
-  id: string
-  name: string
-  ping: number
-}
+type Movie = { id: number; title: string; genre: string }
 
-interface DeviceCardProps {
-  device: Device
-  onSelect: (id: string) => void
-  onCardRender?: () => void
-}
-
-// 1. memo: Props (device ve onSelect) değişmediği sürece render olma!
-export const DeviceCard = memo(function DeviceCard({
-  device,
-  onSelect,
-  onCardRender,
-}: DeviceCardProps) {
-  onCardRender?.()
-  return (
-    <div className="device-card">
-      <span>{device.name}</span>
-      <strong>{device.ping} ms</strong>
-      <button onClick={() => onSelect(device.id)}>İncele</button>
-    </div>
+export function GenreShelf({ movies }: { movies: Movie[] }) {
+  const [genre, setGenre] = useState('Drama')
+  const matchingMovies = useMemo(
+    () => movies.filter((movie) => movie.genre === genre),
+    [movies, genre],
   )
-})
-
-export function CleanDeviceMonitor({
-  devices,
-  onCardRender,
-}: {
-  devices: Device[]
-  onCardRender?: () => void
-}) {
-  const [activeId, setActiveId] = useState<string | null>(null)
-  const [counter, setCounter] = useState(0)
-
-  // 2. useMemo: Yalnızca devices dizisi değiştiğinde sırala!
-  // Orijinal diziyi bozmamak için [...devices] ile kopya alıyoruz.
-  const sortedDevices = useMemo(() => {
-    return [...devices].sort((a, b) => a.ping - b.ping)
-  }, [devices])
-
-  // 3. useCallback: onSelect fonksiyonunun referansını sabit tut!
-  // Fonksiyon bileşen gövdesinde her render'da yeniden üretilmez.
-  const handleSelect = useCallback((id: string) => {
-    setActiveId(id)
-  }, [])
 
   return (
     <section>
-      <button onClick={() => setCounter((c) => c + 1)}>Sayaç: {counter}</button>
-      <p>Seçili Cihaz: {activeId ?? 'Yok'}</p>
-
-      <div className="device-list">
-        {sortedDevices.map((device) => (
-          <DeviceCard
-            key={device.id}
-            device={device}
-            onSelect={handleSelect}
-            onCardRender={onCardRender}
-          />
-        ))}
-      </div>
+      <button onClick={() => setGenre('Komedi')}>Komedi</button>
+      <p>{matchingMovies.length} film</p>
     </section>
   )
 }
 ```
 
-Bu doğru kurguda:
-- Kullanıcı sayaca bastığında `CleanDeviceMonitor` render edilir.
-- `sortedDevices` referansı `useMemo` sayesinde aynı kalır.
-- `handleSelect` referansı `useCallback` sayesinde aynı kalır.
-- `DeviceCard` bileşenleri proplarının hiç değişmediğini görür ve tek bir kart dahi render edilmez!
+`useMemo` içine verdiğin hesap yalnızca `movies` veya `genre` değişince tekrar çalışır. Başka bir state, örneğin görünüm sayacı değişirse önceki filtre sonucu kullanılır. Bu örnekte filtre ucuzsa `useMemo` gerekmeyebilir; ölçümde gerçek bir maliyet veya referans ihtiyacı gördüğünde kullan.
 
-## Sınır durumları ve sık yapılan hatalar
+## Bir güncellemeyi adım adım izleyelim
 
-:::mistake[1. Her fonksiyona ve değişkene ezbere useMemo/useCallback eklemek]
-- **Belirti:** Kodun her satırında `useCallback` ve `useMemo` var; ancak uygulama daha hızlı değil, aksine daha yavaş ve kod okunamaz.
-- **Neden:** `useMemo` ve `useCallback` bedava değildir. React bu hook'lar için bellekte yer ayırır, her render'da bağımlılık dizisindeki öğeleri tek tek karşılaştırır. `const fullName = useMemo(() => first + ' ' + last, [first, last])` gibi ucuz string birleştirmelerde hook'un maliyeti işlemin kendi maliyetinden daha büyüktür!
-- **Düzeltme:** Yalnızca ölçülmüş pahalı hesaplamalarda (`>5 ms`) ya da `memo` ile sarılmış çocuklara referans sağlarken kullan.
+`GenreShelf` açıldıktan sonra ilgisiz bir gösterim tercihi değiştiğini varsayalım. Girdi dizisi ve tür aynı kaldığı için filtre hesabı tekrar edilmez:
+
+| Adım | Değişiklik | `useMemo` girdileri | Sonuç |
+|---|---|---|---|
+| 1 | İlk açılış | `movies`, `Drama` | Filtre çalışır, sonuç saklanır. |
+| 2 | Görünüm tercihi güncellenir | İkisi de aynı | Filtre yeniden çalışmaz; saklanan sonuç kullanılır. |
+| 3 | Tür `Komedi` olur | `genre` değişti | Filtre yeni türle yeniden çalışır. |
+| 4 | `movies` yeni diziyle gelir | `movies` değişti | Filtre yeni katalogla yeniden çalışır. |
+
+Bağımlılık listesi, hesabın hangi değerleri kullandığını React'e söyler. Listeye bir girdiyi koymazsan, o girdi değiştiğinde eski sonuç kullanılabilir. Listeye hesabın kullanmadığı sık değişen bir değeri eklersen de hesaplama gereksiz yere tekrar eder.
+
+## Fonksiyon referansı ve closure
+
+Bir fonksiyon başka bir fonksiyonun içinde tanımlandığında, oluşturulduğu andaki çevre değişkenlerini kullanabilir. Fonksiyonun bu erişim alanına **closure** denir. `useCallback`, fonksiyonun kendisini saklayıp belirttiğin girdiler değişene kadar aynı referansı sunar; fonksiyonu çalıştırırken daha hızlı yapmaz.
+
+Örneğin film kartına tıklanınca o filmin detay sayfasını açan bir handler'ı `memo` ile sarılı karta veriyorsun. Parent'ın sayaç state'i değiştiğinde yeni inline fonksiyon üretmek yerine `useCallback` kullanabilirsin:
+
+```tsx check
+import { memo, useCallback, useState } from 'react'
+
+const FilmLink = memo(function FilmLink({
+  title,
+  onOpen,
+}: {
+  title: string
+  onOpen: (title: string) => void
+}) {
+  return <button onClick={() => onOpen(title)}>{title}</button>
+})
+
+export function FilmShelf({ title }: { title: string }) {
+  const [visits, setVisits] = useState(0)
+  const openFilm = useCallback((filmTitle: string) => {
+    console.log('Film aç:', filmTitle)
+  }, [])
+
+  return (
+    <section>
+      <button onClick={() => setVisits((value) => value + 1)}>Ziyaret {visits}</button>
+      <FilmLink title={title} onOpen={openFilm} />
+    </section>
+  )
+}
+```
+
+Sayaç değişince `FilmShelf` render olur. `openFilm` referansı ve `title` aynı kaldığı için `FilmLink`'in props'ları eşit kalır; `memo` kartın render'ını atlayabilir. `useCallback` olmadan parent her çalıştığında yeni handler üretir, `memo` bunu farklı prop sayar.
+
+## Eksik bağımlılık: gerçek bir yanlış ve düzeltmesi
+
+Şimdi `openFilm` seçilen koleksiyon adını da kullanıyor olsun. `useCallback` içine `collection` değişkenini yazıp bağımlılık listesini boş bırakırsan, fonksiyon ilk oluşturulduğu render'daki adı görmeye devam eder. Bu davranışa **stale closure** (bayat closure) denir.
+
+Belirti: ekranda “Komedi” koleksiyonu seçili olduğu halde tıklama eski “Drama” koleksiyonunu açar. Düzeltme, callback'in okuduğu değişkeni bağımlılık listesine eklemektir:
+
+```tsx
+const openFilm = useCallback(
+  (filmTitle: string) => openInCollection(collection, filmTitle),
+  [collection],
+)
+```
+
+Şimdi `collection` değiştiğinde yeni callback oluşur ve yeni closure doğru değeri görür. Bağımlılık listesi boş olsun diye güncel veriyi feda etme; doğru davranış, `memo` tasarrufundan daha önemlidir.
+
+:::model[Bayat closure]
+Callback bağımlılıkları eksikse oluştuğu render’ın değerini kullanmaya devam edebilir.
+
+![Callback fonksiyonu oluştuğu render'ın değerlerini yakalar](diagram:closure-bayat-deger)
 :::
 
-:::mistake[2. memo'lu bileşene inline nesne veya stil aktarmak]
-- **Belirti:** Kartı `memo` ile sardın, fonksiyonu `useCallback` yaptın; ama kart yine de her tuşta render oluyor.
-- **Neden:** Karta `<DeviceCard style={{ margin: 8 }} />` veya `options={['aktif', 'pasif']}` şeklinde inline nesne geçiyorsun. Her render'da yeni bir nesne referansı üretilir ve `memo`'nun sığ karşılaştırması (`Object.is`) başarısız olur.
-- **Düzeltme:** Sabit nesneleri bileşenin dışına çıkar (`const CARD_STYLE = { margin: 8 }`) ya da `useMemo` ile sar.
-:::
+## Üç aracın farkı
 
-:::mistake[3. useCallback içinde eksik bağımlılık ve bayat closure]
-- **Belirti:** `const onSave = useCallback(() => api.save(query), [])` yazdın. Kullanıcı inputa yeni bir şey yazıp kaydet butonuna bastığında, sunucuya ilk açılıştaki boş metin gidiyor.
-- **Neden:** Bağımlılık dizisi boş (`[]`) olduğu için fonksiyon oluşturulduğu ilk render'ın `query` değişkenini closure içine hapsetti. `query` güncellense bile fonksiyon eski değeri görüyor.
-- **Düzeltme:** Fonksiyonun içinde okunan her reaktif değişkeni (props, state) mutlaka bağımlılık dizisine ekle: `[query]`.
-:::
+Örnekleri gördükten sonra seçim şöyle özetlenir:
 
-:::sector[Sektörde nasıl kullanılır?]
-Modern React ekiplerinde performans kuralları şöyledir:
+| Araç | Sakladığı | Sorabileceğin soru |
+|---|---|---|
+| `memo(Component)` | Çocuğun render sonucunu atlama kararı | Parent render oldu; çocuğun props'u aynı mı? |
+| `useMemo(calculate, deps)` | Hesaplanmış değer | Bu hesaplamanın girdileri değişti mi? |
+| `useCallback(fn, deps)` | Fonksiyon referansı | Bu handler'ı alan memo'lu çocuk için referans sabit mi? |
 
-1. **Önce ölç, sonra sar:** Ekip içinde "profiler kanıtı olmadan `useMemo` eklenemez" kuralı konur. 100 elemanlı basit bir dizi filtresi modern tarayıcılarda 0.1 milisaniyedir; `useMemo` gerektirmez.
-2. **React Compiler geçişi:** Bir sonraki derste göreceğimiz React Compiler, bu manuel `useMemo`, `useCallback` ve `memo` yazma hamallığını derleme anında otomatik hale getirmektedir. Ancak derleyicinin çalışabilmesi için de saflık ve bağımlılık kurallarını tam olarak anlamış olman gerekir.
-:::
+Hepsi bir maliyet taşır: React bağımlılıkları karşılaştırır ve bellekte değer saklar. Basit bir metin birleştirme için `useMemo` eklemek çoğu zaman gereksizdir. Önce Profiler'da problemi gör, sonra en küçük aracı uygula ve ölçümde gerçekten iyileşme olup olmadığına bak.
 
 ## Özet
 
-- `React.memo`, ebeveyn render olduğunda değişmeyen props alan çocuğun render'ını atlar.
-- `useMemo`, ağır bir hesaplama sonucunu bağımlılıkları değişene kadar önbelleğe alır.
-- `useCallback`, bir fonksiyonu hızlandırmaz; fonksiyon referansını kararlı tutarak `memo`'lu çocukların gereksiz çalışmasını önler.
-- `memo`'nun çalışabilmesi için çocuğa iletilen tüm nesne, dizi ve fonksiyon referanslarının kararlı olması zorunludur.
-- Bağımlılık dizilerini eksik bırakmak bayat closure (stale value) hatalarına yol açar.
+- `memo`, parent render'ında props'u eşit kalan çocuğun render'ını atlayabilir.
+- `useMemo`, bağımlılıkları değişmeyen hesaplamanın sonucunu yeniden kullanır.
+- `useCallback`, fonksiyonu hızlandırmaz; fonksiyon referansını korur.
+- Bağımlılık listesini eksik bırakmak eski render değerini kullanan stale closure'a yol açabilir.
+- Memo araçlarını her yere ekleme; önce gerçek maliyeti ölç ve gereksizse sade kodu koru.
+
+**Yeni terimler**
+
+- **Memoization:** Aynı girdilerde üretilen değeri veya sonucu yeniden kullanmak için saklama.
+- **Referans eşitliği:** İki nesne ya da fonksiyonun aynı kimlikte olup olmadığını karşılaştırma; `Object.is` kullanılır.
+- **Closure:** Fonksiyonun tanımlandığı yerdeki değişkenlere erişimini koruması.
+- **Stale closure:** Eski render'dan kalan closure'ın güncel olması gereken eski değeri kullanması.
 
 ### Kendini yokla
 
-1. **Soru:** `const handleClick = useCallback(() => setCount(count + 1), [])` fonksiyonunda kullanıcı butona 3 kez bastığında sayaç kaç olur? Neden?
-   - **Cevap:** Sayaç `1` kalır. Çünkü bağımlılık dizisi boştur; fonksiyon ilk render'daki `count = 0` değerini closure içinde hapsetmiştir ve her tıklamada `setCount(0 + 1)` çağrılır. Çözüm: `setCount((c) => c + 1)` updater fonksiyonu kullanmaktır.
-
-2. **Soru:** `useCallback` tek başına bir fonksiyonun çalışma süresini milisaniye olarak kısaltır mı?
-   - **Cevap:** Hayır, kısaltmaz. Fonksiyon çalıştığında yine aynı sürede biter. `useCallback`'in tek görevi fonksiyonun referansını koruyarak `memo` ile sarılmış alt bileşenlerin gereksiz tetiklenmesini engellemektir.
+1. `useCallback` fonksiyonun içindeki işi hızlandırır mı?
+   **Cevap:** Hayır. Fonksiyon referansını korur; çağrıldığında yaptığı iş aynı kalır.
+2. `useCallback(() => openFilm(collection), [])` neden yanlış sonuç verebilir?
+   **Cevap:** `collection` ilk render'ın closure'ında kalabilir. Değişen değer bağımlılık listesine eklenmelidir.

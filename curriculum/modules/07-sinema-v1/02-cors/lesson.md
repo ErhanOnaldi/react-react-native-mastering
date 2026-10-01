@@ -6,201 +6,90 @@ kind: concept
 
 # CORS ve Same-Origin Policy
 
-:::pain[Problem]
-Vite geliştirme sunucun `http://localhost:5173` üzerinde çalışıyor. Backend ekibinin yerelde ayağa kaldırdığı `http://localhost:5000/api/movies` adresine `fetch` ile istek atıyorsun. Postman'de tıkır tıkır çalışan bu istek, React uygulamasında anında kırmızıya boyanıyor. Konsolda korkutucu bir hata beliriyor:  
-`Access to fetch at 'http://localhost:5000/api/movies' from origin 'http://localhost:5173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.`  
-JavaScript tarafında `catch(err)` bloğu ise yalnızca anlamsız bir `TypeError: Failed to fetch` yakalıyor. Postman sorunsuz çalışırken tarayıcı neden veriyi senden gizliyor?
-:::
+Vite ile Sinema'yı `http://localhost:5173` adresinde açtığını düşün. API de `http://localhost:5000` adresinde çalışıyor. İki adres de senin bilgisayarında olsa da tarayıcı bunları ayrı **origin** (kaynak adres) sayar. Origin; protokol, host (alan adı) ve porttan oluşur. Tarayıcıda çalışan JavaScript'in başka bir origin'deki cevabı okuyup okuyamayacağını **Same-Origin Policy** (aynı kaynak politikası) belirler.
 
-## Tarayıcının güvenlik kalkanı: Same-Origin Policy
+En basit karşılaştırma aynı adrese yapılan iki istektir:
 
-Web güvenliğinin temel taşı **Same-Origin Policy** (Aynı Köken Politikası) adı verilen tarayıcı mekanizmasıdır. Bu politika, bir kökenden (origin) yüklenen betiğin başka bir kökene ait verilere keyfi şekilde erişmesini engeller.
+| Sayfanın adresi | İsteğin adresi | Sonuç |
+| --- | --- | --- |
+| `http://localhost:5173` | `http://localhost:5173/api/films` | Aynı origin |
 
-Bir **origin (köken)** üç bileşenin birleşimidir:
-1. **Protokol (Şema):** `http:` veya `https:`
-2. **Alan Adı (Host):** `localhost`, `api.themoviedb.org`, `ornek.com`
-3. **Bağlantı Noktası (Port):** `5173`, `5000`, `443` (https için varsayılan), `80` (http için varsayılan)
+Yol (`/api/films`) değişebilir; origin'i oluşturan üç parça aynı kaldığı için tarayıcı isteği aynı origin kabul eder. Bu ayrım, bir sitenin açık olan başka bir sitedeki özel verilere sessizce erişmesini önler.
 
-Bu üç parçadan **herhangi biri farklıysa**, tarayıcı bu iki adresi farklı origin kabul eder:
+## Tek alan değişince ne olur?
 
-| Kaynak URL | Hedef URL | Durum | Neden? |
+Şimdi yalnızca portu değiştirelim:
+
+| Sayfanın adresi | İsteğin adresi | Sonuç |
+| --- | --- | --- |
+| `http://localhost:5173` | `http://localhost:5000/api/films` | Farklı origin |
+
+Port `5173` yerine `5000` olduğu için tarayıcı bu isteği cross-origin, yani başka bir origin'e istek sayar. Protokol `http` yerine `https` olsaydı veya host `localhost` yerine `127.0.0.1` olsaydı yine farklı origin olurdu. İsimleri benzer görünse bile bu alanlar eşleşmelidir.
+
+**CORS** (Cross-Origin Resource Sharing), sunucunun tarayıcıya belirli cross-origin istekleri paylaşma izni verdiği kurallar bütünüdür. CORS, Postman veya `curl` gibi araçların önüne geçen bir ağ duvarı değildir; tarayıcının JavaScript'e cevap verip vermemesini kontrol eder. Postman'de çalışan bir adresin tarayıcıda hata vermesi bu yüzden mümkündür.
+
+## Tarayıcı cevabı ne zaman gösterir?
+
+Basit bir `GET` isteği tarayıcıdan API'ye gidebilir. API isteği işler, cevabı gönderir; sonra tarayıcı cevabın CORS iznini kontrol eder. İzin yoksa sunucu cevap vermiş olsa bile tarayıcı cevabı JavaScript'e açmaz. Uygulamada `fetch()` genel bir `TypeError` ile reddedilebilir; CORS ayrıntısını tarayıcının Console panelindeki mesajda görürsün.
+
+Örneğin tarayıcı isteğinde kaynak adresini bildiren `Origin: http://localhost:5173` başlığı bulunur. Sunucu da izin veriyorsa cevabına `Access-Control-Allow-Origin: http://localhost:5173` ekler. Tarayıcı bu izin başlığını görüp cevabı React koduna teslim eder. Sunucu izin başlığını eklememişse `catch` içinden sunucu gövdesini okumaya çalışamazsın; tarayıcı onu güvenlik nedeniyle saklar.
+
+Bu nedenle CORS sorununu çözerken `catch` içinde özel bir CORS hatası aramak işe yaramaz. Belirti `Failed to fetch` olabilir; nedeni ve eksik izin başlığını Console'da bulursun. Kalıcı çözüm API sunucusunda doğru origin'e izin vermektir.
+
+## Bazı isteklerde önce izin sorulur
+
+Şimdi `GET` isteğine `Authorization` başlığı ekleyelim. `Authorization`, isteğin kimlik bilgisini taşır ve tarayıcının doğrudan gönderdiği temel istek türlerinden biri değildir. Böyle bir istekte tarayıcı önce **preflight** (ön kontrol) adı verilen `OPTIONS` isteğiyle sunucuya izin sorar. Asıl istek, sunucu izin verirse gönderilir.
+
+Akışı adım adım izleyelim:
+
+| Sıra | Tarayıcının yaptığı | Sunucunun cevabı | Sonraki adım |
 | --- | --- | --- | --- |
-| `http://localhost:5173` | `http://localhost:5173/api/search` | **Same-origin** | Protokol, host ve port tamamen aynı |
-| `http://localhost:5173` | `http://localhost:5000/api/movies` | **Cross-origin** | Portlar farklı (`5173` vs `5000`) |
-| `http://localhost:5173` | `https://localhost:5173/api/movies` | **Cross-origin** | Protokoller farklı (`http` vs `https`) |
-| `http://localhost:5173` | `http://127.0.0.1:5173/api/movies` | **Cross-origin** | Host adları metin olarak farklı (`localhost` vs `127.0.0.1`) |
+| 1 | `OPTIONS /api/films` gönderir; `Origin` ve istenen başlıkları bildirir | Henüz cevap yok | Asıl istek bekler |
+| 2 | İzin cevabını alır | `Access-Control-Allow-Origin`, izin verilen method ve başlıklar | İzin uygunsa devam eder |
+| 3 | `GET /api/films` ve `Authorization` başlığını yollar | Film verisi ve CORS izni | Tarayıcı cevabı JavaScript'e açar |
 
-Same-origin policy olmasaydı, zararlı bir web sitesini ziyaret ettiğinde o sitenin arka plandaki JavaScript kodu açık olan banka oturumuna senin adına istek atabilir ve hesap hareketlerini okuyabilirdi.
-
-## CORS nedir, ne değildir?
-
-**CORS** (Cross-Origin Resource Sharing), tarayıcının bu katı same-origin kuralını güvenli biçimde esnetme standardıdır.
-
-CORS hakkında zihnini berraklaştırman gereken ilk gerçek şudur:  
-**CORS bir sunucu güvenlik duvarı değildir; tarayıcının uyguladığı bir istemci kısıtıdır.**
-
-Postman, `curl`, mobil uygulamalar veya sunucudan sunucuya (backend-to-backend) yapılan çağrılar CORS kuralına takılmaz; çünkü bu araçların içinde Same-Origin Policy işleten bir tarayıcı motoru yoktur. Sunucu isteği alır, işler ve cevabı döner. Tarayıcı ise cevabın başlıklarına bakar: Eğer sunucu `Access-Control-Allow-Origin` başlığıyla açıkça izin vermemişse, dönen veriyi JavaScript koduna **teslim etmez**.
+Buradaki sıra önemlidir. `OPTIONS` film listesini getirmez; yalnızca “bu origin bu method ve başlıklarla istekte bulunabilir mi?” sorusunu yanıtlar. Preflight reddedilirse tarayıcı asıl `GET` isteğini göndermez. Network panelinde `OPTIONS` ve ardından `GET` satırlarını görebilirsin.
 
 ![CORS preflight karar akışı ve izin başlıkları](diagram:cors-preflight)
 
-## Taşıyıcı zihinsel model: Basit istekler ve Preflight (OPTIONS)
+### Örnek 3: JSON ile POST
 
-Tarayıcı, sunucuya göndereceği istekleri iki kategoriye ayırır:
-
-### 1. Basit İstekler (Simple Requests)
-Tarihsel olarak HTML formlarının (`<form>`) yapabildiği eylemlerdir. Tarayıcı bu istekleri doğrudan gönderir; ön kontrol yapmaz. Bir isteğin basit sayılması için:
-- Yöntem yalnızca `GET`, `HEAD` veya `POST` olmalıdır.
-- Yalnızca güvenli kabul edilen başlıklar (CORS-safelisted headers) içermelidir: `Accept`, `Accept-Language`, `Content-Language`.
-- Eğer `Content-Type` başlığı varsa yalnızca şu üç değerden biri olabilir:
-  - `application/x-www-form-urlencoded`
-  - `multipart/form-data`
-  - `text/plain`
-
-### 2. Preflight Gerektiren İstekler
-Modern web uygulamalarının kullandığı neredeyse her istek bu kategoriye girer:
-- `Content-Type: application/json` göndermek
-- `Authorization: Bearer <token>` başlığı eklemek
-- `PUT`, `DELETE` veya `PATCH` gibi durum değiştiren metotlar kullanmak
-- Özel başlıklar eklemek (`X-Custom-Header`)
-
-:::model[CORS ve Preflight Akışı]
-Preflight gerektiren bir istekte tarayıcı asıl isteği bekletir. Önce sunucuya hafif bir ön kontrol isteği (`OPTIONS`) gönderir:  
-1. **Tarayıcı sorar:** "Ben `http://localhost:5173` kökeninden geliyorum (`Origin`), az sonra `POST` yöntemiyle ve `Authorization`, `Content-Type` başlıklarıyla bir istek atacağım (`Access-Control-Request-Headers`). İzin veriyor musun?"  
-2. **Sunucu yanıtlar:** "Evet, `http://localhost:5173` kökenine izin veriyorum (`Access-Control-Allow-Origin`), `POST` yöntemine izin veriyorum (`Access-Control-Allow-Methods`), bu başlıklara izin veriyorum (`Access-Control-Allow-Headers`). Bu izni 600 saniye önbelleğe alabilirsin (`Access-Control-Max-Age`)."  
-3. **Asıl istek ateşlenir:** Ön kontrol başarılıysa tarayıcı gerçek `POST` isteğini fırlatır. Sunucu izin vermezse asıl istek **hiç gönderilmez** ve konsolda CORS hatası üretilir.
-:::
-
-## Zaman çizelgesinde preflight adımları
-
-| Zaman | Aktör | Ağ Eylemi / Paket | HTTP Durumu | Anlamı |
-| --- | --- | --- | --- | --- |
-| 0 ms | Tarayıcı | `OPTIONS /api/movies` (Preflight) | — | Tarayıcı izin sorgusunu yolladı |
-| 40 ms | Sunucu | Cevap: `Access-Control-Allow-Origin: ...` | `204` / `200` | Sunucu izin kurallarını onayladı |
-| 45 ms | Tarayıcı | `POST /api/movies` (Asıl İstek) | — | Gerçek veri paketi yola çıktı |
-| 90 ms | Sunucu | JSON cevabı | `200 OK` | Veri tarayıcıya ulaştı ve JS'e teslim edildi |
-
-Network sekmesinde aynı adrese art arda iki satır görmenin sebebi budur: İlk satır `OPTIONS` (Preflight), ikinci satır asıl istektir (`POST`, `PUT`, `GET`).
-
-## CORS hatasında JavaScript ne görür?
-
-CORS hatası oluştuğunda tarayıcı güvenliği en üst düzeyde tutar:  
-Sunucunun döndürdüğü hata durumunu veya gövdesini JavaScript'in okumasına **asla izin vermez**.
-
-`fetch()` çağrısı genel bir `TypeError: Failed to fetch` hatasıyla reject olur. `error.message` içinde CORS kelimesi dahi geçmez. Hatanın CORS sebebiyle oluştuğunu doğrulayabileceğin tek yer **geliştirici konsoludur (Console sekmesi)**. Bu yüzden kodun içinde `if (error.isCors)` gibi bir mantık kuramazsın; CORS teşhisi konsol loglarından yapılır.
-
-## Çözüm yolları: CORS nasıl aşılır?
-
-CORS sorununu çözmek için üç meşru mimari yaklaşım vardır:
-
-### 1. Çözüm: API sunucusunda CORS politikasını yapılandırmak
-Kalıcı ve doğru çözüm, backend servisinin istemci kökenine açıkça izin vermesidir. İleride backend geliştirmede kullanacağın **ASP.NET Core** platformunda bu kural şöyle tanımlanır:
-
-```csharp
-// ASP.NET Core: Program.cs içinde CORS politikası tanımlama
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("FrontendPolicy", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173") // Vite geliştirme sunucusu
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
-
-var app = builder.Build();
-
-app.UseCors("FrontendPolicy"); // CORS middleware'ini devreye al
-
-app.MapGet("/api/movies", () => Results.Ok(new[] { "Matrix", "Inception" }));
-
-app.Run("http://localhost:5000");
-```
-
-Backend tarafında `AllowAnyHeader()` ve `AllowAnyMethod()` eklenmediği takdirde `Authorization` başlığı içeren preflight istekleri reddedilir.
-
-### 2. Çözüm: Geliştirme ortamında Vite Proxy kullanmak
-Eğer üçüncü parti bir API'ye bağlanıyorsan ya da backend kodunu o an değiştiremiyorsan, Vite'ın yerleşik proxy (vekil) özelliğini kullanabilirsin. İstekleri `/api` gibi göreli bir yola atarsın; Vite dev sunucusu bu isteği yerelde sunucudan sunucuya aktarır:
+Sinema'da bir değerlendirme kaydettiğini düşün. `POST` metoduna `Content-Type: application/json` eklemek de tarayıcının ön kontrolden geçirmesine neden olabilir. `Content-Type`, gövdedeki verinin türünü belirten başlıktır; `application/json` değeri JSON gövdeyi işaret eder.
 
 ```ts
-// vite.config.ts
-import { defineConfig } from 'vite'
-
-export default defineConfig({
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-      },
-    },
-  },
+fetch('http://localhost:5000/api/reviews', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ filmId: '42', rating: 5 }),
 })
 ```
 
-Tarayıcı isteği `http://localhost:5173/api/movies` adresine gönderir. Tarayıcı için istek **same-origin**'dir; dolayısıyla CORS denetimi hiç devreye girmez! Vite arkada `http://localhost:5000/api/movies` adresine sunucu düzeyinde istek atar ve sonucu tarayıcıya geri yansıtır.
+Tarayıcı önce izin sorgusu yollar; API uygun origin, `POST` ve `Content-Type` için izin verirse değerlendirme isteği gider. Bu kontrol, sunucunun yalnızca beklediği web sayfalarının hassas başlıklarla istek atmasına izin vermesini sağlar. Basit isteklerde de CORS cevabı kontrol edilir; preflight her cross-origin istek için yapılmaz.
 
-### 3. Çözüm: Üretim ortamında aynı origin arkasına yerleştirmek (Reverse Proxy)
-Canlı yayında (production) en sağlam yaklaşım, frontend statik dosyaları ile API servisini aynı alan adı altına (örneğin Nginx veya Cloudflare arkasında `/` ve `/api`) toplamaktır. Her şey tek bir kökenden sunulduğu için CORS başlıklarına duyulan ihtiyaç ortadan kalkar.
+## Geliştirmede adresleri nasıl konuşturursun?
 
-## Kimlik bilgileri ve çerezler (`credentials`)
+Sinema'yı geliştirme sırasında aynı `localhost:5173` adresinde tutup Vite'ın **proxy** (vekil) özelliğiyle `/api` isteklerini API'ye aktarmak mümkün. Tarayıcı `/api/films` yolunu kendi origin'ine gönderir, Vite ise isteği arka tarafta `localhost:5000` adresine iletir. Böylece tarayıcı açısından istek aynı origin'dedir. Canlı ortamda da frontend ve API'yi aynı alan adı arkasında sunan bir **reverse proxy** (ters vekil), tarayıcı ile farklı sunucular arasındaki aktarımı yapabilir.
 
-Bir istekle birlikte oturum çerezi (cookie) göndermek istiyorsan istemcide `credentials: 'include'` seçeneğini belirtirsin:
+Backend tarafında ASP.NET Core kullanırken de CORS politikası tanımlanır: politika izin verilen frontend origin'ini, method'ları ve başlıkları listeler; uygulama bu politikayı API cevaplarına uygular. Buradaki fikir, kod ayrıntısından daha önemlidir: izin API cevabında açıkça yer almalı ve kullandığın origin ile eşleşmelidir.
 
-```ts check
-export async function sendFeedbackWithCredentials(message: string): Promise<boolean> {
-  const response = await fetch('http://localhost:5000/api/feedback', {
-    method: 'POST',
-    credentials: 'include', // Çerezleri ve oturum kimliğini isteğe dahil et
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ message }),
-  })
-
-  return response.ok
-}
-```
-
-Bu noktada tarayıcı çok katı bir güvenlik kuralı işletir:  
-Eğer istemci `credentials: 'include'` gönderiyorsa, sunucu `Access-Control-Allow-Origin: *` (joker karakter) **kullanamaz**!  
-Sunucunun MUTLAKA açıkça `Access-Control-Allow-Origin: http://localhost:5173` ve ek olarak `Access-Control-Allow-Credentials: true` başlıklarını dönmesi şarttır. Aksi halde tarayıcı cevabı anında engeller.
-
-## Sınır durumları ve sık hatalar
-
-:::mistake[Sık hata: CORS hatasını istemci kodunda try/catch ile çözmeye çalışmak]
-Belirti → `catch (err)` içine `console.log(err)` yazılıyor; ancak sadece `TypeError: Failed to fetch` görülüyor.  
-Neden → Tarayıcı güvenlik gereği CORS engeliyle ilgili hiçbir ayrıntıyı JavaScript'e sızdırmaz.  
-Düzeltme → Kodla hatayı yamamaya çalışma; tarayıcının DevTools **Console** sekmesini açıp kırmızı CORS mesajını oku, izin eksikliğini API'de veya proxy'de gider.
-:::
-
-:::mistake[Sık hata: Postman'de çalışıyor diye backend'de sorun olmadığını savunmak]
-Belirti → Geliştirici "Postman 200 dönüyor, demek ki sorun React tarafında" iddiasında bulunur.  
-Neden → Postman bir tarayıcı değildir; Same-Origin Policy kurallarını işletmez. CORS tamamen tarayıcı ortamının getirdiği bir standarttır.  
-Düzeltme → Sorunu tarayıcının gönderdiği `Origin` başlığına backend'in yanıt vermemesinde ara.
-:::
-
-:::mistake[Sık hata: Credentials kullanırken sunucuda joker (*) origin bırakmak]
-Belirti → `credentials: 'include'` ile yapılan isteklerde konsolda `The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'` hatası belirir.  
-Neden → Tarayıcılar çerezli oturumların herkese açık bir API politikasında çalınmasını bu kuralla engeller.  
-Düzeltme → API sunucusunda açıkça `WithOrigins("http://localhost:5173")` ve `.AllowCredentials()` yapılandırması yap.
-:::
-
-:::sector
-Modern mikroservis ve bulut mimarilerinde API'ler genellikle bir API Gateway (ör. Kong, AWS API Gateway, Azure API Management) arkasına yerleştirilir. Her mikroservisin kendi içinde ayrı ayrı CORS kuralı tanımlaması yerine, CORS politikası merkezi olarak Gateway katmanında yönetilir. Geliştirme sürecinde ise Vite proxy'si kullanmak, yerel frontend ile uzak test API'lerini CORS karmaşasına girmeden birbirine bağlamanın en yaygın ve konforlu yoludur.
+:::info[Derinlemesine (isteğe bağlı)]
+Tarayıcının doğrudan gönderebildiği bazı başlık ve içerik türlerine “CORS-safelisted” denir. Örneğin `Accept` ve sınırlı bazı `Content-Type` değerleri bu gruptadır; `Authorization` ve `application/json` değildir. Çerezle oturum kullanırken `credentials: 'include'` seçeneği gerekir; bu durumda sunucu `Access-Control-Allow-Origin: *` jokerini kullanamaz ve açık origin ile `Access-Control-Allow-Credentials: true` döndürmelidir. Bu ayrıntılar, temel origin karşılaştırması ve preflight sırasını değiştirmez.
 :::
 
 ## Özet
 
-- Same-Origin Policy; protokol, host ve portun birebir aynı olmasını zorunlu kılar. Biri bile farklıysa istek cross-origin'dir.
-- CORS bir sunucu kalkanı değil, tarayıcının JavaScript'e uyguladığı bir veri okuma kısıtıdır; Postman ve curl CORS'tan etkilenmez.
-- Güvenli listede olmayan metotlar (`PUT`, `DELETE`) veya başlıklar (`Authorization`, `application/json`), asıl istekten önce `OPTIONS` preflight uçuşu tetikler.
-- CORS hatasında JavaScript yalnızca genel `TypeError` yakalar; ayrıntılı tanı konsoldan okunur.
-- Çözüm yolları: Backend'de CORS izni vermek (ASP.NET Core politikası), geliştirmede Vite proxy kullanmak veya üretimde reverse proxy ile aynı kökene taşımaktır.
+- Origin; protokol, host ve portun birlikte oluşturduğu kaynak adresidir.
+- Same-Origin Policy, tarayıcıda çalışan JavaScript'in başka origin'den gelen cevabı okumasını sınırlar.
+- CORS, sunucunun tarayıcıya verdiği paylaşım iznidir; Postman bu tarayıcı kuralını uygulamaz.
+- Preflight gerekiyorsa tarayıcı önce `OPTIONS` gönderir; izin gelirse asıl isteği yollar.
+- CORS hatasında ayrıntıyı Console'da ara; izin sunucu veya geliştirme proxy'si üzerinden çözülür.
 
-**Kendini yokla:** `http://localhost:5173` adresinden `http://localhost:5000` adresine istek atıldığında neden CORS devreye girer?  
-*Cevap:* Çünkü port numaraları farklıdır (5173 vs 5000); tarayıcı bunları farklı origin (köken) kabul eder.
+**Yeni terimler:** Origin: protokol, host ve porttan oluşan kaynak adresi. Same-Origin Policy: tarayıcıdaki JavaScript'in farklı origin cevabını okumasını kısıtlayan kural. CORS: sunucunun cross-origin cevabına tarayıcı için izin vermesi. Preflight: asıl istekten önce gönderilen `OPTIONS` izin sorgusu. Proxy: isteği istemci adına başka bir sunucuya aktaran aracı.
 
-**Kendini yokla:** `Authorization: Bearer my-token` başlığı içeren bir `GET` isteğinde tarayıcı doğrudan veriyi çeker mi?  
-*Cevap:* Hayır, `Authorization` başlığı güvenli listede olmadığı için tarayıcı asıl `GET` isteğinden önce bir `OPTIONS` preflight isteği göndererek sunucudan izin ister.
+**Kendini yokla:** `http://localhost:5173` ile `http://localhost:5000` aynı origin midir?
+
+*Cevap:* Hayır. Portlar farklıdır.
+
+**Kendini yokla:** `Authorization` başlıklı cross-origin `GET` öncesinde hangi istek gider?
+
+*Cevap:* Tarayıcı önce `OPTIONS` preflight gönderir; izin verilirse ardından `GET` gider.

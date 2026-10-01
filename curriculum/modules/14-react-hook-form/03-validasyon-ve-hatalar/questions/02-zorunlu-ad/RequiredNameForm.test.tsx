@@ -10,6 +10,11 @@ describe('isim kuralları', () => {
     render(<RequiredNameForm onSave={s} />)
     await u.click(screen.getByRole('button', { name: 'Kaydet' }))
     expect(screen.getByRole('alert')).toHaveTextContent('Ad gerekli')
+    expect(screen.getByLabelText('Liste adı')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('Liste adı')).toHaveAttribute(
+      'aria-describedby',
+      screen.getByRole('alert').id,
+    )
     expect(s).not.toHaveBeenCalled()
   })
   it('iki karakteri reddeder, üç karakteri kabul eder', async () => {
@@ -22,5 +27,6 @@ describe('isim kuralları', () => {
     await u.type(screen.getByLabelText('Liste adı'), 'C')
     await u.click(screen.getByRole('button', { name: 'Kaydet' }))
     expect(s.mock.calls[0]?.[0]).toEqual({ name: 'ABC' })
+    expect(screen.getByLabelText('Liste adı')).not.toHaveAttribute('aria-invalid', 'true')
   })
 })

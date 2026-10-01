@@ -6,23 +6,24 @@ export default defineQuestion({
   difficulty: 'kolay',
   concepts: ['tailwind.layout', 'tailwind.responsive'],
   question:
-    '`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4` için dar viewport ve `lg` eşiği sonrası kaç sütun oluşur?',
+    'Pencere genişliği `lg` eşiğini geçince aşağıdaki bölüm kaç sütun kullanır? `grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`',
   options: [
     {
-      text: 'Önce 2, sonra 4',
+      text: 'Dar görünümde 2, `lg` eşiğinden itibaren 4',
       correct: true,
       explanation: 'Öneksiz iki sütun temel düzendir; `lg:` eşiğinden itibaren dört sütun uygular.',
     },
     {
-      text: 'Önce 3, sonra 4',
-      correct: false,
-      explanation: '`sm:` küçük telefon demek değildir; o genişlik eşiğinden itibaren geçerlidir.',
-    },
-    {
-      text: 'Her zaman 2; sınıfların sırası değişmez',
+      text: 'Dar görünümde 3, `lg` eşiğinden itibaren 4',
       correct: false,
       explanation:
-        'Responsive varyantlar medya koşullarına bağlıdır, statik class sırası sayılmaz.',
+        'Öneksiz `grid-cols-2` dar görünümde geçerlidir; `sm:` kuralı ancak kendi eşiğine ulaşınca devreye girer.',
+    },
+    {
+      text: 'Her zaman 4; son class tüm ekranlarda geçerlidir',
+      correct: false,
+      explanation:
+        '`lg:` öneki kuralı geniş viewport eşiğine bağlar; class dizisinin sonda olması onu her ekrana uygulamaz.',
     },
   ],
 })

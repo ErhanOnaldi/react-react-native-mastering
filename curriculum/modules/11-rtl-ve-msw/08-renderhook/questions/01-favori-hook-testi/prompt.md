@@ -1,14 +1,14 @@
-Etiket seçim hook’u, bir seçeneği tek kez listede tutmalı ve aynı seçeneği yeniden değiştirdiğinde kaldırmalı.
+Favori hook’u, bir film id’sini tek kez listede tutmalı ve aynı id’yi yeniden değiştirdiğinde kaldırmalı.
 
 ## Gereksinimler
 - Başlangıç listesi boştur.
-- İlk toggle seçeneği ekler.
-- Aynı seçeneği tekrar toggle etmek onu kaldırır.
+- İlk toggle film id’sini ekler.
+- Aynı id’yi tekrar toggle etmek onu kaldırır.
 
 ## Örnek
-`[]` → `toggle('Mavi')` → `['Mavi']` → aynı toggle → `[]`.
+`[]` → `toggle(550)` → `[550]` → aynı toggle → `[]`.
 
 ## Sözleşme
 - `useFavoriteIds.test.ts` dosyasına test yaz.
-- Hook `@impl/useFavoriteIds` yolundan import edilir ve `toggle(id)` ile `ids` döndürür.
+- Hook `@impl/useFavoriteIds` yolundan import edilir; `toggle(id: number)` ile `ids: number[]` döndürür.
 - Her iki mutantın davranışını yakala.

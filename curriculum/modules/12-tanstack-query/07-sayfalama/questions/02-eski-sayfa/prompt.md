@@ -6,7 +6,7 @@ Page 2 açılırken page 1’in kartları kaybolmasın; yeni liste gelene kadar 
 - Sayfa değişince yeni istek URL’inde doğru `page` değeri bulunsun.
 - Yeni cevap gelene kadar önceki film başlıkları görünmeye devam etsin.
 - Geçiş sırasında `Yeni sayfa yükleniyor` metnini göster.
-- Yeni cevap gelince cevap sayısını ve yeni film başlığını göster.
+- Yeni cevap gelince TMDB'nin `total_results` değerini `Sonuç sayısı: N` metniyle ve yeni film başlığını göster.
 
 ## Örnek
 

@@ -1,6 +1,6 @@
 ## Neden böyle?
 
-- **Alternatif:** Doğrudan `response.json()` döndürmek 404/401 hata JSON’unu başarı sanabilir.
-- **Tuzak:** `as T` çağıranın iddiasıdır; sunucu cevabını doğrulamaz.
-- **Sektörde:** HTTP client’larında Bearer başlığı ve `response.ok` kontrolü temel sınırdır.
-- **Sonraki adım:** 15. modülde `unknown` JSON’u Zod ile parse ederek bu iddiayı kanıtlayacaksın.
+- **Alternatif:** `JSON.parse` sonucunu `unknown` tutup çağırana doğrulatabilirdin; burada generic `T` yalnızca dönüş tipini gösterir.
+- **Tuzak:** `as T` çağıranın iddiasıdır; JSON alanlarını kontrol etmez.
+- **Sektörde:** JSON metnini okumak ile verinin beklenen şekle uyduğunu doğrulamak ayrı işlerdir.
+- **Sonraki adım:** Runtime şema doğrulamasını Zod modülünde öğreneceksin.

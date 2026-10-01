@@ -18,5 +18,5 @@
   <path class="d-line-accent" d="M266 103 H246" marker-end="url(#component-arrow)" />
   <path class="d-line-accent" d="M484 84 H514" marker-end="url(#component-arrow)" />
   <text class="d-text" x="380" y="184" text-anchor="middle">value → UI · olay → callback → owner</text>
-  <text class="d-muted" x="380" y="216" text-anchor="middle">defaultValue yalnız başlangıcı belirler</text>
+  <text class="d-muted" x="380" y="216" text-anchor="middle">defaultOpen yalnız başlangıç değeridir</text>
 </svg>

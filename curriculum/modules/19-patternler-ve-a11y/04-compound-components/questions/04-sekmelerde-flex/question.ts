@@ -14,14 +14,16 @@ export default defineQuestion({
       explanation: 'Doğru. DOM sırası değişmez; flex-wrap yalnız görsel satır kırılımını yönetir.',
     },
     {
-      text: 'Aynı sekmeleri her satır için ayrı DOM listesinde çoğaltmak.',
+      text: 'Tek DOM listesini `flex-row-reverse` ile göstermek.',
       correct: false,
-      explanation: 'Çift DOM öğeleri odak ve erişilebilir ad sırasını karmaşıklaştırır.',
+      explanation:
+        'Görsel sıra DOM sırasının tersi olur; ok tuşuyla dolaşma ve ekrandaki sıra birbiriyle uyuşmaz.',
     },
     {
-      text: '`absolute` konum verip sekmeleri üst üste taşımak.',
+      text: 'Her sekme grubunu ayrı `flex` satırı yapıp aria tablist ilişkisini CSS ile sürdürmek.',
       correct: false,
-      explanation: 'Mutlak konumlandırma dar ekranda doğal satır kırılımı sağlamaz.',
+      explanation:
+        'CSS ayrı listeler arasındaki DOM ve klavye ilişkisini kuramaz; tek tablist içinde sarma kullan.',
     },
   ],
 })

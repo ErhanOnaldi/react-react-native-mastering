@@ -12,7 +12,7 @@ export default defineQuestion({
   hints: [
     'Bileşen bağlandığında (mount) bir kez çalışacak asenkron bir veri çekme akışı kurmalısın.',
     'Bileşende `useEffect` veya projedeki `useFetch` hook’unu kullanarak `/trending/movie/week` yoluna `tmdbFetch` isteği atabilirsin.',
-    '`const [data, setData] = useState<MovieListResponse | null>(null)` ve `const [loading, setLoading] = useState(true)` durumlarını yönet. İstek bitince `setData(res)` ve `setLoading(false)` yap; `data?.results` dizisini `<MovieGrid movies={data.results} />` bileşenine aktar.',
-    'Testlerin `getByText(/filmler yükleniyor/i)` kontrolünü geçebilmesi için yükleme anında tam olarak bu ifadeyi içeren bir durum metni render etmeyi unutma.',
+    'Yanıtı sayfa state’inde tut; yükleme, hata ve başarılı sonuç durumlarını ayrı dallarda göster. Başarılı yanıttaki `results` listesini mevcut film ızgarasına aktar.',
+    'Yükleme sırasında gereksinimde verilen Türkçe metni kullanıcıya durum mesajı olarak göster; statik film listesini veri kaynağı olarak bırakma.',
   ],
 })

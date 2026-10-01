@@ -1,207 +1,133 @@
 ---
 title: "React Compiler ile varsayılan yol"
-minutes: 16
+minutes: 13
 kind: concept
 ---
 
 # React Compiler ile varsayılan yol
 
-:::pain[Problem]
-Önceki derste gördüğümüz manzarayı hatırla: Bir bileşenin gereksiz render olmasını engellemek için bileşeni `memo` ile sardın. Ardından ona geçen fonksiyon için `useCallback` yazdın. Fonksiyona geçen nesne için `useMemo` yazdın. Bağımlılık dizisine bir değişken eklemeyi unuttun, bayat closure hatası çıktı; ekledin, bu sefer her render'da yeni referans oluştuğu için `memo` bozuldu!
-
-Birkaç ay içinde projedeki kodların neredeyse üçte biri, sırf React'e "bu değeri lütfen aklında tut" demek için yazılan karmaşık `useMemo`, `useCallback` ve bağımlılık dizisi hamallığına dönüşür. Geliştirici iş mantığı yazmak yerine React'in referans eşitliğiyle savaşır. Bu manuel yük neden bir derleyici tarafından otomatik olarak yapılmasın?
-:::
-
-:::model[Render tetikleyicileri ve memo sınırları]
-Önceki derslerde kurduğumuz modeli hatırla:
-
-![Render tetikleyicileri ve memo sınırları](diagram:render-nedenleri)
-
-Üst bileşen render olduğunda varsayılan olarak tüm alt ağaç çağrılır. Biz bu dalgayı durdurmak için elle `memo` sınırları koyuyor ve props referanslarını `useMemo`/`useCallback` ile sabitliyorduk. React Compiler, bu sınırları senin yerine **otomatik ve çok daha hassas** biçimde kurar.
-:::
-
-## React Compiler nedir ve nasıl çalışır?
-
-React Compiler (eski adıyla React Forget), React ekibi tarafından geliştirilen ve Ekim 2025'te 1.0 kararlı sürümüne ulaşan resmi bir derleme aracıdır (build-time compiler).
-
-Zihinsel modelini şu temel ilkelerle kur:
-
-1. **Çalışma zamanında değil, derleme anında çalışır:** React Compiler tarayıcıda çalışmaz. Sen `pnpm build` veya `pnpm dev` çalıştırdığında, Vite/Babel derleme hattında TypeScript ve JSX kodunu inceler.
-2. **Otomatik ve ince taneli (fine-grained) memoization:** Derleyici, bileşen ve hook gövdelerindeki veri akışını matematiksel olarak analiz eder. Hangi değişkenin hangi JSX düğümünü etkilediğini çıkarır. Gereken yerlere gizli önbellek yuvaları (`$[]`) yerleştirir.
-3. **Erken dönüşlerden (early return) sonra bile çalışır:** Elle yazılan `useMemo` ve `useCallback` hook kuralları gereği bir `if` koşulundan sonra çağrılamaz. Ancak React Compiler derleme düzeyinde çalıştığı için erken dönüşlerin (`if (!data) return null`) altındaki kısımları da kusursuzca memoize eder.
-4. **Bozuk kodu düzeltmez, saf kod ister:** Derleyici sihirli bir değnek değildir. Eğer bir bileşenin içinde render anında doğrudan değişken mutasyonu yapıyorsan (`props.items.push(...)` veya `window.counter++`), derleyici bu kodun güvenli olmadığını anlar ve o bileşeni optimize etmeyi **sessizce atlar**.
-
-## Paket kurulumu ve Vite konfigürasyonu
-
-React Compiler'ı bir Vite projesine dahil etmek için gerekli araçlar derleme ortamında (Node.js sürecinde) çalışır. Bu nedenle paketler `devDependencies` altına eklenir.
-
-### 1. Gerekli paketleri projene kur
-
-Terminalinde şu komutu çalıştırarak kararlı Babel eklentisini ve Rolldown/Babel köprüsünü kur:
-
-```bash
-pnpm add -D babel-plugin-react-compiler @rolldown/plugin-babel
-```
-
-### 2. Vite konfigürasyonunu güncelle
-
-Vite 8 ve `@vitejs/plugin-react` 6 ekosisteminde resmi olarak önerilen kararlı yol, `@rolldown/plugin-babel` eklentisi üzerinden `reactCompilerPreset()` kullanmaktır:
-
-```ts title="vite.config.ts"
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
-import { defineConfig } from 'vite'
-
-export default defineConfig({
-  plugins: [
-    react(),
-    babel({
-      presets: [reactCompilerPreset()],
-    }),
-  ],
-})
-```
-
-> [!NOTE]
-> `@vitejs/plugin-react` eklentisinin içinde doğrudan `react({ compiler: true })` şeklinde bir native Oxc seçeneği de bulunmaktadır; ancak bu yol henüz **deneysel** olarak etiketlenmiştir. Üretim ortamında ve bu platformda kararlı standart, Babel önayarı (`reactCompilerPreset`) üzerinden giden yoldur.
-
-## Manuel memoization ile Compiler karşılaştırması
-
-Şimdi bir harcama özeti bileşeninde iki yaklaşımı karşılaştıralım.
-
-### Eski yol: Her satırda manuel hook hamallığı
+Sinema’da film listesi gösterdiğini düşün. Sayfada bir de sayaç var. Sayaç arttığında sayı değişmeli; film başlıklarının hesabını sırf sayaç değişti diye baştan yapmak gerekmeyebilir.
 
 ```tsx
-// ESKİ YOL: Manuel ve kırılgan
-import { useMemo, useCallback } from 'react'
-
-export function ExpenseBreakdown({ items, filterCategory, onSelect }: Props) {
-  // 1. Ağır hesaplamayı manuel saklamak zorundaydık
-  const filtered = useMemo(() => {
-    return items.filter((item) => item.category === filterCategory)
-  }, [items, filterCategory])
-
-  const total = useMemo(() => {
-    return filtered.reduce((acc, curr) => acc + curr.amount, 0)
-  }, [filtered])
-
-  // 2. Fonksiyon referansını manuel korumak zorundaydık
-  const handleClick = useCallback((id: string) => {
-    onSelect(id)
-  }, [onSelect])
+function MovieList({ movies }: { movies: string[] }) {
+  const [count, setCount] = useState(0)
+  const visible = movies.filter((title) => title.length > 0)
 
   return (
-    <div>
-      <h3>Toplam: {total} ₺</h3>
-      <ItemList items={filtered} onItemClick={handleClick} />
-    </div>
+    <>
+      <button onClick={() => setCount(count + 1)}>Sayaç {count}</button>
+      <ul>{visible.map((title) => <li key={title}>{title}</li>)}</ul>
+    </>
   )
 }
 ```
 
-Bu kodda her bir `useMemo` ve `useCallback` için bağımlılık dizilerini (`[]`) takip etmek, referansların kararlılığını test etmek zorundaydın.
+Tıklayınca `count` değişir ve React bileşeni tekrar çalıştırır. `visible` hesabı da normalde yeniden yapılır. **Memoization**, daha önceki bir hesabın sonucunu saklayıp girdileri aynı kaldığında onu yeniden kullanmaktır; gereksiz işi azaltabilir. **React Compiler**, uygulama kodunu çalıştırılmadan önce inceleyip bazı hesapları ve arayüz parçalarını otomatik memoize edebilen derleyicidir.
 
-### Yeni yol: Sade, saf JavaScript kodu
+## Sayaç değişince film listesi ne olur?
 
-React Compiler açıkken aynı bileşeni tıpkı standart bir JavaScript fonksiyonu gibi yazarsın:
+İlk örnekte derleyicinin nereye bakacağını ayırt et: `visible` yalnızca `movies` değerini okuyor. Sayaç state’i değişince liste içeriğinin değişmesi için bir neden yok. Compiler uygun bulursa filtre sonucunu ve değişmeyen alt arayüzü yeniden kullanabilir; ekrandaki sayaç yine güncellenir.
 
-```tsx check
-export interface ExpenseItem {
-  id: string
-  title: string
-  amount: number
-  category: string
-}
+Buradaki “uygun bulursa” önemli. Compiler her bileşeni her durumda hızlandırmayı vaat etmez. Sen normal, doğru React kodunu yazarsın; derleyici güvenle atlayabildiği işi seçer. Gerçek farkı Profiler ile ölçersin.
 
-interface ExpenseBreakdownProps {
-  items: ExpenseItem[]
-  filterCategory: string
-  onSelect: (id: string) => void
-}
+## Bir girdi değiştiğinde sonuç da değişmeli
 
-export function CleanExpenseBreakdown({
-  items,
-  filterCategory,
-  onSelect,
-}: ExpenseBreakdownProps) {
-  // useMemo YOK! Compiler bu filtrelemeyi ve toplamı otomatik olarak memoize eder.
-  const filtered = items.filter((item) => item.category === filterCategory)
-  const total = filtered.reduce((acc, curr) => acc + curr.amount, 0)
+Şimdi listeyi arama sorgusuna göre süzelim. Bu örnekte sayaç hâlâ vardır, ama yeni bir girdi olan `query` de vardır:
 
-  // useCallback YOK! Compiler bu fonksiyonu ve alt bileşenin props eşitliğini korur.
-  function handleClick(id: string) {
-    onSelect(id)
-  }
+```tsx
+function MovieSearch({ movies }: { movies: string[] }) {
+  const [query, setQuery] = useState('')
+  const [count, setCount] = useState(0)
+  const visible = movies.filter((title) =>
+    title.toLocaleLowerCase('tr').includes(query.toLocaleLowerCase('tr')),
+  )
 
   return (
-    <section>
-      <h3>Toplam Harcama: {total} ₺</h3>
-      <ul>
-        {filtered.map((item) => (
-          <li key={item.id} onClick={() => handleClick(item.id)}>
-            {item.title}: {item.amount} ₺
-          </li>
-        ))}
-      </ul>
-    </section>
+    <>
+      <input value={query} onChange={(event) => setQuery(event.target.value)} />
+      <button onClick={() => setCount(count + 1)}>Sayaç {count}</button>
+      <ul>{visible.map((title) => <li key={title}>{title}</li>)}</ul>
+    </>
   )
 }
 ```
 
-Derleyici derleme sırasında bu kodu alır ve arka planda şu kontrolü üretir: *"Eğer `items` ve `filterCategory` değişmediyse, `filtered` ve `total` için önceden hesaplanan sonucu döndür; JSX ağacını da yeniden üretme!"*.
+Sayaç değiştiğinde arama girdisi aynı kaldığı için derleyici filtre sonucunu yeniden kullanabilir. `query` değiştiğinde ise filtre yeni sorguyu kullanmalı ve sonuç listesini güncellemelidir. Memoization eski sonucu sonsuza kadar tutmak değildir: hangi girdiler değiştiyse onlara bağlı sonuç da değişir.
 
-Sen tek bir hook dahi yazmadan, el yazısıyla yazılabilecek en kusursuz memoization performansını elde edersin.
+Bu kodun render sırasında yaptığı filtreleme **saf** bir hesaptır: verilen filmleri değiştirmez ve dışarıda bir değişiklik yapmaz. Render sırasında `movies.sort()` ile prop dizisini değiştirmek aynı şey değildir; listeyi beklenmedik biçimde bozabilir, ayrıca Compiler’ın güvenle incelemesini zorlaştırır. Sıralaman gerekiyorsa kopya üzerinde çalışırsın: `const sorted = [...movies].sort(...)`.
 
-## Derleyicinin geçiş kapısı: ESLint ve Saflık Kuralları
+İki değişikliği sırayla izleyelim. Başlangıç listesi `Matrix` ve `Mad Max` olsun:
 
-React Compiler kodunu optimize edebilmek için kodun **React Kuralları'na (Rules of React)** uyduğundan emin olmak zorundadır.
+| Olay | `count` | `query` | Görünen sonuç | Compiler’ın atlayabileceği iş |
+|---|---:|---|---|---|
+| Sayfa açıldı | 0 | `"m"` | Matrix, Mad Max | — |
+| Sayaç tıklandı | 1 | `"m"` | Matrix, Mad Max | Değişmeyen filtre hesabı ve ilgili alt arayüz |
+| Arama `"ma"` oldu | 1 | `"ma"` | Mad Max | Sayaçtan bağımsız iş; filtre yeni sorguyla çalışmalı |
 
-Eğer bir bileşen şu kuralları ihlal ederse, derleyici o bileşeni optimize edemez:
+İkinci satırda ekrandaki sayı değişir ama listedeki filmler değişmez. Üçüncü satırda girdi değiştiği için doğru sonuç da değişir. React’in ne zaman hangi parçayı tekrar çalıştırabileceği uygulamanın yapısına bağlıdır; tablonun sabit kalan kısmı davranış sözleşmesidir, performans ayrıntısı Compiler’ın ne kadar işi atlayabildiğidir.
 
-1. **Render anında yan etki (side-effect) üretmemek:** Render fonksiyonunun içinde doğrudan `fetch` atmak, `localStorage` yazmak veya DOM elementlerini değiştirmek yasaktır.
-2. **Props ve State'i asla doğrudan mutasyona uğratmamak:** `props.items.sort()` veya `state.user.name = 'Ahmet'` yazarsan derleyici nesnenin değiştiğini takip edemez.
-3. **Hook'ları koşulsuz çağırmak:** `if` blokları veya döngüler içinde hook çağırmak kesinlikle yasaktır.
+## Erken dönüş olsa da Hook kuralı değişmez
 
-`eslint-plugin-react-hooks@6` artık doğrudan React Compiler analiz kurallarını içerir. ESLint'i çalıştırdığında gelen `react-hooks/rules-of-hooks` hatalarını çözmek, aynı zamanda React Compiler'ın kapılarını ardına kadar açmak demektir.
+Bir film verisi henüz gelmediyse bileşen erken `return` edebilir. **Erken dönüş**, fonksiyonun bazı koşullarda daha aşağıdaki satırlara ulaşmadan sonuç vermesidir. Compiler kodu bu durumda da analiz edebilir; ama bu, Hook kurallarını kaldırdığı anlamına gelmez.
 
-## Sınır durumları ve sık yapılan hatalar
+```tsx
+function MovieDetails({ movie }: { movie: { title: string } | null }) {
+  if (!movie) return null
 
-:::mistake[1. Mevcut tüm useMemo ve useCallback'leri körlemesine projeden silmek]
-- **Belirti:** Compiler'ı projeye kurduktan sonra tüm projede arama yapıp bütün `useMemo` ve `useCallback` satırlarını sildin; bazı harici kütüphaneler veya özel `useEffect` bağımlılıkları bozuldu.
-- **Neden:** Bazı durumlarda bir fonksiyon referansının kararlı olması sadece bir performans optimizasyonu değil, harici bir kütüphaneye veya web API'sine verilen bir sözleşmedir (contract).
-- **Düzeltme:** Mevcut kodundaki çalışan `useMemo` ve `useCallback`'leri aceleyle silme. Derleyici el yazısı memoization'ı zaten bir ipucu olarak görür ve saygı duyar. Yeni yazacağın kodlarda ise varsayılan olarak derleyiciye güven; manuel memo hook'larına yalnızca özel bir ihtiyaçta başvur.
+  const heading = `Film: ${movie.title}`
+  return <h2>{heading}</h2>
+}
+```
+
+Film yokken `null` döner; film geldiğinde başlık hesaplanır ve gösterilir. Compiler hesaplamayı optimize edebilir, fakat ekranda hangi içeriğin görüneceğine dair davranışı değiştirmemelidir. `useMemo` gibi Hook’ları koşulun altına taşımak hâlâ doğru olmaz: React Hook’ları her render’da aynı sırayla çağrılmalıdır.
+
+## Elle memo yazmak mı, normal kod mu?
+
+Önceki derste `memo`, `useMemo` ve `useCallback` ile bazı işleri elle korumayı gördün. Örneğin `memo` bir alt bileşenin props’u değişmediğinde tekrar render edilmesini önlemeye çalışır; `useMemo` hesap sonucunu, `useCallback` fonksiyon değerini saklar. Bunlar hâlâ geçerli araçlar. Compiler etkin projede ise yeni kodu önce normal, saf bileşen olarak yazmak çoğu zaman daha anlaşılır bir başlangıçtır.
+
+```tsx
+const visibleMovies = movies.filter((movie) => movie.genre === selectedGenre)
+return <MovieRows movies={visibleMovies} onSelect={onSelect} />
+```
+
+Bu örnekte önce `useMemo` veya `useCallback` eklemiyoruz. Compiler uygun görürse, `selectedGenre` ve `movies` değişmediği render’larda filtre sonucunu koruyabilir; alt bileşene giden değerleri de gerektiğinde kararlı tutabilir. Elle optimizasyon eklemen gerekiyorsa nedeni ölçümle gör: örneğin pahalı bir işin tekrarlandığını Profiler’da doğrula.
+
+## Bir takılmayı nasıl incelersin?
+
+React Developer Tools içindeki **Profiler**, render ve ekrana uygulama işlemlerinin nerede zaman harcadığını gösteren araçtır. Bir sayaç tıklamasından önce ve sonra kayıt al: hangi bileşenlerin çalıştığını, hangilerinin tekrar çalışmasının pahalı olduğunu karşılaştır. Compiler açıkken de bu ölçümü tekrarla. Gözle görülür fark yoksa bu tek başına hata değildir; örnekte atlanacak iş çok küçük olabilir.
+
+:::mistake[Her useMemo satırını silmek]
+- **Belirti:** Compiler’ı açtıktan sonra her elle yazılmış memo kodunu silip bazı referanslara bağlı kodun davranışını bozarsın.
+- **Neden:** Compiler yeni optimizasyonları kendisi yapabilir, ancak mevcut kodun her referans sözleşmesini otomatik olarak gereksiz kılmaz.
+- **Düzeltme:** Çalışan optimizasyonları topluca silme. Önce ölç; yeni kodda normal ve saf yazımı varsayılan tut, özel bir ihtiyaç görünürse elle memoization kullan.
 :::
 
-:::mistake[2. Gerekli build paketlerini sadece dependencies'e koymak ya da unutmak]
-- **Belirti:** `vite.config.ts` dosyasına eklentileri yazdın; ancak `pnpm build` çalıştırıldığında `Module not found` hatası alıyorsun.
-- **Neden:** `babel-plugin-react-compiler` ve `@rolldown/plugin-babel` paketleri projeye kurulmamış.
-- **Düzeltme:** Paketleri `pnpm add -D babel-plugin-react-compiler @rolldown/plugin-babel` komutuyla `devDependencies` altına ekle.
+:::mistake[Derleyicinin girdiyi yok sayacağını sanmak]
+- **Belirti:** Arama sorgusu değiştiği hâlde aynı film sonuçları ekranda kalır.
+- **Neden:** Memoization’ı “sonucu bir kere hesapla ve hep sakla” diye yorumlamışsındır.
+- **Düzeltme:** Sonucu etkileyen her girdiyi hesaba kat. `query` değişince filtre yeni sorguyla tekrar çalışmalı; yalnız sayaç gibi ilgisiz değişiklikte eski sonuç kullanılabilir.
 :::
 
-:::mistake[3. Geliştirme modu Profiler sürelerini canlı ortam sanmak]
-- **Belirti:** Geliştirme sunucusunda React Compiler açık olmasına rağmen Profiler sürelerinin çok az değiştiğini görüyorsun.
-- **Neden:** Vite geliştirme ortamında React geliştirici kontrolleri, HMR (Hot Module Replacement) kodları ve `StrictMode` çift render'ları çalışır.
-- **Düzeltme:** Derleyicinin gerçek hız farkını görmek için daima `pnpm build` ile üretim paketi üretip `pnpm preview` üzerinde ölçüm yap.
-:::
-
-:::sector[Sektörde nasıl kullanılır?]
-React Compiler sektörde hızla endüstri standardı haline gelmektedir:
-
-- **Meta:** Instagram ve Quest Store web arayüzlerinde React Compiler'a geçildikten sonra sayfa yükleme sürelerinde %12'ye varan hızlanma ve etkileşim gecikmelerinde 2.5 kata varan iyileşme kaydedilmiştir.
-- **Modern Kod Standartları:** Yeni başlayan projelerde artık geliştiricilere "Her şeye memo yaz" eğitimi verilmemektedir. Bunun yerine saf JavaScript fonksiyonları yazma, state'i doğru yerde tutma ve derleyicinin işini yapmasına izin verme kültürü yerleşmektedir.
+:::info[Derinlemesine (isteğe bağlı)]
+React Compiler JSX ve JavaScript’i yapısal olarak inceleyip kod için dönüşümler üretir. Yapılandırma yöntemi projedeki derleme araçlarının sürümüne göre değişebilir; bu nedenle projene Compiler eklerken kullandığın React ve build aracı sürümlerinin resmi kurulum yönergelerini izle. Bu ayrıntılar günlük bileşen davranışını anlamak için gerekli değildir.
 :::
 
 ## Özet
 
-- React Compiler 1.0, bileşen ve hook gövdelerini derleme anında otomatik olarak memoize eden resmi React aracıdır.
-- Yeni kod yazarken varsayılan yaklaşım şudur: Kodu saf fonksiyon olarak yaz, memoization'ı derleyiciye bırak; yalnızca özel referans sözleşmelerinde manuel hook kullan.
-- Kurulum için `pnpm add -D babel-plugin-react-compiler @rolldown/plugin-babel` paketleri eklenir ve Vite konfigürasyonunda `reactCompilerPreset()` önayarı tanımlanır.
-- Derleyicinin kodu optimize edebilmesi için kodun saf render kurallarına ve Hook kurallarına uyması şarttır; ESLint kontrolleri bu uyumu garanti eder.
+- React Compiler, güvenle atlanabilecek bazı hesapları ve arayüz parçalarını otomatik memoize edebilir.
+- Sonucu etkileyen bir girdi değiştiğinde sonuç da güncellenir; ilgisiz bir state değişikliği aynı işi yeniden yapmayı gerektirmeyebilir.
+- Render içinde girdileri değiştirmeyen saf kod yaz; Compiler’ın optimizasyon yapması doğru davranışın yerini tutmaz.
+- Yeni manuel memoization eklemeden önce Profiler ile tekrar eden pahalı işi ara.
 
-### Kendini yokla
+**Yeni terimler**
 
-1. **Soru:** React Compiler açık olan bir projede bir geliştirici neden `useMemo` yazmadan sadece `const total = items.reduce(...)` yazabilir?
-   - **Cevap:** Çünkü derleyici AST analizi ile `items` dizisinin değişip değişmediğini derleme anında takip eder ve arka planda bu hesaplamayı otomatik olarak önbelleğe alır.
+- **Memoization:** Girdiler değişmediyse önceki hesap sonucunu yeniden kullanma.
+- **React Compiler:** React kodunu önceden inceleyip bazı optimizasyonları otomatik uygulayan derleyici.
+- **Saf hesap:** Aynı girdilerle aynı sonucu veren ve dışarıda değişiklik yapmayan hesap.
+- **Erken dönüş:** Koşula göre fonksiyonun daha aşağıdaki satırlara gelmeden sonuç vermesi.
+- **Profiler:** Bileşen render’larının nerede zaman harcadığını inceleme aracı.
 
-2. **Soru:** React Compiler, render sırasında `props.list.push(newItem)` yapan hatalı bir bileşeni düzelterek performansını artırabilir mi?
-   - **Cevap:** Hayır, artıramaz. Derleyici saf olmayan, render sırasında doğrudan mutasyon yapan bileşenleri güvenli bulmaz ve optimizasyon dışı bırakır.
+**Kendini yokla**
+
+1. Sayaç artınca arama filtresi girdileri değişmediyse eski filtre sonucu neden kullanılabilir? **Cevap:** Çünkü sayaç, filtre hesabının girdisi değildir.
+2. Arama sorgusu değiştiğinde Compiler neden yeni liste sonucunu göstermelidir? **Cevap:** Çünkü sorgu filtre hesabının sonucunu etkiler.

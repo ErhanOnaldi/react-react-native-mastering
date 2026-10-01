@@ -16,7 +16,7 @@ export default defineQuestion({
   hints: [
     'Rota parametresinden gelen değeri sayıya dönüştürüp geçerli olup olmadığını sınamalısın; geçersizse istek atmadan erken dönüş yapmalısın.',
     '`useParams<{ id: string }>()` hook’unu kullanarak `id` değerini al. Sayı kontrolü için `Number(id)` veya `/^\d+$/.test(id)` kullanabilirsin.',
-    '`const movieId = Number(id); if (Number.isNaN(movieId) || movieId <= 0) return <div role="alert">Geçersiz film adresi</div>;` şeklinde erken kontrol yap. Ardından `tmdbFetch<MovieDetails>(`/movie/${movieId}`, { append_to_response: "credits,videos" })` isteği at.',
-    '`FavoritesPage` içinde favori kimlikleri döngüyle çekerken `Promise.all` kullanabilirsin; favori listesi boşken (`favoriteIds.length === 0`) hiçbir istek atmadan erken dönüş yapmayı unutma.',
+    'Parametreyi sayıya çevirdikten sonra pozitif tam sayı olup olmadığını kontrol et. Hatalıysa ağ çağrısı başlamadan kullanıcıya erişilebilir bir uyarı göster.',
+    'Detay cevabında oyuncu listesinin hangi alanda olduğunu bul. Favorilerde birden fazla kimliği yüklerken boş listeyi ayrıca ele al ve mevcut kart görünümünü koru.',
   ],
 })

@@ -7,12 +7,12 @@
   </defs>
   <rect class="d-box" x="28" y="48" width="205" height="112" rx="12" />
   <text class="d-title" x="130" y="78" text-anchor="middle">DOM öğesi</text>
-  <text class="d-code" x="130" y="108" text-anchor="middle">&lt;button&gt;☆&lt;/button&gt;</text>
+  <text class="d-code" x="130" y="108" text-anchor="middle">button + aria-pressed</text>
   <text class="d-muted" x="130" y="134" text-anchor="middle">semantik + metin + ARIA</text>
   <path class="d-line-accent" d="M 250 104 H 330" marker-end="url(#a11y-arrow)" />
   <rect class="d-accent" x="350" y="34" width="380" height="142" rx="12" />
   <text class="d-title" x="540" y="66" text-anchor="middle">Erişilebilirlik ağacı</text>
   <text class="d-text" x="540" y="98" text-anchor="middle">Rol: button</text>
-  <text class="d-text" x="540" y="122" text-anchor="middle">Ad: Okuma listesi</text>
+  <text class="d-text" x="540" y="122" text-anchor="middle">Ad: Altyazılar</text>
   <text class="d-text" x="540" y="146" text-anchor="middle">Durum: basılı değil</text>
 </svg>

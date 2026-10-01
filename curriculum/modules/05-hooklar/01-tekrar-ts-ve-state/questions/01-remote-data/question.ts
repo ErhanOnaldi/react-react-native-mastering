@@ -4,17 +4,24 @@ export default defineQuestion({
   title: 'Boş liste mi, yükleniyor mu?',
   difficulty: 'kolay',
   concepts: ['ts.discriminated-union', 'react.state'],
-  question: 'Arama cevabı henüz gelmedi. `RemoteData<Movie[]>` için hangi durum en doğru?',
+  question: `Bu kod ekranda hangi metni üretir?
+
+\`const result: RemoteData<string[]> = { status: 'success', data: [] }\`
+\n\n\`result.status === 'success' && result.data.length === 0\` ? 'Sonuç yok' : 'Bekle'`,
   options: [
     {
-      text: '`{ status: "loading" }`',
+      text: '`Sonuç yok`',
       correct: true,
-      explanation: 'Veri henüz yok; boş başarı listesinden farklı bir durum.',
+      explanation: 'Success durumu var ve dizi boş; koşul doğru olduğu için bu metin seçilir.',
     },
     {
-      text: '`{ status: "success", data: [] }`',
-      explanation: 'Bu başarılı ama sıfır sonuçlu cevabı anlatır.',
+      text: '`Bekle`',
+      explanation: 'Bekle yalnız koşul yanlış olduğunda görünür; boş başarıda koşul doğrudur.',
     },
-    { text: '`{ status: "idle" }`', explanation: 'Idle, istek başlamadan önceki durumdur.' },
+    {
+      text: 'Kod `data` alanını okuyamaz ve hata verir.',
+      explanation:
+        'Önce status kontrol edildiği için TypeScript ve JavaScript success dalında data alanına ulaşır.',
+    },
   ],
 })

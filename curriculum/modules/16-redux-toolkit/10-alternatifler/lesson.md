@@ -6,56 +6,80 @@ kind: review
 
 # Redux, Query ve Zustand arasında seçim
 
-:::pain[Sinema’da sorun]
-Store kurulduktan sonra yeni ekip arkadaşı TMDB aramalarını da Redux’a taşımayı önerdi. Bir diğeri dört client slice’ı için Zustand’ın daha kısa olacağını söylüyor. İkisi de araç adıyla başlıyor; önce çözmeye çalıştıkları yaşam döngüsünü yazmak gerek.
-:::
+Sinema’da her değer aynı yerde yaşamıyor: film bilgisi sunucudan gelir, seçtiğin tema uygulamanın tercihidir, arama adres çubuğunda paylaşılabilir. Önce verinin sahibini bul; sonra o işi üstlenecek aracı seç. Bir kütüphaneyi sırf projede zaten var diye her state’e yayma.
 
 :::model[State sahipliği]
-Sunucunun ürettiği ve zamanla değişen verinin sahibi Query; uygulamadaki ortak kullanıcı tercihinin sahibi Redux olabilir. URL, paylaşılabilir navigasyon state’ini; RHF, düzenlenen form değerlerini taşır. Buradaki karar yeni bir state modeli değil, client store’u için uygun kütüphane seçmektir.
+Sunucu yanıtı Query cache’inde yaşar; uygulamanın ortak client tercihi Redux Toolkit store’unda yaşayabilir. Paylaşılabilir navigasyon URL’de, düzenlenmekte olan form değeri React Hook Form’da kalır. Araç seçimi bu sınırları değiştirmek için gerekçe değildir.
 :::
 
-## Aynı işi yapmayan araçlar
+## Tek bir sunucu yanıtı için tek cache
 
-TanStack Query server state cache’i, yeniden doğrulama, loading/error ve mutation invalidation için tasarlanmıştır. Redux Toolkit slice’ları ortak client state’i ve action kurallarını düzenler. RTK Query, Redux ekosisteminde server API cache’i sunar. Zustand ise küçük/orta client state yüzeyinde daha az kurulumla store paylaşır.
+Sinema’daki film detayları TanStack Query’den geliyor olsun. `Cache`, daha sonra tekrar kullanılabilsin diye saklanan yanıt kopyasıdır. Aynı cevabı bir de Redux state’ine kopyalarsan iki ayrı cache’in güncel kalmasını sağlaman gerekir.
 
-| Gereksinim | Uygun başlangıç | Seçim işareti |
+```ts title="Aynı veriye iki sahip atama"
+const queryMovie = useQuery({ queryKey: ['movie', movieId], queryFn: loadMovie })
+// Aynı film nesnesini ayrıca Redux state'ine kopyalama.
+```
+
+Query yanıtın sahibiyse ekran onu Query’den okur. Redux’a aynı nesneyi kopyalamak ikinci bir cache yaratır; biri yenilenip diğeri eski kalabilir.
+
+## Sunucu ve client state yan yana olabilir
+
+Şimdi kullanıcı tema tercihini de değiştirebiliyor. Bu değer film API’sinden gelmiyor, dolayısıyla Query’nin işi değil; ortak kullanılacaksa client store’da tutulabilir.
+
+```ts title="Farklı sahipler, ayrı değerler"
+const movie = useMovieQuery(movieId) // Sunucu verisi
+const theme = useAppSelector(state => state.ui.theme) // Kullanıcı tercihi
+```
+
+İki araç aynı uygulamada yan yana durur çünkü farklı sorumlulukları var. Query film yanıtının güncelliğini yönetirken store uygulama tercihine sahip olur.
+
+## Paylaşılabilir filtreyi URL’ye bırak
+
+Son olarak kullanıcı film türü filtresini bir arkadaşına göndermek istiyor. Filtrenin URL’de olması bağlantıyı açan kişiye aynı seçimi verir ve geri tuşu önceki seçime döner.
+
+```ts title="Navigasyon seçimi URL'de"
+const [params, setParams] = useSearchParams()
+const genre = params.get('genre') ?? 'all'
+```
+
+Bu örnekte tek ekran bile Query, store ve Router kullanabilir. Her state’i tek store’da toplamak, paylaşım ve cache davranışını kaybettirir.
+
+## Üç kararı karşılaştır
+
+| İhtiyaç | Başlangıç seçimi | Neden? |
 | --- | --- | --- |
-| API cevabını cache’le, arka planda yenile | TanStack Query | Mevcut Query cache’i var; endpoint’i ikinci kez sahiplenme |
-| Ekipte ortak action, middleware ve DevTools akışı | Redux Toolkit | Birden çok özellik ve açık geçiş kuralları gerekiyor |
-| Küçük client state, az kurulum | Zustand | Redux middleware/DevTools ekosistemine ihtiyaç yok |
-| URL ile paylaşılabilir filtre | Router URL state | Geri/ileri ve link davranışı gerekiyor |
+| Sunucudan gelen film listesi, loading/error ve yenileme | TanStack Query | Yanıtın kaynağı sunucudur |
+| Uygulamanın birçok yerinde kullanılan tema | Redux Toolkit | Ortak client state ve açık geçişler gerekir |
+| Geri tuşuyla dönülmesi ve bağlantıda paylaşılması gereken tür | Router URL state | Seçim gezinme geçmişinin parçasıdır |
+| Küçük bir uygulamada birkaç ortak client değeri | Zustand düşünülebilir | Daha az kurulum yeterli olabilir |
 
-Sinema’nın dört ortak client alanı RTK ile birlikte çalışabilir; TMDB sonucu Query’de, arama ve sayfa URL’de kalır. Uygulama daha küçükse Zustand da geçerli bir seçim olabilir. Kütüphane seçimi doğrudan render performansını garanti etmez; selector veya subscription tasarımı önemini korur.
+RTK Query, Redux Toolkit içindeki server API cache aracıdır. TanStack Query’den buna geçmek istiyorsan aynı endpoint’lerin cache sahipliğini birlikte taşı; ikisini aynı yanıtın iki ayrı kopyasını tutmak için ekleme.
 
-## İki cache’i gerekçesiz kurma
+## Hata: aynı API verisi iki cache’e kopyalanıyor
 
-Query’de bulunan TMDB detayını Redux’a kopyalarsan invalidation sonrası iki farklı tazelik saati oluşur. RTK Query’ye geçmek de mümkündür, fakat Query cache’ini “Redux var artık” diye paralel tutmamalısın. Server state katmanını değiştireceksen endpoint’leri, loading/error arayüzlerini ve testleri tek planla taşı.
+Belirti: bir ekranda film bilgisi yeniyken, başka ekranda eski kalıyor. Nedeni, TanStack Query ve Redux’un aynı film cevabını bağımsız yönetmesi. Düzeltme: her server endpoint için tek cache sahibi seç; RTK Query’ye geçiş düşünüyorsan geçişi tutarlı tamamla, aynı endpoint’leri iki cache’te sürdürme.
 
-:::mistake[Belirti → Aynı API cevabının iki farklı sürümü]
-Belirti → Bir ekranda yeni fiyat, diğerinde eski fiyat görülüyor.  
-Neden → Query ve Redux kopyaları bağımsız güncelleniyor.  
-Düzeltme → Tek cache sahibi belirle; migration gerekiyorsa geçişi tamamla ve diğer kopyayı kaldır.
-:::
+Zustand küçük client state’i daha az kurulumla paylaşmak için bir seçenek olabilir. Redux’un middleware ve DevTools düzenini kendiliğinden sağlamaz; araç seçimini gereken ekip akışına göre yap.
 
-:::mistake[Belirti → “Daha az kütüphane” için URL filtreleri store’a taşındı]
-Belirti → Geri tuşu önceki arama filtresini geri getirmiyor.  
-Neden → Navigasyon state’i adres çubuğundan çıkarıldı.  
-Düzeltme → Paylaşılabilir ve geçmişe yazılması gereken seçimleri URL’de tut.
-:::
-
-:::sector
-Ekip kararı; geliştirici sayısı, mevcut mimari, middleware/DevTools ihtiyacı ve bakım maliyetine göre verilir. Küçük bir değer için Redux kurmak şart olmadığı gibi, büyük ekipte standartları ve izlenebilirliği tamamen bırakmak da maliyet doğurabilir. Kararı kod tabanında kısa bir ADR ile kayda geçirmek, aynı tartışmanın her feature’da tekrarlanmasını önler.
+:::info[Derinlemesine (isteğe bağlı)]
+Bir mimari kararı yazılı kayda geçirmek için kullanılan kısa belgeye ADR (Architecture Decision Record) denir. Seçimi, gerekçeyi ve gözden geçirme koşulunu not eder; küçük bir uygulamada ayrıca belge açmak şart değildir.
 :::
 
 ## Özet
 
-- TanStack Query ve RTK Query server state cache araçlarıdır; Redux Toolkit slice’ları client state içindir.
-- Zustand, daha küçük kurulum isteyen client state senaryolarında düşünülebilir.
-- Aynı API verisini iki bağımsız cache’te yaşatma.
-- URL ve form state’i sırf ortak store var diye taşınmaz.
+- Önce state’in kaynağını ve ömrünü belirle.
+- Aynı server yanıtının tek cache sahibi olsun.
+- URL paylaşılabilir navigasyon state’i, store ortak client state’i taşır.
+- Zustand küçük ve sade client store’u için değerlendirilebilir; seçim bağlama bağlıdır.
 
-**Kendini yokla:** Query kullanan uygulama Redux Toolkit de kullanabilir mi?  
-*Cevap:* Evet; farklı state sahiplerini yönetebilirler.
+**Yeni terimler:**
+- `cache`: Sonraki okumada kullanılabilmesi için saklanan veri kopyası.
+- `RTK Query`: Redux Toolkit içindeki server API verisini cache’leyen araç.
+- `ADR`: Bir mimari kararı ve gerekçesini kaydeden kısa belge.
 
-**Kendini yokla:** RTK Query kararı en çok ne zaman anlamlı olur?  
-*Cevap:* Server cache mimarisini bilinçli olarak RTK Query’ye taşıma ihtiyacı varsa.
+**Kendini yokla:** Query kullanan bir uygulama Redux Toolkit de kullanabilir mi?  
+*Cevap:* Evet; Query server state’i, Redux ise ortak client state’i yönetebilir.
+
+**Kendini yokla:** Tür filtresi geri tuşuyla değişmeli ve bağlantıda paylaşılmalıysa nerede yaşamalı?  
+*Cevap:* URL’de.

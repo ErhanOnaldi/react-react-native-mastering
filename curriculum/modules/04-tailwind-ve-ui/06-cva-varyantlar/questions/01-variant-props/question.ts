@@ -6,23 +6,24 @@ export default defineQuestion({
   difficulty: 'kolay',
   concepts: ['tailwind.cva', 'ts.union'],
   question:
-    '`buttonVariants` içinde `variant: primary | secondary | ghost` var. Hangi yaklaşım `variant="danger"` yazımını tip kontrolünde yakalar?',
+    'Bu tanımda `variant` için hangi değer kabul edilir? `const styles = cva("rounded", { variants: { variant: { primary: "bg-sky-700", ghost: "bg-transparent" } } })`',
   options: [
     {
-      text: '`VariantProps<typeof buttonVariants>` ile props tipini türetmek',
+      text: '`primary` veya `ghost`',
       correct: true,
-      explanation: 'cva tablosundaki literal seçenekler TypeScript props tipine yansır.',
+      explanation: 'cva tablosundaki `variant` anahtarları bu eksenin seçeneklerini tanımlar.',
     },
     {
-      text: '`variant: string` yazmak',
-      correct: false,
-      explanation: 'Serbest string `danger` değerini de kabul eder; tablo ile tip bağı kopar.',
-    },
-    {
-      text: 'Tüm class’ları düz string olarak yazmak',
+      text: 'Herhangi bir string',
       correct: false,
       explanation:
-        'Class string’i runtime görünümü belirler ama izin verilen prop değerlerini tiplemez.',
+        'Props tipi türetilirken cva tablosunda olmayan `danger` gibi değerler kabul edilmez.',
+    },
+    {
+      text: '`primary` ve `ghost` birlikte',
+      correct: false,
+      explanation:
+        'Tek bir varyant çağrısında bu eksenden bir seçenek seçilir; iki değer birden verilmez.',
     },
   ],
 })

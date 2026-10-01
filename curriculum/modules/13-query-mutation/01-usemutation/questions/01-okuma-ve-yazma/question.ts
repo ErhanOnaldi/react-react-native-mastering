@@ -4,21 +4,22 @@ export default defineQuestion({
   title: 'Hangi işlem yazma?',
   difficulty: 'kolay',
   concepts: ['query.useMutation', 'query.useQuery'],
-  question: 'Dövüş Kulübü’ne 8,5 puan vermek istiyorsun. Hangi akış sunucuya gerçekten yazar?',
+  question:
+    'Bu kodda `rate` hangi anda çağrılır?\n\n```tsx\nconst save = useMutation({ mutationFn: rate })\nreturn <button onClick={() => save.mutate({ movieId: 550, value: 8.5 })}>Kaydet</button>\n```',
   options: [
     {
-      text: 'Sadece `useQuery` cache’ine 8,5 koymak',
-      explanation: 'Cache yerel bellektir; TMDB’ye POST gitmez.',
-    },
-    {
-      text: '`useMutation` ile POST göndermek',
+      text: 'Düğmeye tıklanınca, `mutate` çağrısıyla.',
       correct: true,
-      explanation: 'Mutation yazma isteğini ve pending/error durumlarını yönetir.',
+      explanation: '`useMutation` işlemi hazırlar; `mutate` event handler içinde işi başlatır.',
     },
     {
-      text: '`staleTime` değerini sıfırlamak',
-      explanation: 'Bu, okuma verisinin tazeliğini etkiler; yazma isteği üretmez.',
+      text: 'Bileşen render olur olmaz, hook kurulurken.',
+      explanation: 'Hook çağrısı isteği başlatmaz; aksi halde her render yazma isteği atardı.',
+    },
+    {
+      text: 'Sunucu cevap verince, mutation başarıya geçerken.',
+      explanation: 'Cevap mutation başladıktan sonra gelir; başlangıç noktası `mutate` çağrısıdır.',
     },
   ],
-  explanation: 'Puanlama için guest session ve yetkili POST gerekir.',
+  explanation: 'Mutation tanımı işi hazırlar. Kullanıcı olayı içinden `mutate` çağrısı gönderir.',
 })

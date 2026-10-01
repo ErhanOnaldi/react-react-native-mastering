@@ -4,5 +4,7 @@ Film puanını seçince ekranda hemen yeni değer görünüyor. Sunucu 500 döne
 
 ## Arayüz sözleşmesi
 
-- `Puanladıklarım` listesi yüklenirken `Liste yükleniyor` metni görünsün.
-- Kayıt başarısız olursa görünen hata mesajı `kaydedilemedi` kelimesini içersin.
+- `Puanladıklarım` listesi beklerken `Liste yükleniyor` metni görünsün.
+- Sunucu puanı reddederse görünen hata mesajı `kaydedilemedi` kelimesini içersin.
+- Puan isteği beklerken seçilen puan hemen görünsün; hata halinde son onaylı puan geri gelsin.
+- Başarılı puan isteğinden sonra rated liste yeniden yüklensin.

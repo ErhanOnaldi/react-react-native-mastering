@@ -2,14 +2,14 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'code',
-  title: 'Değişen giriş verisi',
+  title: 'Opsiyonel tarihi dönüştür',
   difficulty: 'orta',
-  concepts: ['form.rhf-reset', 'zod.transform', 'zod.refine'],
+  concepts: ['zod.transform', 'zod.refine', 'zod.resolver'],
   files: ['DraftEditor.tsx'],
   preview: { entry: 'Preview.tsx' },
   hints: [
-    'İki ayrı sorun var: formun ne zaman yeniden ayarlanması gerektiği ve boş tarihin ne anlama geldiği.',
-    'Bir prop değişince formu haberdar etmen gerekir; boş bir metin ile "tarih yok" durumu aynı şey değildir.',
-    'Taslak değişince `reset(...)` ile alanları yenile. Şemada boş string’i `.transform` ile `undefined`’a çevir, dolu ama geçersiz biçimi `.refine` ile reddet.',
+    'Boş bir metin ile "tarih yok" durumu aynı şey değildir; submit değerinde bu ayrımı göster.',
+    'Önce boş değeri dönüştür, sonra yalnızca dolu değer için tarih biçimini denetle.',
+    '`.transform` ile boş string’i `undefined`’a çevir, dolu ama geçersiz biçimi `.refine` ile reddet; şemayı resolver’a bağla.',
   ],
 })

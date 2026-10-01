@@ -1,4 +1,4 @@
-import { combineSlices, configureStore, createSlice } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 const favorites = createSlice({
   name: 'favorites',
   initialState: { ids: [] as number[] },
@@ -17,6 +17,4 @@ const ui = createSlice({
     },
   },
 })
-export const { add } = favorites.actions
-export const { toggle } = ui.actions
-export const setupStore = () => configureStore({ reducer: combineSlices(favorites) })
+// İki reducer'ı configureStore ile bağla ve her çağrıda yeni store üret.

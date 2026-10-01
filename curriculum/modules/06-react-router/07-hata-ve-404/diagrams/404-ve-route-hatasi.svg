@@ -10,7 +10,7 @@
   <text class="d-code" x="380" y="78" text-anchor="middle">route ağacında çöz</text>
   <rect class="d-danger" x="35" y="155" width="300" height="70" rx="12" />
   <text class="d-title" x="185" y="184" text-anchor="middle">Eşleşme yok</text>
-  <text class="d-code" x="185" y="208" text-anchor="middle">path: * → 404</text>
+  <text class="d-code" x="185" y="208" text-anchor="middle">path: * → bilinmeyen adres</text>
   <rect class="d-warning" x="425" y="155" width="300" height="70" rx="12" />
   <text class="d-title" x="575" y="184" text-anchor="middle">Route çalıştı, hata verdi</text>
   <text class="d-code" x="575" y="208" text-anchor="middle">errorElement</text>

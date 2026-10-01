@@ -6,23 +6,23 @@ export default defineQuestion({
   difficulty: 'kolay',
   concepts: ['tailwind.theme', 'tailwind.utilities'],
   question:
-    'V4 CSS dosyasında `@theme { --color-brand-700: #075985; }` tanımladın. Hangi class bu rengi arka plan olarak kullanır?',
+    'CSS içinde `@theme { --color-brand-700: #075985; }` tanımlı. `className="text-brand-700 bg-white"` olan başlıkta hangi renk metne uygulanır?',
   options: [
     {
-      text: '`bg-brand-700`',
+      text: '`#075985`',
       correct: true,
-      explanation: '`--color-*` namespace’i renk utility’lerini üretir; `bg-*` arka planı seçer.',
-    },
-    {
-      text: '`background-brand-700`',
-      correct: false,
-      explanation: 'Tailwind arka plan rengi için `bg-*` önekini kullanır.',
-    },
-    {
-      text: '`bg-[#075985]` zorunludur',
-      correct: false,
       explanation:
-        'Arbitrary value çalışabilir ama token tanımladıysan `bg-brand-700` tekrar kullanım sağlar.',
+        '`text-brand-700`, `--color-brand-700` tokenini metin renginde kullanır; `bg-white` zemin rengidir.',
+    },
+    {
+      text: '`#075985` zemin rengi olur',
+      correct: false,
+      explanation: '`text-*` metin rengini seçer; token bu örnekte zemine uygulanmıyor.',
+    },
+    {
+      text: '`bg-white` ile iki renk de metne uygulanır',
+      correct: false,
+      explanation: '`bg-*` zemin rengini seçer; her utility kendi CSS özelliğini belirler.',
     },
   ],
 })

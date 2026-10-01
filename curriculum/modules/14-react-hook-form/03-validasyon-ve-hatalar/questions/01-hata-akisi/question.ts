@@ -19,14 +19,15 @@ export default defineQuestion({
       explanation: '`handleSubmit` geçersiz veriyi geçerli callback’e göndermez.',
     },
     {
-      text: 'Input kendiliğinden kırmızı olur ve label oluşur.',
+      text: 'Geçerli gönderim callback’i çalışmaz; RHF hata mesajını otomatik olarak input altında gösterir.',
       correct: false,
-      explanation: 'Görünüm ve label ilişkisini sen kurarsın.',
+      explanation:
+        'RHF geçerli callback’i atlar ve hata bilgisini errors içinde tutar; mesajı göstermek için UI’da ayrıca render etmelisin.',
     },
     {
-      text: '`required` yalnızca TypeScript derleme anında çalışır.',
+      text: 'RHF geçerli callback’i boş string ile çalıştırır; kural yalnızca hata nesnesi ekler.',
       correct: false,
-      explanation: 'Bu kural form gönderiminde çalışma zamanında değerlendirilir.',
+      explanation: 'Başarısız alan kuralı olduğunda `handleSubmit` geçerli callback’i çağırmaz.',
     },
   ],
 })

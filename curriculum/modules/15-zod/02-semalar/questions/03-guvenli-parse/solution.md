@@ -1,6 +1,6 @@
 ## Neden böyle?
 
-`safeParse` beklenen veri hatasını exception akışına sokmaz. Kart gibi bağımsız bir yerde kontrollü yedek metin işe yarar. API client'ta ise bütün sorguyu hata durumuna taşımak daha uygundur; bunu 7. derste yapacağız.
+`safeParse` beklenen veri hatasını exception akışına sokmaz. Kart gibi bağımsız bir yerde kontrollü yedek metin işe yarar. API client'ta ise bütün sorguyu hata durumuna taşımak daha uygundur; bunu 8. derste yapacağız.
 
 ## Alternatif, tuzak ve devamı
 

@@ -25,5 +25,5 @@
   <text class="d-text" x="631" y="112" text-anchor="middle">ortak repo kontrolü</text>
   <text class="d-code" x="631" y="143" text-anchor="middle">lint + format:check</text>
 
-  <text class="d-muted" x="380" y="210" text-anchor="middle">Her katman aynı config'i kullanır; yerel katmanlar atlanabilir.</text>
+  <text class="d-muted" x="380" y="210" text-anchor="middle">Yerel kontroller atlanabilir; CI ortak sonuç verir.</text>
 </svg>

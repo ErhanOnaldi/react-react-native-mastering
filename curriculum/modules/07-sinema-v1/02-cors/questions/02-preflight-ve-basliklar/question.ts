@@ -2,30 +2,32 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'Hangi istek preflight tetikler?',
+  title: 'Preflight isteğinde hangi sıra izlenir?',
   difficulty: 'orta',
   concepts: ['web.cors'],
   question:
-    'Tarayıcı, sunucuya asıl isteği göndermeden önce hangi senaryoda otomatik olarak bir `OPTIONS` ön kontrol isteği (**preflight**) ateşler?',
+    'Sinema, başka origin’deki API’ye `Authorization: Bearer ...` başlığıyla `GET` atıyor. API `OPTIONS` ön kontrolüne izin başlıklarıyla cevap veriyor. Tarayıcının izleyeceği sıra hangisidir?',
   options: [
     {
-      text: 'İsteğe `Authorization: Bearer <token>` başlığı veya `Content-Type: application/json` eklendiğinde',
+      text: 'Önce `OPTIONS` gider; izin gelince gerçek `GET` ve `Authorization` başlığı gider.',
       correct: true,
       explanation:
-        'Doğru. `Authorization` başlığı ve `application/json` içerik türü CORS-safelisted (güvenli liste) içinde değildir; tarayıcı asıl istekten önce mutlaka `OPTIONS` ile sunucudan izin ister.',
+        'Doğru. Tarayıcı önce izin sorgular. `OPTIONS` cevabı uygunsa ardından gerçek `GET` isteğini gönderir; token asıl isteğin başlığındadır.',
     },
     {
-      text: 'Yalnızca `GET` yöntemiyle ve başlık olmadan istek atıldığında',
-      explanation: 'Başlıksız basit `GET` isteği preflight gerektirmez; doğrudan gönderilir.',
-    },
-    {
-      text: '`Content-Type` başlığı `text/plain` olduğunda',
+      text: 'Önce gerçek `GET` gider; sunucu token’ı reddederse tarayıcı `OPTIONS` ile tekrar dener.',
       explanation:
-        '`text/plain`, basit istekler için izin verilen üç güvenli Content-Type türünden biridir ve tek başına preflight tetiklemez.',
+        'Preflight başarısız isteği tekrar etmek için kullanılmaz. Tarayıcı izin istemini gerçek isteğin önüne koyar.',
     },
     {
-      text: 'İstek URL’sinde query parametresi (`?page=1`) bulunduğunda',
-      explanation: 'Query parametrelerinin varlığı preflight mekanizmasını etkilemez.',
+      text: '`OPTIONS` isteği film verisini taşır; ardından ayrıca `GET` gerekmez.',
+      explanation:
+        '`OPTIONS` yalnızca tarayıcının izin sorusudur. Film verisini alan gerçek `GET`, izin cevabından sonra gönderilir.',
+    },
+    {
+      text: 'Tarayıcı `OPTIONS` ile token’ı gönderir, `GET` isteğinde yeniden göndermez.',
+      explanation:
+        'Preflight hangi başlığın kullanılacağını bildirir; `Authorization` değerini taşıyan asıl istek daha sonra gelir.',
     },
   ],
 })

@@ -5,26 +5,25 @@ export default defineQuestion({
   title: 'Barrel sınırı nereye konur?',
   difficulty: 'orta',
   concepts: ['arch.barrel-files', 'arch.feature-folders'],
-  question:
-    '`features/movies/index.ts` dışarıya `MovieCard` ve `useMovies` export ediyor. `MovieCard.tsx` kendi feature’ındaki yardımcıyı `import { formatTitle } from "./index"` ile alıyor. En sağlıklı değişiklik hangisi?',
+  question: `\
+\`features/movies/index.ts\` \`MovieCard\` ve \`useMovies\` export ediyor. \`MovieCard.tsx\` de aynı barrel'dan \`formatTitle\` import ediyor. Bir testte \`MovieCard\` açılırken \`formatTitle\` undefined oluyor. En küçük, bağımlılık yönünü koruyan düzeltme hangisi?`,
   options: [
     {
-      text: 'Feature içindeki dosya `formatTitle`ı doğrudan `./formatTitle`dan alır; `index.ts` dışarıya açık API için kalır.',
+      text: 'MovieCard doğrudan `./formatTitle` import eder; `index.ts` dış tüketiciler için kalır.',
       correct: true,
       explanation:
-        'Doğru. İçeriden barrel’a geri dönmek karşılıklı import zinciri oluşturabilir; dış tüketiciler için tek giriş noktası yine yararlıdır.',
+        'Barrel feature dosyalarını tekrar export eder; içeride ona geri dönmek döngü yaratabilir. Doğrudan import bu bağı kaldırır.',
     },
     {
-      text: 'Bütün iç importları barrel üzerinden geçirmek döngü riskini tamamen kaldırır.',
+      text: 'Barrel’a `formatTitle` exportunu en üste alıp iç importu aynı bırakır.',
       correct: false,
       explanation:
-        'Barrel kendi export ettiği dosyalara bağlıdır; içeride aynı barrel’a geri dönmek döngü kurabilir.',
+        'Export sırasını değiştirmek barrel ile dosya arasındaki karşılıklı bağı kaldırmaz.',
     },
     {
-      text: 'Her dosya için ayrı barrel açmak tree shaking sorunlarını otomatik çözer.',
+      text: 'MovieCard içinden `index.ts` yerine `useMovies` import etmek yeterlidir.',
       correct: false,
-      explanation:
-        'Ek barrel dosyaları bağımlılık yönünü açıklamaz; export biçimi ve yan etkiler ayrıca değerlendirilir.',
+      explanation: 'Import edilen yardımcı yine aynı barrel üzerinden gelir; döngü sürer.',
     },
   ],
 })

@@ -11,7 +11,7 @@ Kitaplık uygulamasının geliştirilmesine başlamadan önce, belirsiz ürün i
 - **Sabit Sözleşme:** Belirlenmiş sabit kurallar belgede yer almalıdır:
   - Adresler: `/` (ana sayfa), `/search?q=...&page=...`, `/works/:workId`, `/reading-list?status=...` (ve tanımsız adreslerde "Sayfa bulunamadı").
   - Arama: Form gönderilince (Enter / "Ara") tetiklenir; sayfa başına 10 sonuç.
-  - Arayüz metinleri: Başlık "Kitaplık", arama kutusu erişilebilir etiketi "Kitap ara", buton "Ara", "Önceki", "Sonraki", "Sayfa X / Y", "Tekrar dene", "Yazar bilinmiyor", "Açıklama yok.", "Kitap bulunamadı", menüde "Okuma listem (n)".
+  - Arayüz metinleri: Başlık "Kitaplık", arama kutusu erişilebilir etiketi "Kitap ara", buton "Ara", "Önceki", "Sonraki", "Sayfa X / Y", "Tekrar dene", "Yazar bilinmiyor", "Açıklama yok.", sonuçsuz aramada "sonuç bulunamadı", eser 404 olduğunda "Kitap bulunamadı", menüde "Okuma listem (n)".
   - Kalıcılık: `localStorage` anahtarı `kitaplik:reading-list`.
 - **Kenar Durumları:** Gerçek API verisinden kaynaklanan durumlar ve beklenen davranışlar:
   - Kapak görseli id'si yoksa veya `-1` ise kırık resim yerine yer tutucu gösterilmesi.
@@ -47,4 +47,4 @@ K-5  Diyelim ki arama kutusu boş veya yalnızca boşluklardan oluşuyor,
 
 ## Kısıtlar
 
-- Belgeye kütüphane veya mimari uygulama detayları (örneğin "Redux kullanılacak", "useState ile tutulacak") yazılmamalıdır; yalnızca iş gereksinimi ve gözlenebilir davranışlar tanımlanmalıdır.
+- Belgeye seçtiğin uygulama yöntemi (örneğin "Redux kullanılacak" veya "useState ile tutulacak") yazılmamalıdır; yalnızca iş gereksinimi ve gözlenebilir davranışlar tanımlanmalıdır. Bu görevde sabit sözleşme olarak verilen rota, arayüz metni ve `localStorage` anahtarı kararları ise değiştirilemez gereksinimlerdir; kendi mimari tercihin değildir.

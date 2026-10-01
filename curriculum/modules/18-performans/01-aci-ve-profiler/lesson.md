@@ -6,177 +6,111 @@ kind: concept
 
 # Acıyı ölç: Profiler
 
-:::pain[Problem]
-Sinema uygulamasında arama sayfasına giriyorsun. Arama kutusuna "Matrix" yazmak istediğinde, her bir tuşa basışında klavye donuyor. İmleç bir an duraksıyor, harf ancak 350 milisaniye sonra kutuda beliriyor. Alt tarafta 500 filmlik liste her harfte titriyor.
+Arama kutusuna yazdığın harf, `useState` ile tuttuğun sorgu değişince ekranda görünür. Önceki derslerde gördüğün gibi React bu state değişince ilgili bileşenleri yeniden çalıştırır. Liste küçükken bunu fark etmeyebilirsin; yüzlerce film olduğunda ise her tuşta bekleme hissedebilirsin. Böyle bir durumda ilk iş kodu tahminle değiştirmek değil, gecikmenin hangi bölümde olduğunu ölçmektir.
 
-Bir iş arkadaşın "Sayfa çok yavaş, hemen birkaç yere memo koyalım" diyor. Ancak nereden başlayacaksın? Darboğaz arama inputunun kendisinde mi, alttaki 500 kartın her harfte yeniden çizilmesinde mi, yoksa JavaScript tarafındaki ağır bir hesaplamada mı? "Yavaş" demek bir teşhis değildir; kanıt olmadan yapılan optimizasyon kodu karmaşıklaştırır ama sorunu çözmez. Önce sorunun boyutunu sayılarla görmen gerekir.
-:::
+## Aynı etkileşime iki kez bak
 
-:::model[Render → commit → effect]
-Modül 3'te öğrendiğimiz temel yaşam döngüsünü hatırla:
+İlk denemede arama kutusuna tek harf yaz. Geliştirici araçlarındaki **React DevTools Profiler**, bir etkileşim sırasında hangi bileşenlerin çalıştığını ve render işleminin ne kadar sürdüğünü gösteren kayıt aracıdır. Kayıt al, harfi yaz, sonra kaydı durdur. Sinema sayfasında `SearchPage` ile film sonuç listesini ayrı ayrı seçip hangisinin zaman aldığını incele.
 
-![Render, commit ve effect aşamaları](diagram:render-commit)
+Örneğin ilk kayıtta `SearchPage` kısa sürerken `MovieGrid` uzun sürmüş olsun. Bu, input etiketinin yavaş olduğu anlamına gelmez; arama state'i değiştiğinde film listesinin de yeniden hesaplandığını gösterir. İkinci kayıtta liste süresi kısa, ama input'un boyanması gecikiyorsa başka bir iş parçacığı ya da tarayıcı işi araştırılmalıdır. Ölçüm, çözümü sorunun görüldüğü yere yaklaştırır.
 
-1. **Tetikleme (Trigger):** Kullanıcı bir tuşa basar veya bir state güncellenir.
-2. **Render (Saf hesaplama):** React bileşen fonksiyonlarını çağırır, JSX çıktısını hesaplar ve önceki sanal ağaçla karşılaştırır (diffing).
-3. **Commit (DOM'a uygulama):** React hesaplanan değişiklikleri gerçek DOM'a yazar.
-4. **Tarayıcı boyaması (Paint):** Tarayıcı yeni DOM düğümlerini ekrana çizer.
+Bir **render**, React'in bileşen fonksiyonunu güncel props ve state ile çağırıp ekranda bulunması gereken çıktıyı hesaplamasıdır. React yeni çıktıyı öncekiyle karşılaştırır; bu karşılaştırma sürecine **diffing** denir. Sonra gerekli DOM değişiklikleri **commit** edilir, yani gerçek sayfaya uygulanır. Render olması tek başına DOM'un değiştiğini söylemez.
 
-Performans sorunları bu döngünün farklı yerlerinde saklanır: Render aşamasında gereksiz bileşen fonksiyonlarının çağrılması CPU tüketir; Commit aşamasında yüzlerce DOM düğümünün güncellenmesi ise tarayıcının ana iş parçacığını (main thread) kilitler.
-:::
-
-## Profiler zihinsel modeli ve çalışma kuralları
-
-React'in yerleşik `<Profiler>` bileşeni, bileşen ağacının belirli bir parçasının ne sıklıkla render edildiğini ve commit aşamasının ne kadar sürdüğünü programatik olarak ölçmeni sağlar.
-
-Profiler bileşenini doğru kullanmak için zihinsel modelini şu kesin kurallarla oluştur:
-
-1. **Yalnızca sardığı alt ağacı ölçer:** `<Profiler>` bileşeni tüm sayfayı ölçmek zorunda değildir; yalnızca içine yerleştirdiğin bileşenleri ve onların çocuklarını gözlemler.
-2. **Callback commit sonrası çalışır:** `onRender` fonksiyonu render sırasında değil, React değişiklikleri gerçek DOM'a uyguladıktan (commit ettikten) hemen sonra tetiklenir.
-3. **Ölçüm parametreleri zengindir:** Callback fonksiyonu sırasıyla şu argümanları alır:
-   - `id: string` — Profiler'a verdiğin benzersiz kimlik.
-   - `phase: 'mount' | 'update'` — Ağaç ilk kez mi ekrana basılıyor (`mount`), yoksa bir state/prop değişimiyle mi güncelleniyor (`update`).
-   - `actualDuration: number` — O commit için Profiler alt ağacının render edilmesi sırasında harcanan milisaniye cinsinden süre.
-   - `baseDuration: number` — Herhangi bir optimizasyon (memoization) olmadan tüm alt ağacın sıfırdan render edilmesi durumunda sürecek tahmini süre.
-   - `startTime: number` — React'in bu render döngüsünü hesaplamaya başladığı zaman damgası.
-   - `commitTime: number` — React'in bu güncellemeyi DOM'a uyguladığı anın zaman damgası.
-4. **Süre donanıma bağlıdır, commit sayısı evrenseldir:** `actualDuration` değeri geliştiricinin 16 çekirdekli güçlü bilgisayarında 2 ms iken, kullanıcının ucuz bir telefonunda 80 ms çıkabilir. Bu yüzden otomatik testlerde ya da mimari kararlarda mutlak milisaniye eşikleri yerine **aynı etkileşimde tetiklenen commit sayısı** ve **güncelleme fazı (`phase`)** esas alınır.
-
-## Bir etkileşimde adım adım iz sürelim
-
-Bir kullanıcı arama kutusuna tek bir "A" harfi yazdığında, sayfanın iki farklı durumunda (10 kayıtlı küçük liste vs 500 kayıtlı büyük liste) nelerin yaşandığını zaman sırasıyla izleyelim:
-
-| Adım | Olay | 10 Kayıtlı Liste | 500 Kayıtlı Liste | Gözlem |
-|---|---|---|---|---|
-| 1 | Kullanıcı 'A' tuşuna basar | Input `onChange` tetiklenir | Input `onChange` tetiklenir | Girdi tarayıcı tarafından alındı. |
-| 2 | `setQuery('A')` çağrılır | State güncellemesi sıraya girer | State güncellemesi sıraya girer | React yeni render döngüsü başlatır. |
-| 3 | Üst bileşen render edilir | Input ve liste yeniden çağrılır | Input ve liste yeniden çağrılır | JSX sanal düğümleri üretilir. |
-| 4 | Liste bileşeni render süresi | 10 öğe için döngü: ~0.8 ms | 500 öğe için döngü: ~45 ms | CPU 500 öğeyi hesaplarken bekler. |
-| 5 | React DOM diffing yapar | 10 düğüm karşılaştırılır | 500 düğüm karşılaştırılır | Değişiklik listesi hazırlanır. |
-| 6 | Commit aşaması | DOM'a yazılır (~1 ms) | DOM'a yazılır (~80 ms) | Tarayıcı ana iş parçacığı kilitlenir. |
-| 7 | `Profiler` `onRender` tetiklenir | `phase: 'update'`, `actualDuration: ~1.8 ms` | `phase: 'update'`, `actualDuration: ~125 ms` | İki ölçüm arasındaki uçurum görünür! |
-| 8 | Tarayıcı boyaması (Paint) | Harf anında ekranda belirir | Harf 130 ms gecikmeyle ekranda belirir | Kullanıcı takılmayı bizzat hisseder. |
-
-Bu tablo bize çok önemli bir ders verir: Sorun klavyede ya da input etiketinde değil, input her güncellendiğinde aynı ağaçta bulunan 500 öğelik listenin de gereksiz yere baştan sona commit edilmesindedir.
-
-## Kod örneği: Denetim günlüğünde commit ölçümü
-
-Şimdi bir yönetim panelindeki denetim günlüğü (`AuditLog`) üzerinden Profiler kullanımını inceleyelim.
-
-### Kırık yaklaşım: Ölçüm callback'inde state güncellemek
-
-Geliştiricilerin düştüğü en büyük tuzak, Profiler'ın yakaladığı süreyi veya sayacı bileşenin kendi state'ine yazmaya çalışmaktır:
-
-```tsx
-// YANLIŞ: Sonsuz render döngüsü yaratır!
-function BrokenAuditFeed({ logs }: { logs: string[] }) {
-  const [commitCount, setCommitCount] = useState(0)
-
-  return (
-    <div>
-      <p>Toplam Commit: {commitCount}</p>
-      <Profiler
-        id="audit-feed"
-        onRender={() => {
-          // Her commit olduğunda state güncellenir!
-          // State güncellenince bileşen tekrar render edilir!
-          // Tekrar render olunca tekrar commit olur!
-          // TEKRAR onRender ÇAĞRILIR -> SONSUZ DÖNGÜ!
-          setCommitCount((c) => c + 1)
-        }}
-      >
-        <ul>
-          {logs.map((log) => (
-            <li key={log}>{log}</li>
-          ))}
-        </ul>
-      </Profiler>
-    </div>
-  )
-}
+```text
+Tuşa basılır → state güncellenir → render/diffing → commit → tarayıcı boyar
 ```
 
-Bu kod çalıştığı anda tarayıcı donar ve konsolda `"Maximum update depth exceeded"` hatası belirir. Çünkü `onRender` commit sonrasında çalışır; commit anında state güncellersen yeni bir commit sipariş etmiş olursun.
+Bu ayrım önemlidir: çok sayıda bileşen çalışıp sonunda DOM değişmese bile JavaScript hesaplama yapmıştır. Öte yandan çok sayıda DOM güncellemesi de tarayıcının ana iş parçacığını (main thread: JavaScript ve arayüz işlerinin sırayla yürüdüğü ana hat) meşgul edebilir.
 
-### Doğru yaklaşım: Ölçümü dışarıya aktarmak
+:::model[Render → commit → effect]
+Render çıktıyı hesaplar, commit gerekli DOM değişikliklerini uygular, effect commit sonrasında çalışır.
 
-Ölçüm bilgisini ya bileşen ağacının dışındaki bir callback'e teslim etmeli ya da bir ref / harici telemetri servisine göndermeliyiz:
+![Render, commit ve effect aşamaları](diagram:render-commit)
+:::
+
+## Önce küçük bir ölçüm
+
+React'in `<Profiler>` bileşeni, içine aldığın ağaç için commit kaydı verir. Bu ilk örnekte oyuncu adlarının bulunduğu paneli sarıyoruz. `onRender` adını verdiğimiz callback, ölçüm sonucunu dışarı ileten fonksiyondur.
 
 ```tsx check
 import { Profiler } from 'react'
 import type { ProfilerOnRenderCallback } from 'react'
 
-export interface AuditEntry {
-  id: string
-  action: string
-  timestamp: string
-}
-
-interface AuditedFeedProps {
-  entries: AuditEntry[]
-  onFeedCommit: ProfilerOnRenderCallback
-}
-
-export function AuditedFeed({ entries, onFeedCommit }: AuditedFeedProps) {
+export function CastPanel({
+  cast,
+  onCommit,
+}: {
+  cast: { id: string; name: string }[]
+  onCommit: ProfilerOnRenderCallback
+}) {
   return (
-    <section>
-      <h2>Sistem Denetim Kayıtları</h2>
-      <Profiler id="audit-feed" onRender={onFeedCommit}>
-        <div className="feed-container">
-          {entries.map((entry) => (
-            <article key={entry.id} className="feed-item">
-              <time>{entry.timestamp}</time>
-              <p>{entry.action}</p>
-            </article>
-          ))}
-        </div>
-      </Profiler>
-    </section>
+    <Profiler id="cast-panel" onRender={onCommit}>
+      <section>
+        <h2>Oyuncular</h2>
+        <ul>
+          {cast.map((person) => <li key={person.id}>{person.name}</li>)}
+        </ul>
+      </section>
+    </Profiler>
   )
 }
 ```
 
-Bu yapıda `AuditedFeed` bileşeni kendi içinde state tutmaz. React ağacı her commit ettiğinde `onFeedCommit` çağrılır; üst katmandaki test fonksiyonu (`vi.fn()`) veya izleme sistemi kaç kez `update` ya da `mount` commit'i yapıldığını güvenle sayar.
+`Profiler` yalnızca sardığı liste ağacını gözlemler. İlk ekranda ağaç oluşturulduğunda `phase` değeri `mount`, daha sonraki güncellemelerde `update` olur. `actualDuration`, o render için React'in alt ağacı hesaplamaya harcadığı süredir; `baseDuration` ise alt ağaç hiç atlanmadan çalışsa yaklaşık ne kadar süreceğine dair tahmindir. Bunlar bir teşhis ipucudur, her cihazda aynı çıkacak garanti değerler değildir.
 
-## Sınır durumları ve sık yapılan hatalar
+## Bir harfi sırayla izleyelim
 
-:::mistake[1. Profiler callback'inde setState çağırmak]
-- **Belirti:** Sayfa açılır açılmaz kilitlenir; konsolda `Maximum update depth exceeded` hatası basılır.
-- **Neden:** `onRender` commit aşamasından sonra tetiklenir. Aynı bileşenin state'ini güncellemek anında yeni bir render-commit döngüsü başlatarak sonsuz döngüye girer.
-- **Düzeltme:** Ölçüm sonuçlarını bileşen state'ine yazma. `console.log`, harici bir log servisi, bir React `ref`'i veya üst bileşene iletilen bir prop callback'i kullan.
-:::
+Listeyi arama state'iyle birlikte düşünelim. Aşağıdaki zaman çizelgesinde ölçümün ne zaman geldiğine dikkat et:
 
-:::mistake[2. Geliştirme modundaki StrictMode çift çağrısını hata sanmak]
-- **Belirti:** Bileşeni ilk açtığında `onRender` callback'inin iki kez çalıştığını görürsün ve gereksiz render var zannedersin.
-- **Neden:** `React.StrictMode`, yan etkileri ve bellek sızıntılarını erken yakalamak için geliştirme ortamında bileşenleri bilinçli olarak iki kez render eder.
-- **Düzeltme:** Bu durum canlıda (production build) gerçekleşmez. Karar verirken tekil milisaniyelere takılma; kullanıcı bir etkileşimde bulunduğunda (ör. butona basınca) kaç commit tetiklendiğine odaklan.
-:::
+| Adım | Olay | Görülen sonuç |
+|---|---|---|
+| 1 | Kullanıcı `M` yazar | Input olayı çalışır. |
+| 2 | `setQuery('M')` çağrılır | React state güncellemesini sıraya alır. |
+| 3 | Sayfa ve liste render edilir | React yeni JSX çıktısını hesaplar ve karşılaştırır. |
+| 4 | Gerekli DOM değişiklikleri commit edilir | Yeni sorgu ve sonuçlar sayfaya uygulanır. |
+| 5 | `onRender` çalışır | `phase`, süreler ve `cast-panel` kimliği ölçüm callback'ine verilir. |
+| 6 | Tarayıcı boyar | Kullanıcı güncellenen arayüzü görür. |
 
-:::mistake[3. Testlerde sabit süre eşikleri beklemek]
-- **Belirti:** Yerel makinede geçen test (`expect(actualDuration).toBeLessThan(10)`), CI sunucusunda ya da arkadaşının bilgisayarında rastgele kalır.
-- **Neden:** Donanım hızı, CPU çekirdek sayısı, arka planda çalışan işlemler her ortamda farklı süreler üretir.
-- **Düzeltme:** Testlerde asla süre eşiği sınama. Testlerde mock fonksiyonlarla `onRender` çağrı sayısını ve `phase` değerinin `'mount'` mu yoksa `'update'` mi olduğunu doğrula.
-:::
+`onRender` commit'ten sonra çağrıldığı için bu callback'i ölçümü kaydetmek veya dışarı aktarmak için kullanırsın. Callback içinde aynı ağacın state'ini değiştirmek yeni render başlatır; bu yeni commit de callback'i tekrar çağırır. Aşağıdaki gerçekçi hata, sayaç ekleyerek ölçmeye çalışmaktır:
 
-:::sector[Sektörde nasıl kullanılır?]
-Gerçek dünya projelerinde Profiler iki temel biçimde kullanılır:
+```tsx
+// Hatalı fikir: her commit yeni state ve yeni commit doğurur.
+<Profiler id="movie-grid" onRender={() => setCommitCount((n) => n + 1)}>
+  <MovieGrid movies={movies} />
+</Profiler>
+```
 
-1. **React DevTools Profiler:** Geliştirme sırasında Chrome DevTools içindeki Profiler sekmesinden "Kayıt al" (Record) butonuna basılır, kullanıcı etkileşimi yapılır ve kayıt durdurulur. DevTools alev grafiği (flamegraph) ile her bileşenin neden render olduğunu ("Props changed", "Hook 2 changed") ve kaç milisaniye sürdüğünü renklerle gösterir.
-2. **RUM (Real User Monitoring):** Üretim ortamında kritik akışlar (örneğin ödeme adımı veya ürün arama) `<Profiler>` ile sarılır; toplanan `actualDuration` değerleri Google Analytics, Sentry veya Datadog gibi izleme servislerine gönderilerek 75. yüzdelik (p75) süreleri takip edilir.
+Belirti, sayfanın kilitlenmesi ve `Maximum update depth exceeded` hatasıdır. Nedeni callback'in commit sonrasında state güncellemesi yapıp döngüyü kendisinin sürdürmesidir. Sayaç yerine callback'i bir üst bileşenden gelen `onCommit` fonksiyonuna bağla veya DevTools kaydını incele; ölçüm sonucu için aynı ekrandaki state'i değiştirme.
+
+## Süreyi değil, karşılaştırmayı oku
+
+Şimdi aynı aramayı iki kez kaydet: birinde 12 film, diğerinde 500 film olsun. İlk kayıt 3 ms, ikincisi 40 ms sürebilir; fakat kendi bilgisayarında ölçtüğün bu süre başka bir telefonda ya da geliştirme ortamında aynı çıkmayabilir. Aynı arama etkileşiminde hangi bileşenlerin tekrar çalıştığını ve commit sayısının nasıl değiştiğini karşılaştır. Bu karşılaştırma, tek bir mutlak süre eşiğinden daha işe yarar.
+
+DevTools'taki **flamegraph** (alev grafiği), bileşenleri iç içe kutularla gösterir; geniş ve uzun süren kutulara bakarak hangi alt ağacın süre aldığını bulabilirsin. Bir bileşenin niçin çalıştığını gösteren “props changed” gibi açıklamalar da hangi girdiye bakacağını söyler. Önce bir kullanıcı hareketini kaydet, sonra grafikte yalnızca o hareketle ilişkili ağacı incele.
+
+Gerçek kullanıcıların cihazlarından anonim performans ölçümü toplamaya **RUM** (Real User Monitoring: gerçek kullanıcı izleme) denir. Çok sayıda ölçümde **p75**, değerlerin yüzde 75'inin altında kaldığı yüzdelik noktadır; tek bir yavaş cihazın uç değerine göre karar vermeni önler. Bu ölçümler ürün düzeyinde yararlıdır, ama ilk teşhiste DevTools kaydıyla başlamak daha anlaşılırdır.
+
+:::info[Derinlemesine (isteğe bağlı)]
+`onRender` callback'i `id`, `phase`, `actualDuration`, `baseDuration`, `startTime` ve `commitTime` bilgilerini alabilir. `startTime` render hesabının başlangıcını, `commitTime` commit anını gösterir. Çoğu günlük incelemede DevTools Profiler yeterlidir; callback alanlarını kullanacağın zaman React'in `<Profiler>` API açıklamasına bak.
 :::
 
 ## Özet
 
-- Performansı optimize etmeden önce mutlaka ölçüm yapılmalıdır; varsayımla kod değiştirmek gereksiz karmaşıklık üretir.
-- `<Profiler id="..." onRender={callback}>` bileşeni, sardığı alt ağacın commit aşamalarını izler.
-- `onRender` fonksiyonu commit sonrasında çalışır; `id`, `phase` (`mount`/`update`), `actualDuration` ve `baseDuration` gibi kritik veriler sunar.
-- `onRender` gövdesinde doğrudan aynı bileşenin state'ini güncellemek sonsuz render döngüsüne yol açar.
-- Süreler cihazdan cihaza değişir; bu yüzden ilk aşamada odaklanılması gereken temel gösterge aynı kullanıcı eyleminde tetiklenen commit sayısıdır.
+- Önce etkileşimi kaydet; gecikmenin input'ta mı, hesaplamada mı, DOM commit'inde mi olduğunu ölç.
+- `<Profiler>` yalnızca sardığı React ağacının commit ölçümlerini verir.
+- Render fonksiyon çağrısıdır; commit gerekli DOM değişikliklerini uygular.
+- Süreler cihaza göre değişir. Aynı etkileşimdeki bileşenleri ve commit sayısını karşılaştır.
+
+**Yeni terimler**
+
+- **Diffing:** Yeni React çıktısıyla önceki çıktıyı karşılaştırma; hangi DOM değişikliklerinin gerektiğini bulur.
+- **Main thread:** JavaScript ve arayüz işlerinin yürüdüğü tarayıcı ana hattı; uzun iş ekran etkileşimini geciktirebilir.
+- **Flamegraph:** Bileşenlerin iç içe kutularla gösterildiği Profiler görünümü; zaman alan alt ağacı bulmaya yardım eder.
+- **RUM / p75:** Gerçek kullanıcı cihazlarından ölçüm / ölçümlerin yüzde 75'inin altında kaldığı değer.
 
 ### Kendini yokla
 
-1. **Soru:** `<Profiler id="feed" onRender={cb}>` altındaki bir liste için `onRender` ikinci kez çağrıldığında `phase` parametresi hangi değeri alır?
-   - **Cevap:** `'update'` değerini alır (ilk gösterimde `'mount'`, sonraki her commit işleminde `'update'` gelir).
-
-2. **Soru:** Bir bileşenin render süresini ekranda kullanıcıya canlı olarak bir sayaçla göstermek istiyorsun. Neden Profiler'ın `onRender` callback'inde `setDuration(actualDuration)` yapamazsın?
-   - **Cevap:** Çünkü `onRender` commit sonrası tetiklenir; orada `setDuration` çağırmak hemen yeni bir render ve commit tetikler, bu da sonsuz bir döngü başlatarak uygulamanın çökmesine yol açar.
+1. `onRender` içinde aynı ağacın state'ini artırırsan ne olur?
+   **Cevap:** Her commit yeni state ve yeni commit doğurabilir; callback döngüsü oluşur. Ölçümü dışarı ilet.
+2. İlk Profiler kaydında `phase` neyi söyler?
+   **Cevap:** `mount` ağacın ilk kez ekrana gelişini, `update` sonraki güncellemeyi gösterir.

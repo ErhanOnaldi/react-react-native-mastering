@@ -6,59 +6,96 @@ kind: project
 
 # Sinema client state’ini store’a taşı
 
-:::pain[Sinema’da sorun]
-Favori, izleme listesi, tema ve son bakılanlar beş iç içe Context boyunca taşınıyor. Favori değişirken tema tüketicisi de çalışıyor; yenileme sonrası kullanıcının tercihleri kaybolabiliyor. Uygulamanın ortak client state’ini tek akışta toparla.
-:::
+Bu proje, önceki Redux derslerinde kurduğun parçaları Sinema’daki gerçek ekran akışına uygulatıyor: ortak client state, store bağlantısı, tipli hook’lar, Provider ve kalıcılık. Yola çıkmadan, hangi bilginin hangi katmana ait olduğunu ayır; ardından küçük adımlarla mevcut davranışı koru.
 
 :::model[State sahipliği]
-Redux’a yalnız uygulamanın ortak client state’i taşınır. TMDB film verisi TanStack Query’de, arama ve sayfa URL’de, form taslağı RHF’de kalır. Store’a film nesneleri kopyalamak Query ile ikinci bir kaynak yaratır.
+Sunucudan gelen film verisi TanStack Query’de kalır. Paylaşılabilir arama URL’de, düzenlenen form React Hook Form’da; uygulama çapında kullanılan kullanıcı tercihleri Redux store’unda yaşayabilir. Film nesnesini ikinci kez store’a kopyalamak iki ayrı güncellik kaynağı yaratır.
 :::
 
-![Server, client, URL ve form durumlarının sahipleri](diagram:state-kategorileri)
-
-:::model[Context yayılımı]
-Context Provider değeri değişince onu kullanan tüketiciler yeni değeri alır; beş Provider olması tek başına performans ölçüsü değildir. Yeni yapıda bileşenlerin ihtiyacı olan store değerini dar seç, sonra favori etkileşimi sırasında ilgisiz bir tüketiciyi Profiler veya render sayacıyla karşılaştır.
-:::
+![Server, client, URL ve form durumlarının sahiplerini gösteren diyagram](diagram:state-kategorileri)
 
 :::model[Redux veri akışı]
-UI bir action dispatch eder, reducer yeni client state üretir, selector sonucu bileşene döner. Storage yazımı reducer’ın içinde değil, action sonrası listener’da yapılır; her geçişte hangi alanların değiştiğini açık tut.
+UI action dispatch eder, reducer yeni client state üretir, selector gereken alanı UI’ya verir. Kalıcılık reducer’ın içinde değil, state geçişinden sonra çalışan listener’da yapılır; böyle reducer yalnızca state’in nasıl değiştiğini açıklar.
 :::
 
-## Uygulama sırası
-
-1. Mevcut davranışları ve saklanan tercih biçimini not et; önce state sahipliğini doğrula.
-2. Client state özelliklerini ayrı slice’larda düzenle ve tek store’a bağla.
-3. `RootState`, `AppDispatch` ve tipli hook’ları store’dan türet.
-4. Root React ağacına Provider ekle; mevcut Query Provider’ın da çalıştığını koru.
-5. Bileşenlerde yalnız ihtiyaç duyulan alanı seç; yenileme sonrası korunması gereken değerleri action sonrası kalıcılaştır.
-6. Aynı favori etkileşimini önce ve sonra gözlemle; gereksiz render yayılımı olup olmadığını kontrol et.
-
-Store bağlantısı ve kalıcılık birlikte tamamlanınca görünür davranışların yerinde kalması gerekir: tema değişince liste boşalmamalı, bir filmi listeden çıkarıp yeniden açınca kişisel seçimi kaybolmamalı. Bu iki ihtiyaç aynı state sahipliği kararına dayanır ama farklı katmanlarda uygulanır.
-
-## Tamamlanma ölçütleri
-
-- Favori ekleme ve çıkarma farklı ekranlarda aynı kurala uyar.
-- Bir izleme listesi aynı filmi iki kez tutmaz; son bakılanlar güncel sırada kalır.
-- Tema, listeler, favoriler ve son bakılanlar birbirinden ayrı state alanlarıdır.
-- Query’den gelen film detayları Redux’a kopyalanmaz.
-- Kalıcılık yoksa uygulama açılır; bozuk kayıt güvenli varsayılanla karşılanır.
-- Favori değişimi ilgisiz tema tüketicisinin render’ını artırmaz.
-
-:::mistake[Belirti → Sayfa açılıyor ama yenilemede tercihler sıfırlanıyor]
-Belirti → Önceki oturumdaki tema veya favori yok.  
-Neden → Storage yükleme/yazma akışı store yaşam döngüsüne bağlanmamış.  
-Düzeltme → Başlangıç kaydını güvenli oku; action sonrasında yeni state’i kalıcılaştır.
+:::model[Context yayılımı]
+Context Provider değeri değişince onu kullanan bileşenler yeni değeri alır; Provider sayısı tek başına performans ölçüsü değildir. Favori etkileşiminde ilgisiz bir tüketicinin güncellenip güncellenmediğini render farkıyla gözle.
 :::
 
-:::sector
-Birden fazla ekranda kullanılan client tercihlerini feature slice’larında tutmak, ileride oturum temizliği ve yeni ekran eklemeyi kolaylaştırır. Kalıcı kayıt biçimine sürüm koymak, uygulama güncellendiğinde eski kullanıcı verisini güvenle dönüştürmeye imkân verir.
+## Önce küçük bir tercih alanını düşün
+
+Diyelim Sinema’da kullanıcı yan panelin açık olup olmadığını birkaç ekranda görüyor. Bu tercih film API yanıtı değildir; uygulama çapında paylaşılacaksa client state olarak tasarlanabilir.
+
+```ts title="Bir ortak tercihin küçük geçişi"
+const initialState = { detailsOpen: false }
+
+function setDetailsOpen(state, open: boolean) {
+  state.detailsOpen = open
+}
+```
+
+Bu örnek, bir değerin UI’dan action’a ve reducer’a nasıl bağlanabileceğini gösterir. Önce yalnız tek bir geçişi düşünmek, büyük store tasarımını daha anlaşılır parçalara böler.
+
+## Sonra bağımsız alanları ayır
+
+Şimdi tema ile panel görünürlüğü farklı ekranlarda kullanılıyor. İkisi de client state olabilir, ama birbirinden bağımsız değişmeli; tema seçimi paneli kendiliğinden kapatmamalı.
+
+```ts title="Bağımsız client alanları"
+const uiState = {
+  theme: 'light' as 'light' | 'dark',
+  detailsOpen: false,
+}
+```
+
+İki alanı ayrı tutunca her action yalnız kendi değerini değiştirir. Bir değeri değiştirmek diğerini sıfırlıyorsa state sınırları fazla iç içe kurulmuş olabilir.
+
+## En son kalıcılığı ekle
+
+Bir tercih yenilemeden sonra da kalmalıysa storage, state’in kalıcı bir kopyasını tutabilir. Storage okuma başarısız olabilir; başlangıçta güvenli varsayılanla açılabilmek gerekir.
+
+```ts title="Kayıt okunamazsa varsayılanı koru"
+function readTheme(): 'light' | 'dark' {
+  try {
+    const value = localStorage.getItem('cinema:theme')
+    return value === 'dark' ? 'dark' : 'light'
+  } catch {
+    return 'light'
+  }
+}
+```
+
+Bu küçük örnekte bozuk ya da erişilemeyen kayıt uygulamanın açılmasını engellemez. Gerçek state akışında yazma işlemi reducer’ın dışında yapılır; önce state geçişini, sonra kalıcılık bağlantısını kurmak hata ayıklamayı kolaylaştırır.
+
+## Uygulama işini sırala
+
+| Sıra | Ne yaparsın? | Neyi kontrol edersin? |
+| --- | --- | --- |
+| 1 | Var olan bilgileri kaynak ve paylaşılma alanına göre ayırırsın | Server verisi Query’de, ortak client tercihi store’da kalır |
+| 2 | Store ve slice sınırlarını kurarsın | Her alanın geçişi bağımsız ve anlaşılırdır |
+| 3 | Store’dan state/dispatch tiplerini ve tipli hook’ları çıkarırsın | Bileşenlerde cast ihtiyacı doğmaz |
+| 4 | Provider’ı uygulama ağacına eklersin | Redux ve mevcut Query bağlantısı birlikte çalışır |
+| 5 | Gereken tercihleri güvenli biçimde kalıcılaştırırsın | Yenileme ve bozuk kayıt sonrası ekran açılır |
+
+## Sık görülen belirtiyi teşhis et
+
+Belirti: favori değişince tema bileşeni de render oluyor. `render`, React’in bileşen fonksiyonunu yeniden çalıştırmasıdır. Nedeni çoğu zaman bileşenin ihtiyaç duymadığı geniş bir state seçmesi veya Context değerinin tüm tüketicilere yayılmasıdır. Bileşenin kullandığı alanı dar seç ve değişim öncesi/sonrası render farkını ölç. `StrictMode`, geliştirmede bazı işleri ek kez çalıştırabilen React denetim modudur; bu yüzden sabit mutlak render sayısı bekleme.
+
+:::tip[Önce davranış, sonra bağlantı]
+Bir özelliği taşırken önce eski davranışı hangi state’in sağladığını bul. Yeni store bağlantısını ekledikten sonra aynı kullanıcı akışını dene; sonra yenileme, bozuk kayıt ve ilgisiz bileşenlerin güncellenmesini ayrı ayrı kontrol et.
 :::
 
 ## Özet
 
-- Önce her bilginin sahibini belirle; yalnız ortak client state’i store’a taşı.
-- Slice, tipli hook, Provider ve persistence akışını tamamla.
-- Dar seçim ve ölçümle alakasız render’ı kontrol et.
+- Yalnız ortak client state’i store’a taşı; Query verisini kopyalama.
+- Slice sınırları bağımsız state geçişlerini görünür kılar.
+- Tipli hook’lar ve Provider bileşen bağlantısını kurar.
+- Kalıcılık reducer dışında çalışmalı ve okuma hatasında uygulama açılabilmeli.
+- Dar selector ve render farkı, ilgisiz güncellemeleri bulmaya yardım eder.
 
-**Kendini yokla:** TMDB detayını yeni store’a taşımalı mısın?  
-*Cevap:* Hayır; Query’de kalır, store’da gerekiyorsa kullanıcı seçimi/ID’si tutulur.
+**Yeni terimler:**
+- `render`: React’in bileşen fonksiyonunu çalıştırıp arayüzü hesaplaması.
+- `persistence` (kalıcılık): State’in uygulama yeniden açıldığında geri yüklenmek üzere saklanması.
+- `StrictMode`: Geliştirmede bazı işleri ek kez çalıştırarak sorunları görünür kılan React denetim modu.
+
+**Kendini yokla:** TMDB’den gelen film nesnesini neden Redux’a kopyalamazsın?  
+*Cevap:* Film yanıtının sahibi Query’dir; kopya ikinci ve farklı zamanda güncellenebilen bir kaynak yaratır.

@@ -1,14 +1,19 @@
-Detay ekranı geçerli film kimliğini göstermeli, aramaya dönüş bağlantısı sunmalı ve kimlik olmadığında anlaşılır bir durum göstermelidir.
+Film detay route’unun id ve navigasyon davranışlarını sınayan testler yaz.
 
 ## Gereksinimler
-- `/movie/550` adresinde `Film #550` başlığı görünür.
-- “Aramaya dön” bağlantısı `/search` sayfasına geçer.
-- Link kullanımı sayfayı tam yenilemeden route’u değiştirir.
+- `/movie/603` adresinde `Film #603` başlığı görünür.
+- “Aramaya dön” bağlantısına tıklanınca `/search` açılır ve “Arama” başlığı görünür.
+- `/movie` adresinde “Film seçilmedi” başlığı görünür.
 
 ## Örnek
-`/movie/603` → `Film #603`; bağlantıya tıkla → `/search` ve “Arama” başlığı.
+`/movie/603` → `Film #603`; “Aramaya dön” bağlantısına tıkla → `/search` ve “Arama”.
 
 ## Sözleşme
-- `MovieRoute.tsx` dosyasında `MovieRoute` bileşenini export et.
-- Sayfa `/movie/:id` route’u içinde render edilir.
-- Başlık heading, dönüş kontrolü link rolüyle bulunabilmelidir.
+- `MovieRoute.test.tsx` dosyasına test yaz.
+- Bileşen `@impl/MovieRoute` yolundan import edilir.
+- Test route’ları `/movie/:id`, `/movie` ve `/search` adreslerini kapsamalı.
+- Başlık heading, dönüş kontrolü link rolüyle bulunur.
+
+## Kısıtlar
+
+- Her iki verilen mutantı da testlerle yakala.

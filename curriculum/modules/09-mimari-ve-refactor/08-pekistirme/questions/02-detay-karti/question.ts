@@ -13,14 +13,13 @@ export default defineQuestion({
   ],
   files: ['MovieSummary.tsx', 'MoviePoster.tsx'],
   hints: [
-    'Hangi metinler afişin varlığından bağımsız olarak aynı kalmalı?',
-    'Composition/component sınırını kullan; poster parçasının props sözleşmesi açık olsun.',
-    'Özet JSX’inde tek başlık ve paragraf tut; dış bileşen afiş yokluğunu yönetir.',
-    'Null path için img render etme; alt metni film başlığıyla eşleştir.',
+    'Poster opsiyoneldir; başlık ve açıklama iki durumda da aynıdır.',
+    '`MoviePoster` null path için görsel üretmesin; diğer durumda URL ve alt metni kur.',
+    '`MovieSummary` iki ayrı article gövdesi yerine `MoviePoster` kullanıp başlık/açıklamayı bir kez çizsin.',
   ],
   rubric: [
-    'Poster yokluğu ortak kart gövdesini çoğaltmaz.',
-    'Başlık/açıklama tek JSX noktasında; koşul yalnız farklı görseli yönetir.',
-    'Alt metin, postersiz durum ve mevcut davranış korunur.',
+    '`MoviePoster` dolu path için doğru URL ve film başlığı alt metnini verir, null path için görsel çizmez.',
+    '`MovieSummary` hem posterli hem postersiz durumda aynı başlık/açıklama yapısını korur.',
+    '`MovieSummary` poster davranışı için `MoviePoster` bileşenini kullanır.',
   ],
 })

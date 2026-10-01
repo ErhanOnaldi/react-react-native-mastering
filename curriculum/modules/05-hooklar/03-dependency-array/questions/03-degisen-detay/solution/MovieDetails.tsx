@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 export function MovieDetails({ id }: { id: number }) {
   const [title, setTitle] = useState('Yükleniyor')
   useEffect(() => {
+    setTitle('Yükleniyor')
     fetch(`https://api.themoviedb.org/3/movie/${id}`, {
       headers: { Authorization: `Bearer ${import.meta.env.VITE_TMDB_TOKEN}` },
     })

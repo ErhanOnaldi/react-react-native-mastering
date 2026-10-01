@@ -1,131 +1,139 @@
 ---
-title: "Beklentinin kapsamını seç"
-minutes: 16
+title: "Beklentiye uygun matcher seç"
+minutes: 15
 kind: concept
 ---
 
-# Beklentinin kapsamını seç
+# Beklentiye uygun matcher seç
 
-:::pain[Sinema’da ne oldu?]
-Konser bileti özetinde etkinlik adı doğru ama kalan koltuk sayısı yanlış. Test yalnızca `toBe` ile nesnenin aynı referans olmasını beklediği için çağıranın gerçek sözleşmesini ölçemiyor.
-:::
+Bir filmin puan etiketi `8.0` ise bunu tam string olarak mı, içinde `8` geçen herhangi bir metin olarak mı kabul edersin? Testte kullandığın matcher, bu soruya verdiğin cevabı koda yazar. Matcher, `expect` ile verilen gerçek değeri bir kurala göre beklenen değerle karşılaştırır.
 
-## Matcher seçmek, gereksinimi seçmektir
+## Önce değerin kendisine bak
 
-Önceki derste string biçimlemesini tam eşitlikle doğruladın. Nesnelerde ise “aynı değer”, “şu alanları içeriyor” ve “bu fonksiyon hata veriyor” farklı beklentilerdir. Vitest matcher’ı, kodun hangi özelliğinin çağıran için önemli olduğunu açıklar. Yanlış seçim iki yönde sorun çıkarır: test ya geçerli değişiklikte kırılır ya da istenmeyen sonucu kabul eder.
-
-AAA akışı sabit kalır; burada Assert adımını daha dikkatli kuracağız. Bir assertion yazmadan önce “hangi fark olursa kullanıcı veya çağıran bunu hisseder?” diye sor. Yalnızca o farkı bağla. Ek alanların önemsiz olduğu bir API cevabını bire bir nesneye kilitleme; kalan koltuk sayısı kritikse de sadece nesnenin varlığını kontrol etme.
-
-## Karşılaştırma kuralları
-
-1. `toBe`, primitive değerler ve referans kimliği içindir. String veya sayı çıktısında tam eşitliği bekle.
-2. `toEqual`, iç içe nesne ve dizilerin değerlerini ve yapısını tam karşılaştırır.
-3. `toMatchObject`, bir nesnenin belirli alanlarını doğrular; fazladan alanlara izin verir.
-4. `expect.objectContaining` ile dizi içindeki öğelerin bir kısmını seçebilirsin; sıra sözleşmenin parçası değilse kullan.
-5. `toThrow`, hatayı üreten fonksiyon çağrısını callback olarak alır. Çağrıyı assertion’dan önce çalıştırma.
-6. Matcher’ı gereğinden fazla gevşetme. Boş alt küme veya yalnız “en az bir öğe” kontrolü kritik hataları kaçırabilir.
-
-![Tam eşitlik, kısmi alan eşitliği ve hata beklentisini seçme](diagrams/matcher-secimi.svg)
-
-## Sonucu adım adım izleyelim
-
-`{ eventName: "Yaz Akşamı", remainingSeats: 12, venue: "Küçük Salon" }` dönen bir özet düşün. Test yalnız etkinlik adını kontrol ediyorsa akış şöyledir:
-
-| Sıra | Değer | Karar |
-| --- | --- | --- |
-| 1 | `eventName = "Yaz Akşamı"` | Doğru etkinlik seçilmiş |
-| 2 | `capacity = 40` | Salonun toplam kapasitesi |
-| 3 | `remainingSeats = 2` | Kalan bilet hesabı yanlış |
-| 4 | `toMatchObject({ eventName: "Yaz Akşamı" })` | Test yine geçer |
-
-Beklentiye `remainingSeats: 12` eklemek bu hatayı yakalar. Salon adı gibi ilgisiz alanlar implementation detayı değilse bile bu davranışın sözleşmesinde bulunmayabilir. API’nin ileride `metadata` eklemesi testi kırmamalı; tüm cevabı `toEqual` ile sabitlemek gereksiz kırılganlık yaratabilir.
-
-```ts
-const summary = { eventName: 'Yaz Akşamı', remainingSeats: 12, venue: 'Küçük Salon' }
-expect(summary).toMatchObject({ eventName: 'Yaz Akşamı', remainingSeats: 12 })
-```
-
-Bu test fazladan alana izin verir ama zorunlu iki alanı korur. `toMatchObject({})` yazarsan hiçbir şeyi zorunlu tutmamış olursun. Seçici eşitlik, eksik beklenti anlamına gelmez.
-
-## Kırık, sonra doğru assertion
-
-Referans eşitliğiyle nesne içeriğini karşılaştırmak yanlıştır:
+Önceki derste gördüğün `toBe`, string ve sayı gibi basit değerlerin tam eşitliğini kontrol eder. İlk örnekte iki film başlığının aynı metin olup olmadığına bakalım:
 
 ```ts check
-const actual = { eventName: 'Yaz Akşamı' }
-const expected = { eventName: 'Yaz Akşamı' }
-if (actual !== expected) throw new Error('Eşit olmalıydı')
+import { expect, it } from 'vitest'
+
+it('başlık etiketini tam metin olarak üretir', () => {
+  const label = 'Kıyı'
+  expect(label).toBe('Kıyı')
+})
 ```
 
-İki nesne aynı anahtar ve değere sahip, ama bellekte ayrı referanslardır; `!==` true olur. Değerleri karşılaştıran doğru biçim:
+Burada yalnızca beklenen metin kabul edilir. `Kiyi` veya sonuna boşluk eklenmiş `Kıyı ` farklı string’dir ve test kalır. Kullanıcıya gösterilen metin sözleşmenin parçasıysa bu kesinlik yararlıdır.
+
+Şimdi aynı tam eşitlik fikrini nesneye uygulayalım. JavaScript’te her `{}` yeni bir nesne oluşturur; iki nesnenin alanları aynı olsa bile bellekteki **referansları**, yani nesnenin kendisini gösteren kimlikleri, ayrı olabilir.
 
 ```ts check
-const actual = { eventName: 'Yaz Akşamı' }
-const expected = { eventName: 'Yaz Akşamı' }
-if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-  throw new Error('Nesne değerleri eşleşmedi')
+import { expect, it } from 'vitest'
+
+it('film özetini alanlarıyla karşılaştırır', () => {
+  const actual = { title: 'Kıyı', year: 2024 }
+  const expected = { title: 'Kıyı', year: 2024 }
+  expect(actual).toEqual(expected)
+})
+```
+
+`toEqual` nesnelerin içindeki değerleri ve yapıyı karşılaştırır; ayrı oluşturulmuş olmaları sorun değildir. `toBe` kullansaydın aynı referansı arar, bu iki nesne için testi başarısız kılardı. Bu yüzden ilkel değer için `toBe`, nesne ve dizinin değer yapısı için `toEqual` düşün.
+
+## Bütün nesne mi, önemli alanlar mı?
+
+Gerçek bir film cevabında başlık, yıl ve daha sonra eklenebilecek başka alanlar olabilir. Testin yalnızca başlıkla yılı koruması gerekiyorsa tüm cevabı sabitlemek zorunda değilsin. `toMatchObject`, nesnenin belirttiğin alanlarını bekler ve fazladan alanlara izin verir.
+
+```ts check
+import { expect, it } from 'vitest'
+
+it('film kartı için gerekli bilgileri içerir', () => {
+  const card = { title: 'Kıyı', year: 2024, language: 'tr' }
+  expect(card).toMatchObject({ title: 'Kıyı' })
+  expect(card).toMatchObject({ year: 2024 })
+})
+```
+
+Her assertion ayrı bir bilgiyi korur; `language` fazladan alanı engel değildir. `year` yanlışsa ikinci assertion başarısız olur ve raporda hangi beklentinin bozulduğu görünür. Eski cevabı tam `toEqual` ile sabitlemek ilgisiz bir alan eklenince testi kırabilirdi; yalnızca `title` beklemek ise yıl hatasını kaçırırdı. Gerekli alt kümeyi seçmek, testi hem esnek hem anlamlı tutar.
+
+Bu farkı adım adım görelim:
+
+| Sıra | Gerçek cevap | Beklenti | Sonuç |
+| --- | --- | --- | --- |
+| 1 | `{ title: 'Kıyı', year: 2024, language: 'tr' }` | `{ title: 'Kıyı' }` | Test geçer; yıl korunmuyor |
+| 2 | Aynı cevap | `{ title: 'Kıyı', year: 2024 }` | Test geçer; iki önemli alan korunuyor |
+| 3 | `{ title: 'Kıyı', year: 2025, language: 'tr' }` | `{ title: 'Kıyı', year: 2024 }` | Test kalır; yıl hatası görünür |
+
+Önemli alanlardan biri değişince testin kırılması gerekir. `toMatchObject({})` gibi boş alt küme hiçbir alanı zorunlu tutmaz. Esnek beklenti, eksik beklenti demek değildir.
+
+![Tam değer, kısmi alan ve hata beklentisi için matcher seçimi](diagrams/matcher-secimi.svg)
+
+## Hata da gözlenen bir sonuçtur
+
+Bazı fonksiyonlar geçersiz girdi için hata fırlatır. Hatanın kendisini test etmek için çağrıyı `toThrow` matcher’ına callback olarak verirsin. Callback, daha sonra çağrılabilen fonksiyondur; burada Vitest’in fonksiyonu çalıştırıp hatayı yakalamasını sağlar.
+
+```ts check
+import { expect, it } from 'vitest'
+
+function runtimeLabel(minutes: number): string {
+  if (minutes < 0) throw new RangeError('Süre negatif olamaz')
+  return minutes + ' dk'
 }
+
+it('negatif süreyi reddeder', () => {
+  expect(() => runtimeLabel(-1)).toThrow(RangeError)
+  expect(() => runtimeLabel(-1)).toThrow('Süre negatif olamaz')
+})
 ```
 
-Test kodunda bunu `toEqual` ile ifade edersin. Ek alan serbestse daha küçük bir alt küme kullan:
+`runtimeLabel(-1)` doğrudan test gövdesinde çalışsaydı hata `expect` çağrısından önce fırlardı; matcher onu yakalayamazdı. Callback verince Vitest çağrıyı kendi içinde yapar ve `RangeError` olup olmadığını kontrol eder. Hata türü davranış sözleşmesiyse türü açıkça bekle.
+İkinci assertion hata mesajını da kontrol eder. İkisi birden varsa yanlış türde veya yanlış açıklamalı hata testten geçemez. `toThrow('Süre negatif olamaz')` hata mesajının belirtilen metni içerip içermediğini denetler. Stack trace gibi çalıştığı ortama bağlı ayrıntıları karşılaştırmak gereksiz kırılganlık yaratır.
 
-```ts
-expect(actual).toMatchObject({ eventName: 'Yaz Akşamı' })
+## Kapsamı gereğinden fazla gevşetme
+
+Liste sırası davranışın parçasıysa diziyi `toEqual` ile karşılaştır; `['A', 'B']` ve `['B', 'A']` aynı sonuç değildir. Sıra önemli değil, yalnızca belli filmlerin listede bulunması önemliyse `expect.arrayContaining` ile üyelik beklentisi yazabilirsin. Bu beklenti fazladan film veya tekrar olmadığını kendiliğinden kanıtlamaz; gerekiyorsa uzunluğu ve tekrarı ayrıca denetle.
+
+Sık görülen bir hata, nesne içeriğini `toBe` ile karşılaştırmaktır:
+
+```ts check
+import { expect, it } from 'vitest'
+
+it('nesne içeriğini karşılaştırır', () => {
+  const actual = { title: 'Kıyı' }
+  const expected = { title: 'Kıyı' }
+  expect(actual).toBe(expected)
+})
 ```
 
-Hata beklentisinde fonksiyonu hemen çağırmak da kontrolü assertion’dan önce taşır. `ensureRange(0)` satırı hatayı fırlatır ve sonraki satıra ulaşılmaz. Doğru kullanım çağrıyı callback içine alır:
+Belirti, aynı alan ve değerleri gördüğün halde testin kalmasıdır. Nedeni, iki nesnenin ayrı referanslar olmasıdır. Nesnenin içeriği önemliyse `toEqual` ya da gereken alanlar için `toMatchObject` kullan.
 
-```ts
-expect(() => ensureRange(0)).toThrow(RangeError)
-```
+Bir başka gevşeklik, `toMatchObject({ title: 'Kıyı' })` yazıp aslında yılın da doğru olmasını beklemektir. Test geçer ama yanlış yıl gösterilebilir. Gerekli alanları düşün: her alan ayrı bir davranışsa ayrı assertion yazmak raporu anlaşılır kılar; örneğin sayfa numarası ve toplam sayfa sayısını ayrı ayrı doğrulayabilirsin.
 
-## Dizi ve hata sınırları
+Sayısal karşılaştırmada da kabul edilen farkı önceden belirle. Kuruş hesabı tam olmalıysa tolerans koymak hatayı saklayabilir. Ölçüm hesabında çok küçük kayan nokta farkları normalse yaklaşık eşitlik gerekebilir. Kullanıcıya gösterilen puan etiketi string ise sayısal esneklik değil, tam metin beklemek gerekir.
 
-Sıralı listenin kendisi davranışsa tam dizi karşılaştırması kullan. Örneğin alfabetik sıralamada `["A", "B"]` ile `["B", "A"]` farklı sonuçtur. Sıralama garanti edilmiyorsa ve yalnızca belirli bir filmi arıyorsan `expect.arrayContaining([expect.objectContaining({ id: 42 })])` uygundur. Fakat yalnız varlık kontrolü listenin uzunluğunu veya tekrarları doğrulamaz; bunlar da sözleşmeyse ayrıca ölç.
-
-Hata matcher’ları da kesinlik taşır. `toThrow()` herhangi bir hata için yeterli olabilir, ama hata sınıfı veya mesajı API sözleşmesiyse `toThrow(RangeError)` ya da `toThrow('Sayfa geçersiz')` kullan. Hatanın tüm stack trace’ini karşılaştırma; stack yolu ortama göre değişebilir ve çağıranın sözleşmesi değildir.
-
-Matcher seçerken testin kapsamı ve test edilen değer birlikte düşünülür. String çıktısında `toBe`, nested response’un tamamında `toEqual`, esnek response alanlarında `toMatchObject`, hata dalında `toThrow` tercih edilebilir. Bir matcher diğerinden her durumda üstün değildir. Gözlenebilir gereksinim hangi farkı anlamlı kılıyorsa seçim ona bağlıdır.
-
-## Kırmızı sonucun anlamını daralt
-
-Assertion başarısız olduğunda hangi alanın farklı olduğu açıkça görünmelidir. Bir response’u tek bir büyük snapshot gibi karşılaştırmak hızlı görünebilir, fakat değişen tüm alanları bir hata duvarına dönüştürür. Birden çok kritik alanı aynı matcher’da toplamak yine okunur olabilir; her alan farklı bir gereksinimi temsil ediyorsa ayrı assertion hata mesajını daraltabilir. Örneğin etkinlik adı ve kalan koltuk ayrı kaynaktan hesaplanıyorsa ikisini ayrı kontrol etmek hangi bilginin bozulduğunu gösterir.
-
-Sayısal değerlerde kesinlik de gereksinime bağlıdır. Tam para kuruşu hesaplanıyorsa toleranslı karşılaştırma kullanmak hatayı gizleyebilir. Ölçüm sonucu ondalık kayan nokta hesabından geliyorsa küçük yuvarlama farkı beklenebilir. “Sayı olduğu sürece geçsin” ile “matematiksel olarak belirli toleransta aynı” farklı sözleşmelerdir. Matcher’ı düşünmeden önce kabul edilen farkı tarif et.
-
-:::mistake[İki nesneyi `toBe` ile kıyaslamak]
-**Belirti:** Aynı alanları taşıyan iki nesne eşit görünse de test kalır. → **Neden:** `toBe` nesnenin değerini değil referansını karşılaştırır. → **Düzeltme:** Tam yapı için `toEqual`, gerekli alanlar için `toMatchObject` seç.
+:::mistake[Hatalı fonksiyonu assertion’dan önce çağırmak]
+**Belirti:** Test beklediğin `toThrow` sonucu yerine doğrudan hata verir. → **Neden:** Çağrı callback içine alınmamıştır. → **Düzeltme:** `expect(() => fn()).toThrow(...)` biçimini kullan.
 :::
 
-:::mistake[Boş veya aşırı gevşek beklenti]
-**Belirti:** Kalan koltuk sayısı yanlışken test yeşil kalır. → **Neden:** Assertion yalnız etkinlik adına veya nesnenin varlığına bakıyordur. → **Düzeltme:** Hata hikâyesini ayırt edecek her alanı açıkça bekle.
+:::info[Derinlemesine (isteğe bağlı)]
+**Snapshot**, önceki çalıştırmada saklanan çıktı örneğidir; sonraki çalıştırmanın çıktısıyla karşılaştırılır. Büyük çıktı sık değişiyorsa farkları incelemek zorlaşabilir. **Stack trace**, hata anında hangi fonksiyonların birbirini çağırdığını gösterir; dosya yolları ortama göre değişebileceği için genellikle test beklentisi yapılmaz. **Unicode normalizasyonu**, aynı görünen bazı karakter dizilerini ortak bir kodlamaya dönüştürür; bunu ancak ürün metni özellikle normalize ediyorsa uygula. **Derin matcher bileşimi**, `expect.objectContaining` gibi bir matcher’ı başka bir matcher’ın içine koyup iç içe nesnenin yalnız bir kısmını karşılaştırmaktır. Bu ayrıntılar burada gereken temel seçimden ötedir.
 :::
-
-:::mistake[Hata fırlatılmadan matcher’a ulaşmak]
-**Belirti:** Test hata verir ama assertion sonucu raporlanmaz. → **Neden:** Hatalı çağrı callback yerine doğrudan çalıştırılmıştır. → **Düzeltme:** Hata beklenen çağrıyı `() => fn()` biçiminde ver.
-:::
-
-:::sector
-API ve UI ekipleri response’un tüketilen alanlarını açıkça test edip ilgisiz alanlara tolerans tanır. Böylece sunucu cevabı genişlerken testler gereksiz yere kırılmaz, kritik alan da eksik kalmaz.
-:::
-
-String eşitliğinde boşluk, büyük-küçük harf ve Unicode normalizasyonu görünür çıktının parçası olabilir. Test, ürünün bunları aynen korumasını mı yoksa normalize etmesini mi beklediğini göstermelidir. Karşılaştırmadan önce değeri dönüştürmek kolay görünür; fakat bu adım kullanıcıda oluşacak farkı gizleyebilir.
-
-Koleksiyonlarda matcher seçimi sıra ve tekrar kurallarına dayanır. ArrayContaining belli öğelerin varlığını arar, fakat fazladan kayıtları, sıralamayı ve yinelenen öğeleri reddetmez. Tam sıralı liste için toEqual, tekil üyelik için objectContaining ve gerekirse ayrıca uzunluk kontrolü kullan. Beklenti ne kadar toleranslı olursa hangi hataları kabul ettiğini o kadar bilinçli seçmelisin.
-
-Hata testlerinde yalnız tip veya yalnız mesajı kontrol etmek her zaman yeterli değildir. API katmanı HTTP status’u ve uzak servisin hata kodunu ayrı taşıyorsa ikisi de çağıranın kararını etkileyebilir. Değişken zaman damgası gibi sözleşme dışı alanlar ise tam nesne eşitliğini kırılgan kılar. Beklentiyi hata tüketen kodun kullandığı bilgilerle sınırla.
-
-Üç kısa soru matcher kararını hızlandırır: Değer primitive mi, nesne mi, hata mı? Ek alan veya farklı sıra kabul ediliyor mu? Bilinen hatada hangi alan değişecek? Gereksinimi test adında yazıp kabul edilebilir farkı tarif etmek matcher’ın gevşekliğini görünür kılar.
 
 ## Özet
 
-- `toBe` primitive ve referans, `toEqual` tam değer yapısı içindir.
-- `toMatchObject` seçilen alanları zorunlu tutar, ek alanlara izin verir.
-- Sıra veya öğe üyeliğini yalnız gerçek sözleşme gerektiriyorsa esnet.
-- `toThrow` için hata üreten çağrıyı callback olarak ver.
-- Her assertion gerçek hatayı yakalayacak kadar kesin olmalıdır.
+- `toBe` basit değerlerin tam eşitliği ve referans kimliği içindir; `toEqual` nesne/dizi değer yapısını karşılaştırır.
+- `toMatchObject` gerekli alanları sabitler, fazladan alanları kabul eder.
+- `toThrow` hata üreten çağrıyı callback olarak alır; gerekirse hata türünü veya mesajını bekle.
+- Liste sırası, uzunluğu ve üyelik beklentisini gerçek davranışa göre seç.
+- Her assertion, önemli bir hatayı yakalayacak kadar kesin olmalı.
 
-**Kendini yokla:** Response’a yeni alan eklenince testi kırmamak, kalan koltuk sayısı kontrolünden vazgeçmeyi gerektirir mi? Hayır; `toMatchObject` içine etkinlik adıyla birlikte kalan koltuğu da yaz.
+**Yeni terimler**
 
-**Kendini yokla:** `["B", "A"]` ile `["A", "B"]` farkı önemliyse hangisi uygundur? Sıralı diziyi `toEqual` ile tam karşılaştır.
+- **Matcher:** Gerçek değeri beklenen koşulla karşılaştıran `toBe` gibi araç.
+- **Referans kimliği:** Nesnenin bellekte hangi nesne olduğunu gösteren kimlik; aynı alanlara sahip iki ayrı nesne farklı referansa sahiptir.
+- **Callback:** Daha sonra çağrılmak üzere fonksiyon olarak verilen davranış.
+- **Snapshot:** Çıktının saklanan örneğini sonraki çalıştırmayla karşılaştırma yöntemi.
+- **Stack trace:** Hata oluştuğunda hangi fonksiyon çağrılarının izlediğini gösteren kayıt.
+- **Unicode normalizasyonu:** Görünüşü aynı bazı metin karakterlerini ortak kodlamaya dönüştürme.
+- **Derin matcher bileşimi:** İç içe veride alt matcher kullanarak kısmi karşılaştırma kurma.
 
+**Kendini yokla:** Cevap nesnesine yeni alan eklenebilir ama `page` ve `total_pages` sabit kalmalı. Hangi yaklaşım? Bu iki alanı `toMatchObject` ile bekle; alan başına ayrı assertion da yazabilirsin.
+
+**Kendini yokla:** `RangeError` beklerken neden `expect(() => fn())` yazarsın? Callback sayesinde matcher fonksiyonu çağırıp fırlayan hatayı yakalayabilir.

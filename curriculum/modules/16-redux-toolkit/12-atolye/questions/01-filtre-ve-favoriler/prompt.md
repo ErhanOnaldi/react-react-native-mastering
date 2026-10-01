@@ -1,4 +1,4 @@
-Film keşif ekranında filtre seçimi gezinme geçmişine yazılmalı; kişisel film tercihleri tür değişiminden etkilenmemeli.
+Film keşif ekranında filtre seçimi gezinme geçmişine yazılmalı; kişisel film tercihleri tür değişiminden etkilenmemeli. Tür ve sayfa URL state, film sonuçları server state, favoriler ise client state’tir. Favoriler yalnız bu ekranda kullanıldığı varsayımıyla bu görev için Redux gerekli mi, kararını uygulamada göster.
 
 ## Gereksinimler
 

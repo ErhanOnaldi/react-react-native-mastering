@@ -6,30 +6,26 @@ kind: project
 
 # Sinema verisini ortak cache'e taşı
 
-:::pain[Problem]
-Sinema’da aramaya geri dönünce aynı GET tekrarlanıyor; sayfa değişince liste boşalıyor; trendden filme giderken detay bekleniyor. Bunlar üç ayrı ekran ayrıntısı gibi görünse de ortak sorun, sunucu verisinin her sayfanın yerel state’inde yeniden kurulması.
+Bu projede Sinema’nın Home, Search, Details ve Favorites ekranlarındaki sunucu verisini ortak Query cache’ine taşıyacaksın. `QueryClient`, sorgu cache’ini yöneten nesnedir; uygulamanın aynı nesneyi paylaşması ekranların da aynı cache’i kullanmasını sağlar. Üç adım var: uygulama için tek `QueryClient` ve film sorgu tarifleri kur; sayfaları bu tariflere geçir; trend akışına sayfa biriktirme ve karttan detay verisini önceden hazırlama ekle.
+
+:::model[State kategorileri]
+Arama, tür ve sayfa URL’deki seçimlerdir; TMDB’den gelen filmler server state’tir; favori id’leri client state olarak kalır. Her query key, cevabı belirleyen seçimleri içermeli; böylece başka tür ya da sayfa yanlış cache sonucunu göstermez.
 :::
-
-## Geçişi ölçerek yap
-
-Önce her ekranın hangi veriyi istediğini ve URL’de hangi seçimlerin bulunduğunu çıkar. Home, Search, Details ve Favorites ekranları aynı query altyapısını paylaşacak; favori id’leri kullanıcıya ait state olarak kalacak. Filtre, arama ifadesi, id ve sayfa numarası cevabı değiştiriyorsa aynı veri kimliğine de yansımalı.
-
-Çalışma sırası: uygulama cache sınırını ve query tariflerini kur; sayfaları tek tek taşı; sayfalama geçişinde kullanıcıya eski verinin geçici olduğunu göster; son olarak trend akışını biriktir ve kart niyetinde detay verisini hazırla. Her aşamada aynı kullanıcı yolunu tekrar ederek Network sayacını karşılaştır. API fonksiyonlarının hata ve kimlik doğrulama davranışını koru.
 
 :::model[Query options factory]
-Bir key ile query function aynı tarifte buluşur; farklı component’ler aynı tarifi kullanabilir. Bu proje boyunca tarifleri sayfalar, önceden hazırlama ve liste akışları arasında paylaş. Yeni olan, modelin birden fazla ekran ve filtreyle birleşmesidir.
+Query tarifi key’i ve veriyi getiren function’ı birlikte tutar. Detay ekranı ve `fetchQuery` ile önceden yükleme aynı detay tarifini kullanabilir; böylece film kartından detaya geçerken aynı cache kimliği korunur.
 :::
 
-:::sector
-Gerçek projede geçişi küçük parçalara ayır: önce provider ve query sözleşmeleri, sonra kullanıcıya görünen ekranlar, ardından performans davranışları. Küçük adımlar hata kaynağını daraltır ve ekip arkadaşlarının değişikliği incelemesini kolaylaştırır.
-:::
+Her aşamadan sonra uygulamayı kullan: aynı aramadan detaya gidip geri dön, sayfa veya tür değiştir, ardından trend kartını aç. Network’te hangi seçim için istek gittiğini ve taze dönüşte tekrar istek çıkıp çıkmadığını gözle. Önceki derslerden `useQuery`, query key, `staleTime`, sayfalama, sonsuz sorgu ve prefetch modellerini hatırla.
 
-## Özet
+## Çalışma sırası
 
-- Sunucu verisini ortak cache’e taşı; URL ve client state’i ayrı tut.
-- Bütün veri belirleyicilerini key’lere bağla.
-- Aynı kullanıcı akışında istek sayısını yeniden ölç.
+- Önce Query altyapısını ve ortak film tariflerini kur.
+- Sonra dört ekranda sunucu verisiyle kullanıcıya ait favori seçimini ayrı tut.
+- Son olarak trend sayfalarını biriktir ve karttan detay verisini hazırla.
 
-**Kendini yokla:** Favori seçimi neden query cache’e taşınmıyor? Cache dönüşünün çalıştığını nasıl anlarsın?
+**Terimler:** `query key` bir cevabın cache’teki kimliği; `query options` key ile veri getirme işlevini bir arada tutan sorgu tarifi; `prefetch` ekran açılmadan veriyi cache’e hazırlama.
 
-**Yanıt:** Favori seçimi kullanıcı tercihidir; sunucu cevabı değildir. Geri dönüş akışında tekrar GET’in azaldığını ölç.
+**Kendini yokla:** Favori id’leri neden Query cache’ine taşınmıyor?
+
+**Yanıt:** Favori bir sunucu cevabı değil, kullanıcının seçimi. Ortak cache TMDB verisini paylaşır; favori seçimi client state’te kalır.

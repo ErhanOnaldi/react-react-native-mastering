@@ -6,212 +6,137 @@ kind: concept
 
 # Odak ve render dışı küçük bellek
 
-:::pain[Problem]
-Kullanıcı film detay sayfasında "Kupon Kodu Gir" butonuna tıklıyor. Panel açılıyor ama klavye odağı hâlâ tıklanan butonda kalıyor. Kullanıcının yazmaya başlamak için bir de gidip fareyle metin kutusuna tıklaması gerekiyor. Bu durum klavye kullanan ya da mobilde olan kullanıcılar için can sıkıcı bir deneyim yaratıyor.
-:::
+Sinema'daki arama alanına tıklamadan yazmaya devam etmek istediğini düşün. Bir düğmeye basınca tarayıcının imlecini arama alanına taşıyabiliriz; bunun için ekranda gösterilecek yeni bir bilgi yok.
 
-## Ref neyi saklar?
+## Önce gerçek input'a ulaş
 
-`useRef`, bir bileşenin tüm render ömrü boyunca aynı nesne referansını (`{ current: value }`) koruyan bir React hook'udur.
+Tarayıcının ekrandaki gerçek HTML elemanlarına **DOM** (Document Object Model) deriz. React normalde bu elemanları bizim için günceller; bazen odak vermek gibi küçük bir iş için elemana doğrudan ulaşmamız gerekir.
 
-`useState` ile arasındaki en kritik fark şudur: **`ref.current` değerini değiştirmek React'te yeni bir render tetiklemez.**
-
-Bu özellik `useRef`'i iki ana görev için mükemmel bir araç yapar:
-1. **Gerçek DOM düğümlerine doğrudan erişmek** (odaklama, kaydırma, boyut ölçme).
-2. **Ekranda doğrudan görünmeyen ama render'lar arasında hatırlanması gereken verileri saklamak** (timer ID'leri, önceki prop değerleri, dış kütüphane örnekleri).
-
-![Ref ve state'in hangi bilgiler için uygun olduğunu gösteren ayrım](diagrams/ref-state-ayrimi.svg "State görünür veriyi, ref render dışı işaretçiyi taşır.")
-
-Temel kurallar:
-
-1. **Görünür veri state olmalıdır:** Değeri değiştiğinde arayüzdeki JSX'in değişmesi gerekiyorsa, o bilgi bir `useState` olmalıdır.
-2. **Görünmeyen reaktif olmayan bilgi ref olabilir:** Değiştiğinde arayüzün yeniden çizilmesine gerek yoksa ref uygundur.
-3. **DOM erişimi için standart yoldur:** Bir DOM elemanına referans almak için `<input ref={myRef} />` deseni kullanılır.
-4. **Render gövdesinde ref yazma:** Render saf olmalıdır; `ref.current` değerini render sırasında değiştirmek yan etkidir ve öngörülemeyen sonuçlar doğurur. Güncellemeler olay yöneticilerinde (`onClick`) veya `useEffect` içinde yapılmalıdır.
-5. **React 19 ref devrimi:** React 19 ile birlikte kendi fonksiyonel bileşenlerine ref geçirmek için artık `forwardRef` sarmalayıcısına gerek yoktur; `ref` doğrudan bir prop gibi alınabilir.
-
-## Odak akışını zaman çizgisinde izleyelim
-
-DOM odaklaması (focus) saf bir tarayıcı eylemidir; ekranda yeni bir DOM düğümü çizdirmez. Bunu bir state (`isFocused`) ile modellemeye çalışmak gereksiz bir dolambaçtır.
-
-| Aşama | Ne Yapılır? | Render Gerekir mi? |
-| --- | --- | --- |
-| 1. Render | `<input ref={inputRef} />` JSX'i üretilir | Evet |
-| 2. Commit | React, gerçek DOM düğümünü `inputRef.current` içine atar | Hayır |
-| 3. Tıklama | Kullanıcı butona basar, handler `inputRef.current?.focus()` çağırır | Hayır |
-| 4. Tarayıcı | Tarayıcı klavye imlecini input alanına taşır | Hayır |
-
-Bu akışta arayüzün yeniden render edilmesine hiçbir ihtiyaç yoktur. Ref, tarayıcı DOM API'sine doğrudan ulaşan güvenli bir köprüdür.
-
-## Kırık örnek
-
-Aşağıdaki bileşende buton vardır ancak DOM düğümüne erişim kurulmadığı için buton işlevsizdir:
-
-```tsx
-export function CouponFocus() {
-  return (
-    <div>
-      <button type="button">Kupon gir</button>
-      <input aria-label="İndirim kuponu" />
-    </div>
-  )
-}
-```
-
-Kullanıcı butona bastığında odak input'a geçmez; buton hiçbir şey yapmaz.
-
-## Doğru örnek: DOM düğümüne odaklanmak
-
-Ref'i oluşturup input elemanına bağlıyoruz:
+`useRef`, render'lar arasında aynı küçük nesneyi saklayan React Hook'udur. Bu nesnenin `.current` alanına bir DOM elemanı bağlayabiliriz. `?.` yazımı alan `null` ise metodu çağırmadan devam eder; eleman hazır olduğunda `focus()` çalışır. İlk örnek bir kupon alanına odak verir:
 
 ```tsx check
 import { useRef } from 'react'
 
 export function CouponFocus() {
-  // 1. Ref oluştur (başlangıçta null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const couponRef = useRef<HTMLInputElement>(null)
 
-  function handleFocus() {
-    // 3. İhtiyaç anında DOM metodunu çağır (optional chaining ile güvenli)
-    inputRef.current?.focus()
+  function focusSearch() {
+    couponRef.current?.focus()
   }
 
   return (
     <div>
-      <button type="button" onClick={handleFocus}>
-        Kupon gir
-      </button>
-      {/* 2. React'e bu DOM düğümünü ref'e bağlamasını söyle */}
-      <input ref={inputRef} aria-label="İndirim kuponu" />
+      <button type="button" onClick={focusSearch}>Kupon gir</button>
+      <input ref={couponRef} aria-label="İndirim kuponu" />
     </div>
   )
 }
 ```
 
-### Neden `inputRef.current?.focus()`?
-İlk render tamamlanmadan önce React henüz DOM düğümünü üretmemiştir; dolayısıyla `inputRef.current` ilk anda `null` değerindedir. Optional chaining (`?.`) kullanarak olası çökmeleri önleriz. React commit aşamasında gerçek DOM elemanını ref'e otomatik olarak atar.
+`useRef<HTMLInputElement>(null)` başlangıçta boş olabilecek bir input referansı oluşturur. React gerçek input'u ekrana yerleştirdiğinde onu `couponRef.current` alanına koyar; düğme tıklanınca tarayıcının `focus()` metodunu çağırır.
 
-## Önceki değeri hatırlamak (Render-dışı bellek)
+Odak vermek ekrandaki yazıyı veya düğme sayısını değiştirmez, yalnızca tarayıcıya hangi alana yazılacağını söyler. Bu yüzden ref kullanımı yeni bir render başlatmamalıdır.
 
-Ref yalnızca DOM elemanları için değildir. Bileşenin bir önceki render'da hangi değere sahip olduğunu hatırlamak istediğinde de `useRef` kullanılır.
+## Aynı ref, başka bir DOM işi
 
-Örneğin kullanıcının değiştirdiği film puanının bir önceki değerini göstermek isteyelim:
+Biraz daha farklı kullanımda, kullanıcı oyuncu listesini açmak için düğmeye basar ve sayfa kadro bölümüne kayar. Yeni fikir yalnızca ref'in bağlı olduğu DOM metodudur:
+
+```tsx
+import { useRef } from 'react'
+
+export function CastJump() {
+  const castRef = useRef<HTMLElement>(null)
+
+  return (
+    <>
+      <button onClick={() => castRef.current?.scrollIntoView()}>
+        Oyunculara git
+      </button>
+      <section ref={castRef}>
+        <h2>Oyuncular</h2>
+      </section>
+    </>
+  )
+}
+```
+
+`castRef` bu kez input yerine `section` elemanını işaret eder. Tıklama sırasında tarayıcı sayfayı o bölüme kaydırır; arayüz içeriği değişmediği için state güncellemesine ihtiyaç yoktur.
+
+`useState` ile `useRef` arasındaki fark burada görünür: state değişince React yeni bir render planlar; `ref.current` değişince React render etmez. Ekranda yeni bir metin ya da koşullu alan görünmesi gerekiyorsa state seç; DOM düğümüne ulaşmak gerekiyorsa ref düşün.
+
+![Ref ve state'in hangi bilgiler için uygun olduğunu gösteren ayrım](diagrams/ref-state-ayrimi.svg "State görünür veriyi, ref render dışı işaretçiyi taşır.")
+
+## Render'dan sonra DOM hazır olur
+
+React, bileşen fonksiyonunu çalıştırıp JSX'i hesapladığında buna **render** deriz. Hesaplanan değişikliği gerçek DOM'a uyguladığı adıma **commit** denir. Render sırasında ref henüz `null` olabilir; commit'ten sonra React bağlı elemanı `.current` alanına yazar.
+
+| Adım | Ne olur? | Ref değeri / sonuç |
+| --- | --- | --- |
+| 1. Render | `<input ref={searchRef} />` hesaplanır | `searchRef.current` henüz `null` olabilir |
+| 2. Commit | React input'u DOM'a koyar ve ref'i bağlar | `searchRef.current` input'u gösterir |
+| 3. Tıklama | Handler `searchRef.current?.focus()` çağırır | Tarayıcı input'a odak verir |
+| 4. Sonuç | Kullanıcı yazabilir | Yeni render gerekmez |
+
+Bu sıra, optional chaining'in neden yararlı olduğunu açıklar: bileşenin ilk hesaplanması ile gerçek DOM elemanının hazır olması aynı an değildir.
+
+## Ref, önceki render'dan bir değeri de saklar
+
+DOM dışında da ref kullanabiliriz. Örneğin film puanı değişince ekranda güncel puanla birlikte bir önceki puanı göstermek isteyelim. Puanı gösteren asıl değer prop'tur; ref yalnızca önceki puanı hatırlar.
 
 ```tsx check
 import { useEffect, useRef } from 'react'
 
-export function PreviousRating({ rating }: { rating: number }) {
-  // 1. Önceki değeri tutacak ref hücresi
-  const prevRatingRef = useRef<number | null>(null)
+export function RatingHistory({ rating }: { rating: number }) {
+  const previousRef = useRef<number | null>(null)
+  const previousRating = previousRef.current
 
-  // 2. Render anında henüz güncellenmemiş olan önceki değeri oku
-  const prev = prevRatingRef.current
-
-  // 3. Commit sonrasında yeni değeri ref'e kaydet
   useEffect(() => {
-    prevRatingRef.current = rating
+    previousRef.current = rating
   }, [rating])
 
-  return (
-    <p>
-      Güncel puan: {rating} (Önceki puan: {prev ?? 'Yok'})
-    </p>
-  )
+  return <p>Şimdi: {rating} · Önce: {previousRating ?? 'yok'}</p>
 }
 ```
 
-### Zamanlamanın büyüsü:
-1. **Render 1 (`rating = 8`):** `prevRatingRef.current` henüz `null`'dır. Ekrana "Güncel puan: 8 (Önceki: Yok)" basılır. Commit biter, effect çalışır ve `prevRatingRef.current = 8` yapılır.
-2. **Render 2 (`rating = 10`):** Render çalıştığı anda ref hücresinde hâlâ bir önceki değer olan `8` durmaktadır! `prev = 8` olarak okunur. Ekrana "Güncel puan: 10 (Önceki: 8)" basılır. Commit biter, effect çalışır ve hücreye `10` yazılır.
+İlk render'da önceki değer henüz yoktur. Ekran commit olduktan sonra effect ref'e o render'ın puanını yazar; sonraki render onu önceki değer olarak okuyabilir. Ref yazımı render'ın içinde değil, effect'te yapılır; böylece render yalnızca okur.
 
-Eğer `prevRatingRef.current = rating` satırını render sırasında yazsaydık, okuma ile yazma aynı anda gerçekleşir ve önceki değer anında silinirdi.
+| An | Prop `rating` | `previousRef.current` | Ekran |
+| --- | ---: | ---: | --- |
+| İlk render | `8` | `null` | Şimdi: 8 · Önce: yok |
+| Commit ve effect | `8` | `8` olur | Ekran değişmez |
+| Yeni prop ile render | `10` | `8` | Şimdi: 10 · Önce: 8 |
+| Commit ve effect | `10` | `10` olur | Ekran değişmez |
 
-## Zamanlayıcı (Timer ID) yönetimi
+Puan `10` geldiği render'da ref hâlâ `8` taşır, bu nedenle bir önceki puanı doğru görürüz. Effect'te ref'i güncel puana çevirince bu değişiklik tek başına render üretmez; ekrandaki `10` zaten yeni prop'tan gelmiştir.
 
-`setTimeout` veya `setInterval` gibi tarayıcı sayaçlarının kimlik numaraları (ID) ekranda kullanıcıya gösterilmez. Bu ID'yi bir `useState`'te saklamak her sayaç başlangıcında gereksiz bir render başlatır.
-
-Ref, zamanlayıcı kimliğini saklamak ve temizlemek için en uygun yerdir:
-
-```tsx
-const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-function scheduleAutoSave() {
-  // Varsa önceki zamanlayıcıyı iptal et
-  if (timerRef.current) {
-    clearTimeout(timerRef.current)
-  }
-
-  // Yeni zamanlayıcı kur ve ID'sini ref'e sakla
-  timerRef.current = setTimeout(() => {
-    saveData()
-    timerRef.current = null
-  }, 1000)
-}
-```
-
-Burada `timerRef.current` değiştiğinde React'in haberdar olmasına gerek yoktur; çünkü arayüzde değişen hiçbir şey yoktur.
-
-## React 19: `ref` artık standart bir prop
-
-React 18 ve öncesinde kendi yazdığın bir özel bileşene (`CustomInput`) dışarıdan `ref` aktarmak için `forwardRef` isimli karmaşık bir sarmalayıcı kullanmak zorundaydın.
-
-React 19 bu zorunluluğu ortadan kaldırdı. Artık `ref`, tıpkı `className` ya da `disabled` gibi sıradan bir prop olarak karşılanabilir:
-
-```tsx
-import type { Ref } from 'react'
-
-type InputProps = {
-  label: string
-  ref?: Ref<HTMLInputElement>
-}
-
-// React 19'da doğrudan prop olarak alınabilir:
-export function CustomInput({ label, ref }: InputProps) {
-  return (
-    <label>
-      {label}
-      <input ref={ref} className="border p-2 rounded" />
-    </label>
-  )
-}
-```
-
-Bu modern yaklaşım bileşen kompozisyonunu son derece sadeleştirir.
-
-## Sınır durumları ve sık hatalar
-
-:::mistake[Sık hata: ref.current değerini dependency array'e eklemek]
-Belirti → `useEffect(() => { ... }, [inputRef.current])` yazıldığında effect'in ref değişimlerine tepki vermemesi.  
-Neden → `ref.current` bir nesne alanıdır ve mutasyona uğraması React'e haber vermez. React dependency dizisini sadece render anında kontrol eder. Ref değişimi render tetiklemediği için React değişimi asla fark edemez.  
-Düzeltme → Dependency listesine `ref.current` yazma. Bir değişimin effect tetiklemesi gerekiyorsa o değer `state` olmalıdır.
+:::mistake[Ref'i ekranda görünen sayacın yerine kullanmak]
+**Belirti:** `countRef.current += 1` çalışır ama ekrandaki sayı aynı kalır. **Neden:** Ref değişikliği React'e yeni render gerektiğini bildirmez. **Düzeltme:** Görünen sayaç için `useState` kullan; ref'i ekranda gösterilmeyen önceki değer veya DOM işaretçisi gibi bilgiler için ayır.
 :::
 
-:::mistake[Sık hata: Render gövdesinde ref'e değer atamak]
-Belirti → `ref.current = count + 1` satırının doğrudan bileşen fonksiyonunun içinde çalıştırılması.  
-Neden → Render saf bir matematiksel fonksiyon gibi davranmalıdır. Render içinde ref değiştirmek eşzamanlı render (concurrent rendering) sırasında öngörülemeyen tutarsızlıklara yol açar.  
-Düzeltme → Ref yazma işlemlerini yalnızca event handler'lar veya `useEffect` içinde gerçekleştir.
-:::
+Başka bir tuzak da `ref.current` değerini dependency array'e koyup ref değişimini izlemeye çalışmaktır. Ref mutasyonu render başlatmadığından React'in kontrol edeceği yeni bir render olmaz. Bir değişiklik effect'i tetiklemeli veya ekrana yansımalıysa, o değişiklik state olarak modellenmelidir.
 
-:::mistake[Sık hata: Arayüz verisini ref'te saklamak]
-Belirti → `scoreRef.current += 1` yapılıyor ama ekrandaki skor sayısı güncellenmiyor.  
-Neden → Ref render tetiklemez. Ekranda görünmesi gereken her bilgi React state'i olmak zorundadır.  
-Düzeltme → Ekrana yansıyan veriler için `useState` kullan.
-:::
-
-:::sector
-Büyük ölçekli uygulamalarda `useRef`, harici DOM kütüphaneleriyle entegrasyonun omurgasını oluşturur. Video oynatıcılar (Video.js), zengin metin editörleri (Monaco Editor, TipTap), harita kütüphaneleri (Leaflet, Google Maps) veya animasyon motorları (GSAP) doğrudan bir DOM düğümüne bağlanmak zorundadır. React mühendisleri bu kütüphanelerin örneklerini bileşen ref'lerinde tutar ve unmount anında temizliklerini yine bu ref üzerinden yürütür.
+:::info[Derinlemesine (isteğe bağlı)]
+`setTimeout` ve `setInterval` gibi zamanlayıcıların ID'leri ekranda görünmez; bu ID'leri `useRef` içinde saklayıp gerektiğinde iptal edebilirsin. React 19'da function component `ref` değerini doğrudan prop olarak alabilir; `forwardRef` eski sürümlerde kullanılan sarmalayıcıdır.
 :::
 
 ## Özet
 
-- `useRef`, render'lar arasında aynı nesneyi (`{ current }`) koruyan kalıcı bir hücredir.
-- `ref.current` değerinin değişmesi bileşeni yeniden render etmez.
-- DOM düğümlerine erişim (odaklama, kaydırma, boyut alma) için temel araçtır.
-- Timer ID'leri ve önceki render değerleri gibi arayüze basılmayan verileri tutmak için idealdir.
-- React 19 ile birlikte özel bileşenler `forwardRef` olmaksızın doğrudan `ref` prop'u alabilir.
+- `useRef` render'lar arasında `.current` alanı olan aynı nesneyi korur; bu alanı değiştirmek render başlatmaz.
+- DOM düğümüne odak vermek veya sayfayı kaydırmak gibi küçük tarayıcı işleri için ref'i JSX'e bağla.
+- React commit sırasında DOM ref'ini doldurur; event handler bu referansı güvenle kullanabilir.
+- Önceki render değerini saklayabilirsin; render'da oku, yeni değeri effect sonrasında yaz.
 
-**Kendini yokla:** `ref.current` değiştiğinde React bileşeni neden yeniden render etmez?  
-*Cevap:* Çünkü ref reaktif bir mekanizma değildir; React'in sanal DOM kuyruğuna güncelleme sinyali göndermeyen düz bir JavaScript nesnesidir.
+**Yeni terimler:**
 
-**Kendini yokla:** `useRef` ile oluşturulan bir referansı neden dependency listesine yazmamalıyız?  
-*Cevap:* Çünkü ref mutasyonları render tetiklemediğinden, React'in render döngüsünde bu değişimi yakalaması ve effect'i çalıştırması mümkün değildir.
+- **Ref:** Render başlatmadan `.current` alanında bir değeri hatırlayan nesne.
+- **DOM:** Tarayıcıdaki HTML elemanlarının temsil edildiği ağaç.
+- **Commit:** React'in hesapladığı arayüz değişikliklerini gerçek DOM'a uyguladığı adım.
+- **Optional chaining (`?.`):** Değer `null` veya `undefined` ise özellik/metot erişimini güvenle atlayan yazım.
+
+**Kendini yokla:** `ref.current` değişince neden ekrandaki metin kendiliğinden değişmez?
+
+*Cevap:* Ref değişikliği React'e render isteği göndermez; görünür metin için state gerekir.
+
+**Kendini yokla:** `rating` ilk kez `8`, sonra `10` olursa ikinci render'da önceki puan kaçtır?
+
+*Cevap:* `8`; effect, ilk render commit edildikten sonra bu değeri ref'e kaydetmiştir.

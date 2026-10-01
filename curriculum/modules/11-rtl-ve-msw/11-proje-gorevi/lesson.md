@@ -1,34 +1,30 @@
 ---
-title: "Sinema için test sınırını kur"
-minutes: 6
+title: "Sinema için test altyapısı kur"
+minutes: 5
 kind: project
 ---
 
-# Sinema için test sınırını kur
+# Sinema’nın test ortamını ve sayfa testlerini tamamla
 
-:::pain[Problem]
-Sinema’da tarih biçimlendiren yardımcılar testli; ancak arama sayfasında kullanıcı ne görür, detay linki doğru filmi açar mı, sunucu hata verince ne olur bilinmiyor. Her testte farklı ağ taklidi yazmak, cevap biçimlerini ve kurulum ayrıntılarını birbirinden koparıyor.
-:::
+Bu proje, modülde öğrendiğin RTL ve MSW parçalarını Sinema’da bir araya getiriyor. Önce her testin kullanabileceği ortak ağ ve router kurulumunu oluşturacak, ardından arama ve film detay sayfalarının kullanıcıya görünen davranışlarını sınayacaksın.
 
 :::model[MSW perdesi]
-Uygulamanın isteği kendi fetch koduyla çıkar; MSW HTTP sınırında yakalar; handler gerçek API biçimine uygun yanıt verir; component bu yanıtı görünür duruma çevirir. Proje altyapısında amaç bu yolu yeniden kullanılabilir hale getirmek ve her testin yalnız senaryoya ait farkı belirtmesini sağlamaktır.
+Uygulamanın HTTP isteği kendi kodundan çıkar; MSW bu isteği testte karşılayıp kontrollü bir cevap verir. Böylece arayüzün gerçek istek akışı çalışırken test, dış servise ve değişken internet bağlantısına bağlı kalmaz. Handler cevabı API’nin beklediği biçimde tut.
 :::
 
-## Altyapı ve davranış aynı yerde buluşsun
-
-Önce ortak test ortamının sorumluluklarını ayır: test lifecycle’ı, başlangıç handler’ları ve router’lı render yardımı. Her biri belirli bir tekrarı kaldırmalı. Lifecycle istek yakalamayı başlatıp testler arasında temizler; handler’lar geçerli API cevabını tanımlar; render helper başlangıç URL’i ve gerekli provider’ı sağlar.
-
-Sonra arama ve detay ekranlarını kullanıcıya görünen sözleşmeleriyle ele al. Arama alanı rol/ad ile bulunabilmeli, klavye ve düğme etkileşimleri doğal çalışmalı; başarılı, boş ve hata cevapları farklı görünür durumlara dönüşmelidir. Detay sayfası URL kimliğini okur ve bulunmayan kaydı anlaşılır şekilde ele alır. Her senaryoda gerçek API’ye bağlanmadan kontrollü handler cevabı kullan.
-
-Çalışırken önce dosya yolları ve export sözleşmelerini oku, sonra bir mutlu yol üzerinden altyapıyı doğrula. Ardından boş response, HTTP hata ve route parametresi gibi sınırları ekle. Bir helper’a tüm uygulamanın state’ini doldurma; yeni bir provider ya da API davranışı eklediğinde tek sorumluluğu koru.
-
-:::sector
-Gerçek projelerde test altyapısı ekip için ortak bir yüzey oluşturur: her dosya ayrı MSW kurulumunu, auth header’ını ve router wrapper’ını yeniden yazmaz. Ortak başlangıç gerçekçi kalır; her test yalnızca farklı olan cevabı tarif eder.
+:::model[Test anatomisi]
+Testi kullanıcı adımıyla başlat ve ekranda oluşan sonucu doğrula. Router kullanıldığında başlangıç URL’i hangi sayfanın açıldığını belirler; ortak render helper’ı bu başlangıcı tekrar tekrar kurmayı kolaylaştırır.
 :::
 
-## Özet
+Önce ortak altyapının üç sorumluluğunu ayır: test başlamadan ve bittikten sonra çalışan lifecycle, varsayılan API handler’ları ve URL ile render eden router helper’ı. Her parça ortak kurulumu sağlar; tek bir senaryonun özel cevabını testin içinde seçersin.
 
-- Test lifecycle’ı, handler’ları ve render ortamını ayrı sorumluluklarda kur.
-- Başarı, boş sonuç ve HTTP hatasını kullanıcı davranışı olarak ele al.
-- Router başlangıç URL’ini testte açıkça seç.
-- Test ortamı gerçek ağa çıkmamalı; bilinmeyen istek görünür hata olmalı.
+Sonra sayfaları kullanıcı davranışı açısından ele al. Arama için URL’deki query’yi, kullanıcının yazmasını ve ekranda beliren sonucu birlikte düşün. Detay sayfasında başlangıç adresi bir film kimliği taşır; bulunan ve bulunmayan film farklı görünür durumlar üretmelidir. Her test kendi başlangıç adresiyle ve kendi senaryosuyla anlaşılır kalsın.
+
+Çalışmaya başlamadan önce mevcut dosya yollarını ve export adlarını oku; projedeki Router ve Vite ayarlarını koru. Önce ortak kurulumu ayağa kaldır, sonra sayfaları başarı ve sınır durumlarında incele. Bir hata ararken kullanıcı adımından handler cevabına, oradan DOM’daki sonuca kadar akışı takip et.
+
+## Hatırlayacağın noktalar
+
+- Ortak test kurulumu, tekrar eden ortam işini üstlenir; senaryoya özgü cevap testte kalır.
+- Gerçek ağa çıkmadan HTTP cevabını MSW ile kontrol edebilirsin.
+- Başlangıç URL’i ve kullanıcı adımları sayfanın hangi davranışını gördüğünü belirler.
+- Test, isteği değil kullanıcının gördüğü sonucu da doğrulamalı.

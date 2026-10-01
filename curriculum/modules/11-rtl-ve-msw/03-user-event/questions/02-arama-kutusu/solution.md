@@ -1,2 +1,2 @@
 ## Neden böyle?
-Controlled input değerini ebeveynden alır; böylece URL state veya debounce aynı akışı yönetebilir. Formun submit olayı Enter ve buton tıklamasını tek yerde toplar. `preventDefault` SPA sayfasını yenilemez. Sonraki derste bu etkileşimin API sonucu asenkron gelecek.
+Testte küçük bir `Harness`, `onChange` değerini state'e yazar; bu sayede arama alanı kontrollü biçimde yeniden render olur. `user.type` ve Enter gerçek klavye etkileşimini çalıştırır. `trim()` baştaki ve sondaki boşlukları kaldırır; yalnız boşluklardan oluşan arama da gönderilmez.

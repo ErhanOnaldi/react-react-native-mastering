@@ -1,14 +1,19 @@
 import { defineQuestion } from '@rm/content/define'
 export default defineQuestion({
   type: 'code',
-  title: 'Bileşeni gerçek store ile bağla',
+  title: 'Gerçek store bağlantısına test yaz',
   difficulty: 'orta',
   concepts: ['redux.testing', 'test.rtl-queries', 'test.user-event'],
-  files: ['WatchCounter.tsx'],
+  files: ['WatchCounter.test.tsx'],
   hints: [
-    'Arayüz hem store’daki liste boyunu göstermeli hem de kullanıcı etkileşimiyle listeyi güncellemelidir.',
-    'Hazır tipli selector/dispatch hook’larıyla `ids.length` değerini oku ve `add(550)` action’ını gönder.',
-    '`<output>{count} film</output>` üret; düğmenin `onClick` olayında dispatch yap.',
+    'Önce başlangıç store’uyla ekranda görünen sayıyı kontrol et.',
+    'RTL’de bileşeni gerçek Provider ve yeni store altında render et; kullanıcı tıklamasını `userEvent` ile yap.',
+    'Sonuç metnini ve store’daki ID’leri kontrol et; aynı filmi iki kez ekleme davranışını da sınat.',
   ],
-  preview: { entry: 'Preview.tsx' },
+  testWriting: {
+    mutants: [
+      { id: 'does-not-dispatch', label: 'düğme tıklamasını store’a göndermeyen sürüm' },
+      { id: 'wrong-count', label: 'store’daki kayıt sayısını yanlış gösteren sürüm' },
+    ],
+  },
 })

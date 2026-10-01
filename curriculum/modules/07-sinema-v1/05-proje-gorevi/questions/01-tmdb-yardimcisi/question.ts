@@ -13,9 +13,9 @@ export default defineQuestion({
     'HTTP hatası başarısız Promise olarak aktarılıyor',
   ],
   hints: [
-    'Önceki derste yazdığın URL oluşturma mantığını bu dosyaya taşıyıp `fetch` çağrısı, yetki başlığı ve hata kontrolü ile birleştirmelisin.',
-    '`new URL` ve `URLSearchParams` ile adresi oluşturup `fetch(url, { ...init, headers })` çağrısı yap. `headers` içine `Authorization: Bearer ${import.meta.env.VITE_TMDB_TOKEN}` ekle.',
-    'İstek sonrası `if (!response.ok)` bloğunda sunucunun `{ status_message }` içeren JSON gövdesini okumayı dene; JSON değilse `response.status` ile hata oluşturup `throw new Error(...)` de. Başarıda `return (await response.json()) as T` döndür.',
+    'Önce URL kurma, yetkilendirme ve cevap kontrolü işlerini birbirinden ayır; sonra bunları tek giriş noktasında sırala.',
+    'Bir adres nesnesiyle query parametrelerini güvenle ekle. Token ve varsayılan dili her istekte aynı noktada sağlayıp isteğe özel seçenekleri de koru.',
+    'Önce HTTP durumunu denetle. Hata gövdesi JSON olmayabilir; durum kodu her durumda kullanılabilir. Başarılı gövdeyi tek kez JSON olarak oku.',
     '`response.json()` gövdeyi tek bir kez okuyabilir; hem hata durumunda hem de başarı durumunda aynı yanıt nesnesinde iki kez `json()` çağırmamaya dikkat et.',
   ],
 })

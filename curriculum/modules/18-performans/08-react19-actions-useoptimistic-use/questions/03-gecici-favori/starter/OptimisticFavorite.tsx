@@ -5,5 +5,9 @@ export function OptimisticFavorite({
   initial: boolean
   save: (next: boolean) => Promise<void>
 }) {
-  return <button type="button">{initial ? 'Favorilerden çıkar' : 'Favorilere ekle'}</button>
+  return (
+    <button type="button" aria-pressed={initial}>
+      {initial ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+    </button>
+  )
 }

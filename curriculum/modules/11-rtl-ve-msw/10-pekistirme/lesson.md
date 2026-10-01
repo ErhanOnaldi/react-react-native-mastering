@@ -1,42 +1,26 @@
 ---
-title: "Arama akışını uçtan uca bileşen sınırında birleştir"
-minutes: 6
+title: "Sinema arama akışını pekiştir"
+minutes: 5
 kind: practice
 ---
 
-# Arama akışını bileşen sınırında birleştir
+# Arama davranışını birlikte düşün
 
-:::pain[Problem]
-Arama testi yalnızca bir HTTP çağrısı gördüğünü doğruluyor. Boş sonuç yanlış mesaj gösterse, 500 ekranı yüklemede kalsa bile test yeşil. Kullanıcının gerçekten gördüğü yol hâlâ korunmuyor.
-:::
+Bu bölümde önceki derslerde öğrendiğin kullanıcı etkileşimi testini ve MSW handler’ını aynı Sinema arama akışında kullanacaksın. Birinde ekranda görünen farklı durumları sınayacak, diğerinde arama metninin hangi filmleri döndürdüğünü belirleyeceksin.
 
 :::model[Test anatomisi]
-Hazırla, kullanıcı davranışını çalıştır ve görünür sonucu doğrula. Bu pekiştirmede component, etkileşim ve MSW aynı entegrasyon testinde buluşur. Yeni soru, API cevabının arama metnine göre doğru sonuca dönüşmesini ayrı bir handler sınırında ele alır.
+Bir testte kullanıcı davranışını başlat, ardından kullanıcının görebildiği sonucu doğrula. Ağ cevabını MSW ile kontrol ettiğinde uygulamanın gerçek `fetch` akışı çalışır; yalnızca sunucudan gelen cevap değişir. İstek ayrıntısı, ekrandaki sonucun yerine geçmez.
 :::
 
-## Her senaryonun kanıtını seç
+İlk çalışmada akışı kullanıcının gözünden sırala: arama alanını bul, metni gönder, önce yüklenme durumunu, sonra sonucu izle. Başarı, boş liste ve hata ayrı kullanıcı durumlarıdır; her birinde ekranda neyin değiştiğini düşün. Sonuçları beklerken sabit süre tahmin etmek yerine asenkron sorguları kullan.
 
-Başarılı arama, boş liste ve sunucu hatası birbirinden farklı ürün durumlarıdır. Bir akışta kullanıcı metni yazar, aramayı başlatır ve sonuca ulaşır. Testin yalnız istek yapıldığını değil, doğru başlık veya mesajın ekranda göründüğünü de göstermesi gerekir. Loading durumunu gözlemek için response’u kontrollü biçimde geciktir; duvar saati tahminine bağlanma.
+İkinci çalışmada aynı arama fikrini HTTP sınırında ele alacaksın. Handler, gelen query’yi okuyup film listesini ona göre cevaplar. Baş/son boşluk, harf büyüklüğü ve boş query gibi küçük farkların sonuçta ne değiştirmesi gerektiğini önce örneklerle belirle.
 
-İkinci çalışma, handler cevabını istek query’sine bağlar. Bu katmanda `Matrix` isteğinin `Matrix` eşleşmesi üretmesi, boş query’nin sonuçsuz kalması beklenir. Başarı ve sınır durumlarını aynı senaryoya yığma; her test bir davranışı anlaşılır biçimde anlatmalı.
+Takılırsan önce her testin kanıtlamak istediği tek davranışı bir cümleyle yaz. Sonra kullanıcı adımını, handler cevabını ve görünür sonucu sırayla eşleştir. Yeşil testin yalnız isteğin atıldığını değil, doğru davranışın ekrana ulaştığını da gösterdiğinden emin ol.
 
-## Çalışma sırası
+## Hatırlayacağın noktalar
 
-1. Testte rol/ad sorgusuyla arama alanını ve eylem kontrolünü bul.
-2. `user-event` ile arama akışını çalıştır; etkileşim Promise’lerini bekle.
-3. Handler’ı ilgili teste özgü response için kur; ortak varsayılan cevabı değiştirme.
-4. Loading, başlık, boş durum veya hata gibi kullanıcıya görünen kanıtı seç.
-5. Gerekliyse istek query’sini ayrıca doğrula; bu assertion DOM sonucunun yerine geçmez.
-
-Bir assertion başarısızsa önce beklenen/gelen değerleri ve handler eşleşmesini karşılaştır. Testin gerçekten kullanıcı davranışını başlatıp başlatmadığına, query’nin endpoint’e ulaşıp ulaşmadığına ve status’un uygulama state’ine çevrilip çevrilmediğine bak. Test verisini response formatına uydurmak için uygulama gereksinimini sessizce daraltma.
-
-:::sector
-Takımlar arama gibi kritik akışlarda başarı, boş ve hata durumlarını ayrı senaryolarda tutar. Böylece bir ürün hatası çıktığında hangi kullanıcı durumunun bozulduğu hızlıca anlaşılır.
-:::
-
-## Özet
-
-- Arama etkileşimini kullanıcı gibi başlat.
-- MSW ile response senaryosunu değiştir, uygulama fetch’ini mock’lama.
-- DOM sonucu ve request ayrıntısı farklı kanıtlar sağlar.
-- Başarı, boş ve hata durumlarını ayrı testlerle görünür kıl.
+- Kullanıcı etkileşimini `user-event` ile başlat ve Promise’ini bekle.
+- Asenkron sonucu görünür olduğunda doğrula; duvar saati tahmini yapma.
+- MSW cevabı ve DOM’da görünen sonuç farklı kanıtlardır.
+- Başarı, boş sonuç ve hata akışlarını ayrı ayrı düşün.

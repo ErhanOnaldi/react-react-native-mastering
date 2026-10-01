@@ -7,7 +7,7 @@ export default defineQuestion({
   files: ['PreviousQuery.tsx'],
   hints: [
     '“Önceki” değer, bu render’dan önce saklanmış değer olmalı.',
-    'Ref güncellemesi render tetiklemez; effect ise render sonrasında çalışır.',
-    'Render önce `previous.current` değerini okur; `useEffect(() => { previous.current = query }, [query])` sonrasında günceller.',
+    'Render sırasında görüntülenecek eski değeri sakla; yeni değer ancak bu render tamamlandıktan sonra kaydedilmeli.',
+    'Bir ref ilk değeri `null` alsın; `useEffect` içinde `query` değerini dependency değişince ref’e yaz.',
   ],
 })

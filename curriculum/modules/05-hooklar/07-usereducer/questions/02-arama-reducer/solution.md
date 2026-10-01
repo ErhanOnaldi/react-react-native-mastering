@@ -1,4 +1,4 @@
-Reducer bir state geçiş tablosudur. Beş ayrı setter yerine tutarlı bir değişim üretir. Burada fetch yapma: daha sonraki alıştırmada effect isteği başlatır, reducer yalnızca sonucu işler.
+Reducer bir state geçiş tablosudur. Beş ayrı setter yerine tutarlı bir değişim üretir. Burada fetch yapma: daha sonraki alıştırmada effect isteği başlatır, reducer yalnızca sonucu işler. Tüm `Action` türleri ele alındıktan sonra yazılan default dal yalnızca güvenli geri dönüş içindir; bunun için ek TypeScript sözdizimi gerekmiyor.
 
 ## Alternatif ve tuzak
 

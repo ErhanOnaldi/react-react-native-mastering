@@ -6,30 +6,24 @@ kind: practice
 
 # Query modellerini yeni ekranlarda uygula
 
-:::pain[Problem]
-Popüler listeden başka ekrana gidip dönünce başlıklar yeniden yükleniyor. Keşifte türü değiştirince URL yeni seçimi gösterse de önceki sonuç kalıyor. İki belirtinin ortak noktası, verinin kimliği ve yaşamının ekrandaki seçimlerle tutarlı olmaması.
-:::
-
-## Her akış için önce sahibi bul
+Bu atölyede aynı Query fikirlerini üç yeni işte kullanacaksın: popüler film listesini kısa süre cache’te tut, tür ve sayfa seçimine göre keşfi güncelle, sonra gönderi ile yazar bilgisini bir içerik panosunda birleştir. Son görev farklı bir API dünyasına geçer; Query’deki veri sahipliği ve yükleme akışı aynı kalır.
 
 :::model[Server state ve Query cache]
-Sunucunun cevabı server state’tir; filtre URL’den geliyorsa URL state’tir. Key, cevabı belirleyen seçimleri taşır; tazelik süresi geri dönüşte tekrar isteyip istememeyi etkiler. Yeni ekranda hangi verinin paylaşıldığını ve hangi seçimin değişince yeni cevap gerektiğini belirle.
+Sunucudan gelen cevap server state’tir; kullanıcının seçtiği tür ve sayfa URL state’tir. Query key cevabı değiştiren seçimleri taşır, `staleTime` ise cevabın ne kadar süre taze sayılacağını belirler. Tür değişince sonuç da değişeceği için tür key’in parçası olmalıdır.
 :::
 
-Popüler liste, tür seçimiyle değişen keşif ve gönderi/yazar ilişkisi birbirinden farklı bağlamlar. Önce her endpoint’in parametresini, cevap biçimini ve hata ihtimalini oku. Sonra yükleme, hata, boş ve başarı görünümünü ayrı düşün. Detaydan listeye dönüşte kullanıcının arama ifadesi URL’de ya da ekran state’inde korunmalı; API cevabını da yeniden gereksiz yere kopyalama.
+İlk iki işi Sinema’daki filmlerle yap. Popüler listeye dönüp cache davranışını gözle; keşifte tür ve sayfayı değiştir, sonra tarayıcı geri tuşuyla önceki seçimin geri geldiğini kontrol et. Son işte gönderi listesi, arama, detay ve yazar verisi arasında bağlantı kur; detaydan dönünce aramanın korunmasına dikkat et.
 
-Görevleri sırayla çöz. İlkinde bir listenin kısa süreli cache davranışı, ikincisinde URL’den gelen iki filtrenin birlikte çalışması, üçüncüsünde farklı kaynaklardan gelen kayıtların ilişkisi üzerinde dur. Her adımda Network’te hangi isteğin hangi seçim için gittiğine bak.
+Önceki derslerden query key’leri, `staleTime`, sayfalama, URL parametreleri ve bağımlı sorgu fikrini hatırla. Her ekranda yükleniyor, hata, boş ve başarılı durumların kullanıcıya ne söylediğini de kontrol et.
 
-:::sector
-Atölye projelerinde kodu yalnızca görev bitti diye bırakma. Gerçek cevapla birkaç kayıt ve sınır durumunu gözden geçir; ekranı açıp kapat, geri dön ve seçimleri değiştir. Bir component’in hangi veriyi sahibi olduğuna dair kararını ekip arkadaşına açıklayabilmelisin.
-:::
+## Hatırlayacağın noktalar
 
-## Özet
+- Cache süresi ile verinin kimliği iki ayrı karardır.
+- URL’deki tür ve sayfa seçimi doğru query key’e yansımalıdır.
+- İlişkili sunucu verilerini ayrı sorgulardan alıp ekranda birlikte gösterebilirsin.
 
-- Her veri kaynağının sahibini belirle.
-- URL seçimiyle cache kimliğini tutarlı kıl.
-- Yükleme, hata, boş ve başarı durumlarını kullanıcıya açık göster.
+**Terimler:** `query key` bir cevabı tanımlayan cache kimliği; `staleTime` cevabın taze kabul edildiği süre; `URL state` bağlantıda saklanabilen ekran seçimi.
 
-**Kendini yokla:** Tür değişince eski cache cevabının görünmemesi için hangi ilişki doğru kurulmalı?
+**Kendini yokla:** Tür değişince eski türün cevabını göstermemek için ne değişmeli?
 
-**Yanıt:** Tür hem URL’den okunmalı hem sonucu tanımlayan query key’in parçası olmalı.
+**Yanıt:** Tür hem URL seçimini hem de query key’i değiştirmeli; böylece her tür kendi sonucunu alır.

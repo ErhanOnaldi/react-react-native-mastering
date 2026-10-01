@@ -1,19 +1,18 @@
-İçeriği çağrı yerinden alan açılır bir bölüm oluştur. Kendi durumunu yöneten ve dışarıdan yönetilen kullanım desteklensin.
+Başlığı ve içeriği çağrı yerinden alan açılır bir bölüm oluştur. Açık/kapalı değerinin tek sahibi çağrı yeri olsun.
 
 ## Gereksinimler
 
 - Başlığı `<button>` ile göster; düğme bir `<section>` içinde bulunsun.
 - Bölüm açıksa `children` görünür, kapalıysa gizli olsun.
-- `open` verilmişse dış değer görünümü belirlesin; tıklama `onOpenChange`'e yeni değeri bildirsin, prop değişene kadar görünüm değişmesin.
-- `open` verilmemişse iç durum `defaultOpen ?? false` ile başlasın; tıklama iç durumu ve varsa callback'i güncellesin.
+- `open` değeri görünümü belirlesin; tıklama `onOpenChange`'e yeni değeri bildirsin, prop değişene kadar görünüm değişmesin.
 - `aria-expanded` gerçek açık durumunu bildirsin.
 
 ## Örnek
 
-`defaultOpen` verilen “Trend” bölümü ilk açılışta içeriğini gösterir. `open={false}` verilen “Favoriler” bölümü tıklanınca sahibine `true` önerir; içerik ancak `open` sonradan `true` olursa görünür.
+`open={false}` verilen “Favoriler” bölümü tıklanınca sahibine `true` önerir; içerik ancak sahibi `open` değerini `true` yapınca görünür.
 
 ## Sözleşme
 
 - Dosya ve export: `MovieShelf.tsx` → named export `MovieShelf`.
-- Props: `title: string`, `children: ReactNode`, `open?: boolean`, `defaultOpen?: boolean`, `onOpenChange?: (open: boolean) => void`.
+- Props: `title: string`, `children: ReactNode`, `open: boolean`, `onOpenChange: (open: boolean) => void`.
 - Başlık düğmesinin accessible name'i `title` değeridir.

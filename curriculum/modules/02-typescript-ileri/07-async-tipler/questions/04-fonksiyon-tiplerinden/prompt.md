@@ -1,18 +1,19 @@
-Bir film yükleyicisinin parametre ve sonuç tipleri başka bir açıklama fonksiyonunda yeniden kullanılacak. İmza kopyalamadan çağrı bilgilerini metne dönüştür.
+Sinema'nın film yükleyicisi bir süre sonra film bilgisi döndürür. Bu Promise'in tipini ve bekleme sonrasında gelen film tipini ayrı ayrı tanımla.
 
 ## Gereksinimler
 
-- Parametre tuple'ı `[id: number, token: string]` olmalı.
-- Yükleyicinin dönüşü `Promise<{ id: number; title: string }>` olmalı.
-- Çözümlenmiş sonuç `{ id: number; title: string }` olmalı.
-- Açıklama verilen ID için `"<id> için istek"` üretmeli.
+- `Movie` tipi `{ id: number; title: string }` olmalı.
+- `MoviePromise`, `Promise<Movie>` ile aynı tip olmalı.
+- `LoadedMovie`, `MoviePromise` çözüldüğünde gelen değer tipi olmalı.
+- `loadMovie()` bir filmi asenkron olarak döndürmeli.
+- `movieLabel(movie)` `"<başlık> (#<id>)"` biçiminde metin üretmeli.
 
 ## Örnek
 
-`[550, 'test-token']` parametreleri → `"550 için istek"`.
+`loadMovie()` çağrısının tipi `Promise<Movie>`; sonucunu beklediğinde `Movie` gelir. Bu film için `movieLabel` sonucu `"Dövüş Kulübü (#550)"` olur.
 
 ## Sözleşme
 
-- Dosya: `task.ts`; `loadMovie(id: number, token: string): Promise<{ id: number; title: string }>` örnek fonksiyonu bu dosyada bulunmalı.
-- Export tipleri: `LoadArgs`, `LoadPromise`, `LoadedMovie`.
-- Export fonksiyon: `describeLoad(args: LoadArgs): string`.
+- Dosya: `task.ts`.
+- Export tipleri: `Movie`, `MoviePromise`, `LoadedMovie`.
+- Export fonksiyonlar: `loadMovie(): MoviePromise`, `movieLabel(movie: LoadedMovie): string`.

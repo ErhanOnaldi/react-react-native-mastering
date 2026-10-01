@@ -11,12 +11,18 @@ export function RequiredNameForm({ onSave }: { onSave: (values: Values) => void 
       <label htmlFor="name">Liste adı</label>
       <input
         id="name"
+        aria-invalid={errors.name ? true : undefined}
+        aria-describedby={errors.name ? 'name-error' : undefined}
         {...register('name', {
           required: 'Ad gerekli',
           minLength: { value: 3, message: 'En az 3 karakter' },
         })}
       />
-      {errors.name && <p role="alert">{errors.name.message}</p>}
+      {errors.name && (
+        <p id="name-error" role="alert">
+          {errors.name.message}
+        </p>
+      )}
       <button type="submit">Kaydet</button>
     </form>
   )

@@ -6,9 +6,8 @@ export default defineQuestion({
   concepts: ['react.lists-keys', 'react.state', 'react.derived-state'],
   files: ['MovieNotes.tsx'],
   hints: [
-    'Not state’i alt `Notes` bileşeninin kimliğine bağlı.',
-    'React bileşen state’ini ağaçtaki konuma ve `key` değerine göre korur.',
-    '`Notes` çağrısına film kimliğinden gelen bir key ver.',
-    '`<Notes key={id} id={id} />` aynı filmde state’i korur, yeni filmde yeni state oluşturur.',
+    'Önce not değerini kendi state’inde yöneten, erişilebilir bir textbox oluştur.',
+    'Not alanının sahibi film kimliğine göre yeniden kurulmalı; React ağaçtaki bileşen kimliğini nasıl belirliyor?',
+    'Not girişi ayrı bir `Notes` bileşeni olsun; film id’sini o bileşenin `key` değerine de ver.',
   ],
 })

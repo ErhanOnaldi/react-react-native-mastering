@@ -7,6 +7,6 @@ export function MovieTitle({ id }: { id: number }) {
     })
       .then((r) => r.json())
       .then((data: { title: string }) => setMovie(data))
-  }, [])
+  }, [id])
   return <h1>{movie?.title ?? 'Yükleniyor…'}</h1>
 }

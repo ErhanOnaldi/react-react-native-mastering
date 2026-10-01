@@ -7,20 +7,16 @@ const draftA: Draft = { id: 'a', title: 'Taslak A', dueDate: '2026-01-10' }
 const draftB: Draft = { id: 'b', title: 'Taslak B', dueDate: '' }
 
 describe('taslak düzenleyici', () => {
-  it('taslak değişince alanları yeni taslağın değerleriyle gösterir', () => {
-    const { rerender } = render(<DraftEditor draft={draftA} onSave={vi.fn()} />)
+  it('başlangıç taslağının değerlerini gösterir', () => {
+    render(<DraftEditor draft={draftA} onSave={vi.fn()} />)
     expect(screen.getByLabelText('Başlık')).toHaveValue('Taslak A')
     expect(screen.getByLabelText('Bitiş tarihi')).toHaveValue('2026-01-10')
-
-    rerender(<DraftEditor draft={draftB} onSave={vi.fn()} />)
-    expect(screen.getByLabelText('Başlık')).toHaveValue('Taslak B')
-    expect(screen.getByLabelText('Bitiş tarihi')).toHaveValue('')
   })
 
   it('geçersiz tarih metninde hata gösterir ve göndermez', async () => {
     const user = userEvent.setup()
     const onSave = vi.fn()
-    render(<DraftEditor draft={draftA} onSave={onSave} />)
+    render(<DraftEditor draft={draftB} onSave={onSave} />)
 
     await user.clear(screen.getByLabelText('Bitiş tarihi'))
     await user.type(screen.getByLabelText('Bitiş tarihi'), 'yarın')

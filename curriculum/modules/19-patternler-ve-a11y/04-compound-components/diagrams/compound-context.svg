@@ -6,14 +6,14 @@
     </marker>
   </defs>
   <rect class="d-accent" x="255" y="28" width="250" height="66" rx="11" />
-  <text class="d-title" x="380" y="56" text-anchor="middle">Tabs kökü</text>
+  <text class="d-title" x="380" y="56" text-anchor="middle">FilmTabs kökü</text>
   <text class="d-muted" x="380" y="78" text-anchor="middle">seçim + id tabanı</text>
   <rect class="d-box" x="54" y="166" width="190" height="62" rx="10" />
-  <text class="d-text" x="149" y="203" text-anchor="middle">List / Trigger</text>
+  <text class="d-text" x="149" y="203" text-anchor="middle">Tabs.List / Trigger</text>
   <rect class="d-box" x="285" y="166" width="190" height="62" rx="10" />
-  <text class="d-text" x="380" y="203" text-anchor="middle">Panel</text>
+  <text class="d-text" x="380" y="203" text-anchor="middle">Tabs.Panel</text>
   <rect class="d-box" x="516" y="166" width="190" height="62" rx="10" />
-  <text class="d-text" x="611" y="203" text-anchor="middle">Close / Trigger</text>
+  <text class="d-text" x="611" y="203" text-anchor="middle">Tabs.Trigger</text>
   <path class="d-line-accent" d="M 330 96 C 280 130 200 132 160 162" marker-end="url(#compound-arrow)" />
   <path class="d-line-accent" d="M 380 98 V 160" marker-end="url(#compound-arrow)" />
   <path class="d-line-accent" d="M 430 96 C 480 130 560 132 600 162" marker-end="url(#compound-arrow)" />

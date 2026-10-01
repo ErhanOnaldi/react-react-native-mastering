@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -33,17 +32,11 @@ export function DraftEditor({
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<DraftInput, unknown, DraftOutput>({
     resolver: zodResolver(draftSchema),
     defaultValues: { title: draft.title, dueDate: draft.dueDate },
   })
-
-  useEffect(() => {
-    reset({ title: draft.title, dueDate: draft.dueDate })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft.id])
 
   return (
     <form onSubmit={handleSubmit((values) => onSave(values))}>

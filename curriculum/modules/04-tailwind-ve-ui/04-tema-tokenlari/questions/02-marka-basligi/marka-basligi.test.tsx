@@ -15,7 +15,8 @@ describe('BrandHeading', () => {
     )
   })
   it('ek className değerini korur', () => {
-    render(<BrandHeading className="text-2xl">Sinema</BrandHeading>)
-    expect(screen.getByRole('heading')).toHaveClass('text-2xl')
+    render(<BrandHeading className="text-rose-700">Sinema</BrandHeading>)
+    expect(screen.getByRole('heading')).toHaveClass('text-rose-700')
+    expect(screen.getByRole('heading')).not.toHaveClass('text-brand-700')
   })
 })

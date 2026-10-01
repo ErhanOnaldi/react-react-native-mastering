@@ -1,6 +1,10 @@
 import { useState } from 'react'
 export function MovieNotes({ id }: { id: number }) {
-  return <Notes key={id} id={id} />
+  return (
+    <section>
+      <Notes key={id} id={id} />
+    </section>
+  )
 }
 function Notes({ id }: { id: number }) {
   const [note, setNote] = useState('')

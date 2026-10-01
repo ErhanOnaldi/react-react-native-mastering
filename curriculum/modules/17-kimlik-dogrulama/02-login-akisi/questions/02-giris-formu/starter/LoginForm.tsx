@@ -5,7 +5,7 @@ export interface LoginValues {
 export function LoginForm({
   onLogin,
 }: {
-  onLogin: (values: LoginValues) => Promise<unknown> | unknown
+  onLogin: (credentials: { username: string; password: string }) => Promise<void> | void
 }) {
   return (
     <form>

@@ -6,7 +6,6 @@ Trend akışında yeni film sayfalarını eskilerin yanına ekle ve son sayfada 
 - `Daha fazla` düğmesi sonraki sayfayı getirsin; yeni filmler ilk sayfanın arkasına eklensin.
 - Yeni sayfa yüklenirken düğme tekrar tıklanamasın.
 - Son sayfada düğme disabled olsun ve yeni istek çıkmasın.
-- En fazla üç sayfayı sakla.
 
 ## Örnek
 

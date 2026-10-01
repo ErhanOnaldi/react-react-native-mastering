@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220">
+  <title>Gerçek client ile taklit edilmiş fetch sınırı</title>
+  <defs>
+    <marker id="mock-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" class="d-arrowhead" />
+    </marker>
+  </defs>
+  <rect x="26" y="54" width="185" height="105" rx="12" class="d-accent" />
+  <text x="118" y="84" text-anchor="middle" class="d-title">Test</text>
+  <text x="118" y="112" text-anchor="middle" class="d-text">isteği tetikler</text>
+  <text x="118" y="136" text-anchor="middle" class="d-muted">cevabı inceler</text>
+  <rect x="282" y="54" width="195" height="105" rx="12" class="d-success" />
+  <text x="379" y="84" text-anchor="middle" class="d-title">Gerçek client</text>
+  <text x="379" y="112" text-anchor="middle" class="d-text">URL hazırlar</text>
+  <text x="379" y="136" text-anchor="middle" class="d-muted">response işleme</text>
+  <rect x="548" y="54" width="185" height="105" rx="12" class="d-violet" />
+  <text x="640" y="84" text-anchor="middle" class="d-title">Fake fetch</text>
+  <text x="640" y="112" text-anchor="middle" class="d-text">çağrıyı kaydeder</text>
+  <text x="640" y="136" text-anchor="middle" class="d-muted">kontrollü cevap verir</text>
+  <path d="M211 88 L270 88" class="d-line-accent" marker-end="url(#mock-arrow)" />
+  <path d="M477 88 L536 88" class="d-line" marker-end="url(#mock-arrow)" />
+  <path d="M536 132 L486 132" class="d-line" marker-end="url(#mock-arrow)" />
+  <text x="507" y="191" text-anchor="middle" class="d-muted">Gerçek ağa bağlantı yok</text>
+</svg>

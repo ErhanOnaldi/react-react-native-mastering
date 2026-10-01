@@ -1,115 +1,163 @@
 ---
 title: "React 19 form actions ve RHF seçimi"
-minutes: 14
+minutes: 16
 kind: concept
 ---
 
 # React 19 form actions ve RHF seçimi
 
-:::pain[Her form için aynı araç gerekir mi?]
-Tek alanlı bir destek mesajı formu yalnızca metni alıp bekleme/başarı durumunu gösterecek. Bunun yanında başka bir ekranda alan bazlı hatalar, kirli durum ve dinamik satırlar var. İki formu da aynı miktarda araçla kurmak gereksiz karmaşıklık yaratabilir.
-:::
+Sinema'da tek bir metin alanıyla destek mesajı alabilirsin. Tarayıcının normal form gönderimi zaten input değerlerini toplar. Daha önce öğrendiğin RHF de formlar kurar, ama her küçük formun ayrı alan deposu ve doğrulama modeline ihtiyacı olmayabilir. React 19'daki **form action**, `<form>` gönderimini bir fonksiyona bağlayıp bu fonksiyonun sonucunu React state'iyle göstermenin yoludur.
 
-## Native form action'ın sunduğu
+## Tarayıcı form değerlerini nasıl toplar?
 
-React 19, `<form action={fn}>` ile form gönderimini bir action fonksiyonuna bağlamayı ve `useActionState` ile sonucu React state'ine taşımayı sağlar. Formun native alanları `FormData` oluşturur. Bu, alan sayısı az ve özel alan yönetimi gerekmeyen akışlarda yeterli olabilir. RHF ise kayıtlı alanların durumunu, doğrulamasını, dirty/touched bilgilerini ve özel/dinamik kontrolleri sunar.
+Native HTML formda (tarayıcının kendi `<form>`, `<input>` davranışında) gönderilecek her alana bir `name` verirsin. Tarayıcı bu ad ve değer çiftlerini `FormData` nesnesinde toplar. `FormData` bir form gönderiminin alanlarını taşır; burada yeni bir form kütüphanesi kurmadan ilk adımı deneyelim.
 
-:::model[Form deposu ve abonelik]
-RHF, alanları kendi form deposunda tutar ve ihtiyaç duyulan form state değişimlerine abone olur. React action modeli aynı kayıt deposunu sağlamaz; form submit'inde native `FormData` alır ve action sonucu/pending bilgisini React yönetir. Araç seçerken yeni değişen sorumluluk budur.
-:::
+### 1. örnek: Bir native alanı oku
 
-Karar noktaları:
+```tsx check
+function readMessage(data: FormData): string {
+  const value = data.get('message')
+  return typeof value === 'string' ? value.trim() : ''
+}
 
-1. Native HTML form submit'i değerleri `FormData` olarak toplar; input'lara `name` vermelisin.
-2. `useActionState(action, initialState)`, `[state, formAction, isPending]` döndürür.
-3. React form action'ı önceki state'i, sonra `FormData`'yı argüman olarak alır: `(previousState, formData)`.
-4. `formAction`, `<form action>` prop'una verilir; action tamamlanınca state ve pending bilgisi güncellenir.
-5. `useFormStatus()` formun içindeki alt bileşende o formun pending bilgisini okur; formu render eden aynı bileşenden okunmaz.
-6. Action modelinde RHF'nin `register`, alan bazlı errors, `Controller` veya field array API'si otomatik gelmez.
-7. İki model birlikte kullanılabilir; ancak RHF ve React action arasında özel resmi entegrasyon API'si olduğu varsayılmaz.
+export function MessagePreview() {
+  function submit(data: FormData) {
+    const message = readMessage(data)
+    console.log(message)
+  }
 
-## Action submit'ini zaman sırasıyla oku
+  return (
+    <form action={submit}>
+      <label htmlFor="message">Mesaj</label>
+      <textarea id="message" name="message" />
+      <button>Önizle</button>
+    </form>
+  )
+}
+```
 
-Bir destek formu `message` alanını gönderiyor ve action kısa bir durum metni döndürüyor:
+`name="message"` tarayıcıya alanın FormData içindeki anahtarını söyler. Action burada gönderilen veriyi okur. `FormData.get` bir metin, dosya veya `null` verebilir; `typeof` kontrolüyle yalnız beklediğimiz metni kullanıyoruz. `name` unutulursa action çalışsa bile bu anahtar için `null` okursun.
 
-| Aşama | Action/FormData | UI durumu |
-|---|---|---|
-| İlk render | Action state `''` | Düğme etkin |
-| Kullanıcı yazar | Native input değeri değişir | Form action henüz çalışmadı |
-| Submit | React `FormData` üretip action çağırır | `isPending = true` |
-| Action okur | `formData.get('message')` string/`File`/null olabilir | Aynı pending görünür |
-| Action döner | Yeni sonuç state'e yazılır | `isPending = false`, mesaj görünür |
+## Action sonucunu React state'inde göster
 
-`FormData.get` dönüş tipi `FormDataEntryValue | null` olduğu için `String(...)` ile körlemesine dönüştürmek yerine beklenen değeri daralt. Dosya alanı eklenirse değer `File` olabilir. HTML `required`/`maxLength` tarayıcı kontrolleri basit kurallar için yardımcıdır; daha karmaşık, alan başına mesajlı hata akışı için state ve ilişkilendirmeyi ayrıca kurarsın.
+Bir fonksiyon `<form action>` ile çağrılınca **form action** olur; yani form gönderiminin yaptığı iş. Çalışmanın beklediği sırada kullanıcıya bir pending durumu (iş sürüyor bilgisi) göstermek için `useActionState` kullanabiliriz. Bu Hook, önceki sonucu action'a verir, yeni sonucu bileşene döndürür.
 
-## Basit action örneği
-
-Action'ın imzası ve form bağını şöyle kurabilirsin:
+### 2. örnek: Önceki state'i al, yeni sonucu döndür
 
 ```tsx check
 import { useActionState } from 'react'
 
 type MessageState = { text: string }
 
-async function submitMessage(previous: MessageState, data: FormData): Promise<MessageState> {
+async function countMessage(
+  previous: MessageState,
+  data: FormData,
+): Promise<MessageState> {
   const value = data.get('message')
   const message = typeof value === 'string' ? value.trim() : ''
   if (!message) return { text: 'Mesaj gerekli' }
-  return { text: `Alındı: ${message.length} karakter` }
+  return { text: `Mesaj ${message.length} karakter` }
 }
 
-export function SupportMessage() {
-  const [state, formAction, isPending] = useActionState(submitMessage, { text: '' })
-  return <form action={formAction}>
-    <label htmlFor="support-message">Mesaj</label>
-    <textarea id="support-message" name="message" required />
-    <button disabled={isPending}>{isPending ? 'Gönderiliyor…' : 'Gönder'}</button>
-    {state.text && <p role="status">{state.text}</p>}
-  </form>
+export function MessageCounter() {
+  const [state, formAction, isPending] = useActionState(countMessage, { text: '' })
+
+  return (
+    <form action={formAction}>
+      <label htmlFor="message-count">Mesaj</label>
+      <textarea id="message-count" name="message" required />
+      <button disabled={isPending}>{isPending ? 'Sayılıyor…' : 'Say'}</button>
+      {state.text && <p role="status">{state.text}</p>}
+    </form>
+  )
 }
 ```
 
-Action'ın ilk argümanı önceki state'dir; `FormData` ikinci argümandır. `name="message"` olmadan FormData içinde alan bulunmaz. `useActionState` action fonksiyonunu form prop'una verilecek hale getirir ve bekleme sonucunu aynı bileşene döndürür. Gerçek API isteği yapılacaksa ağ hatasını da state'e dönüştür veya hata sınırına uygun biçimde fırlat.
+Action imzası `(previousState, formData)` sırasındadır. `useActionState` ilk render'da başlangıç state'ini verir; submit'te action'ı çalıştırır; dönüş değerini `state` olarak sunar. Bu fonksiyon asenkron olduğunda `isPending` action tamamlanana kadar true olur. Buradaki `previous` kullanılmıyor, ama argüman yine de imzada yer almalı.
 
-## Hangi formda hangisi?
+## Gönderimi adım adım izle
 
-Tek bir metin kutusu ve tek bir gönderim sonucu olan form action ile az kodda kurulabilir. Bir formda farklı başlangıç değerleri, anlık dirty bilgisi, her alan için hata, tarih/picker gibi controlled bir kontrol ve eklenip silinen satırlar varsa RHF'nin alan modeli bu işleri doğrudan çözer.
+Kullanıcı “Yeni sezonu ne zaman duyuracaksınız?” yazıp gönderdiğinde şu sıra oluşur:
 
-Karar “React action yeni, RHF eski” değildir. Gerekli kullanıcı deneyimini ve doğrulama kapsamını karşılayan en küçük modeli seç. Native submit davranışı, JavaScript yüklenmeden gönderim gibi progressive enhancement beklentisi varsa React action avantaj sağlayabilir; client-side form kütüphanesinin kurulumuna bağlı davranışları da düşün. Bu platformun istemci uygulamalarında API entegrasyonu, alan hatası ve tekrar deneme akışları zaten bulunduğundan RHF yaygın kullanım için uygundur.
+| Adım | Ne çalışır? | State / görünen sonuç |
+|---|---|---|
+| İlk açılış | `useActionState` başlangıç değerini verir | `state.text` boş; düğme açık |
+| Yazma | Native textarea değeri değişir | Henüz action çağrılmaz |
+| Submit | React alanı `FormData` olarak toplar ve action'ı çağırır | `isPending` true |
+| Action | `data.get('message')` metni okur | Düğmede “Sayılıyor…” görünür |
+| Action döner | Yeni `MessageState` döner | `state.text` güncellenir, `isPending` false |
 
-İki yöntemi aynı formda kullanmak mümkün olsa da submit'in sahibi net olmalı. `<form action>` ve `onSubmit={handleSubmit(...)}` birlikte bağlanırsa iki akışın ne zaman çalıştığını dikkatle belirlemen gerekir; aksi halde iki kez submit veya iki doğrulama yolu oluşabilir. RHF değerlerini kendi callback'inle alıp bir React action çağırmak da ayrı bir tasarım kararıdır; bunun form kütüphanesinin otomatik entegrasyonu olduğunu söyleme.
+Bu ayrım, “form gönderiliyor” ile “sonuç geldi” anlarını görünür kılar. `required` tarayıcının boş alanı göndermemesine yardım eder; action yine de gelen veriyi kontrol eder, çünkü istemciden gelen değerleri güvenilir kabul edemeyiz.
 
-:::mistake[Action argüman sırası ters]
-**Belirti:** Action `FormData` üzerinde `.get` çağırınca hata verir. → **Neden:** `useActionState` action'a önce önceki state'i, sonra form verisini verir. → **Düzeltme:** İmzayı `(previousState, formData)` olarak tanımla.
+### 3. örnek: Sinema film önerisini action ile al
+
+Şimdi aynı yapıyı tek metin alanıyla film önerisi almaya büyütelim. Bu action alanı temizlemez veya film kaydettiğini iddia etmez; gelen öneriyi doğrulayıp kısa bir alındı sonucu gösterir:
+
+```tsx check
+import { useActionState } from 'react'
+
+type SuggestionState = { message: string }
+
+async function receiveSuggestion(
+  previous: SuggestionState,
+  data: FormData,
+): Promise<SuggestionState> {
+  const value = data.get('title')
+  const title = typeof value === 'string' ? value.trim() : ''
+  if (title.length < 2) return { message: 'Film adı en az iki karakter olmalı' }
+  return { message: `${title} önerin alındı` }
+}
+
+export function FilmSuggestionForm() {
+  const [state, formAction, isPending] = useActionState(receiveSuggestion, { message: '' })
+
+  return (
+    <form action={formAction}>
+      <label htmlFor="suggested-title">Önermek istediğin film</label>
+      <input id="suggested-title" name="title" required minLength={2} />
+      <button disabled={isPending}>{isPending ? 'Gönderiliyor…' : 'Öner'}</button>
+      {state.message && <p role="status">{state.message}</p>}
+    </form>
+  )
+}
+```
+
+Artık formun üç parçası belli: `name` alanı FormData'ya koyar, action değeri okur ve `useActionState` sonucu/pending bilgisini verir. `title` anahtarı ile input'un `name` değeri aynı olduğu için doğru alan okunur. Action'ın aldığı veriyi kontrol etmek önemlidir; tarayıcı kısıtlamaları tek başına sunucu doğrulaması değildir.
+
+Bir alanı dosya yüklemeye çevirirsen `FormData.get` bu kez `File` döndürebilir; sayı gibi görünen metin de kendiliğinden number olmaz. FormData sadece gönderilen değerleri taşır, uygulama kuralını ve doğruluğunu belirlemez. Bu nedenle action içinde beklenen türü kontrol et ve gerekirse sunucuya ulaşmadan önce anlaşılır bir sonuç döndür.
+
+## Action mı, RHF mi?
+
+Tek bir alan ve tek bir sonuç mesajı varsa native form ile action az kodda yeterli olabilir. Sekiz alan, alan başına hata, başlangıç değerleri, kirli durum veya eklenip silinen alan satırları varsa RHF bu alan yönetimini sunar. RHF'nin `register`, `Controller` ve field array araçları React action ile kendiliğinden ortaya çıkmaz.
+
+İki modeli aynı arayüzde birlikte kullanabilirsin, ama her form gönderiminin sahibini belirgin tut. RHF'nin `handleSubmit`'i ve `<form action>` gelişigüzel aynı forma bağlanırsa iki farklı gönderim akışı çalışabilir. RHF doğrulamasından geçen değerleri kendi callback'inde bir action'a vermek ayrı bir düzenlemedir; iki kütüphane arasında hazır, resmi bir bağlayıcı olduğu anlamına gelmez.
+
+Sekiz alanlı, dinamik etiketli ve alan bazlı hatalı bir formda RHF alanları yönetir. React action, asenkron gönderim ve sonuç bilgisini taşıyabilir. Gereksinime en küçük uyan yapıyı seç; araçları yeni oldukları için değil, çözdükleri ihtiyaç için kullan.
+
+:::mistake[Action yanlış sırada veri arıyor]
+**Belirti:** `data.get` çağrısı hata verir veya önceki sonuç üzerinde aranır. → **Neden:** `useActionState` önceki state'i ilk, FormData'yı ikinci argüman olarak verir. → **Düzeltme:** Action imzasını `(previousState, formData)` yaz.
 :::
 
-:::mistake[Form gönderiliyor ama FormData boş]
-**Belirti:** Action `null` değer alıyor. → **Neden:** Input üzerinde `name` yok veya yanlış anahtar okunuyor. → **Düzeltme:** Her native alanın `name` değerini ve `FormData.get` anahtarını eşleştir.
+:::mistake[Action alanı boş okuyor]
+**Belirti:** `FormData.get('title')` `null` döndürür. → **Neden:** Input'ta `name="title"` yoktur veya action başka anahtarı okur. → **Düzeltme:** `name` ile `get` içindeki anahtarı eşleştir.
 :::
 
-:::mistake[`useFormStatus` pending false kalıyor]
-**Belirti:** Submit düğmesi bekleme durumunu görmüyor. → **Neden:** Hook formu oluşturan aynı bileşende çağrılmış; o formun alt ağacında değil. → **Düzeltme:** Pending düğmesini `<form>` ağacının altındaki child bileşene taşı.
+:::info[Derinlemesine (isteğe bağlı)]
+`useFormStatus()` formun pending durumunu alt bileşenden okumayı sağlar; onu `<form>` elementini oluşturan aynı bileşende çağırma. Server Components ve Server Actions, server tarafında çalışan React altyapısı ve action işlevleriyle ilgilidir; bu istemci uygulamasındaki sıradan async action fonksiyonuyla aynı çalışma yeri değildir. Tarayıcıdaki kodda gizli anahtar tutulamaz; sunucu tarafı yetkilendirme yine sunucuda yapılmalıdır.
 :::
-
-:::sector
-Takımlar form mimarisini tek teknoloji kuralına değil ihtiyaç sınıflarına göre standardize eder: basit native form, action; zengin alan yönetimi, RHF; şema doğrulaması gerekiyorsa Zod gibi runtime schema. Bir projede iki yöntemi desteklemek bakım maliyetini artırıyorsa ekip varsayılanı belirleyip istisnaları gerekçelendirir.
-:::
-
-## Native davranış ile runtime doğrulaması
-
-HTML `required`, `minLength`, `type="email"` gibi constraint'ler tarayıcıda JavaScript çalışmadan önce kullanıcıya geri bildirim verebilir. Bunlar action'ın veya sunucunun aldığı veriyi otomatik doğru tipe dönüştürmez. `FormData.get()` `string | File | null` döndürür; hidden input da güvenilir değildir, kullanıcı istemci değerini değiştirebilir. Action içinde veriyi doğrula, API sınırında da tekrar kontrol et.
-
-`useActionState` sonucu çoğu zaman `{ kind: 'idle' } | { kind: 'error'; message: string } | { kind: 'success'; message: string }` gibi discriminated union olabilir. Böylece UI hata ve başarı mesajlarını karıştırmaz. Birden çok field error gerekiyorsa state yapısını ve alan-id ilişkisini kendin kurmalısın; action hook'u form library'nin hata ağacını üretmez. Basit string state hızlıdır ama durum çeşitlendikçe anlamı belirsizleşir.
-
-Progressive enhancement ihtiyacında action'a doğrudan server function bağlama kalıbı Server Components/Server Actions bağlamıyla karıştırılabilir. Bu eğitimdeki istemci React uygulamasında sıradan bir async client function kullanılabilir; sunucu işlemi hangi runtime'da çalışıyor, bu işin güvenlik sınırını belirler. Tarayıcı içinde çalışan action fonksiyonu sır saklamaz ve backend yetkilendirmesinin yerini almaz.
-
-Son karar, “formun kaç alanı var?” sayısından daha geniştir. Alanlar arası doğrulama, taslak saklama, tekrar deneme, offline destek ve erişilebilir hata focus'u gibi gereksinimleri yaz. Basit formda native kontrol + action az kodla yeterli olabilir; gelişmiş formda RHF bu tekrar eden alan durumunu sağlar. İki yöntemi birleştiriyorsan her birinin sorumlu olduğu state'i açıkça belirt.
 
 ## Özet ve kendini yokla
 
-- React action formu `FormData` ve `useActionState` ile submit sonucu/pending yönetebilir.
-- Action imzası önceki state, sonra `FormData` alır; native input'larda `name` zorunludur.
-- RHF alan odaklı durum ve dinamik/özel alan araçları verir; React action bunları sağlamaz.
-- Bir submit'in sahibini açık tut; iki mekanizmayı gelişigüzel üst üste bindirme.
+- Native alanın `name` değeri, FormData içinde hangi anahtarla bulunacağını belirler.
+- `useActionState` action'a önceki state'i, sonra FormData'yı verir; sonucu ve pending bilgisini döndürür.
+- Basit tek alanlı form action için uygun olabilir; zengin alan yönetimi RHF'nin işidir.
+- Aynı formda iki submit mekanizması varsa sorumluluklarını açıkça bağla.
 
-**Kendini yokla:** Bir radio grubunun hatasını alan düzeyinde ve `Controller` ile yönetmen gerekiyor; hangi model daha uygun? RHF. `useFormStatus` nerede okunur? İlgili formun alt ağacındaki bileşende.
+**Yeni terimler:**
+
+- **Native form:** Tarayıcının yerleşik `<form>` ve alan davranışı.
+- **FormData:** Form alanlarının ad/değer çiftlerini tutan tarayıcı nesnesi.
+- **Form action:** Form gönderilince çalışan fonksiyon.
+- **Pending:** Asenkron iş sürerken görülen bekleme durumu.
+
+**Kendini yokla:** Action neden önceki state ve sonra FormData alır? `useActionState` önceki sonucu action'a aktarır, sonra bu gönderimin alanlarını verir. `FormData.get('title')` neden `null` olabilir? İlgili input'ta `name="title"` yoksa veya anahtar uyuşmuyorsa.

@@ -2,10 +2,11 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'Regresyonu görünür kıl',
+  title: 'Aynı hatayı yakala',
   difficulty: 'kolay',
   concepts: ['test.what-to-test', 'router.search-params'],
-  question: 'Aynı hata tekrar etmesin diye ilk hangi senaryoyu kalıcı test olarak yazarsın?',
+  question:
+    'İkinci sayfaya geçince yine ilk sayfa geliyorsa hangi senaryoyu kalıcı test olarak yazarsın?',
   options: [
     {
       text: 'Arama URL’si `?q=matrix&page=2` iken istekte `query=matrix` ve `page=2` bulunur',
@@ -19,9 +20,10 @@ export default defineQuestion({
       explanation: 'Satır sayısı davranış değildir; sayfa seçimi yine yanlış olabilir.',
     },
     {
-      text: 'Yalnızca ilk sayfanın açıldığını kontrol ederim',
+      text: 'İkinci sayfa isteğinin başladığını kontrol ederim',
       correct: false,
-      explanation: 'İlk sayfa zaten çalışıyordu; regresyon ikinci sayfa geçişindeydi.',
+      explanation:
+        'İstek başlayabilir ama yanlış `page=1` taşıyabilir; URL parametresini de denetle.',
     },
   ],
 })

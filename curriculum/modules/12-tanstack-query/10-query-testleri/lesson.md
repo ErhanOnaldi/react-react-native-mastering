@@ -6,138 +6,136 @@ kind: concept
 
 # Query kullanan arayüzü izole test et
 
-:::pain[Problem]
-Bir test tek başına başarılı, tüm test paketi birlikte çalışınca arama sonucunda başka senaryonun eski verisi çıkıyor. İstek sayısı bazen sıfır, bazen iki oluyor. Testlerin aynı global QueryClient’ı kullanması sonucu test sırası belirliyor.
-:::
+Basit bir component’i daha önce Testing Library ile render edip ekranda metin aradın. `useQuery` kullanan component de test edilebilir; farkı, bir Query provider’ına ve çalışacağı bir cache’e ihtiyaç duymasıdır. Önce görünür durumları, sonra isteğin nasıl kontrol edildiğini, en son testlerin birbirinden nasıl ayrıldığını kuralım.
 
-## Her test kendi cache dünyasını alsın
+## İlk olarak ekranda ne göründüğünü doğrula
 
-Query kullanan component’in görünümü cache durumu, query ayarları ve ağ cevabına bağlıdır. Testler arasında aynı QueryClient paylaşılırsa önceki testin cevabı sonrakinde hazır olabilir. Her test için yeni client, beklenebilir cache başlangıcı sağlar. Bu, üretimdeki uygulamanın tek client kullanma ilkesinden farklı değildir; test senaryoları birbirinden yalıtılmış küçük uygulamalardır.
+Query isteği tamamlanana kadar component yükleniyor metni gösterebilir. İlk render senkron gerçekleştiği için bu anlık metni `getByText` ile okuyabilirsin. `getBy...`, o anda DOM’da arar ve öğe yoksa hemen hata verir.
 
-:::model[Query cache yaşam döngüsü]
-Cache key’ler veriyi tutar; observer ayrılınca stale/inactive süreleri işlemeye başlar ve ileride GC olabilir. Testte ayrı client yaratmak, bir testin inactive cache’inin öteki testte görünmesini önler. Yeni bağlamda modelin değişen tarafı, cache davranışını tekrarlanabilir ölçmek için ömrünü test sınırına bağlamaktır.
-:::
-
-![TanStack Query'nin ağ çağrısını MSW ile yakalanan cevap üzerinden cache'e taşımasını gösteren diyagram](diagram:msw-perdesi)
-
-Test modelinin kuralları:
-
-1. Her test yeni QueryClient ve boş cache ile başlar.
-2. Test QueryClient’ında retry kapalıdır; hata senaryosu süresi tahmin edilebilir olur.
-3. UI gerçek provider ve query function ile render edilir.
-4. MSW yalnız ağ sınırını kontrol eder; assertion kullanıcıya sunulan davranışı doğrular.
-5. Asenkron görünüm, DOM’da bulunana kadar beklenir; senkron ilk görünüm anında okunur.
-
-Test, kullanıcının göreceği cümle ve davranışı doğrulasın. Önceki modüllerde `render`, `screen`, `userEvent` ve `findBy` kullandın; burada component’in provider gereksinimini de karşılıyoruz. MSW, uygulamanın gerçek `fetch` isteğini ağ katmanında yakalayıp senin belirlediğin response’u verir. Component yine gerçek query function ile çalışır; test gerçek API’ye çıkmadan UI davranışını görebilir.
-
-## Küçük bir render yardımcısı kur
-
-Tekrarlanan provider kodunu test helper’ında toplayabilirsin. Helper her çağrıda client oluşturmalı ve `QueryClientProvider` altında RTL `render` çağırmalıdır. Testin gerekirse client’ı inceleyebilmesi için `{ client, ...render(...) }` döndürmek yararlı olabilir.
-
-```tsx check title="src/test/renderWithQuery.tsx"
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render } from '@testing-library/react'
-import type { ReactElement, ReactNode } from 'react'
-
-export function renderInDataClient(ui: ReactElement) {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+```tsx
+function FeaturedFilm() {
+  const film = useQuery({
+    queryKey: ['movies', 'featured'],
+    queryFn: getFeaturedFilm,
   })
-  const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  )
-  return { client, ...render(ui, { wrapper }) }
+
+  if (film.isPending) return <p>Öne çıkan film yükleniyor</p>
+  if (film.isError) return <p role="alert">Film alınamadı</p>
+  return <h2>{film.data.title}</h2>
 }
 ```
 
-Client’ı helper fonksiyonunun dışında oluşturma. Module seviyesindeki client bütün test dosyası boyunca yaşar; cache’i clear etmek ise eski retry timer’larını, observer’ları veya defaults’ları paylaşma riskini tamamen ortadan kaldırmaz. Yeni client daha yalın sınırdır. Query’de retry varsayılanı üretim deneyimine yardımcı olur ama test hatasında beklemeyi uzatabilir; bu nedenle test client’ında kapatıyoruz. Gerçek kullanımda retry kuralını endpoint ve hata türüne göre ayrıca seçebilirsin.
+Bu component’in ilk anda yükleme cümlesi göstermesi, query cevabının henüz gelmemiş olmasından kaynaklanır. Bir testte bu cümleyi render’dan hemen sonra ararsın. Başarılı cevapla gelecek başlık için aynı şeyi yapamazsın; istek ve React güncellemesi henüz tamamlanmamış olabilir.
 
-## Beklemeyi kullanıcı davranışıyla eşleştir
+## Sonradan gelen cevabı bekle
 
-Query async çalışır; `render` biter bitmez success text’in DOM’da olmasını bekleme. `screen.findByRole` veya `findByText` kullanmak, sonuç görünene kadar DOM’u bekler. `getBy...` anlık sorgudur ve metin henüz yoksa hemen hata verir. `waitFor` ise tek bir assertion için birden çok DOM güncellemesini beklemen gerektiğinde yararlıdır; içine yalnız assertion koy.
-
-| Beklenti | Araç | Neden |
-|---|---|---|
-| İlk yükleme metni şu anda var | `getByText` | İlk render’da senkron metin görünür |
-| API cevabı sonrasında başlık gelir | `findByRole` | Promise ve React update beklenir |
-| Birkaç koşul sonunda cache’e yazar | `waitFor` | Assertion periyodik yeniden denenir |
-| Kullanıcı “Geri”ye basar | `user.click` | Gerçek etkileşim akışına yaklaşır |
-| Request sayısı doğrulanır | `requests(path)` | Ağ davranışı doğrudan görünür olur |
-
-Query’nin `isPending`, `isError` veya `data` dalında gösterilen şey de davranışın parçasıdır. 500 response’u MSW ile verildiğinde query function’ın hata fırlatıp fırlatmadığı ve component’in kullanıcıya hangi alert’i sunduğu gözlenebilir. Başarısız network response’unu bileşene enjekte edilmiş sahte bir state ile taklit etme; ağ sınırında kontrol etmek, query’nin hata hattını da gerçekçi çalıştırır.
-
-## İz sürme: render’dan assertion’a
-
-RTL component’i provider wrapper içinde render eder. `useQuery` key’i cache’de boş bulur ve query function’ı başlatır. `fetch` URL’i MSW handler’ına ulaşır; handler Türkçe gözlem cevabı döndürür. Query Promise’i çözer, cevabı cache’e koyar ve component success sonucu ile tekrar render olur. `findByRole` DOM’da başlığı bulana dek bekler. Ardından test `requests('/api/harbors/north')` uzunluğunu kontrol edebilir.
-
-| Sıra | Katman | Olay | Gözlenebilir sonuç |
-|---:|---|---|---|
-| 1 | Test helper | Yeni client ve wrapper oluşur | Önceden kalmış data yoktur |
-| 2 | RTL render | Component hook ile key’e bağlanır | Bekleme metni görünür |
-| 3 | Query function | `fetch` MSW’nin yakaladığı URL’e gider | Gerçek ağ kullanılmaz |
-| 4 | MSW handler | 200 ya da 500 cevabı döndürür | Query success veya error’a geçer |
-| 5 | React render | Query sonucu JSX’e dönüşür | Başlık ya da alert görünür |
-| 6 | RTL assertion | `findBy` beklenen metni bulur | Test kullanıcı davranışını doğrular |
-
-İkinci test yeni helper çağrısıyla başka client alır. Bu testin cache’i boş başlar; handler geçmişi de test altyapısında temizlenir. Böylece birinci testin cevabı veya istek sayısı ikinci assertion’a karışmaz. Bu sınır, testin hangi kullanıcı davranışını kanıtladığını okunaklı kılar.
-
-### Kırık örnek: tek client’ı dosya seviyesinde paylaş
+`findBy...`, DOM öğesi görünene kadar bekleyen Testing Library sorgusudur. Önceki örneğe bir test yazdığını düşün: sahte değil, uygulamanın gerçek query function’ı çalışır; HTTP isteğini MSW yakalar. MSW, testte ağ isteğine belirlenmiş cevap döndüren araçtır.
 
 ```tsx
-const client = new QueryClient()
+render(<FeaturedFilm />, { wrapper: filmQueryWrapper })
 
-function wrapper({ children }: { children: React.ReactNode }) {
+expect(screen.getByText('Öne çıkan film yükleniyor')).toBeInTheDocument()
+expect(await screen.findByRole('heading', { name: 'Kayıp Balık' })).toBeInTheDocument()
+```
+
+İlk assertion render anındaki senkron yükleme metnini okur; ikinci assertion API cevabından sonra oluşacak başlığı bekler. `getByRole` ile başlığı anında ararsan test, istek bitmeden düşebilir. Burada component’i saran `filmQueryWrapper`, Query provider’ını içeriğiyle birlikte render’a verir.
+
+MSW handler’ında cevap olarak `Kayıp Balık` döndürdüğünde gerçek `fetch` isteği dış ağa çıkmaz. Query function, cache ve component yine birlikte çalışır; test yalnızca ağ sınırını kontrol eder. Böylece sadece JSX’e elle hazırlanmış bir sonuç vermek yerine, yükleme ve başarı akışını da gözlersin.
+
+![TanStack Query'nin ağ çağrısını MSW ile yakalanan cevap üzerinden cache'e taşımasını gösteren diyagram](diagram:msw-perdesi)
+
+## Hata yanıtını da kullanıcı davranışı olarak test et
+
+Başarılı cevaba ek olarak API’nin hata döndürdüğü akışı düşün. Testte MSW handler’ı 500 yanıtı verir; component’in kullanıcıya sunduğu uyarıyı ararsın.
+
+```tsx
+server.use(
+  http.get('/api/movies/featured', () =>
+    HttpResponse.json({ message: 'Sunucu hatası' }, { status: 500 }),
+  ),
+)
+
+render(<FeaturedFilm />, { wrapper: filmQueryWrapper })
+expect(await screen.findByRole('alert')).toHaveTextContent('Film alınamadı')
+```
+
+Query function başarısız HTTP yanıtında hata üretiyorsa component hata dalına geçer ve `role="alert"` uyarısı görünür. Bu test kullanıcının gördüğü sonucu doğrular. Query’nin içindeki `isError` değerini ayrıca test etmek gerekmez; görünen hata aynı davranışı daha doğrudan anlatır.
+
+## Her testin kendi cache’i olsun
+
+Query client, cache ve query varsayılanlarını yöneten nesnedir. Bir testten ötekine aynı client’ı verirsen önceki cevap yeni teste taşınabilir. Testin dışından bakınca bu, testlerin çalıştırılma sırasına göre başlık ya da istek sayısının değişmesi gibi görünür.
+
+Testlerin sınırında **izolasyon**, yani bir senaryonun verisinin diğerine karışmaması, her testte yeni bir client oluşturarak sağlanır. `QueryClientProvider` bu client’ı component ağacına verir. Teste özel wrapper, `render` sırasında Query isteyen component’i provider içine yerleştiren küçük bir component’tir.
+
+```tsx
+const client = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+})
+
+function TestWrapper({ children }: { children: React.ReactNode }) {
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }
 ```
 
-Test 1 `['ports']` key’ini doldurur. Test 2 aynı key’e render olunca `staleTime` veya cache ayarlarına bağlı olarak test 1’in data’sı görünür ve yeni handler hiç çağrılmayabilir. Test 2 tek başına çalışınca geçmesi, birlikte de yalıtılmış olduğu anlamına gelmez.
+Bu parça provider’ı gösteriyor; gerçek test yardımcısında client oluşturmayı dosya seviyesine değil, yardımcının her çağrısına koymalısın. Böylece iki render iki farklı cache alır. Ayrıca test ortamında `retry: false` seçmek, query başarısız olduğunda otomatik tekrar denemeleri beklemeden hatayı görmeni sağlar.
 
-### Düzeltilmiş yapı: her render çağrısına yeni client
+Yardımcı, client’a ek olarak Testing Library `render` sonucunu da korursa test `rerender` ile yeni props verebilir, `unmount` ile component’i kaldırabilir.
 
-Yukarıdaki `renderInDataClient` helper’ı `new QueryClient()` çağrısını kendi gövdesinde yapar. Testten teste kullanıcı görünümünü doğrudan okuyabilirsin:
+İstek, cevap ve ekrandaki değişimi şu sırayla izleyebilirsin:
+
+| Sıra | Ne olur? | Nereden anlarsın? |
+|---:|---|---|
+| 1 | Test yeni Query client ve provider oluşturur | Önceki testten cache cevabı taşınmaz |
+| 2 | Testing Library component’i render eder | Senkron yükleme metni görünür |
+| 3 | Query function `fetch` çağırır | İstek MSW handler’ına ulaşır |
+| 4 | Handler başarı veya hata cevabı döndürür | Query uygun sonuca geçer |
+| 5 | React component’i yeni sonuçla render eder | Başlık ya da alert görünür |
+| 6 | Test `findBy...` ile bekler | Asenkron kullanıcı görünümü doğrulanır |
+
+Her adım bir sonrakini tetikler: render isteği başlatır, cevap Query cache’ine yazılır ve React ekrandaki durumu günceller. O yüzden ağın tamamlanmasını beklemeden istek sayısı okumak bazen sıfır görür; önce ekrandaki cevabı bekle, sonra o istek akışıyla ilgili sayımı kontrol et.
+
+Arama sonucundan başka bir görünüme geçince sonuç component’i ağaçtan ayrılabilir. Query cache’i component’ten ayrı yaşar: aynı arama key’iyle geri dönüp sonuç component’i yeniden bağlanırsa, veri `staleTime` içinde tazeyse başlıklar tekrar gösterilir ve yeni istek gerekmez. Arama metni değiştiğinde key de değiştiği için yeni cevap alınır.
+
+| Akış adımı | Query durumu | Beklenen ağ davranışı |
+|---|---|---|
+| “Dövüş” araması açılır | `['movies', 'search', 'Dövüş']` yüklenir | Bir arama isteği |
+| Sonuçtan film bilgisine geçilir | Arama component’i unmount olur; cache kalır | Yeni arama isteği yok |
+| Aynı aramaya geri dönülür | Aynı key’e yeniden bağlanır | Veri tazeyse yeni istek yok |
+| Arama “Matrix” olur | Farklı key kullanılır | Matrix için yeni istek |
+
+Bu akışta ekranın görünür olup olmamasından çok query key’i ve tazelik önemlidir. Component’in ağaçtan ayrılması cache’i silmez; testte görünüm değişimini ve istek sayısını ayrı ayrı kontrol edebilirsin.
+
+## Sık hata: tek client’ı test dosyasında paylaşmak
+
+Şu client dosyanın tepesinde oluşturulursa bütün testler aynı cache’i kullanır:
 
 ```tsx
-renderInDataClient(<PortStatus />)
-expect(await screen.findByRole('heading', { name: 'Kuzey Limanı' })).toBeInTheDocument()
+const sharedClient = new QueryClient()
 ```
 
-Bu örnek, Vitest, RTL ve jest-dom import’larının test dosyasında açıkça bulunduğu bir ortamı varsayar. Repo test setup’ında yardımcı matchers kayıtlıdır; yeni bir projede setup yapılandırmasını doğrula.
+Belirti, ikinci testte başlık hemen görünmesi ve yeni HTTP isteği hiç çıkmaması olabilir. Çünkü aynı key’in cevabı birinci testten kalmıştır. Client’ı her render helper çağrısında üret; testte hata akışını da tahmin edilebilir tutmak için query retry’ını kapat.
 
-Cache’le ilgili bir davranışı doğrulamak gerekiyorsa helper’ın döndürdüğü `client` üzerinden cache state’ini okuyabilirsin. Ama her assertion’ı `getQueryData` ile yazma. Kullanıcı “başlık görünür mü?” diye soruyorsa DOM assertion doğrudan cevaptır. Cache assertion, aynı key’in ikinci kez fetch olup olmadığını ya da prefetch’in gerçekten cache’e yazdığını anlamak için uygundur.
+Asenkron beklentide de benzer bir tuzak vardır. **Belirti:** `getByRole('heading')` bazen cevap gelmeden hata verir. **Neden:** `getBy...` beklemez. **Düzeltme:** Sonradan beliren başlıkta `findByRole`, ilk anda bulunan yükleme mesajında `getByText` kullan.
 
-MSW cevabını test başına değiştirmek de gerçek durumları modellemeye yarar. Bir handler 500 döndürür; component’in alert’i aranır. Başka handler boş `results` döndürür; boş-state metni beklenir. Böylece error ile empty aynı görünmemelidir. Test adı da sonuç cümlesi olsun: “sunucu hata verdiğinde uyarı görünür” gibi. Bir testin hangi cache ayarını kullandığını değil, ürün davranışını anlatır.
+## Aklında kalsın
 
-## Sınır durumları ve sık hatalar
+- Query kullanan component testinde provider ve Query client gerekir.
+- Her test için yeni client oluştur; böylece cache testler arasında sızmaz.
+- Test client’ında retry kapatmak hata akışını beklenebilir kılar.
+- MSW gerçek `fetch` çağrısını testte yakalar; test dış API’ye çıkmaz.
+- Senkron ilk görünüm için `getBy`, sonradan gelen görünüm için `findBy` kullan.
 
-:::mistake[`getBy` ile asenkron cevabı beklemek]
-**Belirti:** Test ilk render’da “Unable to find” ile düşer. → **Neden:** Query cevabı `getBy` çalışmadan önce gelmemiştir. → **Düzeltme:** Veri sonradan geleceği için `findBy...` kullan; senkron pending metni için `getBy...` uygundur.
+**Yeni terimler**
+
+- **Test izolasyonu:** Bir testin cache ve ağ senaryosunun başka testi etkilememesi.
+- **Wrapper:** Test edilen component’i ihtiyaç duyduğu provider’larla saran component.
+- **MSW:** Testte HTTP isteklerini yakalayıp belirlediğin cevabı döndüren araç.
+- **`findBy`:** DOM’da sonradan belirecek öğeyi bekleyerek bulan Testing Library sorgusu.
+
+**Kendini yokla:** Başlık API cevabından sonra görünüyorsa `getBy` mı `findBy` mı seçersin? Neden her test için yeni client oluşturursun?
+
+**Yanıt:** `findBy` seçersin; cevap asenkron gelir. Yeni client, önceki testin cache’inin cevabı veya istek davranışını değiştirmesini engeller.
+
+:::info[Derinlemesine (isteğe bağlı)]
+`waitFor` birden fazla DOM güncellemesinden sonra bir assertion’ı yeniden denemek için kullanılabilir; içine assertion dışında etkileşim veya yan etki koyma. QueryClient’ı temizlemektense test başına yenisini kurmak, observer ve retry durumlarının da test sınırını aşmamasını sağlar.
 :::
-
-:::mistake[Retry yüzünden testin uzaması]
-**Belirti:** Hata senaryosu birkaç denemeden sonra sonuçlanır. → **Neden:** Test QueryClient’ında retry varsayılanı açıktır. → **Düzeltme:** Test client’ında `queries.retry: false` kullan; üretim retry politikasını ayrı değerlendir.
-:::
-
-:::mistake[Response’u assert etmeden önce beklememek]
-**Belirti:** Test bazen geçer bazen count sıfır bulur. → **Neden:** Promise’in bitişi beklenmeden ağ çağrısı sayılmıştır. → **Düzeltme:** Önce success görünümünü `findBy` ile bekle, sonra request kaydını oku.
-:::
-
-:::mistake[Her şeyi implementation detail olarak test etmek]
-**Belirti:** `isSuccess` boolean’ı değişince UI aynı olsa da test kırılır. → **Neden:** Kullanıcının göremeyeceği internal query state doğrulanmıştır. → **Düzeltme:** Görünür pending, error, data ve kullanıcı etkileşimini önceliklendir; cache incelemesini yalnız cache davranışı gereksinim olduğunda ekle.
-:::
-
-:::sector
-Üretim koduyla aynı provider sınırını testte kur, ama test başına yeni client kullan. MSW’yi gerçek `fetch` çağrısını yakalamak için seç; bu sayede UI, query function ve cache birlikte çalışır. Test adı da “arama sonucu gelir” gibi davranışı anlatsın.
-:::
-
-## Özet
-
-- Query component testi provider ve QueryClient gerektirir.
-- Her test kendi yeni client’ını kullanır; retry testte kapanabilir.
-- MSW gerçek fetch sınırını taklit eder; test gerçek ağa çıkmaz.
-- Asenkron data için `findBy`, senkron ilk görünüm için `getBy` kullan.
-- Önce kullanıcının gördüğü davranışı, sonra gerçekten gerekliyse cache ayrıntısını doğrula.
-
-**Kendini yokla:** Module seviyesinde QueryClient paylaşmak neden test sırasına bağlanır? Başlık API cevabından sonra çıkıyorsa `getBy` mi `findBy` mi gerekir?
-
-**Yanıt:** Önceki testin cache’i sonraki teste taşınabilir. Sonradan gelen başlık için `findBy` kullanılır.

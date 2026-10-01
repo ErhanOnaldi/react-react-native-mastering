@@ -1,145 +1,137 @@
 ---
 title: "Bileşeni kullanıcı gibi sınamak"
-minutes: 14
+minutes: 16
 kind: concept
 ---
 
 # Bileşeni kullanıcı gibi sınamak
 
-:::pain[Problem]
-Favori testi `onToggle(550)` fonksiyonunu doğrudan çağırıyor ve yeşil. Ekrandaki gerçek düğmeye `disabled` eklenince kullanıcı tıklayamıyor, ama test hâlâ yeşil kalıyor. Test kodu olayın sonucunu çalıştırdı; kullanıcının o sonuca ulaşabildiğini hiç sormadı.
-:::
+Sinema’daki bir film kartında “İzleme listeme ekle” düğmesi olduğunu düşün. Kartın callback’ini doğrudan çağırmak kolaydır; ama düğme ekranda yoksa ya da `disabled` ise kullanıcı bu callback’e ulaşamaz. Testin bunu fark etmesi için sonucu içeriden üretmek yerine ekrandaki yoldan ilerlemesi gerekir.
 
-## Testin sınırı ekranda başlar
+## Önce testin neyi kanıtladığına bakalım
 
-3. modülün 10. dersinde `render`, `getByRole` ve `userEvent` ile React bileşenini kullanıcı yüzeyinden sınamaya başladın. Burada aynı kurulumu baştan anlatmıyoruz; yeni adım, hangi davranışın hangi test sınırına ait olduğunu ve iç ayrıntıyı nasıl dışarıda bırakacağını seçmek. Bir bileşen props alır, DOM üretir, kullanıcı olaylarına yanıt verir ve bazen dış sistemlerden veri ister. Kullanıcının erişebildiği kısım DOM ve etkileşimdir. State değişkeninin adı, handler gövdesi veya CSS class’ı tek başına kullanıcı sözleşmesi değildir.
-
-React Testing Library (RTL), bileşeni gerçek DOM’a yakın bir ortamda render eder. Sen ekrandaki kontrolleri bulur, kullanıcı olayını uygular ve ortaya çıkan DOM’u incelersin. Test, bileşenin içini açmaya değil, bileşen sınırından görülen davranışı korumaya çalışır.
-
-Kesin kurallar:
-
-1. **Gözlenebilir sonucu seç.** Kullanıcının görebildiği metin, erişebildiği kontrol, URL değişimi veya gönderilen istek gibi bir davranışı doğrula.
-2. **Kontrolü erişilebilir kimliğiyle bul.** Düğme, bağlantı, başlık, textbox veya status gibi rolü ve gerekiyorsa erişilebilir adı kullan.
-3. **Etkileşimi kullanıcıdan başlat.** Bir callback’i doğrudan çağırmak yerine DOM’daki düğmeye tıkla ya da alana yaz.
-4. **İç uygulama ayrıntısını gereksiz yere sabitleme.** State değişkeninin adını, class sırasını veya bileşen ağacının belirli bir iç sarmalayıcısını test etme.
-5. **Her assertion bir gereksinimi korusun.** Test adı ve beklenti birlikte, kullanıcı açısından neyin doğru kalması gerektiğini anlatsın.
-
-Bu, her testte bütün uygulamayı açman gerektiği anlamına gelmez. Bir saf fonksiyon için birim testi en ucuz ve doğru sınırdır. Bir bileşenin ekrana ne çizdiğini, router veya ağla nasıl birleştiğini ölçmek için entegrasyon testi gerekir. Gerçek tarayıcıda tüm uygulamayı çalıştırmak ise uçtan uca testin işidir.
-
-![Birim, entegrasyon ve uçtan uca testin sorumluluklarını gösteren piramit](diagram:test-katmanlari)
-
-## Aynı davranışın iki testi
-
-Kampanya kartında “İzleme listeme ekle” düğmesi olsun. Aşağıdaki test, sonucu doğrudan üretir:
+Aşağıdaki test, bir callback’e sayı gönderir:
 
 ```tsx
-// Kırık sınır: kullanıcının ulaşacağı düğme devre dışı olsa bile geçer.
-const toggle = vi.fn()
-toggle(72)
-expect(toggle).toHaveBeenCalledWith(72)
+const addToList = vi.fn()
+addToList(72)
+expect(addToList).toHaveBeenCalledWith(72)
 ```
 
-Burada test edilen şey `toggle` mock’unun kendisidir. Bileşen render edilmediği için düğmenin DOM’da bulunması, doğru adla duyurulması veya gerçekten çalışması hakkında kanıt yoktur.
+Beklenti yeşil olur; fakat bu kod bir React bileşeni bile render etmedi. “Render etmek”, bileşeni DOM’da görülebilecek çıktıya dönüştürmektir. Bu nedenle test, düğmenin varlığını, adını veya tıklanabilir olup olmadığını kanıtlamaz. `vi.fn()` burada Vitest’in çağrılarını kaydeden sahte bir fonksiyonudur; callback’in gerçekten kullanıcı yolundan çağrılıp çağrılmadığını görmemizi sağlar.
 
-Doğru sınır, render edilmiş kontrolü çalıştırır. Örnekte `WatchlistButton` bambaşka bir görev senaryosudur; ders, görevlerdeki bileşen adlarını veya çözümü kullanmaz:
+React Testing Library (RTL), React bileşenini DOM’a render edip ekrandaki davranışı sınamamıza yarayan araçtır. DOM, tarayıcının sayfadaki düğme ve metin gibi öğeleri tuttuğu ağaç yapıdır. RTL’de bileşeni render eder, kullanıcıya sunulan kontrolü bulur, etkileşimi başlatır ve görünen sonucu doğrularız.
+
+## Ekrandaki düğmeye ulaşalım
+
+İlk adımda yalnızca `WatchlistButton` bileşenini render edip düğmeye basacağız. **Erişilebilir ad**, kontrolün ekran okuyucu gibi yardımcı teknolojilere hangi isimle sunulduğudur; bu örnekte düğmenin içindeki metindir.
 
 ```tsx check
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 
-function WatchlistButton({ itemId, onAdd }: { itemId: number; onAdd: (id: number) => void }) {
-  return <button onClick={() => onAdd(itemId)}>İzleme listeme ekle</button>
+function WatchlistButton({ onAdd }: { onAdd: () => void }) {
+  return <button onClick={onAdd}>İzleme listeme ekle</button>
 }
 
-it('izleme listesine ekleme isteğini iletir', async () => {
+it('izleme listesi düğmesine basılmasını bildirir', async () => {
   const user = userEvent.setup()
   const onAdd = vi.fn()
-  render(<WatchlistButton itemId={72} onAdd={onAdd} />)
+  render(<WatchlistButton onAdd={onAdd} />)
 
   await user.click(screen.getByRole('button', { name: 'İzleme listeme ekle' }))
 
-  expect(onAdd).toHaveBeenCalledWith(72)
+  expect(onAdd).toHaveBeenCalledOnce()
 })
 ```
 
-Bu blok tek başına derlenebilir bir modül olarak tasarlanmıştır; örnek bileşenin dosyası bu öğretim örneği için mevcut kabul edilir. `render` DOM’u oluşturur, `screen` o DOM’da arama yapar, `user.click` gerçek etkileşim dizisini başlatır. `await`, olay dizisi tamamlanmadan assertion’a geçmemeni sağlar.
+Burada `getByRole` düğmeyi kullanıcıya sunulan rolü ve adıyla bulur. `user.click` gerçek tıklama akışını başlatır; akış tamamlanmadan son beklentiye geçmemek için `await` kullanırız. Artık test, callback’in düğme üzerinden ulaşılabilir olduğunu kanıtlar.
 
-## Test akışını satır satır izle
+## Testi bir adım daha gerçekçi yapalım
 
-Yukarıdaki testte zaman ve veri akışı şöyle ilerler:
+Bir film kartında düğmenin hangi film için çalıştığını da bilmek isteyebiliriz. Şimdi bileşene bir film numarası ekliyoruz; önceki örneğe eklenen tek yeni fikir budur.
 
-| Sıra | Çalışan ifade | Değer / gözlem |
+```tsx
+function WatchlistButton({
+  movieId,
+  onAdd,
+}: {
+  movieId: number
+  onAdd: (id: number) => void
+}) {
+  return <button onClick={() => onAdd(movieId)}>İzleme listeme ekle</button>
+}
+```
+
+Render edilen düğmeye tıkladığında bileşen `movieId` değerini dışarı iletir. Bu davranışın testi yine kullanıcı yolunu izlemeli: düğmeyi bul, tıkla, sonra kaydediciye doğru numaranın gittiğini doğrula. `onAdd(72)` çağrısını testte elle yapmak bu bağlantıyı atlar.
+
+Şimdi farklı bir film davranışı ekleyelim: fragman oynarken ekranda kısa bir durum mesajı belirsin. Böyle bir mesaj, bir buton veya state değişkeninin adı yerine kullanıcıya görünen sonucu sınamamıza örnektir.
+
+```tsx
+function TrailerStatus({ playing }: { playing: boolean }) {
+  return playing ? <p role="status">Fragman oynatılıyor</p> : null
+}
+```
+
+`playing` doğru olduğunda kullanıcı bir `status` mesajı görür; yanlış olduğunda mesaj DOM’da yoktur. Test bu iki sonucu sınayabilir ve bileşenin içeride boolean mı, başka bir state yapısı mı kullandığına bağlanmaz. Bir düğmenin seçili durumunu göstermek gerektiğinde `aria-pressed` da kullanıcıya sunulan semantik bir durumdur.
+
+## Akışı satır satır izle
+
+İlk testte olanlar şu sıradadır:
+
+| Sıra | İfade | Gözlem |
 |---|---|---|
-| 1 | `userEvent.setup()` | Tıklama için bir kullanıcı oturumu hazırlanır. |
-| 2 | `vi.fn()` | Henüz çağrılmamış `onAdd` kaydedicisi oluşur. |
-| 3 | `render(...)` | Bileşen DOM’a eklenir; düğme erişilebilir adını alır. |
-| 4 | `getByRole(...)` | Tam bir düğme bulunur; yoksa test hemen hata verir. |
-| 5 | `await user.click(...)` | Kullanıcı olayları tamamlanır; bileşen handler’ı çalışabilir. |
-| 6 | `toHaveBeenCalledWith(72)` | Düğmenin doğru öğe kimliğiyle callback’i çağırdığı doğrulanır. |
+| 1 | `userEvent.setup()` | Bu test için etkileşim oturumu hazırlanır. |
+| 2 | `render(...)` | Bileşen DOM’a eklenir. |
+| 3 | `getByRole(...)` | Adı eşleşen düğme bulunur; bulunamazsa test hemen hata verir. |
+| 4 | `await user.click(...)` | Tıklama olayları tamamlanır ve bileşenin handler’ı çalışabilir. |
+| 5 | `expect(...)` | Callback’in kullanıcı etkileşimiyle çağrıldığı doğrulanır. |
 
-Test, callback çağrısını doğruluyor olsa da onu bileşenden bağımsız çalıştırmıyor. Önemli fark, çağrının DOM’daki düğmeye kullanıcı etkileşimiyle ulaşarak gerçekleşmesidir. Test ayrıca erişilebilir adı sorguladığı için etiketsiz ya da farklı adla duyurulan bir kontrolü kabul etmez.
+Bu sıra, testin neden callback’i doğrudan çağırmaması gerektiğini gösterir: doğrudan çağrıda 2–4. adımlar yoktur. Düğme `disabled` olursa gerçek etkileşim callback’i çağırmaz ve son beklenti hata verir.
 
-## Test katmanı gereksinime göre seçilir
+## Birim mi, bileşen mi?
 
-Bir formülün yüzde hesabı birim testinde doğrulanabilir. Bir formun alanı, hata mesajı ve submit davranışı birlikte çalışırken RTL entegrasyon testi daha anlamlıdır. Uygulamanın gerçek bir tarayıcıda açılıp farklı sayfalar arasında dolaşması ise Playwright gibi uçtan uca bir araç ister.
+Bir başlığı biçimlendiren saf fonksiyon için React ve DOM kurmaya gerek yoktur; fonksiyona girdi verip çıktısını birim testinde sınarsın. Bir bileşenin kullanıcıya sunduğu kontrolü ve tıklama sonucunu RTL ile sınamak daha uygun olur. Birden fazla parçanın birlikte çalışmasını daha geniş sınırda doğrulayan teste entegrasyon testi denir; bu modülde component ile DOM etkileşimine odaklanıyoruz.
 
-Test katmanı seçerken “hangi araç daha güçlü?” diye değil, “bu gereksinim için hangi çevre gerçekten gerekli?” diye sor. Birim testini router, ağ ve tarayıcıyla kurmak yavaşlık ve bakım maliyeti getirir. Buna karşılık, iki bileşen arasındaki URL değişimini yalnızca saf fonksiyon testiyle doğrulayamazsın. En küçük doğru sınırı seçmek, hata çıktısını da daha anlaşılır kılar.
+![Birim, entegrasyon ve uçtan uca test katmanları](diagram:test-katmanlari)
 
-:::model[Test anatomisi]
-Her testte önce koşulu hazırla, sonra davranışı çalıştır, en son sonucu doğrula. Bir test “saf fonksiyon = test edilebilir gereksinim” fikrini takip eder; bileşen testinde çalıştırma adımı kullanıcı etkileşimiyle görünür olur. Testi ayrıca küçük bir yanlış sürüme karşı düşün: hangi hata bu assertion’ı kırmalı?
+:::mistake[Testte callback’i elle çalıştırmak]
+Belirti → Callback beklentisi geçer ama gerçek düğme `disabled` olduğu için kullanıcı hiçbir şey yapamaz.
+Neden → Test sonucu kendisi üretti; arayüzden sonuca giden yolu çalıştırmadı.
+Düzeltme → Bileşeni render et, düğmeyi rolü ve adıyla bul, `user.click` ile etkileş.
 :::
 
-:::model[Test katmanları]
-Saf fonksiyon, reducer gibi küçük davranışlar birim testinde; component ile router ve ağ sınırının birlikte çalışması entegrasyon testinde; tarayıcıdaki tam kullanıcı yolculuğu uçtan uca testte doğrulanır. Bu derste component’in DOM ve etkileşim sınırına odaklanıyoruz; gerçek HTTP servisini çalıştırmak gerekmiyor.
+:::mistake[İç ayrıntıyı ürün davranışı sanmak]
+Belirti → `className` veya state değişkeni değişince, kullanıcı davranışı aynı kaldığı halde test bozulur.
+Neden → Test, kullanıcıya sunulmayan bir uygulama ayrıntısına bağlanmıştır.
+Düzeltme → Metin, rol, input değeri veya `aria-pressed` gibi gözlenebilir sonucu doğrula.
 :::
 
-Örnekte `disabled` ekleyen bir mutant, tıklama akışını bozmalıdır. `onAdd` hiçbir zaman çağrılmazsa son assertion kırılır. Sadece `onAdd(72)` yazan test ise mutantı yakalayamaz; çünkü düğme ve DOM yoktur. Mutant düşünmek her zaman ayrı bir mutation aracı kullanmak demek değildir. Beklentinin hangi gerçek hatayı durdurduğunu sormak test tasarımını keskinleştirir.
+RTL testi gerçek tarayıcıyı veya gerçek ekran okuyucuyu çalıştırmaz. `jsdom`, Node içindeki testlerde DOM benzeri bir ortam sağlayan kütüphanedir; gerçek yerleşimi, görsel görünümü ve yardımcı teknolojilerin seslendirmesini taklit etmez. Yine de rol ve ad gibi DOM bilgisini doğrulamak, erişilebilir arayüz kurmana yardım eder.
 
-## Sınırları doğru adlandır
-
-:::mistake[İç state’i doğrulamak]
-Belirti → Test `isFavorite === true` kontrol ediyor, ama düğmenin adı hâlâ “İzleme listeme ekle”.  
-Neden → Test, kullanıcının gördüğü işaret yerine iç değişkeni ölçüyor.  
-Düzeltme → State değerinden türetilen DOM davranışını doğrula: erişilebilir ad, `aria-pressed` veya görünür durum metni.
-:::
-
-:::mistake[Her şeyi ekran testi yapmak]
-Belirti → Basit tarih biçimi testi onlarca satır provider ve router kuruyor.  
-Neden → Saf hesaplama için gerekmeyen React ortamı eklenmiş.  
-Düzeltme → Biçimlendirme fonksiyonunu birim testinde; bu sonucu ekrana bağlayan davranışı bileşen testinde sınırla.
-:::
-
-:::mistake[Her assertion’ı class’a bağlamak]
-Belirti → Görsel düzen değiştiğinde “favoriye eklendi” testi bozuluyor.  
-Neden → Tasarım sınıfı, kullanıcı gereksinimiymiş gibi test edilmiş.  
-Düzeltme → Metin, rol veya semantik durum gibi kullanıcıya açık bir çıktı seç. Class testi ancak class’ın kendisi ürün sözleşmesiyse uygundur.
-:::
-
-## Kullanıcı sözleşmesi nerede biter?
-
-Bir düğmenin metni ve `aria-pressed` durumu ürün davranışının parçası olabilir; onun `className` değeri genellikle değildir. Tasarım değişince rengi lacivertten yeşile çevirmek testleri bozmamalıdır. Ama klavyeyle erişim veya seçili durumu ekranda göstermek gereksinimse bunları DOM üzerinden doğrulamak anlamlıdır.
-
-Her testin mutlaka yalnızca DOM’a bakması gerektiğini de düşünme. Örneğin bir formun submit callback’ine doğru değer gönderdiğini görmek için `vi.fn()` kullanmak geçerlidir; fakat callback’e kullanıcı olayıyla ulaş. Test bileşenin çıktısını ve dışa verdiği davranışı aynı akışta gözlemleyebilir. Önemli olan callback’in içeride hangi satırda çalıştığı değil, kullanıcının beklenen kontrolle ona ulaşmasıdır.
-
-RTL, “kullanıcı gibi” derken gerçek bir browser’ın bütün özelliklerini simüle ettiğini iddia etmez. jsdom DOM davranışlarının çoğunu test edilebilir kılar; gerçek layout, ekran okuyucunun seslendirmesi veya gerçek ağ performansı bu ortamın kapsamı değildir. Testin sınırı bu nedenle ürünün gözlenebilir sözleşmesini korur, tarayıcı ve assistive technology doğrulamasının tümünü üstlenmez.
-
-Bu ayrımı yapmak testleri hem daha kararlı hem daha dürüst kılar. Bir DOM testi erişilebilir rol ve isim ilişkisinin oluşturulduğunu kanıtlar; gerçek kullanıcıların tüm cihazlarda aynı deneyimi aldığını kanıtlamaz. Geniş uyumluluk veya görsel yerleşim gerekiyorsa ayrı browser/E2E ya da manuel değerlendirme gerekebilir. Bunu her küçük component testine taşımak yerine doğru katmana bırak.
-
-:::sector
-Ekipler test adlarını çoğu zaman gereksinim cümlesi gibi yazar: “Klavye ile açılan menü seçilen öğeyi gösterir.” Bu cümle, kod gözden geçirmesinde testin hangi ürün davranışını koruduğunu anlatır. İç ayrıntılar sık değişirken, bu testler davranışın bozulduğunu haber verir.
+:::info[Derinlemesine (isteğe bağlı)]
+Test piramidinde birim testleri dar ve hızlı, entegrasyon testleri birkaç parçanın birleşimine, uçtan uca (E2E) testler ise gerçek tarayıcıdaki tüm kullanıcı yolculuğuna bakar. Playwright, tarayıcıda E2E testleri çalıştıran araçlardan biridir. Mutation testing, kodun küçük ve hatalı bir sürümünü çalıştırıp testlerin bu hatayı yakalayıp yakalamadığını kontrol eder; `mutant` bu hatalı sürüme verilen addır. Bunlar RTL’nin her testte yapması gereken işler değildir.
 :::
 
 ## Özet
 
-- RTL testi DOM’a yakın bir sınırdan bileşen davranışını doğrular.
-- Bir kontrolü rolü ve erişilebilir adıyla bul; iç class ya da state adına bağlanma.
-- Callback’i doğrudan çalıştırmak yerine kullanıcı etkileşimiyle bileşene ulaş.
-- Birim, entegrasyon ve uçtan uca sınırı gereksinime göre seç.
-- Her beklentinin hangi gerçek hatayı yakaladığını düşün.
+- Testi kullanıcının ekranda izlediği yoldan kur: render et, kontrolü bul, etkileş, sonucu gör.
+- Callback’i elle çağırmak bileşenin erişilebilir ya da tıklanabilir olduğunu kanıtlamaz.
+- Rol, erişilebilir ad ve görünür durum genellikle iç state veya class’tan daha iyi test sınırlarıdır.
+- Test ortamının gösterebildiği şeyleri gerçek tarayıcı veya ekran okuyucu deneyimiyle karıştırma.
 
-**Kendini yokla:** Düğmenin `disabled` olması kullanıcı davranışı testinde nasıl görünür?  
-*Cevap:* Kullanıcı tıklaması callback’i çalıştırmaz; testin son assertion’ı kalır.
+**Yeni terimler**
 
-**Kendini yokla:** Basit bir `formatDuration` fonksiyonunu test etmek için neden RTL gerekmez?  
-*Cevap:* Saf fonksiyon DOM veya React yaşam döngüsüne ihtiyaç duymaz; birim testi yeterlidir.
+- **RTL:** React bileşenlerini DOM üzerinden test etmeye yarayan React Testing Library.
+- **DOM:** Tarayıcının sayfadaki öğeleri tuttuğu ağaç yapısı.
+- **Erişilebilir ad:** Bir kontrolün yardımcı teknolojilere sunulduğu isim.
+- **jsdom:** Testte DOM benzeri ortam sağlayan Node kütüphanesi.
+- **Mutant:** Testin yakalayıp yakalamadığını ölçmek için kullanılan kasıtlı hatalı kod sürümü.
+- **Entegrasyon testi:** Birden fazla parçanın birlikte doğru çalışıp çalışmadığını sınayan test.
+
+**Kendini yokla:** Düğme `disabled` olduğunda doğrudan callback testi neden yine geçebilir?
+*Cevap:* Callback doğrudan çağrılır; düğmenin gerçekten tıklanması hiç denenmez.
+
+**Kendini yokla:** Bir tarih biçimlendirme fonksiyonu için RTL neden gerekmeyebilir?
+*Cevap:* Fonksiyon React veya DOM kullanmıyorsa girdi ve çıktısını birim testiyle sınamak yeterlidir.

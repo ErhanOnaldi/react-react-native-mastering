@@ -9,9 +9,9 @@ export default defineModule({
   outcomes: [
     'Vitest ile okunur davranış testleri yazabilirsin',
     'AAA düzenini ve doğru matcher’ı seçebilirsin',
+    'it.each ile bir kuralın farklı sınırlarını sınayabilirsin',
     'fetch sınırını vi.fn ile kontrol edip hata akışını sınayabilirsin',
     'Fake timer ile debounce davranışını beklemeden test edebilirsin',
-    'it.each ile bir kuralın farklı sınırlarını sınayabilirsin',
     'Sinema projesine test script’i ve kalıcı test dosyaları ekleyebilirsin',
   ],
 })

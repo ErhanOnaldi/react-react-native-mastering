@@ -6,44 +6,37 @@ kind: project
 
 # Sinema’yı tarayıcıda doğrula ve yayına hazırla
 
-:::pain[Son kapı]
-Sinema’nın ana parçaları ayrı ayrı çalışıyor. Yine de kullanıcı girişten listeye dönemiyor, bir film bağlantısı yenilendiğinde host 404 veriyor veya üretim hatası ekipte iz bırakmıyor. Proje görevinde bu kullanıcı yolculuklarını, CI sırasını ve yayın davranışını bir bütün olarak ele alacaksın.
-:::
+Bu projede Sinema’nın kullanıcı akışlarını tarayıcıda çalıştıracak, kontrolleri CI’a taşıyacak ve yayındaki davranışını hazırlayacaksın. Önceki derslerde öğrendiğin test, ağ taklidi, build ve hata izleme fikirlerini burada bir araya getiriyorsun.
 
 :::model[Test katmanları]
-Birim ve entegrasyon testleri ayrıntıları hızlıca sınar; birkaç kritik kullanıcı yolculuğu E2E ile gerçek tarayıcıda yürür. Bu işte iki kritik akışı koru, CI’da hızlı kontrolleri önce çalıştır ve tarayıcı testlerinin kanıtını sakla.
+Birim ve entegrasyon testleri küçük parçaları hızlıca sınar; E2E testi kullanıcının kritik yolunu gerçek tarayıcıda yürütür. Az sayıdaki önemli akışı tarayıcıda koru ve yalnızca sayfanın açıldığını değil, kullanıcının istediği sonucun göründüğünü de doğrula.
 
 ![Birim, entegrasyon ve uçtan uca testlerin kapsadığı alanlar](diagram:test-katmanlari)
 :::
 
 :::model[MSW perdesi]
-Vitest’teki MSW ağı tarayıcı testine kendiliğinden aktarılmaz. E2E sırasında dış servisleri Playwright’ın route katmanında taklit et; UI, router ve tarayıcı davranışı gerçek uygulama olarak kalsın.
+Şemadaki MSW perdesi Vitest içindir; ayarlar Playwright’ın açtığı tarayıcıya otomatik geçmez. E2E’de dış servis yanıtlarını Playwright’ın `page.route` özelliğiyle sabitle; uygulamanın arayüzü ve gezinmesi gerçek kalsın.
 
 ![Uygulama fetch çağrısı MSW tarafından yakalanıp handler yanıtına döner](diagram:msw-perdesi)
 :::
 
-İlk akış ana sayfadan aramaya ve film ayrıntısına gider. İkinci akış boş oturumla korumalı sayfayı açar, giriş yapar ve yeni bir liste oluşturur. Her iki senaryoda kullanıcının gördüğü sonucu doğrula; yalnızca URL’nin değiştiğini veya sayfanın açıldığını başarı sayma. İstek verisini sabitlemek, testin gerçek servisin kotasına ya da o günkü katalog sırasına bağlı kalmasını önler.
-
 :::model[Build ve yayın]
-Vite build’i statik dosyalar üretir; host bu dosyaları ve derin URL davranışını sunar. Hash’li asset’ler uzun süre cachelenebilir, HTML yeni dosya adını öğrenebilmek için doğrulanır. Yayın kontrolünde bu ayrımı gerçek HTTP yanıtında gör.
+Vite build’i yayın dosyalarını üretir; host bu dosyaları ve doğrudan açılan uygulama yollarını sunar. HTML güncel asset adını gösterebilmeli, değişmeyen hash’li asset’ler uzun süre saklanabilmelidir.
 
 ![Kaynak dosyaların Vite build ile hashli çıktıya, oradan host ve tarayıcıya gitmesi](diagram:build-ve-yayin)
 :::
 
-Sonra CI kapısını temiz bir makinede kur: lockfile’a bağlı kurulum, hızlı kalite kontrolleri, Vitest, browser kurulumu ve E2E. Son adımda Sinema’yı yayına hazırla: doğrudan açılan uygulama adresleri, cache ve güvenlik başlıkları, hata kaydının gönderimi ve build sürümüne bağlı source map birlikte düşünülür.
-
 ## Çalışma sırası
 
-1. İki kullanıcı yolculuğunu gerçek browser ve sabit dış servis yanıtlarıyla yürüt.
-2. Lint, tip kontrolü, Vitest ve Playwright adımlarını her push’ta çalışan workflow’a koy.
-3. Build çıktısını preview’da aç; hostun derin URL ve cache davranışını kontrol et.
-4. Hata kaydında sürüm ve route gibi yararlı bağlamı taşı, sırları gönderme.
+1. Aramadan film ayrıntısına, boş oturumdan izleme listesine giden iki kullanıcı yolunu tarayıcıda çalıştır. Dış servis yanıtlarını sabitle; locator’ları erişilebilir rol ve adlarla kur, sonuçları bekleyen assertion’larla doğrula.
+2. Aynı kontrolleri temiz bir CI makinesinde sırayla çalıştır. E2E başarısız olursa inceleyebilmek için trace dosyalarını sakla.
+3. Build’i preview’da açıp derin bağlantıyı ve HTTP başlıklarını kontrol et. Hata raporlamasında sürüm ve route gibi tanı bilgilerini taşı; parola ve token gönderme.
 
-İki görevi de aynı oturumda tamamlamak zorunda değilsin; her biri kendi değişikliğini ve kanıtını verir. Önce kolayca bozulan kritik yolculukları ele al, sonra temiz CI ve yayın ayarlarına geç. Bir sorun yalnızca yerelde görünmüyorsa trace veya Network kaydına dön ve hangi adımda beklenen kullanıcı durumunun kaybolduğunu bul.
+Her parçayı kendi değişikliğinde tamamlayıp ilerleyebilirsin. Önce kullanıcı yolculuklarını çalıştır, ardından CI ve yayın ayarlarına geç. Bir sorun çıktığında tarayıcıdaki görünür sonucu, trace’i veya Network kaydını inceleyerek hangi adımın beklentiden saptığını bul.
 
-## Özet
+## Aklında tut
 
-- E2E, az sayıdaki kritik kullanıcı yolunu gerçek tarayıcıda korur.
-- Dış ağ yanıtlarını sabitle; testin asıl gördüğü UI, router ve tarayıcı olsun.
-- CI’da temiz kurulum yap, ucuz kontrolleri önce çalıştır ve başarısız trace’i sakla.
-- Build, host başlıkları ve hata raporlaması yayınlanabilir uygulamanın parçasıdır.
+- Tarayıcı testlerini kullanıcının tamamlaması gereken az sayıdaki kritik yol için kullan.
+- E2E’de dış servisleri sabitle, arayüzdeki gerçek sonucu doğrula.
+- CI’ı temiz makine gibi düşün; başarısız E2E kanıtını sakla.
+- Build, host kuralları ve güvenli hata raporlaması da yayın hazırlığının parçasıdır.

@@ -1,17 +1,16 @@
-TMDB istekleri yetkilendirme anahtarıyla yapılmalı; başarısız HTTP cevabı film verisi gibi dönmemeli. Başarılı JSON, çağıranın verdiği tipte sonuç olarak sunulacak.
+Sinema'nın test verisindeki JSON metnini bir tipli sonuca dönüştür. Geçersiz metin için gelen parse hatasının Promise üzerinden çağırana ulaşması gerekir.
 
 ## Gereksinimler
 
-- İstek `Authorization: Bearer <token>` başlığı göndermeli.
-- HTTP cevabı başarılı değilse `TMDB isteği başarısız: <status>` mesajıyla hata fırlatılmalı.
-- Başarılı cevabın JSON gövdesi fonksiyonun ilan ettiği sonuç tipi olarak dönmeli.
-- Başlık eklenmesi JSON'un runtime'da doğrulandığı anlamına gelmez.
+- Geçerli JSON metni parse edilip `T` sonucu olarak dönmeli.
+- Geçersiz JSON metni için dönen Promise reddedilmeli.
+- `T` dönüş tipi, metindeki alanların runtime'da doğrulandığı anlamına gelmez.
 
 ## Örnek
 
-Test ortamında `550` için istek `test-token` ile gönderildiğinde `Dövüş Kulübü` başlıklı cevap döner. Bulunmayan kimlik için `TMDB isteği başarısız: 404` hatası oluşur.
+`'{"id":550,"title":"Dövüş Kulübü"}'` metni `{ id: 550, title: 'Dövüş Kulübü' }` sonucunu verir.
 
 ## Sözleşme
 
 - Dosya: `task.ts`
-- Export fonksiyon: `getJson<T>(url: string, token: string): Promise<T>`.
+- Export fonksiyon: `getJson<T>(text: string): Promise<T>`.

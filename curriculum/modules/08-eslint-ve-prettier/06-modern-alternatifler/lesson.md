@@ -1,113 +1,90 @@
 ---
-title: "Lint ve format aracı seçimi"
-minutes: 13
+title: "Lint aracı değiştirirken neyi karşılaştırırsın?"
+minutes: 10
 kind: concept
 ---
 
-# Lint ve format aracı seçimi
+# Lint aracı değiştirirken neyi karşılaştırırsın?
 
-:::pain[Problem]
-Yeni bir Vite React + TypeScript projesi açan ekip arkadaşı başlangıç config’inde Oxlint görüyor. Sinema’da ESLint ve Prettier var. “Biz eski aracı mı seçtik?” diye soruyor. Yalnız aracın adını veya ilk hız ölçümünü karşılaştırmak, yakalamak istediğimiz React ve TypeScript hatalarını hesaba katmıyor.
-:::
+Sinema'da ESLint, `useEffect` içinde kullanılan `filmId` bağımlılığını unutursan uyarı veriyor. Yeni bir proje başka bir lint aracı seçmiş olabilir. Bu, senin projenin hemen değişmesi gerektiği anlamına gelmez: önce şu an hangi hatayı görünür tuttuğunu anlaman gerekir.
 
-## Araç değil, gerekli geri bildirim
+Bir **lint aracı**, kaynak kodda seçilmiş sorunları arayıp mesaj veren programdır. Aracı değiştirirken yalnız açılış süresini değil, projenin gerçekten ihtiyaç duyduğu uyarıları da karşılaştır. Önce küçük bir örnekle başlayalım.
 
-Bir lint/format seçimi, projenin istediği geri bildirime göre yapılır. Ekip hangi hataları erkenden bulmak istiyor? React Hooks kuralları ve Compiler tavsiyeleri var mı? TypeScript sözdizimi ve tip farkındalığı gerekli mi? Özel plugin’ler veya kurallar kullanılıyor mu? Formatter, Tailwind class’larını da sıralamalı mı? Bu soruların cevabı araç adından önce gelir.
+## Beklenen geri bildirimi tanı
 
-ESLint’in gücü geniş plugin ekosistemi ve ayrıntılı config’idir. Prettier yaygın, ayrı bir formatter’dır. Oxlint Rust tabanlı hızlı bir linter’dır; yeni template’lerde başlangıç tercihi olabilir. Biome lint ve formatı bir üründe birleştirir. Ancak aynı isimli “lint” özelliği her araçta aynı kural kümesini veya aynı davranışı garanti etmez. Gerekli kuralları dosya üzerinde sınamak gerekir.
+Bir efekt film kimliğini okuyorsa bu değer değiştiğinde efektin yeniden çalışması gerekir. `useEffect`'in ikinci argümanı olan **dependency list** (bağımlılık listesi), efektin kullandığı ve değişince yeniden çalışması gereken değerleri bildirir.
 
-Güncel create-vite React TypeScript template’i Oxlint kullanabilir. Bu, bütün mevcut projelerin ESLint’ten geçmesi gerektiğini söylemez. Bir template’in hızlı başlangıç seçimi, eski ve çalışan bir uygulamayı taşımak için kendi başına gerekçe değildir. Göç maliyeti, CI süresi, IDE desteği ve ekibin kuralları birlikte değerlendirilir.
+```tsx
+function FilmPreview({ filmId }: { filmId: string }) {
+  useEffect(() => {
+    loadPreview(filmId)
+  }, [])
 
-## Seçim için beş kesin adım
-
-1. **Önce hata sınıflarını yaz.** Örneğin eksik `useEffect` bağımlılığı, koşullu Hook çağrısı, TypeScript’te kullanılmayan import ve ortak format kararı.
-2. **Mevcut kural setini isimle kaydet.** Hangi plugin, preset ve custom rule çalışıyor? Yalnızca “ESLint var” demek yeterli tanım değildir.
-3. **Aday araçların eşdeğerini doğrula.** Kuralın mevcut araçtaki adının yeni araçta karşılığı var mı, hangi dosya uzantılarında çalışıyor, hata mı uyarı mı veriyor?
-4. **Temsili dosyalarda sınama yap.** Bir geçerli TS dosyası, bir kullanılmayan tanım, eksik dependency ve koşullu Hook örneğiyle raporu karşılaştır.
-5. **Göç maliyetini ölç, sonra kararı belgele.** Çalıştırma süresi, editör entegrasyonu, plugin uyumu, mevcut disable yorumları ve config bakımını birlikte tart.
-
-## Karşılaştırma tablosu
-
-| Seçenek | Güçlü taraf | Önce doğrula |
-| --- | --- | --- |
-| ESLint + TypeScript/React plugin’leri | Geniş ekosistem, ince ayarlı kurallar | Config karmaşıklığı ve lint süresi |
-| Prettier | Yaygın, belirgin biçim çıktısı | Gerekli plugin ve proje seçenekleri |
-| Oxlint | Hızlı lint geri bildirimi, yeni projelerde kolay başlangıç | Kullanılan React/TS kurallarının kapsamı ve davranışı |
-| Biome | Lint ve formatı birlikte sunar | Gerekli rule/plugin karşılıkları ve format uyumu |
-| İki linter birlikte | Hızlı tarama ile ayrıntılı özel kuralı birleştirebilir | Aynı soruna çift mesaj, bakım ve toplam süre |
-
-Bir projede ESLint ve Oxlint’i birlikte çalıştırmak mümkün olabilir. Fakat “ikisini de koyalım” kararı otomatik olarak daha iyi kapsama getirmez. Aynı unused değişken için iki farklı mesaj, geliştiriciye gerçek bir ikinci sinyal sağlamayabilir. Hızlı tarama birinci kapı, özel kural ikinci kapı olacaksa roller ve CI sırası açık olmalıdır.
-
-Biome’un birleşik lint/format yaklaşımı yapılandırma sayısını azaltabilir. Bu kolaylık, ekibin mevcut kurallarının hepsinin aynı biçimde çalışacağı anlamına gelmez. Özellikle React Hook analizi, TypeScript farkındalığı ve Tailwind sıralaması gibi somut gereksinimlerin karşılığını aracı seçmeden önce kontrol et. Eşdeğer kural yoksa iki seçenek vardır: aracı kullanmamak ya da eksik kontrolü başka katmanda sürdürmek.
-
-## Küçük bir denemeyi izle
-
-Bir göç denemesinde ana dalın config’ini hemen değiştirmek yerine temsili bir dosya kümesi belirle. `src/components/TimerPanel.tsx`, bir saf `.ts` yardımcı ve bir generated çıktıdan oluşan küme yeterli bir ilk örnek olabilir. Bir dosyada doğru effect, birinde eksik dependency, birinde koşullu Hook ve birinde kullanılmayan tanım olsun.
-
-| Dosya | Beklenen bilgi | Karar için gözlem |
-| --- | --- | --- |
-| TSX, doğru effect | Hata çıkmamalı | Geçerli kod gereksiz uyarı almıyor mu? |
-| TSX, eksik dependency | Hook ilişkisi mesajı | Eski ve yeni araç aynı sorunu bildiriyor mu? |
-| TSX, koşullu Hook | Sıra hatası mesajı | Kural kapsamı etkin mi? |
-| `.ts`, unused import | Kullanılmayan tanım mesajı | TypeScript parser/kuralı çalışıyor mu? |
-| `dist` dosyası | Hiç taranmamalı | Ignore davranışı doğru mu? |
-
-Önce eski aracın çıktısını, sonra adayın çıktısını aynı commit ve dosyalarda al. Mesaj sayısından çok hangi sinyal kayboldu veya eklendi diye bak. Hız ölçerken aynı makine, aynı dosya kümesi ve benzer cache durumu kullan; tek bir ilk çalıştırmayı kalıcı performans kanıtı sayma. Sonra CI’da neyin zorunlu kalacağını belirle.
-
-## Kırık karar, daha sağlam karar
-
-Kırık karar: “Oxlint daha hızlı görünüyor, tüm config’i kaldıralım.” Bu cümle hangi hataların artık denetlenmeyeceğini söylemiyor. ESLint’in React Hooks kuralı yoksa stale veri hatası yine sessiz kalabilir. Formatter geçişinde Tailwind plugin’i yoksa class sırası farklılaşabilir.
-
-Daha sağlam karar şöyle görünür: “Projenin mevcut kuralları şunlar; aday araçta şu örneklerin sonuçları aynı, şu kural eksik, bu nedenle şimdilik ESLint’i koruyup Oxlint’i ayrı hızlı tarama olarak deneyeceğiz.” Ya da “Biome gerekli TS/React kurallarını ve class biçimini karşılıyor; CI’da eski config’i çıkarıp temsilî PR’larda çıktıyı gözleyeceğiz.” Her iki karar da ölçülebilir ve gözden geçirilebilir.
-
-```ts check
-type LintDecision = {
-  requiredRules: string[]
-  candidate: 'eslint' | 'oxlint' | 'biome'
-  missingRules: string[]
-  ciCommand: string
+  return <p>Film: {filmId}</p>
 }
-
-const decision: LintDecision = {
-  requiredRules: ['unused-imports', 'rules-of-hooks', 'exhaustive-deps'],
-  candidate: 'eslint',
-  missingRules: [],
-  ciCommand: 'pnpm lint',
-}
-
-console.log(decision.candidate)
 ```
 
-Bu yalnız bir karar kaydının hangi soruları taşıyabileceğini gösterir. Gerçek projede her kural adını kullanılan araca göre doğrula; bu örnek, belirli bir aracın bütün kuralları desteklediğine kanıt değildir.
+Bu örnekte `filmId` okunuyor ama listede yok. Sinema'da mevcut ESLint ayarı bunun için uyarı veriyorsa, bu uyarı projenin korumak istediği bir davranıştır. Önce mevcut aracın neyi bulduğunu bilmek, yeni aracın sonucunu yorumlayabilmen için bir başlangıç noktası verir.
 
-## Sık hatalar
+## Bir ikinci örnekle karşılaştırmayı genişlet
 
-:::mistake[Hız tek karar ölçütü]
-Belirti → Lint süresi azaldı, fakat eksik Hook bağımlılığı artık görünmüyor. Neden → Yeni araçta hız ölçüldü, gereken kurallar karşılaştırılmadı. Düzeltme → Kural paritesi ve çıktı kalitesini ölçmeden mevcut kapıyı kaldırma.
-:::
+Şimdi aynı bileşende bağımlılık listesine `filmId` ekleyelim:
 
-:::mistake[Aynı kural iki araçta açılıyor]
-Belirti → Her commit’te aynı unused tanım için iki mesaj geliyor. Neden → Araçların sorumlulukları ve kural örtüşmesi planlanmadı. Düzeltme → Her aracın hangi sinyali verdiğini ayır; tekrarı kaldır veya bilinçli olarak gerekçelendir.
-:::
+```tsx
+function FilmPreview({ filmId }: { filmId: string }) {
+  useEffect(() => {
+    loadPreview(filmId)
+  }, [filmId])
 
-:::mistake[Template tercihi proje zorunluluğu sanılıyor]
-Belirti → Çalışan config yalnız template farklı araç getiriyor diye değiştiriliyor. Neden → Başlangıç varsayılanı, proje ihtiyacının yerine kondu. Düzeltme → Var olan kuralları listele ve yeni projeyle mevcut uygulamanın koşullarını ayrı değerlendir.
-:::
+  return <p>Film: {filmId}</p>
+}
+```
 
-:::sector
-Araç göçleri genellikle küçük bir dosya kümesi ve deneme CI işiyle başlatılır. Ekip gerçek lint mesajlarını ve süreleri görür, eksik kurallara karar verir, sonra ana config’i değiştirir. Başarı ölçüsü yalnız daha az saniye değil; daha az bakım yüküyle gerekli hataların görünür kalmasıdır.
+Artık listede efektin kullandığı değer var. Beklediğin sonuç, bu kodun bağımlılık eksikliği uyarısı almaması ve önceki sürümün almasıdır. İki örnek birlikte sana bir **karşılaştırma çifti** verir: biri sorunu içeriyor, diğeri düzeltmiş durumda. Böylece aracın her şeye aynı mesajı vermesi veya hiçbir şey bulmaması gibi sonuçları fark edebilirsin.
+
+Bir aday aracı denerken iki sürümü de ona ver. Aday uyarı vermezse gerekli React Hook kontrolü çalışmıyor olabilir; iki sürüme de aynı uyarıyı verirse kural kapsamını ya da config'i incele. Bu sonuçlardan tek başına aracın kötü olduğunu çıkarma; önce doğru ayarın çalıştığını doğrula.
+
+## Üçüncü örnek: aynı dosya, iki araç
+
+Bir araç geçişi için **rule parity** (kural karşılığı), eski araçta önemli olan bir kontrolün yeni araçta da benzer sonucu üretip üretmediğini anlatır. Pariteyi anlamak için aynı dosya ve aynı config beklentisini iki araçta karşılaştır:
+
+| Kod | Mevcut ESLint'ten beklenen | Aday araçtan soracağın |
+| --- | --- | --- |
+| Bağımlılığı eksik `FilmPreview` | Uyarı | Aynı sorun görünür mü? |
+| Bağımlılığı tamam `FilmPreview` | Uyarı yok | Geçerli kod gereksiz uyarı alıyor mu? |
+| İki dosya da aynı çalışma alanında | Aynı kapsam | Aday aynı dosyaları tarıyor mu? |
+
+Tablodaki üçüncü satır da önemlidir: bir araç doğru kuralı bilse bile dosyalarını kapsam dışında bırakmış olabilirsin. Bu yüzden aynı küçük dosyayı, aynı hata ve düzeltme çiftiyle çalıştırmak iyi bir başlangıçtır. Sonuçlar eşleşirse başka kuralları ve dosya türlerini ayrıca kontrol edebilirsin.
+
+Hata içeren örneği çalıştırmadan sadece temiz bir dosya denemek yeterli kanıt vermez. Temiz dosyada uyarı çıkmaması beklenir; ama bu, eksik dependency'yi yakalayabildiğini göstermez. Hatanın olduğu ve olmadığı iki sürüm, aracın doğru yerde uyardığını ve doğru yerde sessiz kaldığını anlamana yardım eder.
+
+## Kararı hızdan önce ihtiyaca bağla
+
+Bir araç daha hızlı başlayabilir ya da daha az config isteyebilir. Fakat geçişte gereken uyarı kaybolursa, hız kazanırken bir denetimi de kaldırmış olursun. Önce Sinema'nın hangi sinyallere ihtiyacı olduğunu belirle, ardından adayın bunları aynı örneklerde verip vermediğine bak. Ancak ondan sonra çalışma süresi, editör desteği ve config bakımını tart.
+
+Bir **template**, yeni uygulama oluştururken gelen başlangıç dosyaları ve araç seçimleridir. Yeni bir Vite projesinin bir aracı seçmesi, Sinema'nın da onu kullanması gerektiğini kanıtlamaz. Yeni proje ile uzun süredir çalışan proje farklı kurallara ve geçiş maliyetine sahip olabilir.
+
+Öğrencinin sık yapacağı yanlış, aday araç hızlı diye eski config'i hemen silmektir. Belirti, lint süresinin kısalması ama eksik `filmId` bağımlılığının artık görünmemesidir. Sebep, araçların aynı kuralları çalıştırdığı varsayımıdır. Önce aynı hata örneğinde mesajları karşılaştır; gerekli bir uyarı yoksa ya config'i düzelt ya da mevcut kontrolü koru.
+
+## Araç adları hakkında kısa not
+
+:::info[Derinlemesine (isteğe bağlı)]
+ESLint geniş eklenti seçenekleri sunan bir lint aracıdır; Prettier ise biçim kararlarını düzenleyen formatter'dır. Oxlint, hız odaklı bir lint aracıdır ve Rust adlı programlama diliyle yazılmıştır. Biome lint ve format işlerini aynı ürün içinde toplar. Bu tanıtımlar kuralların birebir aynı olduğu anlamına gelmez; gereken React ve TypeScript uyarılarını örnek kodlarda kontrol et.
+
+Bazı ekipler iki lint aracını birlikte çalıştırır. Bunu yapacaksan her aracın ayrı bir sinyal verdiğinden emin ol; aynı kullanılmayan değişken için iki mesaj genellikle yeni bilgi sağlamaz. Ayrıntılı geçişte config, editör davranışı ve CI komutları da birlikte incelenir. Bu kapsamlı değerlendirme, tek bir küçük denemenin sonucundan sonra yapılır.
 :::
 
 ## Özet
 
-- Araç seçiminden önce yakalanması gereken hata sınıflarını belirle.
-- Rule parity, dosya kapsamı, editör ve CI davranışını örnek kodla karşılaştır.
-- Hız, kural kapsamı ve göç maliyetini birlikte değerlendir.
-- İki aracı birlikte çalıştırıyorsan yinelenen sinyalleri ve görev paylaşımını açıkla.
-- Template tercihi mevcut projenin ihtiyacına otomatik olarak karar vermez.
+- Araç geçişinden önce mevcut projenin hangi uyarıları koruması gerektiğini belirle.
+- Bir hatalı ve bir düzeltilmiş kod örneğini aynı aday araçta karşılaştır.
+- Kural karşılığı kadar araçların hangi dosyaları taradığını da kontrol et.
+- Hız ve yeni proje template'i, gerekli uyarıların yerini tutmaz.
 
-**Kendini yokla:** Daha hızlı bir araç eksik dependency kuralını çalıştırmıyorsa geçiş tamam mıdır?
-*Cevap:* Hayır; gerekli davranış sinyali kaybolmuştur. Eksik kural karşılanmadan eski kapı kaldırılamaz.
+**Yeni terimler:** lint aracı — kaynak kodda seçilmiş sorunları bulan program; dependency list — efektin kullandığı ve değişince yeniden çalışmasını gerektiren değerleri bildiren liste; rule parity — eski ve yeni araçtaki önemli kontrollerin benzer sonuç vermesi; template — yeni proje için gelen başlangıç dosyaları ve araç seçimi.
 
-**Kendini yokla:** Biome’un lint ve formatı birleştirmesi neyi otomatik garanti etmez?
-*Cevap:* Projenin istediği bütün React/TypeScript kurallarının ve plugin davranışlarının karşılandığını garanti etmez.
+**Kendini yokla:** Aday araç hızlı ama eksik effect bağımlılığını bulamıyor. Geçişi tamamlanmış sayar mısın?
+*Cevap:* Hayır; gerekli bir uyarı kaybolmuştur. Kuralı çalışır hale getirmeden mevcut kontrolü kaldırmamalısın.
+
+**Kendini yokla:** Yalnızca geçerli bir dosyada uyarı çıkmadığını görmek neyi kanıtlamaz?
+*Cevap:* Adayın hatalı dosyada eksik bağımlılığı yakalayabildiğini kanıtlamaz.

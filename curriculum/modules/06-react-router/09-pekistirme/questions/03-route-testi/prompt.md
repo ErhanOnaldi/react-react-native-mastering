@@ -3,7 +3,7 @@ Bir okuma listesinde geçerli sayfa adresle paylaşılmalı; böylece aynı bağ
 ## Gereksinimler
 
 - `/read?page=2` açıldığında `Sayfa 2` ve `Kayıp harita` başlığı görünmeli.
-- `Sonraki sayfa` düğmesine basılınca URL `page=2` içermeli ve `Gece treni` başlığı görünmeli.
+- `Sonraki sayfa` düğmesine basılınca URL `page=2` içermeli ve `Kayıp harita` başlığı görünmeli.
 - `/read?page=abc` açıldığında uygulama çökmemeli; `Sayfa 1` ve `Kıyı kasabası` görünmeli.
 - Test adları Türkçe ve doğruladıkları davranışı anlatan cümleler olsun.
 

@@ -4,9 +4,10 @@ export interface Rated {
   title: string
   rating: number
 }
-export function useOptimisticRating(sessionId: string) {
+export function useOptimisticRating(
+  sessionId: string,
+  rate: (input: { movieId: number; value: number; title: string }) => Promise<void>,
+) {
   void sessionId
-  return useMutation({
-    mutationFn: async (_input: { movieId: number; value: number; title: string }) => {},
-  })
+  return useMutation({ mutationFn: rate })
 }

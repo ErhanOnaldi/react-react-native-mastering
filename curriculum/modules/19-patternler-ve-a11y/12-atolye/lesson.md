@@ -6,27 +6,45 @@ kind: practice
 
 # Erişilebilir component sınırları
 
-:::pain[Belirti]
-Çalışan bir seçim ekranını ikinci sayfada da kullanman isteniyor. Klavye dolaşımını ve seçimi bozmadan yeniden kullanım sağlamalısın. Bir sonraki görevde aynı seçim kontrolünü iki farklı API ile kurup hangisinin yeni seçenek eklemeyi kolaylaştırdığına karar vereceksin.
+Bu atölyede seçim kontrolünü iki sayfada kullanacak, sonra onu çağırana hangi API ile sunacağına karar vereceksin. Ortak davranış paylaşılır; her sayfanın seçtiği değer kendi sayfasında kalır.
+
+:::model[Context yayılımı]
+Compound component parçaları Context ile ortak değer paylaşabilir. Buradaki seçim paneli `label`, `options`, `value` ve `onChange` props'larıyla da yeniden kullanılabilir; bu biçimde state'i çağıran sayfa yönetir.
 :::
 
-Bu atölyede karar alanı daha geniş. İlk görevde seçim davranışını iki sayfada tekrar kullan; her sayfanın seçimi bağımsız kalmalı ve sayfalar arası geçişte korunmalı. İkinci görevde yapılandırma listesi ile birlikte kullanılan küçük parçalar arasından seçim yap. Her iki tasarım da erişilebilir isim, ok tuşları ve ilişkili hata mesajı sağlamalı.
+## Aynı panel, ayrı seçimler
 
-## Kararı gerekçelendir
+**Radio group**, tek bir seçeneğin seçili olduğu kontroldür. Seçenekler `radio` rolü, erişilebilir ad ve `aria-checked` durumuyla anlatılır. **Roving tabindex**, Tab ile gruba girildiğinde yalnız seçili seçeneğin durak olmasıdır; ok tuşları, Home ve End grup içinde focus ile seçimi taşır.
 
-İlk görevde paylaşılacak parçanın hangi veriyi alması gerektiğini belirle. Seçenekler, seçili değer ve değişiklik callback'i ortak panelin girdisi olabilir; sayfaya özgü seçilmiş değeri ortak parçanın içine saklamak iki sayfanın state'ini birbirine bağlar. Klavye davranışı aynı bileşende tutulduğunda güncelleme tek noktadan yapılır.
+Ana Sayfa'da Komedi'yi, Detay sayfasında Puan'ı seçtiğini düşün. Her sayfanın değeri üst component'inde kalırsa sayfa değiştirip dönünce seçimler korunur. Değeri paylaşılan panelin içine koyarsan sayfalar aynı state'i paylaşabilir ya da panel yeniden kurulunca seçim sıfırlanabilir.
 
-İkinci görevde kod yorumunda seçtiğin API biçiminin bakım etkisini açıkla. Tek bir kayıt listesi yeni seçenek eklemeyi kolaylaştırabilir; compound API ise çağırana içerik yerleşiminde esneklik verebilir. Hangisinin daha uygun olduğu kullanım sayısına ve seçeneklerin ne kadar değiştiğine bağlıdır. Gerekçen “daha temiz” gibi genel bir söz değil, örneğin yeni bir seçenek eklemek için gereken değişiklik sayısı olmalı.
+Gerçek bir hata: bütün seçeneklere `tabIndex={0}` vermek, Tab'ın her seçenekte durmasına yol açar. Seçili öğeye `0`, diğerlerine `-1` ver; seçenekler arasında ok tuşlarıyla dolaş.
 
-Her iki görevde de klavyeyle deneyerek başla: Tab ile seçili öğeye gel, ok tuşlarıyla seçim yap, Home/End davranışını kontrol et. Hata durumunda mesajı görmenin yanında seçim alanından o mesaja programatik bir ilişki olup olmadığını da incele. Bir sorunda takılırsan önce beklenen kullanıcı davranışını kendi cümlenle anlat; ardından bu davranışı sağlayacak React ve ARIA araçlarını seç.
+## API seçimini gerekçelendir
 
-:::sector
-Bir component API'si yalnızca bugün render ettiği DOM'u değil, yarın eklenebilecek seçeneklerin bakım maliyetini de belirler. Tasarım sistemleri bu nedenle klavye ve erişilebilirlik davranışını ortaklaştırırken uygulamaya yeterli kompozisyon esnekliği bırakır.
+Sabit, aynı biçimli seçeneklerde yapılandırma listesine bir öğe eklemek kolaydır. Seçenekler özel içerik veya yerleşim gerektiriyorsa compound parçalar daha esnek olabilir; çağıran taraf JSX'te dizer. Kararını “daha temiz” diye değil, yeni seçenek eklerken kaç yerde değişiklik gerektiğiyle açıkla.
+
+`aria-describedby`, kontrolü açıklama metnine bağlar. Seçim yapılmadan Kaydet'e basılırsa `alert` rolündeki hata ekran okuyucuya duyurulur ve gruba açıklama olarak bağlanır; seçim yapılınca hata kalkar.
+
+:::tip[Çalışma sırası]
+Önce sayfaların seçimlerinin ayrı kaldığını, sonra klavye dolaşımını dene. Son olarak boş seçimdeki hatayı ve geçerli seçimden sonra hatanın kalktığını kontrol et.
 :::
 
 ## Özet
 
-- Paylaşılan UI davranışını sayfaya özgü seçilmiş değerden ayır.
-- Klavye dolaşımı iki kullanım yerinde aynı kalmalı.
-- API seçimini bakım ve genişleme maliyetiyle açıkla.
-- Hata metni görünür olmalı ve ilgili kontrolle bağlanmalı.
+- Görünüş ve klavye davranışı paylaşılır; sayfaya özel seçim değeri sayfada tutulur.
+- Roving tabindex Tab duraklarını azaltır, oklar grup içinde dolaşır.
+- API tercihini seçenek ekleme maliyeti ve içerik esnekliğiyle açıkla.
+- Hata metnini kontrole bağla; seçim geçerli olunca kaldır.
+
+**Yeni terimler**
+
+- **Radio group:** Tek seçeneği seçilebilen ilişkili kontroller grubu.
+- **Roving tabindex:** Grupta yalnız bir öğeyi Tab sırasına alma yöntemi.
+- **`aria-describedby`:** Kontrolü açıklamasına id üzerinden bağlayan nitelik.
+- **`alert` rolü:** Yeni veya değişen önemli mesajı ekran okuyucuya duyurur.
+- **Compound API:** Çağıranın birlikte çalışan küçük component'leri JSX'te birleştirdiği API biçimi.
+
+**Kendini yokla:** İki sayfadaki seçim nerede tutulmalı?
+
+*Cevap:* Her sayfanın kendi state'inde; panel değeri prop alıp değişikliği callback ile bildirir.

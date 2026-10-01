@@ -1,27 +1,21 @@
-import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 type Props = {
   title: string
   children: ReactNode
-  open?: boolean
-  defaultOpen?: boolean
-  onOpenChange?: (open: boolean) => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
-export function MovieShelf({ title, children, open, defaultOpen, onOpenChange }: Props) {
-  const [innerOpen, setInnerOpen] = useState(defaultOpen ?? false)
-  const visible = open ?? innerOpen
+export function MovieShelf({ title, children, open, onOpenChange }: Props) {
   function toggle() {
-    const next = !visible
-    if (open === undefined) setInnerOpen(next)
-    onOpenChange?.(next)
+    onOpenChange(!open)
   }
   return (
     <section>
-      <button type="button" aria-expanded={visible} onClick={toggle}>
+      <button type="button" aria-expanded={open} onClick={toggle}>
         {title}
       </button>
-      {visible && children}
+      {open && children}
     </section>
   )
 }

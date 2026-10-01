@@ -8,18 +8,19 @@ export default defineQuestion({
     'Bir access token `header.payload.signature` biçiminde. Payload içindeki `exp` değerini tarayıcıda çözdün. Hangisini güvenle söyleyebilirsin?',
   options: [
     {
-      text: 'Token’ın bildirdiği bitiş zamanını okuyabilirim; geçerliliği sunucu doğrulamalı.',
+      text: 'Payload’daki `exp` değerini okuyabilirim; token’ın geçerli olup olmadığına sunucu karar verir.',
       correct: true,
       explanation: 'Evet. Decode yalnız veriyi okur; imza ve yetki kontrolü sunucudadır.',
     },
     {
-      text: 'Payload okunabildiğine göre token imzası da doğrulanmıştır.',
+      text: 'Payload’daki kullanıcı adı doğru görünüyorsa token’ı o kullanıcı adına kullanabilirim.',
       explanation:
-        'Base64url çözmek kriptografik imza doğrulaması yapmaz. Sahte payload da okunabilir.',
+        'Okunabilir bir payload imzanın doğrulandığını göstermez; sahte payload da çözülebilir. Yetki kararını sunucu verir.',
     },
     {
-      text: 'Payload gizlidir; onu yalnız sunucu açabilir.',
-      explanation: 'JWT payload şifrelenmiş değildir, yalnız kodlanmıştır. Gizli bilgi koyma.',
+      text: 'Payload okunabildiğine göre içindeki `role` alanına göre özel API çağrısı yapabilirim.',
+      explanation:
+        'Payload okunabilir olsa da imzası doğrulanmış anlamına gelmez; API yetkisini sunucu denetler.',
     },
   ],
 })

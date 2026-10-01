@@ -6,37 +6,33 @@ kind: practice
 
 # Tipleri bir arada kullan
 
-:::pain[Problem]
-Rota arşivinde üç farklı koleksiyon aynı sayfalama alanlarını taşıyor. Yeni endpoint yolu eklenince yanlış cevap biçiminin seçilmesi kolaylaşıyor; ayrıca yükleme başlarken eski sonuçlar ekranda kalabiliyor.
-:::
-
-## Endpoint sözleşmesini bağla
-
-Birinci alıştırmada yolu ve cevabı aynı tip haritasında tutacaksın. `keyof` ile izinli yolları çıkar, generic anahtarı indeksli erişim tipiyle eşleştir. Böylece tek bir route string'i, kendi cevap tipini belirler.
+Bu pekiştirmede Sinema'daki endpoint cevaplarını eşleştirecek, uzak verinin durum geçişlerini kuracak ve dışarıdan gelen mekan verisi için test yazacaksın. Her işte önce değerin şeklini düşün, sonra TypeScript'in hangi bilgiyi korumasını istediğini belirle.
 
 :::model[Generics, `keyof` ve indeksli erişim]
-Generic parametre, çağrıda seçilen anahtar tipini taşır. `K extends keyof Map` yalnız geçerli yolları kabul eder; `Map[K]` de o yolun cevap tipini döndürür. Yeni bağlamda sabit bir liste cevabını ve tekil detay cevabını aynı API'de güvenle ayırıyorsun.
+Bir tip haritasındaki anahtarı seçtiğinde, generic tip bu seçimi taşır; indeksli erişim de o anahtarın değer tipini verir. Böylece yanlış endpoint cevabını yanlışlıkla eşleştirmek zorlaşır.
 :::
 
-## Durum geçişini ayrı düşün
-
-İkinci alıştırmada `RemoteData<T>` için olayları işleyeceksin. Her yeni istek önce `loading` olur; eski başarı verisini taşımaz. Başarı sadece veriyi, hata sadece mesajı taşır. Böylece önceki sonuçla yeni isteğin sonucu aynı anda görünmez.
-
-:::model[Discriminated union ve exhaustive kontrol]
-`status` kontrolü union'ı daraltır ve dalın alanını açar. `switch` ile her durumu ele al; `never` kontrolü eklenince sonradan eklenen yeni bir eylem sessizce atlanamaz. Bu derste yeni nokta, union'ı yalnızca göstermek değil, saf bir geçiş fonksiyonunda yeni durum üretmektir.
+:::model[Kontrol akışı union'ı daraltır]
+Discriminated union, ortak bir `status` ya da `type` alanıyla farklı durumları ayırır. Kontrol ettikten sonra TypeScript yalnızca o dala ait alanlara izin verir; exhaustive kontrol de her dalın ele alındığını görünür kılar.
 :::
 
-## Testleri de okuyarak yaz
+## Her işi küçük adımlara böl
 
-Yeni alıştırmada implementasyonu değiştirmeden bir saf fonksiyonun davranışını testlerle kilitleyeceksin. Başlangıç ve güncelleme verisini küçük tut; her testte bir davranış iddiası kur ve çıktıyı beklenen nesneyle karşılaştır. Kenar durumunu seçerken sadece mutlu yolu değil, eski hata ve eski sonuç gibi önceki state değerlerini de düşün.
+Endpoint cevabında önce izin verilen yolları ve her yolun cevap biçimini çıkar. Reducer'da, yani mevcut durum ve eylemden yeni durum üreten saf fonksiyonda, her eylem için hangi alanların anlamlı olduğunu düşün. Test yazarken de dışarıdan gelen değerin geçerli ve geçersiz örneklerini ayır.
 
-Bu testler ağ veya React gerektirmez. Fonksiyonun girdisi ve çıktısı yeterlidir; böylece testin neden geçtiğini hata ayıklamak kolay kalır.
+Üçüncü alıştırmada bir **mutant**, testlerin yakalaması gereken davranış hatasını içeren değiştirilmiş bir implementasyondur. Her testi yazdıktan sonra şu soruyu sor: Bu test hangi yanlış davranışı başarısız kılar? Böylece yalnızca doğru örneği değil, sınırdaki yanlış değerleri de sınarsın.
+
+:::tip[Çalışma sırası]
+Önce beklenen girdi ve çıktıyı kendi sözlerinle yaz. Ardından tipleri veya test durumlarını kur, en son her dalın ne döndürdüğünü kontrol et. Bir dalı atladığında, `never` kontrolü eksik durumu derleme hatası olarak gösterebilir.
+:::
 
 ## Özet
 
-- Endpoint anahtarı ile cevap tipi aynı haritadan türetilir.
-- Yeni loading durumu eski başarı verisini taşımamalıdır.
-- Saf fonksiyonun geçişleri için küçük, davranış odaklı test yaz.
+- Generic anahtar, seçilen endpoint ile cevap tipini birbirine bağlar.
+- Durum geçişinde her eylem yeni ve tutarlı bir durum üretir.
+- Testler geçerli değerlerle birlikte hatalı sınır değerlerini de kapsar.
 
-**Kendini yokla:** Bir endpoint haritasında `Map[K]` neyi korur?  
-*Cevap:* Seçilen yolun kendisine ait cevap tipini.
+**Yeni terim — mutant:** Testin yakalaması beklenen davranış hatası eklenmiş implementasyon.
+
+**Kendini yokla:** Bir test mutant'ı yakalamazsa ne eksik olabilir?  
+*Cevap:* Test edilen davranış için beklenen sonucu ortaya koyan bir durum yoktur ya da assertion bu farkı kontrol etmiyordur.

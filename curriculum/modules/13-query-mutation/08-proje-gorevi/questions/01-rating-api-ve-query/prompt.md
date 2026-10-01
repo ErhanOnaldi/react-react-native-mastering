@@ -18,5 +18,6 @@ Dövüş Kulübü’ne 8,5 verince `ratedMoviesQuery(sessionId)` sonucunda `{ id
 - `src/features/rating/api/rating-api.ts`: `getGuestSession`, `rateMovie`, `deleteRating` export’ları.
 - `src/features/rating/api/rating-queries.ts`: `ratedMoviesQuery(sessionId)` export’u.
 - İmzalar: `getGuestSession(): Promise<string>`, `rateMovie(input: { movieId: number; value: number }): Promise<void>`, `deleteRating(movieId: number): Promise<void>`.
+- `deleteRating` kendi içinde `getGuestSession()` ile alınan ve saklanan aynı session id’yi kullanır; çağıran `movieId` dışında parametre vermez.
 - `ratedMoviesQuery(sessionId)` `{ page, results, total_pages, total_results }` biçiminde veri döndürür; her sonuçta `id`, `title` ve `rating` bulunur.
 - Query key `['ratings', sessionId]` biçimindedir.

@@ -2,20 +2,26 @@ import { defineQuestion } from '@rm/content/define'
 
 export default defineQuestion({
   type: 'quiz',
-  title: 'Sayfa değişirken',
+  title: 'Geçişteki sonuç',
   difficulty: 'kolay',
   concepts: ['query.pagination', 'router.search-params'],
-  question: '`?page=2` yüklenirken sayfa 1 ekranda kalsın. TanStack Query 5 seçeneği hangisi?',
+  question: `Page 1 sonucu ekrandayken URL page 2 oldu. Page 2 cevabı gelene kadar ekranda page 1'in gösterildiğini hangi değer belirtir?`,
   options: [
     {
-      text: '`placeholderData: keepPreviousData`',
+      text: '`isPlaceholderData === true`',
       correct: true,
-      explanation: 'v5 önceki sonucu geçici placeholder olarak gösterebilir.',
+      explanation:
+        'Bu değer true iken yeni key’in cevabı henüz gelmemiş, önceki sonuç geçici gösteriliyor olabilir.',
     },
     {
-      text: '`keepPreviousData: true`',
-      explanation: 'Bu eski API biçimidir; v5’te placeholderData kullanılır.',
+      text: '`isFetching === false`',
+      explanation:
+        'Page 2 isteği sürerken fetching devam eder; bu değer geçici olarak kullanılan eski data’yı anlatmaz.',
     },
-    { text: '`gcTime: 0`', explanation: 'Cache’i çabuk silmek geçişteki boşluğu artırabilir.' },
+    {
+      text: '`query.data === undefined`',
+      explanation:
+        'Önceki sonuç gösteriliyorsa query data dolu olabilir; undefined ilk veri yokluğunu anlatır.',
+    },
   ],
 })

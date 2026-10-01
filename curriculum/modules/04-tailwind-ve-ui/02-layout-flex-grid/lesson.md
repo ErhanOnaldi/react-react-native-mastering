@@ -6,56 +6,65 @@ kind: concept
 
 # Kartları ve içerik satırlarını yerleştir
 
-:::pain[Dar ekranda kartlar taşıyor]
-Film kataloğunda 12 poster masaüstünde tek sütun halinde uzuyor. Telefon görünümünde üç sütun sabit kalınca başlıklar sıkışıp puanlar poster alanının dışına taşıyor.
-:::
+Bir Sinema sayfasında filmler poster kartları olarak yan yana durabilir. Her kartın içindeki başlıkla puan da aynı satırı paylaşabilir. Bunlar iki farklı düzen problemidir: kartların satır ve sütunlarını **Grid**, tek bir satır veya sütundaki öğeleri hizalamayı **Flexbox** çözer. Tailwind bu CSS düzenlerini class’larla seçmeni sağlar.
 
-## Önce düzen problemini tanı
+## Önce kartları dizelim
 
-Bir sayfada posterlerin yan yana dizilmesi ile tek posterin başlık ve puan satırı aynı problem değildir. Grid satır ve sütunları birlikte düzenler; Flexbox bir eksende hizalama ve boşluk paylaşımı için uygundur. Tailwind class'ları CSS'in bu iki düzen modelini kullanır; birbirlerinin yerine geçmezler.
-
-:::model[Grid dış ilişkiyi, flex iç ilişkiyi kurar]
-1. Birden çok eş boyutlu kartın satır ve sütunlarını Grid ile tanımla.
-2. Bir kart içindeki başlık, puan veya eylem gibi elemanları çoğunlukla Flexbox ile hizala.
-3. Dar görünüm temel düzendir; responsive eşikler yalnızca gerekli genişlikte yeni sütun veya hizalama ekler.
-4. Uzun içeriğin bulunduğu flex/grid çocuğuna küçülme izni ver; görsel taşmayı ayrıca ele al.
-:::
-
-![Izgara dış kartları, flex içeriği hizalar](diagrams/dis-duzen-ic-duzen.svg)
-
-Bu ayrım, hangi öğenin hangi alanı yönettiğini belli eder. Eğer ızgara içindeki her kart kendi `display: flex` düzenini kullanıyorsa iki model birbirine karışmaz; her biri farklı seviyedeki ilişkiyi çözer.
-
-## Responsive sütunları izleyelim
-
-`grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5` satırını genişliği artan bir pencereyle takip edelim:
-
-| Viewport | Eşik durumu | Etkin sütun class'ı | Sonuç |
-|---|---|---|---|
-| 390 px | `md` yok | `grid-cols-2` | iki sütun |
-| 900 px | `md` var, `xl` yok | `md:grid-cols-3` | üç sütun |
-| 1400 px | `md` ve `xl` var | `xl:grid-cols-5` | beş sütun |
-
-`gap-4` bütün boyutlarda kartlar arasındaki boşluğu korur. Responsive prefix cihaz türü değildir; viewport genişliğinin bir eşiğidir. Bu nedenle `sm:` küçük telefon anlamına gelmez. Mobile-first bir düzen önce dar pencerede işe yarayan temel class'ı seçer, sonra alan arttığında kolon sayısını artırır.
-
-Önce kırık class dizisini düşün:
+Bir bölümde birkaç filmi yan yana yerleştirmenin en küçük hâli `grid` ve sütun sayısını belirleyen class’tır:
 
 ```tsx
-function TightShelf() {
-  return <section className="grid grid-cols-5 gap-3">{/* kartlar dar ekranda sıkışır */}</section>
+function FilmShelf() {
+  return <section className="grid grid-cols-2">Film kartları</section>
 }
 ```
 
-Burada kolon sayısı her viewport'ta beş olarak kalır. Responsive eşiklerle kolon artışını açıkça belirt:
+`grid` kapsayıcıyı CSS Grid düzenine geçirir; `grid-cols-2` iki sütun oluşturur. Henüz responsive davranış yok, dolayısıyla bu düzen pencere daralsa bile iki sütunludur.
 
-```tsx check
-type Album = { id: number; title: string }
+Kartların birbirine yapışmaması için aralık ekleyelim:
 
-export function AlbumShelf({ albums }: { albums: Album[] }) {
+```tsx
+function FilmShelf() {
+  return <section className="grid grid-cols-2 gap-4">Film kartları</section>
+}
+```
+
+`gap-4` sütunlar ve satırlar arasına boşluk koyar. Bu, `grid-cols-2` kararını değiştirmez; başka bir görsel özelliktir. Class’lar bir arada durabilir.
+
+Şimdi geniş ekranda daha fazla sütun açalım:
+
+```tsx
+function FilmShelf() {
   return (
-    <section aria-label="Albümler" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-      {albums.map((album) => (
-        <article key={album.id} className="min-w-0 rounded-xl border p-3">
-          <h2 className="truncate font-medium">{album.title}</h2>
+    <section className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+      Film kartları
+    </section>
+  )
+}
+```
+
+Öneksiz iki sütun dar görünümde temel düzendir. `md:` ve `xl:` daha geniş viewport eşiklerinde aynı sütun sayısı kararını günceller. Bir **breakpoint**, responsive kuralın devreye girdiği genişlik eşiğidir. `md:` “tablet” anlamına gelmez; pencerenin gerçek genişliği eşiğe ulaştığında çalışır.
+
+| Viewport genişliği | Ulaşılan eşikler | Sütun class’ı | Sonuç |
+|---|---|---|---|
+| 390 px | `md` yok | `grid-cols-2` | 2 sütun |
+| 900 px | `md` var, `xl` yok | `md:grid-cols-3` | 3 sütun |
+| 1400 px | `md` ve `xl` var | `xl:grid-cols-5` | 5 sütun |
+
+`gap-4` üç genişlikte de kalır. Responsive prefix cihaz türü değil, viewport koşuludur. Önce dar görünümde okunabilir kart genişliği seç, sonra alan arttığında sütun ekle.
+
+## Uzun içerik kartın ölçüsünü zorladığında
+
+Gerçek film başlıkları kısa değildir. Bir kartın içeriğine uzun başlık geldiğinde önce kartın sütuna sığmasına izin ver:
+
+```tsx
+type Film = { id: number; title: string }
+
+function FilmShelf({ films }: { films: Film[] }) {
+  return (
+    <section aria-label="Koleksiyon" className="grid grid-cols-2 gap-3 md:grid-cols-3">
+      {films.map((film) => (
+        <article key={film.id} className="min-w-0 rounded-xl border p-3">
+          <h2>{film.title}</h2>
         </article>
       ))}
     </section>
@@ -63,85 +72,79 @@ export function AlbumShelf({ albums }: { albums: Album[] }) {
 }
 ```
 
-Örnek kod bir veri dizisini bölümlere çizer. `key` React'in öğe kimliğini korur; bu, CSS düzeniyle aynı konu değildir. `min-w-0` grid çocuğunun içerik uzunluğundan daha geniş olmamasına izin verir. `truncate` görünür metni tek satırda keser; erişilebilir başlığın kendisini değiştirmez.
+`min-w-0`, karta içeriği ne kadar uzun olursa olsun daralabilme izni verir. Varsayılan minimum içerik genişliği, bazı grid öğelerinin uzun yazı yüzünden sütunu büyütmesine yol açabilir. Bu class düzenin yerini tutmaz; yalnızca çocuğun küçülmesine izin verir. `key` film öğesinin React’teki kimliğidir ve CSS yerleşiminden ayrı bir listedir.
 
-## Bir kartın içindeki satırı izleyelim
-
-Şimdi ızgaradaki tek kartı düşün. Başlık uzun ve puan alanı kısa. `flex items-center justify-between gap-2` iki ucu ayırır. Başlık `min-w-0 truncate` ile daralabilir; puan `shrink-0` ile sabit kalır.
-
-| Öğe | Kural | Render sonrası rolü |
-|---|---|---|
-| Satır | `flex` | çocukları tek eksende yerleştirir |
-| Satır | `justify-between` | ilk ve son öğeyi uçlara iter |
-| Başlık | `min-w-0` | varsayılan minimum içerik genişliğini kaldırır |
-| Başlık | `truncate` | taşanı tek satırda görünür biçimde keser |
-| Puan | `shrink-0` | dar alanda kendi genişliğini korur |
-
-`min-w-0` olmadan flex öğesi bazen uzun başlığın en az içerik genişliğine tutunur ve puanı iter. Bu, flex öğelerinin varsayılan küçülme davranışından kaynaklanır; yalnız `overflow-hidden` eklemek puan ile başlık arasındaki alan paylaşımını açıklamaz.
+Başlık tek satırda kalıp taşan kısmı üç nokta ile göstermeli olsun. Bunu başlık öğesine ekleyelim:
 
 ```tsx
-type TrackLineProps = { title: string; duration: string }
+function FilmTitle({ title }: { title: string }) {
+  return <h2 className="min-w-0 truncate font-medium">{title}</h2>
+}
+```
 
-export function TrackLine({ title, duration }: TrackLineProps) {
+`truncate` tek satırdaki görünen metni kısaltır. `min-w-0` daralmaya izin verir, `truncate` taşan metnin nasıl görüneceğini seçer. Bu class’lar metnin içeriğini veya DOM’daki başlığı değiştirmez; görsel olarak ne kadarının göründüğünü belirler.
+
+## Kartın içindeki başlık ve puan satırı
+
+Kartlar dizildikten sonra tek kartın iki öğesine bakalım. Başlık alanı genişliği paylaşabilir, puan ise kendi yerini korusun:
+
+```tsx
+function FilmDetails({ title, score }: { title: string; score: string }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <h3 className="min-w-0 truncate">{title}</h3>
-      <span className="shrink-0 text-sm">{duration}</span>
+      <h2 className="min-w-0 truncate">{title}</h2>
+      <span className="shrink-0 text-sm">{score}</span>
     </div>
   )
 }
 ```
 
-Burada başlık için `title` niteliği eklemek kısaltılan metni hover'da gösterebilir, ancak erişilebilirlik veya tasarım gereksiniminin yerine geçmez. Ekran okuyucu DOM metnini hâlâ okuyabilir; kullanıcı açısından önemli bir başlık görsel olarak kısaltılıyorsa tam metne erişim yolu tasarımla düşünülmelidir.
+`flex` çocukları tek eksende, burada satır boyunca dizer. `items-center` dikey hizalar, `justify-between` iki ucu ayırır, `gap-2` araya boşluk koyar. Başlık `min-w-0` ile daralabilir ve `truncate` ile kısalır; `shrink-0` puanın daralmamasını söyler. Dıştaki Grid kartlar arasını, içteki Flexbox kart içi satırı düzenler.
 
-## Görsel alanı ve içerik sınırları
+![Izgara dış kartları, flex içeriği hizalar](diagrams/dis-duzen-ic-duzen.svg "Grid dış yerleşimi, Flexbox içeriği düzenler")
 
-Poster veya kapak görseli farklı oranlarda geliyorsa kartların boyu değişebilir. Bir görsel alanına `aspect-[2/3]` verip `object-cover` kullanmak görünür alanı sabitler; kaynağın kırpılması tasarım kararıdır. Görsel yoksa aynı ölçüde yer tutucu tutmak, yükleme veya boş state sırasında kart listesinin sıçramasını azaltır.
+Pencere daraldıkça hangi class’ın ne yaptığına adım adım bakalım:
 
-`grid-cols-4` çok dar ekranda kartlara yetersiz genişlik verebilir. Dört sütunu temel kural yapmak yerine iki sütundan başlayıp eşiklerde artır. `grid-cols-[repeat(auto-fit,minmax(...))]` gibi özel grid ifadeleri de mümkündür, ama sabit ürün düzeninde anlaşılır eşikler daha kolay gözden geçirilir.
+| Adım | Ne çalışır? | Başlık | Puan |
+|---|---|---|---|
+| 1 | `flex` öğeleri satıra koyar | solda başlar | sağa yakın durur |
+| 2 | `justify-between` boşluğu dağıtır | sol uca gider | sağ uca gider |
+| 3 | kullanılabilir alan azalır | `min-w-0` ile küçülebilir | `shrink-0` nedeniyle boyunu korur |
+| 4 | başlık kendi alanını aşar | `truncate` ile üç nokta görünür | satırda kalır |
 
-Önce kırık düzene bakalım: bütün kolonları dar ekranda da sabitlemek ve kartların minimum genişliğini artırmak başlıkların dışarı taşmasına neden olur.
+`min-w-0` olmazsa flex öğesi uzun metnin minimum genişliğine tutunup puanı itebilir. Yalnızca `overflow-hidden` yazmak iki öğenin alanı nasıl paylaşacağını söylemez; daralmayı ve taşma görünümünü ayrı ayrı seçiyoruz.
 
-```tsx
-function Shelf() {
-  return <section className="grid grid-cols-5 gap-4">{/* narrow viewport still has five columns */}</section>
-}
-```
+## Sık görülen iki düzen hatası
 
-Daha iyi başlangıç, dar pencerede az sütunla başlamak ve alan büyüdükçe eklemektir. Kapsayıcıya `min-w-0` verilmesi de uzun bir başlığın grid ölçüsünü zorlamasını engeller. Sütun sayısını seçerken posterin okunabilir genişliğini ve kart içindeki en uzun gerçek veriyi birlikte değerlendir.
-
-Grid ve flex kararlarının erişilebilirlik üzerinde de dolaylı etkisi vardır. CSS `order` veya `row-reverse` ile görsel sırayı değiştirirken DOM sırası aynı kalır; klavye ve ekran okuyucu sırası çoğunlukla DOM'u izler. İçeriğin görsel ve okuma sırasını farklılaştırmak kullanıcıyı şaşırtabilir. Responsive tasarımda sırayı değiştirmek gerekiyorsa semantik akışı da düşün.
-
-Bir grid her kart için eşit yükseklik garantilemez. Satırdaki hücreler çoğu durumda satır alanını paylaşsa da içeriğin kendi görsel yüksekliği değişebilir. Posterlerin aynı oranı paylaşması, puan satırının kartın altına sabitlenmesi veya özetin belirli satırda kesilmesi tasarımın ayrı kararlarıdır. `grid` class'ı koymak bu kararları kendiliğinden çözmez.
-
-Responsive class'ları büyütürken her eşikte yeni bir layout yazmak zorunda değilsin. `md:grid-cols-3` önceki `grid-cols-2` değerini aynı CSS özelliği için değiştirir; `gap-4` gibi değişmeyen kuralı tekrar etmezsin. Bir breakpoint'te kart içi hizalamayı da değiştireceksen bunu açıkça `md:flex-row` gibi ayrı karar olarak ekle. Prefix'lerin CSS media query eşikleri olarak çözüldüğünü, browser zoom veya yan panel açıldığında viewport genişliğinin değişeceğini unutma.
-
-İçerik kırpma kararı da ürün gereksinimidir. `truncate` tek satır taşmasını üç nokta ile gösterir; çok satırlı özet için farklı bir clamp yaklaşımı gerekir. `overflow-hidden` görüntüyü kesebilir ama kullanıcıya kısaltıldığını anlatmaz. Başlığın tam metnini DOM'da korumak ve gerektiğinde detay sayfasına ulaşım sağlamak önemlidir.
-
-:::mistake[Belirti → neden → düzeltme]
-Birinci sütundaki uzun başlık tüm ızgarayı genişletiyor → kart içeriği küçülmüyor → grid çocuğuna `min-w-0` ver ve taşan metnin nasıl gösterileceğini seç.
+:::mistake[Telefonda kartlar çok dar]
+Belirti: Küçük pencerede beş sütun görünür. Neden: Büyük ekran sütun sayısı temel `grid-cols-*` kuralı olarak yazılmış. Düzeltme: Dar görünüm için az sütunla başla, breakpoint’lerde artır.
 :::
 
-:::mistake[Belirti → neden → düzeltme]
-Telefon görünümünde kartlar dar kalıyor → büyük ekran sütun sayısı temel düzene yazılmış → iki sütun gibi dar görünüm kuralıyla başla, eşikte arttır.
+:::mistake[Uzun başlık puanı dışarı itiyor]
+Belirti: Satırdaki puan alta düşüyor veya kart taşıyor. Neden: Başlığın daralmasına izin verilmemiş ya da puan küçülebiliyor. Düzeltme: Satırı Flexbox yap, başlığa `min-w-0` ve `truncate`, puana `shrink-0` ver.
 :::
 
-:::mistake[Belirti → neden → düzeltme]
-Puan satırın altına düşüyor → satırda sabit kalması gereken öğe küçülüyor veya tek eksenli düzen yok → iç satıra flex ver, puana `shrink-0` ekle.
-:::
+Poster görselinin oranı, boş görsel olduğunda yer tutucu kullanımı ve puan satırının kartın altına sabitlenmesi de ayrı tasarım kararlarıdır. `grid` veya `flex` yazmak bunları kendiliğinden çözmez. Gerçek uzun başlık, eksik görsel ve küçük pencereyle deneme yapmak düzenin içerikle çalıştığını görmeni sağlar.
 
-:::sector
-Ürün ekiplerinde responsive düzeni belirli telefon modellerine göre değil içerik ve viewport ihtiyacına göre seç. Tasarım incelemesinde gerçek uzun başlık, boş görsel ve beklenmedik metin uzunluğuyla dene; ideal örnek veri tek başına düzeni doğrulamaz.
+:::info[Derinlemesine (isteğe bağlı)]
+CSS’te `order` veya `row-reverse` ile görsel sırayı değiştirsen bile DOM sırası değişmez. Klavye ve ekran okuyucu akışı çoğunlukla DOM sırasını izlediği için görsel ve okuma sırasını ayrı düşürmemeye dikkat et. `grid-cols-[repeat(auto-fit,minmax(...))]` gibi keyfi grid ifadeleri de mümkündür; sabit katalog düzeninde açık breakpoint’ler çoğu zaman daha kolay anlaşılır.
 :::
 
 ## Özet
 
-- Grid kartlar arası satır/sütun ilişkisini; Flexbox tek satır veya sütundaki hizalamayı kurar.
-- Responsive prefix viewport eşiğinden itibaren etkindir.
-- Dar ekran temel düzendir; genişlik geldikçe kolon eklenir.
-- Grid/flex çocuğunda `min-w-0`, uzun içeriğin düzeni zorlamasını önleyebilir.
-- Başlık, puan ve poster alanının taşma davranışını ayrı ayrı belirle.
+- Grid birden çok kartın satır ve sütun ilişkisini kurar; Flexbox tek eksendeki öğeleri hizalar.
+- Dar viewport için temel sütun sayısını seç, geniş eşiklerde artır.
+- `min-w-0` uzun içeriğin öğeyi daraltmasını sağlar; `truncate` taşanı tek satırda kısaltır.
+- Satırda başlık daralabilir, `shrink-0` verilen puan genişliğini korur.
+- Düzen class’ları gerçek içeriğin taşma ve görsel boyut kararlarını senin yerine vermez.
 
-**Kendini yokla:** `sm:grid-cols-3` dar telefonda üç sütun zorunlu kılar mı? Hayır; temel class ne diyorsa eşik gelene kadar o geçerlidir.
+**Yeni terimler:**
 
-**Kendini yokla:** Bir kartın başlık ve puan satırını Grid mi Flexbox mı yönetir? Tek eksenli satır ilişkisi için Flexbox uygundur.
+- **Grid:** CSS’in satır ve sütunlarla iki eksenli düzen sistemi.
+- **Flexbox:** CSS’in tek eksendeki öğeleri hizalayıp alanı paylaştırma sistemi.
+- **Breakpoint:** Responsive kuralın uygulanmaya başladığı viewport genişliği eşiği.
+- **Viewport:** Tarayıcıda sayfanın görünen içerik alanı.
+
+**Kendini yokla:** `lg:grid-cols-4` dar telefonda dört sütun yapar mı? Hayır; yalnız `lg` eşiğine ulaşınca devreye girer.
+
+**Kendini yokla:** Poster kartlarının sırasını mı, kart içindeki başlık ve puanı mı Flexbox ile hizalamak daha doğal? Başlık ve puan gibi tek satırdaki çocukları.

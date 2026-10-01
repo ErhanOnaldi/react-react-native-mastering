@@ -5,30 +5,44 @@ export default defineQuestion({
   title: 'Her tuşta ne değişir?',
   difficulty: 'kolay',
   concepts: ['react.controlled-input', 'react.render-cycle', 'perf.rerender'],
-  question:
-    'Sekiz `useState` kullanan tek form bileşeninde ad input’una üç harf yazınca ne beklenir?',
+  question: [
+    'Bu bileşende ad alanına `A` yazınca ne olur?',
+    '',
+    '`name` değiştiğinde `setName` çalışır; `note` alanı aynı bileşendedir:',
+    '',
+    '```tsx',
+    'function WatchlistForm() {',
+    "  const [name, setName] = useState('')",
+    "  const [note, setNote] = useState('')",
+    '  return <><input value={name} onChange={(e) => setName(e.target.value)} />',
+    '    <input value={note} onChange={(e) => setNote(e.target.value)} /></>',
+    '}',
+    '```',
+  ].join('\n'),
   options: [
     {
-      text: 'Form bileşeni her değişiklikte yeniden render edilir; sayı StrictMode’a göre değişebilir.',
+      text: 'Form bileşeni yeniden çalışır; `note` state’i korunur ve React gereken DOM farkını uygular.',
       correct: true,
       explanation:
-        'Her `setState` yeni render isteği oluşturur; kesin sayı geliştirme ortamına göre değişebilir.',
+        'State güncellemesi bileşeni yeniden çalıştırır. Diğer state değeri korunur; her DOM düğümü baştan oluşturulmaz.',
     },
     {
-      text: 'Yalnızca input DOM’u değişir, React bileşeni yeniden çalışmaz.',
+      text: '`name` değişince aynı bileşendeki `note` değeri sıfırlanır.',
       correct: false,
       explanation:
-        'Controlled input değeri React state’indedir; state güncellemesi bileşeni yeniden çalıştırır.',
+        'Controlled input değişimi state güncellemesidir ve bileşen yeniden çalışır; diğer state değişkenleri saklanır.',
     },
     {
-      text: 'Sekiz state olduğu için her tuşta tam sekiz render olur.',
+      text: 'İki state olduğu için aynı tuşta bileşen tam iki kez yeniden çalışır.',
       correct: false,
-      explanation: 'State sayısı tek bir güncellemenin render sayısını sekizle çarpmaz.',
+      explanation:
+        'Güncellenen state adedi render sayısını çarpmaz; tek event tek state setter çağırır.',
     },
     {
-      text: 'Render sayacı artarsa mutlaka sekiz ağ isteği atılmıştır.',
+      text: 'React bileşeni yeniden çalıştığında bütün input değerleri temizlenir.',
       correct: false,
-      explanation: 'Render ile ağ isteği farklı işlerdir; fetch çağrısı yoksa ağ isteği de yoktur.',
+      explanation:
+        'State değişmeden kalırsa input değeri korunur; render DOM düğümlerini zorunlu olarak silmez.',
     },
   ],
 })

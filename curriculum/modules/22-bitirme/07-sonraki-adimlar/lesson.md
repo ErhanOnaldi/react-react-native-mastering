@@ -1,226 +1,171 @@
 ---
 title: "Sonraki adım: web, sunucu veya mobil"
-minutes: 15
+minutes: 16
 kind: concept
 ---
 
 # Sonraki adım: web, sunucu veya mobil
 
-:::pain[Problem]
-Kitaplık uygulamasını Vite, React ve TypeScript ile başarıyla tamamladın; arama, detay, yerel depolama ve CI testlerin eksiksiz çalışıyor. Ancak uygulamayı kullanıcılara sunduğun gün yeni talepler yağmaya başlar:
+Kitaplık'taki eserleri arıyor ve okuma listeni tarayıcıda saklıyorsun. Basit React bilgini değiştirmeden bu uygulamayı üç yönde büyütebilirsin: kullanıcıların kendi listelerini hesaplarında saklayan bir sunucu kurmak, eser sayfalarını ilk HTML'de göstermek ya da uygulamayı telefona yüklenen yerel bir deneyime taşımak. Önce her seçeneğin çözdüğü ihtiyacı küçük bir örnekte görelim.
 
-1. Bir kullanıcı: *“Kitap listemi telefonumdan da görmek istiyorum; ama tarayıcı verilerimi temizleyince her şey kayboldu.”*
-2. Pazarlama ekibi: *“Google arama motoru kitap detay sayfalarımızı indekslemiyor; ilk HTML'de veri gelmediği için aramalarda çıkmıyoruz.”*
-3. Bir yönetici: *“Metroda internet çekmezken açılan, uygulama mağazasından indirilen yerel bir mobil sürüm istiyoruz.”*
+## Okuma listesi tarayıcıda mı kalmalı?
 
-Tek bir Vite SPA (Single Page Application) mimarisi bu üç ihtiyacın tamamını aynı anda çözemez. React yolculuğunun bu aşamasında, edindiğin temel bileşen ve veri mimarisini hangi yöne doğru genişleteceğini bilinçli seçmelisin.
-:::
+Şu an listen `localStorage`'da, yani tarayıcıdaki kalıcı depoda duruyor. Aynı tarayıcıda sonraki ziyarette de görürsün; başka cihazdan açınca ise orada bulunmaz. Listeyi hesaba bağlamak istiyorsan veriyi sunucuda saklaman gerekir.
 
-Bu ders bir kodlama görevi değil; kariyerinin sonraki adımlarını şekillendirecek bir mimari rehberdir. Öğrendiğin **bileşen hiyerarşisi, state kategorileri, asenkron veri yönetimi, Zod sınır doğrulaması ve test kültürü**, gideceğin her yeni ortamda senin ana pusulan olacaktır.
-
-## ASP.NET Core ile kendi API'n: İstemciden tam teşekküllü backend'e
-
-Kitaplık'ta Open Library gibi kamuya açık ve salt okunur bir API kullandın. Ancak gerçek projelerin büyük çoğunluğunda veriler kurumun kendi veritabanında saklanır, kullanıcılar kimlik doğrulamasıyla giriş yapar ve iş kuralları sunucu tarafında işletilir. Kurumsal dünyada bu arka yüz çoğunlukla **ASP.NET Core (C#)** veya benzeri güçlü backend çatılarıyla inşa edilir.
-
-React frontend'ini kendi ASP.NET Core API'ne bağlarken yönetmen gereken beş kritik sınır vardır:
-
-### 1. CORS politikası ve geliştirme proxy'si
-
-Tarayıcıların en temel güvenlik mekanizması **Same-Origin Policy** (Aynı Köken Politikası)'dır. Frontend uygulaman `http://localhost:5173` adresinde çalışırken, ASP.NET Core API'n `http://localhost:5000` (veya `https://localhost:7001`) portundaysa, tarayıcı bu iki adresi farklı "origin" kabul eder.
-
-![CORS preflight mekanizması ve izin kontrol akışı](diagram:cors-preflight)
-
-Bu sınırı iki farklı aşamada çözersin:
-
-- **Geliştirme ortamında (Vite Proxy):** En temiz yol, Vite dev sunucusunu bir ters vekil (reverse proxy) olarak yapılandırmaktır. Tarayıcı istekleri doğrudan kendi kökenindeki `/api` yoluna atar; Vite arka planda bu istekleri ASP.NET Core portuna iletir. Böylece yerel geliştirmede CORS mekanizması hiç tetiklenmez:
+İlk adımda tarayıcıdan kendi sitendeki bir yola istek gönderdiğini düşün:
 
 ```ts
-// vite.config.ts — Geliştirme proxy yapılandırması
+const response = await fetch('/api/reading-list')
+```
+
+`/api/reading-list` aynı web adresinin altında olduğu için tarayıcı bunu sayfanla aynı **origin**'e (şema, alan adı ve porttan oluşan kaynak adresine) gönderir. Bu basit istek tarayıcının CORS iznine takılmaz. CORS, başka bir origin'den gelen cevabı sayfa kodunun okuyup okuyamayacağını denetleyen tarayıcı kuralıdır.
+
+Şimdi API ayrı portta çalışıyor olsun: web arayüzü `localhost:5173`, API `localhost:5000`. Tarayıcı açısından port da origin'in parçasıdır; bu iki adres farklıdır. Geliştirmede Vite, `/api` isteklerini API'ye arka planda iletebilir. Bu yönlendirmeye **reverse proxy** denir: tarayıcıya tek adres gösterilir, aradaki sunucu isteği doğru servise aktarır.
+
+```ts title="vite.config.ts"
 export default defineConfig({
   server: {
     proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      },
+      '/api': 'http://localhost:5000',
     },
   },
 })
 ```
 
-- **Üretim ortamında (ASP.NET Core CORS):** Farklı alan adları (örneğin `app.kitaplik.com` ve `api.kitaplik.com`) söz konusu olduğunda, ASP.NET Core tarafında `Program.cs` içinde açık bir CORS politikası tanımlanmalıdır:
+Bu örnekte tarayıcı yine `localhost:5173/api/reading-list` adresini görür. Vite isteği `localhost:5000`'e taşır; tarayıcı iki ayrı origin arasında doğrudan cevap okumadığı için yerel geliştirmede CORS izni gerekmez. Canlı ortamda da API'yi aynı adresin arkasına yönlendirebilir veya API'de yalnızca uygulamanın adresine izin verebilirsin.
 
-```csharp
-// ASP.NET Core Program.cs örneği
-builder.Services.AddCors(options => {
-    options.AddPolicy("FrontendPolicy", policy => {
-        policy.WithOrigins("https://app.kitaplik.com")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials(); // Çerez veya kimlik başlığı için şarttır
-    });
-});
-```
+## Tarayıcı isteği neden önce OPTIONS gönderiyor?
 
-### 2. Kimlik doğrulama: Çerez (Cookie) mi, Bearer Token mı?
-
-Kullanıcıların okuma listesini sunucuda saklamak için kimlik doğrulaması şarttır. Burada iki temel ödünleşim karşına çıkar:
-
-- **HttpOnly ve SameSite Çerezler (Tavsiye edilen kurumsal yaklaşım):** Kullanıcı oturum açtığında sunucu `Set-Cookie` başlığı ile bir oturum bileti gönderir. `HttpOnly` bayrağı sayesinde JavaScript (ve dolayısıyla XSS saldırıları) bu çerezi asla okuyamaz. İsteklerde `credentials: 'include'` kullanılarak çerez her çağrıda sunucuya otomatik taşınır. Bu modelde sunucu tarafında CSRF (Cross-Site Request Forgery) koruması (antiforgery token) uygulanmalıdır.
-- **Bearer Token (JWT):** Sunucu istemciye bir JSON Web Token döner. İstemci her istekte `Authorization: Bearer <token>` başlığı gönderir. Bu başlık özel bir başlık olduğu için tarayıcı asıl istekten önce daima bir **CORS preflight (OPTIONS)** isteği fırlatır. Bearer token'ları asla `localStorage`'da saklanmamalıdır (XSS açığında doğrudan çalınır); bellekte (state içinde) tutulmalı ve refresh token ile yenilenmelidir.
-
-### 3. OpenAPI ve uçtan uca tipli istemci mimarisi
-
-ASP.NET Core API'leri uç noktalarını bir **OpenAPI** şeması olarak yayınlayabilir. .NET 9 ve sonrasındaki şablonlarda bu iş yerleşik `Microsoft.AspNetCore.OpenApi` paketiyle yapılır: `builder.Services.AddOpenApi()` ve `app.MapOpenApi()` ile şema varsayılan olarak `/openapi/v1.json` adresinde yayınlanır. (Eski projelerde Swashbuckle ile `/swagger/v1/swagger.json` adresini görebilirsin; Swagger UI gibi arayüzler bu şemanın üstüne eklenen ayrı araçlardır.)
-
-Modern frontend mimarisinde backend modellerini TypeScript'te elle tekrar yazmak büyük bir hata kaynağıdır. `openapi-typescript` gibi araçlar kullanarak backend'in C# DTO sınıflarından doğrudan yüzde yüz uyumlu TypeScript tipleri üretebilirsin:
-
-```bash
-# ASP.NET Core şemasından anında TypeScript tipleri üretmek
-npx openapi-typescript http://localhost:5000/openapi/v1.json -o src/shared/api/generated.ts
-```
-
-### 4. Zod ile sınır doğrulamasının devamı
-
-Üretilen TypeScript tipleri derleme anında sana rehberlik eder; ancak çalışma anında ağdan gelen JSON verisini doğrulayamaz. Backend ekibi bir alanı `null` yapabilir veya yeni bir enum değeri ekleyebilir. Bu yüzden 15. ve 22. modüllerde öğrendiğin **Zod sınır doğrulaması**, kendi API'n ile konuşurken de ilk savunma hattın olmaya devam eder.
-
-## İstek yaşam döngüsünü adım adım izleyelim
-
-Frontend'den ASP.NET Core backend'ine atılan güvenli bir kitap ekleme isteğinin yaşam döngüsünü inceleyelim:
-
-| Adım | Katman | Gerçekleşen olay | Güvenlik / Kontrol |
-| --- | --- | --- | --- |
-| 1 | React UI | Kullanıcı "Listeye ekle" butonuna tıklar | React Hook Form ve Zod istemci doğrulaması |
-| 2 | Vite / İstemci | `fetch('/api/books', { method: 'POST', credentials: 'include' })` | Gövde JSON formatına çevrilir |
-| 3 | Ağ / Preflight | Özel başlık varsa tarayıcı `OPTIONS /api/books` atar | ASP.NET Core CORS politikası kontrolü |
-| 4 | ASP.NET Core | İstek Controller'a ulaşır (`[Authorize]`) | Çerez/Token doğrulanır, kullanıcı kimliği çözülür |
-| 5 | Backend | İş mantığı ve veritabanı (EF Core) kaydı çalışır | Sunucu tarafı FluentValidation / model kontrolü |
-| 6 | Yanıt | Sunucu `201 Created` ve oluşturulan nesneyi döner | HTTP durum kodu ve JSON başlığı |
-| 7 | Frontend Sınırı | `response.json()` alınır ve Zod şemasından geçirilir | Gelen cevabın beklenen tiplere uygunluğu kanıtlanır |
-| 8 | Query Cache | `queryClient.invalidateQueries({ queryKey: ['books'] })` | Önbellek tazelenir, arayüz güncellenir |
-
-## Kod örnekleri: Tipli API istemcisi ve sınır savunması
-
-### Kırık örnek: Tipleri varsayan, hatayı yutan güvensiz çağrı
+Listeye yeni bir kitap eklemek için `POST` ve JSON gövdesi kullanalım. Farklı origin'e yapılan bu tür isteklerde tarayıcı önce sunucuya `OPTIONS` yöntemiyle bir **preflight** (ön kontrol) isteği yollar. Böylece asıl isteği göndermeden önce sunucunun bu origin'e, yönteme ve başlıklara izin verip vermediğini sorar.
 
 ```ts
-// TEHLİKE: Hata yönetimi yok, tipler doğrulanmamış
-export async function fetchBrokenUserProfile() {
-  const token = localStorage.getItem('token') // GÜVENLİK AÇIĞI: XSS'e açık depolama!
-
-  const res = await fetch('http://localhost:5000/api/user/profile', {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-
-  // HATA: res.ok kontrolü yapılmamış; 401 veya 500 dönerse res.json() beklenmeyen veri döner
-  const data = await res.json()
-  return data // Tip unknown değil, any olarak sisteme sızar!
-}
+await fetch('https://api.kitaplik.example/reading-list', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ workId: 'OL123' }),
+})
 ```
 
-### Doğru örnek: Zod kalkanlı ve tipli API istemcisi
+![Tarayıcı önce izin sorar, sonra asıl isteği gönderir](diagram:cors-preflight)
+
+İstek sırası şöyle ilerler:
+
+| Adım | Kim ne yapar? | Sonuç |
+| --- | --- | --- |
+| 1 | Tarayıcı `OPTIONS /reading-list` yollar | Sunucu izinleri kontrol eder |
+| 2 | API izin verilen origin, `POST` ve `Content-Type` yanıtını verir | Tarayıcı devam edebilir |
+| 3 | Tarayıcı JSON gövdeli `POST` isteğini yollar | API kitap kaydını işler |
+| 4 | API cevabı izin başlıklarıyla döner | Sayfa kodu cevabı okuyabilir |
+
+Tarayıcı izin alamazsa `POST` adımına geçmez; Console'da CORS hatası görürsün. Bu, API'nin kimlik doğrulama veya veri kontrolünü atladığı anlamına gelmez: CORS tarayıcının cevap okuma iznidir, API güvenliğinin yerine geçmez.
+
+İsteklerin kullanıcı hesabına ait olması için API'nin kim olduğunu anlaması gerekir. Yaygın bir seçenek, girişte verilen `HttpOnly` çerezi kullanmaktır. Tarayıcı çerezi otomatik gönderir; `HttpOnly` olduğu için sayfadaki JavaScript içeriğini okuyamaz. Fakat çerezin otomatik gönderilmesi başka bir riski açar: **CSRF** (Cross-Site Request Forgery), başka bir sitenin kullanıcının açık oturumunu kullanarak istemediği işlem isteği başlatmasıdır. API, çerezli değişiklik isteklerini `SameSite` ayarları ve CSRF token gibi kontrollerle korumalıdır.
+
+:::mistake[CORS hatasında herkese izin açmak]
+**Belirti:** `OPTIONS` isteği izin alamaz ve ardından `POST` hiç görünmez; hatayı kapatmak için API'de her origin'e izin vermeyi denersin.  
+**Neden:** Tarayıcının yerel geliştirme isteği ayrı porttaki API'ye gidiyordur; canlı ortamda herkese izin vermek ise istenmeyen sitelere de cevapları açabilir.  
+**Düzeltme:** Yerelde Vite proxy'sinden geçir; canlıda uygulamanın bilinen adresine izin ver. CORS, kimlik doğrulama ve CSRF korumasının yerine geçmez.
+:::
+
+## Sunucuyla konuşan istemci neyi doğrular?
+
+API isteğine ek olarak cevabı da kontrol etmelisin. TypeScript'teki tipler yazarken yardımcı olur, ama ağdan gelen JSON'u çalışma anında doğrulamaz. Kitap ekleme cevabının biçimini Zod ile kontrol edebilirsin:
 
 ```ts check
 import { z } from 'zod'
 
-// 1. API yanıtının Zod şeması
-export const UserBookItemSchema = z.object({
+const SavedWorkSchema = z.object({
   id: z.string(),
   title: z.string(),
-  status: z.enum(['want', 'reading', 'read']),
-  rating: z.number().int().min(1).max(5).nullish(),
 })
 
-export type UserBookItem = z.infer<typeof UserBookItemSchema>
+export type SavedWork = z.infer<typeof SavedWorkSchema>
 
-// 2. Güvenli API istemci fonksiyonu
-export async function addCustomBook(payload: {
-  title: string
-  status: 'want' | 'reading' | 'read'
-  rating?: number | null
-}): Promise<UserBookItem> {
-  const response = await fetch('/api/user-books', {
+export async function addWork(workId: string): Promise<SavedWork> {
+  const response = await fetch('/api/reading-list', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include', // HttpOnly çerezi otomatik taşır
-    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ workId }),
   })
 
   if (!response.ok) {
-    throw new Error(`İstek başarısız oldu: HTTP ${response.status}`)
+    throw new Error(`İstek başarısız: HTTP ${response.status}`)
   }
 
-  const rawJson: unknown = await response.json()
-
-  // Sınır doğrulaması: Gelen verinin şemaya uygunluğu kesinleştirilir
-  const parsed = UserBookItemSchema.safeParse(rawJson)
-  if (!parsed.success) {
-    throw new Error('Sunucudan gelen veri beklenen formata uymuyor')
+  const raw: unknown = await response.json()
+  const result = SavedWorkSchema.safeParse(raw)
+  if (!result.success) {
+    throw new Error('Sunucu beklenen eser biçimini döndürmedi')
   }
 
-  return parsed.data
+  return result.data
 }
 ```
 
-## İleride: Next.js ve Server Components dünyası
+Önce HTTP cevabının başarılı olup olmadığına bakıyoruz; çünkü `fetch`, 404 veya 500 cevaplarında kendi başına hata fırlatmaz. Sonra JSON'u `unknown` kabul edip Zod ile biçimini kontrol ediyoruz. `safeParse`, veri uygunsa ayrıştırılmış değeri; değilse hata bilgisini döndürür, bu yüzden başarısız cevabı da açıkça ele alabiliyoruz.
 
-Vite ile kurduğun Kitaplık uygulamasında tarayıcı önce boş bir `index.html` ve JS paketini indirir; ardından API'ye istek atıp arayüzü doldurur (İstemci Taraflı Render - CSR).
+API ekibi hangi yolların hangi alanları alıp döndürdüğünü belgeleyebilir. **DTO** (Data Transfer Object), API sınırından taşınan veriyi tanımlayan nesne biçimidir. **OpenAPI**, bu istek ve cevap biçimlerini makine tarafından okunabilir bir şemada tarif eden standarttır. Bu şemadan TypeScript tipleri üretilebilir; yine de çalışma anında gelen JSON'u doğrulamak ayrı bir iştir.
 
-Eğer arama motoru görünürlüğü (SEO), ilk açılış hızı veya sunucuya doğrudan erişim kritik bir gereksinime dönüşürse, ilerleyen projelerinde **Next.js App Router** ve **React Server Components (RSC)** mimarisine geçiş yapabilirsin.
+ASP.NET Core (Microsoft'un C# ile sunucu uygulaması kurma çatısı) ile kendi API'ni yazarsan, aynı sorumluluklar orada da karşına çıkar: uygun kökenlere CORS izni, oturum kontrolü, sunucu tarafında veri doğrulama ve açık bir cevap biçimi. Frontend ile backend aynı verinin alan adlarını ve anlamlarını paylaşmalı; OpenAPI bu anlaşmayı görünür kılmaya yardım eder.
 
-- **Server Component (Varsayılan):** Sunucuda (veya derleme anında) çalışır. Tarayıcıya JavaScript göndermez; doğrudan HTML akışı üretir. Veritabanına veya backend servislerine sıfır ağ gecikmesiyle doğrudan bağlanabilir.
-- **Client Component (`'use client'`):** Etkileşimli butonlar, form girdileri, `useState`, `useEffect` veya tarayıcı API'leri (`localStorage`) kullanması gereken bileşenler bu sınırın arkasında yer alır.
-- **İki dünyanın dengesi:** Eserin başlığı, kapak görseli ve açıklaması sunucuda render edilip anında HTML olarak gönderilirken; kullanıcının puan verdiği veya not yazdığı okuma listesi formu bir Client Component olarak istemcide çalışır.
+## İlk HTML'de eser bilgisi gerektiğinde
 
-## Mobilde yerel deneyim: React Native ve Expo
+Kitaplık'ın eser detay adresinin arama motorlarında görünmesini ve başlık/açıklamanın sayfa açılır açılmaz HTML'de bulunmasını istediğini düşün. Vite ile kurduğun mevcut uygulama genellikle önce JavaScript'i yükler, sonra tarayıcıda API'den veriyi alıp ekranı doldurur. **Next.js**, React ile web uygulaması kuran bir framework'tür; App Router yapısında sunucuda çalışan **Server Component**, HTML üretirken veriyi alabilir.
 
-Kullanıcının cebinde, internet olmadan da çalışan gerçek bir mobil deneyim gerektiğinde adresin **React Native** ve **Expo**'dur.
+Kişisel okuma listesi ise hâlâ bu tarayıcının `localStorage`'ında ve ekrandaki form etkileşimli. O bölüm tarayıcıda çalışan bir **Client Component** olmalıdır; örneğin `useState`, olay işleyicisi veya `localStorage` kullanabilir. Sayfayı tek parça seçmek zorunda değilsin: herkese açık eser bilgisi sunucuda, kişisel form istemcide kalabilir.
 
-- **Neler aynı kalır?** React bileşen modeli, props, state, custom hook'lar, TanStack Query önbelleklemesi, Zod şemaları ve mimari test disiplini tamamen aynıdır.
-- **Neler değişir?** Tarayıcı DOM'u (`div`, `p`, `button`, CSS) yoktur. Bunun yerine mobil işletim sisteminin yerel arayüz öğeleri (`View`, `Text`, `Pressable`, `FlatList`) kullanılır. `localStorage` yerine cihazın yerel depolama mekanizmaları (`AsyncStorage` veya `expo-sqlite`) tercih edilir.
-
-## Sonraki öğrenme yol haritan
-
-| Hedef | İhtiyaç anı | Taşıyacağın temel React becerisi |
+| Parça | Nerede çalışır? | Neden? |
 | --- | --- | --- |
-| **Kendi API'n (ASP.NET Core)** | Verileri veritabanında saklama, oturum açma, çoklu kullanıcı | Zod sınır doğrulaması, fetch anatomisi, CORS ve proxy bilgisi |
-| **Next.js & Server Components** | Arama motoru optimizasyonu (SEO), ilk sayfa yükleme hızı | State kategorileri, sunucu ve istemci sorumluluk ayrımı |
-| **React Native (Expo)** | Mağazadan indirilen iOS/Android yerel mobil uygulamalar | Hook'lar, veri önbellekleme, türetilmiş state, test stratejisi |
+| Eser başlığı ve açıklaması | Server Component | İlk HTML'de gösterilebilir |
+| Okuma listesi formu | Client Component | Tarayıcı depolaması ve etkileşim kullanır |
 
-Hangi yöne gidersen git, unutma: teknoloji isimleri değişir, ancak temiz mimari, tek doğruluk kaynağı, sağlam sınır doğrulaması ve güven veren test disiplini kalıcıdır.
+Örneğin tüm sayfayı istemciye taşıyıp her dosyaya `'use client'` eklersen, bu tek başına eser bilgisini sunucuda üretmez. İhtiyaca göre sınırı seç: etkileşim ve tarayıcı API'si gereken küçük bölüm istemcide olsun, uygun herkese açık veri sunucuda üretilebilsin.
 
-## Sık karşılaşılan hatalar
+## Uygulama mağazaya gidecekse
 
-:::mistake[Geliştirme sırasında CORS hatası alınca panikleyip API'de AllowAnyOrigin açmak]
-**Belirti:** Konsolda `Access to fetch at 'http://localhost:5000' blocked by CORS policy` hatası görünce backend'de rastgele tüm kökenlere yetki vermek.  
-**Neden:** Farklı portlar arası istek Same-Origin Policy gereği engellenmiştir; ancak üretimde herkese açık köken açmak güvenlik açığı yaratır.  
-**Düzeltme:** Yerel geliştirmede Vite'ın `server.proxy` özelliğini kullanarak istekleri aynı kökenden geçir; backend CORS'unu yalnızca güvenilir üretim adreslerine sınırla.
-:::
+Web arayüzünü telefonda açmak, mağazadan indirilen yerel uygulamayla aynı şey değildir. Gerçek bir iOS/Android arayüzü istiyorsan **React Native**, React bileşen modelini mobil işletim sisteminin arayüz öğeleriyle kullandırır; **Expo** ise bu uygulamaları geliştirme ve çalıştırma araçlarını sağlar.
 
-:::mistake[Server Component içinde useState veya window çağırmak]
-**Belirti:** Next.js Server Component'ında kod derlenirken `useState is not a function` veya `window is not defined` hatası patlaması.  
-**Neden:** Server Component sunucuda Node.js ortamında çalışır; tarayıcı penceresine veya kullanıcı etkileşim kancalarına sahip değildir.  
-**Düzeltme:** Etkileşimli kodu dosyanın başına `'use client'` direktifi ekleyerek Client Component sınırına taşı.
-:::
+Şu becerilerin taşınır: bileşenleri parçalara ayırmak, `props` ve `state` kullanmak, veri biçimini Zod ile tanımlamak, asenkron isteği yönetmek. Web'e özgü `div`, `button`, CSS ve `localStorage` aynen taşınmaz. Yerine örneğin `View`, `Text`, `Pressable` gibi mobil bileşenler ve uygun cihaz depolaması gelir.
 
-:::sector[Sektörde Full-Stack ve Poliglot Ekipler]
-Büyük kurumsal şirketlerde frontend ve backend ekipleri sıklıkla ayrılır: backend ASP.NET Core veya Java/Go ile yazılırken frontend React ile geliştirilir. Bu ekipler arasındaki en büyük sürtünme "API kontratı" üzerinden çıkar. OpenAPI şemasından tipli istemci üreten ve sınırda Zod ile doğrulama yapan bir React mühendisi, backend değişikliklerinde sistemi koruyan en güvenilir takım oyuncusudur.
-:::
+Tüm Kitaplık'ı yeniden yazmadan önce tek bir Dune eser ekranıyla deneme yapmak daha çok bilgi verir. O küçük ekranda yerel bileşenleri, ağ bağlantısını ve cihazda saklama kararını görürsün; ardından kapsamı büyütüp büyütmeyeceğine kanıta dayanarak karar verirsin.
+
+## Hangi yol hangi ihtiyaca uyar?
+
+Bu yollar birbirinin yeni sürümü değil; farklı ihtiyaçları çözer. Hesaplar arasında paylaşılan okuma listesi için kendi API'n gerekir. İlk HTML'de görünmesi gereken web içeriği için Next.js ve Server Components'i araştırırsın. Mağazadan kurulup yerel arayüz kullanan uygulama için React Native ve Expo'yu denersin.
+
+React'ten öğrendiklerin kaybolmaz: verinin kime ait olduğunu, nerede saklandığını ve bileşenlerin nasıl ayrıldığını düşünmeye devam edersin. Yeni ortamda değişen şey, veriye veya ekrana hangi yoldan ulaştığındır.
 
 ## Özet
 
-- Kendi backend'inle konuşurken yerel geliştirmede Vite proxy'si, üretimde ise katı CORS politikası uygulanır.
-- Kimlik doğrulamada HttpOnly çerezler XSS saldırılarına karşı en yüksek güvenliği sağlar; Bearer token'lar ise preflight (OPTIONS) mekanizmasını tetikler.
-- OpenAPI/Swagger şemaları sayesinde C# backend modellerinden otomatik tipli TypeScript istemcileri üretilebilir.
-- Zod sınır doğrulaması, kendi sunucundan gelen yanıtlarda da beklenmedik kırılmaları önleyen ana kalkandır.
-- SEO ve ilk render performansı için Next.js & RSC; yerel mobil deneyim için React Native & Expo aynı React zihniyetiyle kullanılır.
+- Tarayıcı farklı origin'e istek gönderdiğinde CORS izni gerekir; geliştirme proxy'si tarayıcıya aynı origin'i gösterir.
+- `POST` ve JSON gibi isteklerde tarayıcı önce preflight `OPTIONS` isteği atabilir; izin başarılıysa asıl isteğe geçer.
+- Kendi API'n kullanıcı verisini saklayabilir; CORS, kimlik doğrulama ve CSRF ayrı kontrollerdir.
+- Server Component herkese açık eser bilgisini sunucuda üretebilir; etkileşimli okuma listesi formu Client Component'ta kalabilir.
+- React Native ile React becerilerinin bir kısmı taşınır, ama web DOM'u, CSS'i ve `localStorage` aynı biçimde taşınmaz.
+
+**Yeni terimler**
+
+- **Origin:** Şema, alan adı ve porttan oluşan kaynak adresi.
+- **CORS:** Tarayıcının başka origin'den gelen cevabı sayfa koduna açma izni.
+- **Reverse proxy:** Bir sunucunun gelen isteği arka planda başka bir servise iletmesi.
+- **Preflight:** Tarayıcının asıl istekten önce izinleri sormak için gönderdiği `OPTIONS` isteği.
+- **CSRF:** Başka bir sitenin açık oturum üzerinden kullanıcı adına işlem başlatma riski.
+- **DTO:** API üzerinden taşınan verinin alanlarını belirleyen nesne biçimi.
+- **OpenAPI:** API istek ve cevaplarını tanımlayan makinece okunabilir standart.
+- **Server/Client Component:** Sırasıyla sunucuda HTML üreten ve tarayıcıda etkileşim sağlayan bileşen türleri.
+- **React Native / Expo:** Sırasıyla yerel mobil arayüz için React çatısı ve uygulama geliştirme araçları.
 
 ### Kendini yokla
 
-1. **Soru:** Vite geliştirme sunucusunda `server.proxy` kullanmak neden CORS hatalarını ortadan kaldırır?  
-   **Cevap:** Çünkü tarayıcı isteği `http://localhost:5173/api` adresine gönderir. İstek yapılan köken ile sayfanın kökeni aynı olduğu için tarayıcı CORS kontrolü uygulamaz. Sunucudan sunucuya (Vite Node sürecinden ASP.NET Core sürecine) yapılan arka plan yönlendirmesi ise Same-Origin kısıtlamasına tabi değildir.
-2. **Soru:** OpenAPI şemasından üretilen TypeScript tipleri varken neden hâlâ Zod şemasıyla doğrulama yapmalıyız?  
-   **Cevap:** Çünkü TypeScript tipleri derleme anında vardır ve JavaScript'e dönüştüğünde silinir. Çalışma zamanında backend beklenmeyen bir `null` gönderirse veya ağda bir ara katman yanıtı bozarsa, TypeScript bunu engelleyemez. Zod, çalışma zamanında veriyi denetleyerek uygulamanın çökmesini önler.
+1. **Soru:** JSON gövdeli bir `POST` başka origin'e gittiğinde neden Network panelinde `OPTIONS` görebilirsin?  
+   **Cevap:** Tarayıcı asıl isteği göndermeden önce API'nin bu origin'e ve kullanılacak yönteme/başlıklara izin verip vermediğini kontrol eder.
+2. **Soru:** Kitaplık'ta eser açıklaması ilk HTML'de olsun, okuma listesi formu `localStorage` kullansın istiyorsun. Hangi kısmı nerede tutarsın?  
+   **Cevap:** Eser açıklamasını sunucuda çalışan Server Component'ta üretirim; tarayıcı depolaması ve etkileşim kullanan formu Client Component'ta bırakırım.
+
+:::info[Derinlemesine (isteğe bağlı)]
+ASP.NET Core'da CORS politikası `WithOrigins("https://app.kitaplik.com")` ile güvenilen web adresini sınırlar. Çerez gönderen bir fetch çağrısı `credentials: 'include'` ister ve sunucunun da credentials iznini vermesi gerekir; credentials açıkken `AllowAnyOrigin` kullanılamaz. Canlı ortamda bir reverse proxy `/api` yolunu API'ye yönlendirerek web arayüzü ve API'yi aynı origin altında da sunabilir.
+
+Bearer token kullanan isteklerde `Authorization` başlığı preflight'a yol açabilir. Token'ı `localStorage`'da saklamak XSS (sayfada çalıştırılmış zararlı JavaScript) durumunda çalınma riskini artırır; kimlik doğrulama yöntemi ve token saklama yeri birlikte kararlaştırılmalıdır.
+
+ASP.NET Core, `AddOpenApi()` ve `MapOpenApi()` gibi araçlarla OpenAPI şeması yayınlayabilir. Şemadan TypeScript tipi üretmek, çalışma anındaki Zod doğrulamasını ortadan kaldırmaz: derleyici ağdan dönen gerçek JSON'u inceleyemez.
+:::

@@ -15,18 +15,19 @@ export default defineQuestion({
         'Doğru. CORS kuralları yalnızca tarayıcı içinde çalışan JavaScript kodları için geçerlidir. Postman, curl veya sunucudan sunucuya yapılan çağrılarda Same-Origin Policy işletilmez.',
     },
     {
-      text: 'React’in `fetch` implementasyonu Postman kadar HTTP standardına uygun değildir.',
-      explanation: 'Sorun React ile ilgili değildir; tarayıcının güvenlik modeli kuralı uygular.',
+      text: 'Tarayıcı isteği API’ye hiç göndermez; CORS ağ katmanında tüm isteği durdurur.',
+      explanation:
+        'CORS bazı isteklerde ön kontrol yapar, ancak temel kural JavaScript’in cevabı okuyup okuyamayacağını belirlemektir. Basit bir istek sunucuya ulaşmış olabilir.',
     },
     {
-      text: 'API sunucusu yalnızca Postman’den gelen User-Agent başlığına izin vermektedir.',
+      text: 'Postman isteklerinde `Origin` başlığı olmadığı için API tarayıcı isteklerini reddeder.',
       explanation:
-        'CORS engeli genellikle User-Agent ile değil, tarayıcının gönderdiği `Origin` başlığına sunucunun izin başlığı (`Access-Control-Allow-Origin`) dönmemesiyle ilgilidir.',
+        'Postman CORS denetimi yapmadığı için çalışabilir. Tarayıcıdaki asıl fark, API cevabının `Access-Control-Allow-Origin` iznidir.',
     },
     {
-      text: 'JavaScript `try/catch` bloğu CORS hatasını otomatik olarak yutar.',
+      text: 'Tarayıcı API’den gelen cevabı JavaScript’e verir; `try/catch` içindeki kod gövdeyi boşaltır.',
       explanation:
-        'Tam tersine, CORS engellendiğinde `fetch` Promise’i `TypeError: Failed to fetch` ile reddedilir.',
+        'CORS izni yoksa tarayıcı JavaScript’e cevabın içeriğini vermez; `fetch` genel bir ağ hatasıyla reddedilir.',
     },
   ],
 })

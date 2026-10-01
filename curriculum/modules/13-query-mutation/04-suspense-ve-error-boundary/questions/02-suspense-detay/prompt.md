@@ -1,15 +1,16 @@
-Film detay bileşeninde tekrar eden bekleme dalları var. İçeriği hazır olana kadar dışarıdaki bekleme alanını kullanacak bir detay görünümü oluştur.
+Film detay görünümünde bekleme ve hata halleri dışarıdaki sayfa kabuğuna ait olsun. Film hazır değilken yükleme alanı, istek başarısızsa anlaşılır hata mesajı gösteren bileşeni oluştur.
 
 ## Gereksinimler
 
-- Film verisi `load(id)` ile alınsın ve cache’te id’ye göre ayrı saklansın.
+- `load(id)` sonucu id’ye göre ayrı cache’te tutulsun.
 - Başarılı durumda film başlığı `<h1>` içinde görünsün.
-- Veri gelene kadar bileşen ağacının dışındaki Suspense fallback’i kullanılmalı; içeride ayrıca loading dalı olmasın.
-- Hata, bileşen dışındaki hata sınırı tarafından gösterilebilsin.
+- Veri beklenirken `Film yükleniyor…` metni görünsün.
+- İstek hata verirse `role="alert"` içinde `Film yüklenemedi` metni görünsün.
+- Bekleme ve hata arayüzleri film içeriğinin çevresinde kurulsun; içeriğin kendisinde durum dalları olmasın.
 
 ## Örnek
 
-550 için `load` `{ id: 550, title: 'Dövüş Kulübü' }` döndürür; ekranda aynı başlığa sahip bir `<h1>` görünür.
+550 için `load` `{ id: 550, title: 'Dövüş Kulübü' }` döndürür; ekranda aynı başlıklı `<h1>` görünür. İstek reddedilirse `Film yüklenemedi` görünür.
 
 ## Sözleşme
 

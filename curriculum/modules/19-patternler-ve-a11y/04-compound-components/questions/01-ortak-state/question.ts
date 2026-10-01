@@ -14,16 +14,19 @@ export default defineQuestion({
         'Doğru. Context ortak seçimi ve ilişkili id’leri taşır; parçalar value ile eşleşir.',
     },
     {
-      text: 'Her panelin kendi ayrı useState değerini.',
-      explanation: 'Ayrı state’ler birden fazla paneli aynı anda açık bırakabilir.',
+      text: 'Her trigger’ın kendi seçili değerini ve panelin görünürlük state’ini.',
+      explanation:
+        'İki ayrı state kaynağı seçili görünen trigger ile açık panelin ayrışmasına yol açabilir.',
     },
     {
-      text: 'Yalnızca CSS class adlarını.',
-      explanation: 'Görünüm, klavye ve aria-selected tutarlılığını tek başına sağlayamaz.',
+      text: 'Yalnızca seçili trigger’ın id değerini.',
+      explanation:
+        'Bir id tek başına seçim ve panel görünürlüğü durumunu paylaşmaz; kökün seçili value bilgisi de gerekir.',
     },
     {
-      text: 'TMDB tokenını.',
-      explanation: 'Sekme seçimi client UI state’idir; ağ yetkilendirmesiyle ilgisi yok.',
+      text: 'Panel içeriğinin başlığını, trigger’ların value değerinden bağımsız olarak.',
+      explanation:
+        'Başlık metni içerik parçasına aittir. Kökte ortak tutulması seçim ile hangi panelin görünmesi gerektiğini çözmez.',
     },
   ],
 })

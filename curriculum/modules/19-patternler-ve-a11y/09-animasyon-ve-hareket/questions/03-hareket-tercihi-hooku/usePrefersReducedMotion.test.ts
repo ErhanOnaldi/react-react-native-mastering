@@ -18,6 +18,9 @@ function installMediaQuery(initial: boolean) {
       this.matches = next
       listener?.({ matches: next } as MediaQueryListEvent)
     },
+    hasListener() {
+      return listener !== undefined
+    },
   }
   vi.stubGlobal(
     'matchMedia',
@@ -45,7 +48,8 @@ describe('azaltılmış hareket tercihi', () => {
   it('bileşen kaldırılınca değişim dinleyicisini temizler', () => {
     const mediaQuery = installMediaQuery(false)
     const { unmount } = renderHook(() => usePrefersReducedMotion())
+    expect(mediaQuery.hasListener()).toBe(true)
     unmount()
-    act(() => mediaQuery.dispatch(true))
+    expect(mediaQuery.hasListener()).toBe(false)
   })
 })

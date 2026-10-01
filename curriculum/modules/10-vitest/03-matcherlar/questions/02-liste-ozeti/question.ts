@@ -9,7 +9,7 @@ export default defineQuestion({
   hints: [
     'Yeni alanlar eklense bile hangi sayfalama bilgileri sabit kalmalı, onları seç.',
     'Liste sonucunun yalnızca ilgili alanlarını karşılaştır.',
-    '`toMatchObject` ile `page` ve `total_pages` alanlarını birlikte denetle.',
+    '`toMatchObject({ page: 2 })` ve `toMatchObject({ total_pages: 3 })` ayrı beklentiler olabilir.',
     'İkinci sayfa için `page: 2`, 41 sonuç için `total_pages: 3` bekle.',
   ],
   testWriting: {

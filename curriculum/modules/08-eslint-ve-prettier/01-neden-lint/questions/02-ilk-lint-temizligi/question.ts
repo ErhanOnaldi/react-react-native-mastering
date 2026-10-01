@@ -9,6 +9,6 @@ export default defineQuestion({
   hints: [
     'Kaynak metnindeki import adlarını bileşenin kullandığı adlarla karşılaştır.',
     'Kuralın gerektirdiği şey artık kullanılmayan import’u silmek; ESLint unused-variable uyarısını verir.',
-    "Yalnızca `import { MovieCard } from './MovieCard'` satırını metinden çıkar; bileşen export’unu bırak.",
+    'Kullanılmayan import’u kaldır; prop değerini başlıkta göstermeye devam et.',
   ],
 })

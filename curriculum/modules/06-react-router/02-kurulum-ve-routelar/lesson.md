@@ -1,140 +1,135 @@
 ---
 title: "Router kurulumu ve bağlantılar"
-minutes: 13
+minutes: 15
 kind: concept
 ---
 
 # Router kurulumu ve bağlantılar
 
-:::pain[Problem]
-Sinema ana sayfasındaki “Ara” düğmesi `setPage('search')` çağırıyor. Arama ekranı açılıyor ama adres `/` kalıyor; yenileyince arama kayboluyor. Kullanıcı gördüğü ekranın bağlantısını kopyalayamıyor.
-:::
+Bir React uygulamasında şu ana kadar bir component'i ekranda göstermek için JSX yazdın. Şimdi Sinema'nın `/` adresinde film listesini, `/genres` adresinde türleri göstermesini istiyoruz. Bunun için adres ile JSX'i eşleyen bir route kuracağız.
 
-## Route ağacının işi
+## İki adres, iki ekran
 
-Route, adresin hangi React içeriğini açacağını belirleyen eşlemedir. `/` için ana sayfa, `/search` için arama ekranı tanımlarsın; router mevcut adresi bu eşlemelerle karşılaştırır ve doğru içeriği gösterir. Tanımlar bir ağaç veya liste biçiminde tek yerde toplandığı için uygulamanın sayfa haritası okunabilir olur.
+Bir **route**, bir adres desenini ekranda gösterilecek React içeriğine bağlar. Basit bir route nesnesinde `path` adresi, `element` ise o adres eşleşince gösterilecek JSX'i söyler. Örneğin `/` ana sayfaya, `/films` film listesine karşılık gelebilir.
 
-Bu modülde React Router 8'in **data mode** API'sini kullanıyoruz. Tarayıcıda `createBrowserRouter` gerçek adres çubuğu ve history ile çalışan router'ı oluşturur; `RouterProvider` React ağacına bu router'ın sonucunu sunar. Bu ayrım önemlidir: route ağacı navigasyon altyapısıdır, `RouterProvider` ise onu uygulama ekranına bağlayan React sınırıdır.
+React Router'ın **data mode** denilen kullanımında route'ları bir nesne listesi olarak tanımlar, sonra bu listeden browser router'ı oluşturursun. Buradaki “data” adı, bu yapının route'lara ait ek yetenekleri desteklediğini anlatır; bu başlangıçta ayrıca veri yükleme yazacağın anlamına gelmez.
+
+Önce route listesini router'a bağla:
+
+```tsx check
+import { createBrowserRouter, type RouteObject } from 'react-router'
+import { RouterProvider } from 'react-router/dom'
+const sinemaRouteMap: RouteObject[] = [
+  { path: '/', element: <h1>Sinema</h1> },
+  { path: '/films', element: <h1>Filmler</h1> },
+]
+const router = createBrowserRouter(sinemaRouteMap)
+export function App() { return <RouterProvider router={router} /> }
+```
+
+`createBrowserRouter` adres çubuğu ve tarayıcı history'siyle çalışan router nesnesini oluşturur. `RouterProvider`, bu router'ı React ağacına bağlar. Kullanıcı `/films` adresini açınca ikinci route eşleşir ve `Filmler` başlığı görünür. Router'ı `App` fonksiyonunun dışında bir kez oluşturuyoruz; böylece her render'da yepyeni bir router ve geçmiş oluşturulmaz.
+
+`react-router` ve `react-router/dom` ifadeleri paketin **entry point**'leridir: paketten hangi dışa aktarımları alacağını belirleyen giriş yolları. Route oluşturma API'leri `react-router` içinden, React DOM için `RouterProvider` ise `react-router/dom` içinden gelir. Import yerini karıştırırsan editor ilgili export'u bulamayabilir.
 
 ![Data mode içinde rota tanımı, router ve React ekranı arasındaki akış](diagrams/route-akisi.svg)
 
-1. **Route nesnesi adres desenini ve içeriğini tarif eder.** Basit bir route `path` ile eşleşecek adresi, `element` ile render edilecek JSX'i taşır.
-2. **Router mevcut adresi route ağacında çözer.** `/search` için eşleşen route bulunur; eşleşme yoksa daha sonra tanımlayacağımız yakalama yolu kullanılabilir.
-3. **Provider sonucu React ağacına bağlar.** `RouterProvider` route ağacının dışına konur; uygulamadaki route bileşenleri ancak bu router context'i altında çalışır.
-4. **Router'ı render sırasında tekrar oluşturma.** Router'ı modül seviyesinde bir kez kur. Her render'da yeni history/router üretmek uygulamanın navigasyon sürekliliğini bozar ve gereksiz nesneler oluşturur.
-5. **Bir adresi kullanıcı bağlantısı olarak göster.** Önceden belli hedefe giden link, düğme görünümü alsa bile bağlantı olmalıdır. Router linki uygulama içi geçiş yaparken tam sayfa yüklemesini önler ve tarayıcıya normal link davranışını korur.
+## Kullanıcının seçebileceği bir adres ekle
 
-React Router 8'de route tanımları ve bileşenler `react-router` paketinden gelir. DOM sağlayıcısı `RouterProvider` ise `react-router/dom` girişinden import edilir. Eski `react-router-dom` import örneklerini bu projede kullanma. Bu API ayrımı yeni bir davranış değil; doğru entry point'ten tip ve fonksiyon almanı sağlayan paket sözleşmesidir.
-
-## Boş eşlemeden çalışan adrese
-
-Önce sorunlu davranışa bak. Aşağıdaki kod ekranda sayfa seçebilir ama tarayıcı geçmişini güncellemez:
+Bir adresi bilmek ile kullanıcıya o adrese gidecek bir kontrol sunmak ayrı işlerdir. Önceden belli bir uygulama içi hedefe giden **link**, tıklanabilir adres olarak gösterilir. Router'ın `Link` bileşeniyle türler ekranına geçiş ekleyelim:
 
 ```tsx
-function QuickNavigation() {
-  const [page, setPage] = useState<'home' | 'search'>('home')
-  return <button onClick={() => setPage('search')}>Ara</button>
-}
-```
-
-`setPage` React bileşenini yeniden render eder. Buna rağmen adres çubuğu, history kayıtları ve doğrudan açılacak `/search` yolu değişmez. Ekranların ayrı adresleri olması için `path` eşlemesini ve kullanıcı linkini kur:
-
-```tsx check
 import { createBrowserRouter, Link, type RouteObject } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 
-const libraryRoutes: RouteObject[] = [
+const sinemaRouteMap: RouteObject[] = [
   {
     path: '/',
-    element: (
-      <main>
-        <h1>Kitaplık</h1>
-        <Link to="/shelf">Rafı aç</Link>
-      </main>
-    ),
+    element: <main><h1>Sinema</h1><Link to="/genres">Türler</Link></main>,
   },
-  { path: '/shelf', element: <h1>Okuma rafı</h1> },
+  { path: '/genres', element: <h1>Film türleri</h1> },
 ]
 
-const router = createBrowserRouter(libraryRoutes)
+const router = createBrowserRouter(sinemaRouteMap)
+```
 
-export function App() {
-  return <RouterProvider router={router} />
+Bu örnekte `Link` hedefi `/genres` olan gerçek bir bağlantıdır. Basınca adres değişir ve Router eşleşen route'un içeriğini gösterir; uygulama içi geçiş tüm belgeyi baştan yüklemez. Link olarak sunulması, kullanıcının adresi kopyalayıp yeni sekmede açabilmesini ve klavyeyle kullanabilmesini de sağlar.
+
+## Hangi menü öğesi etkin?
+
+Bir menüde kullanıcıya hem hedefi vermek hem de bulunduğu sayfayı göstermek isteyebilirsin. `NavLink`, `Link` gibi navigasyon yapar ve adresiyle eşleştiğinde etkin durumunu da bildirir. Şimdi ana sayfa ve türler sayfası için bir menü düşün:
+
+```tsx
+import { NavLink } from 'react-router'
+
+function SinemaMenu() {
+  return (
+    <nav aria-label="Sinema">
+      <NavLink to="/" end>Ana sayfa</NavLink>
+      <NavLink to="/genres">Türler</NavLink>
+    </nav>
+  )
 }
 ```
 
-Burada `libraryRoutes` ve `router` component gövdesinin dışında durur. Kullanıcı “Rafı aç” bağlantısına basınca `/shelf` geçmişe girer ve eşleşen başlık görünür. Bir route'u doğrudan `/shelf` ile açmak da aynı ekrana ulaşır; daha sonra layout eklediğinde içerik yine route ağacından gelir.
+`NavLink` etkin olduğunda `aria-current="page"` niteliğini sağlar; bunu stillerle görünür yapabilirsin. `end`, ana sayfa adresinin tam eşleşmesini ister. Bunu koymazsan `/` ile başlayan `/genres` adresinde de Ana sayfa etkin görünebilir.
 
-## Geçişi zaman sırasıyla izleyelim
+Sinema'da ana sayfadan türlere geçtiğini adım adım izleyelim:
 
-Başlangıç adresinin `/` olduğunu varsayalım. Route listesinde `/` ile eşleşen ilk içerik “Kitaplık” başlığını üretir. Bağlantıya tıklanınca şu olaylar sırayla gerçekleşir:
-
-| Sıra | Olay | Sonuç |
+| Sıra | Ne olur? | Ekrandaki sonuç |
 | --- | --- | --- |
-| 1 | Kullanıcı gerçek `Link` öğesini etkinleştirir | Router hedef `/shelf` değerini alır |
-| 2 | Router history'ye yeni konum ekler | Geri tuşunun dönebileceği önceki `/` kaydı kalır |
-| 3 | Yeni konum route listesiyle eşleşir | `/shelf` route'u seçilir |
-| 4 | Eşleşen React içeriği render edilir | “Okuma rafı” başlığı görünür |
-| 5 | Kullanıcı yeniler | Adres hâlâ `/shelf`; sunucu uygulama girişini veriyorsa aynı route yeniden kurulur |
+| 1 | Tarayıcı `/` adresindedir | Ana sayfa route'u eşleşir |
+| 2 | Kullanıcı `Türler` `NavLink`'ini seçer | Router hedef `/genres` adresini alır |
+| 3 | Router yeni adresi history'ye ekler | Geri tuşu `/` adresine dönebilir |
+| 4 | `/genres` route'u eşleşir | Film türleri görünür, Türler etkin olur |
+| 5 | Kullanıcı sayfayı yeniler | Adres `/genres` kalır ve aynı route seçilir |
 
-Son satırın iki tarafı vardır. React Router istemci tarafında route'u eşler; web sunucusu ise derin adresin dosya sistemi yolu olmadığını bilmelidir. Üretim yayını SPA fallback sunmuyorsa yenilemede sunucu 404 döndürebilir. Bu, route ağacındaki bir eşleşme hatası değil, yayın sunucusu yapılandırmasıdır.
+Bu akışta tıklama, adres değişimi ve içerik seçimi birbiri ardına gelir. `NavLink` etkinliği mevcut adresten hesaplandığı için ayrıca `isGenresPage` gibi bir state tutman gerekmez. Aynı bilgiyi ikinci kez state'te saklamak, adres değiştiğinde menünün güncel kalmaması riskini yaratır.
 
-## Route tanımının parçaları
+## Route eşleşmesi nasıl okunur?
 
-Route nesnesi bir path'ten daha fazlası olabilir. `element` render edilecek React ağacını taşır; `children` iç içe route'ları tanımlar; `index` parent path'in kendisi açıldığında gösterilecek varsayılan child'ı belirtir. `lazy` gibi daha sonra kullanacağımız alanlar da route nesnesinin parçasıdır. Her alanı başlangıçta doldurman gerekmez; ekrandaki davranışa ihtiyaç doğduğunda ekle.
+Route listesi bir ekran haritasıdır. Router geçerli adresi bu haritayla karşılaştırır ve uyan içeriği seçer; listenin ilk öğesini körü körüne açmaz. Bir adresin hiçbir route'a uymadığı duruma hazırlık için `*` desenini kullanabilirsin. Bu **wildcard**, geriye kalan ve başka bir route ile eşleşmeyen adresleri yakalayan özel desendir.
 
-Route eşleşmesi string karşılaştırması gibi tek bir `if` değildir. Router, sabit ve dinamik segmentleri, iç içe yolları ve wildcard gibi kapsayıcı desenleri route ağacına göre değerlendirir. `/books/:id` aynı bileşeni birçok kitap için kullanabilir. Birbirine benzeyen path'ler varsa daha belirgin eşleşme seçilir; bu nedenle genel bir `*` route'u belirli route'lardan önce ele alacak şekilde düşünmek yerine route ağacının altındaki yakalama rolünde konumlandır.
+```tsx
+const sinemaRouteMap: RouteObject[] = [
+  { path: '/', element: <h1>Sinema</h1> },
+  { path: '/genres', element: <h1>Türler</h1> },
+  { path: '*', element: <h1>Bu sayfa bulunamadı</h1> },
+]
+```
 
-Data mode'u burada seçmemizin nedeni `createBrowserRouter` ile bir route nesnesi ağacı kurmasıdır. Data mode `loader`, `action`, `errorElement` ve navigasyon durumu gibi route düzeyinde yetenekler sunar. Ancak bu modüllerde sayfa verisini statik listeden okuyacağız; `loader` yazmak zorunda değilsin. Router'ı data mode'da kurmak, bütün veri çekme işini Router'a taşımak demek değildir.
+`/genres` ikinci içeriği gösterir; `/unknown` ise bilinen iki yola uymadığı için wildcard içeriğine düşer. Wildcard'ı burada basit bir bulunamadı ekranı olarak kullanıyoruz. Daha sonra 404 ile route çalışırken oluşan hatanın farklı durumlar olduğunu ayıracağız.
 
-Uygulama küçük olsa bile route dizisini ayrı bir değişkende tutmak yararlıdır. Aynı rota ağacı daha sonra tarayıcı router'ına ve bellek router'ına verilebilir. Böylece testlerde farklı bir route kopyası oluşturmazsın; ürünün adres sözleşmesi tek kaynaktan okunur. Route array içindeki öğelerin tipi `RouteObject[]` olarak belirtilince yanlış alan adları ve geçersiz şekiller derleme sırasında görünür.
+Bu örneklerde route'ları dizi olarak yazdık. `RouteObject[]` TypeScript'e her elemanın route tanımına uyması gerektiğini söyler; yanlış bir property adı yazarsan hata editörde görünür. Rota ağacını tek yerde tutmak hem adres haritasını okumayı hem de aynı tanımları farklı ortamlarda kullanmayı kolaylaştırır.
 
-Bir sayfanın başlığını inline JSX olarak route nesnesinde tutmak ilk öğrenme adımı için uygundur. Uygulama büyüdüğünde route modülüne veya kendi dosyasındaki named component'e taşırsın. Önemli olan, route ağacının okunabilir kalması ve her sayfanın doğru path ile eşleşmesidir. Büyük uygulamalarda her ürün sayfası kendi modülünde yaşasa da path'ler ortak bir girişte görünür kalabilir.
+## Takıldığında önce import yoluna bak
 
-## History'de yeni entry ne demek?
+Belirti: `RouterProvider` için “export bulunamadı” hatası görüyorsun. Genellikle DOM sağlayıcısını `react-router` içinden almaya çalışmışsındır. `RouterProvider`'ı `react-router/dom`'dan, `createBrowserRouter`, `Link`, `NavLink` ve `RouteObject` gibi route API'lerini `react-router`'dan import et.
 
-Router linki seçilince tarayıcı adresini uygulama içinde değiştirir ve navigasyon kaydı oluşturur. Kullanıcı birden fazla anlamlı sayfa açmışsa geri tuşu önceki konuma döner; ileri tuşu da geri gidilen konumu yeniden açar. Ekrandaki React state'i route bileşenlerinin ağacına göre korunabilir veya yeniden başlatılabilir. History kaydı ile state'in ömrü aynı şey değildir: URL önceki adresi taşır, component identity ise React ağacının hangi parçalarının korunduğunu belirler.
+Bir başka gerçek belirti, her render sonrası navigasyon geçmişinin sıfırlanmasıdır. Router'ı component içinde oluşturduysan her render'da yeni bir router yaratılıyor olabilir. Router'ı component'in dışında, modül seviyesinde oluştur ve `RouterProvider`'a prop olarak ver.
 
-Birden fazla link aynı adrese gidiyorsa, bu linklerin her biri yeni kayıt ekleyebilir. Aynı arama input'unda her harfi route navigasyonu yaparak yazmak geri tuşunu kullanışsız hale getirebilir; arama için history davranışını ürünün ihtiyacına göre seçmek gerekir. Şimdilik önemli ilke şu: Router navigasyonu browser history'ye gerçek bir konum verir; yerel state güncellemesi vermez.
+## Kısa zihinsel model
 
-## Menü bağlantısı ve etkin durum
-
-Bir sayfa kullanıcıya navigasyon içinde gösteriliyorsa `NavLink`, etkin adres bilgisini de sağlar. `/search` açıkken Ara linki etkin olur; ana sayfa linkinde `end` kullanmak `/search` yolunu yanlışlıkla `/` ile başlayan bir ana sayfa gibi saymayı önler. Görsel sınıfı bu etkinliği gösterebilir; erişilebilirlik ağacında `aria-current="page"` da belirtilir.
-
-`Link` genel navigasyon için, `NavLink` ise aktif durumu da gereken menü öğeleri için kullanılır. İkisinin semantiği linktir: sağ tıklayıp yeni sekmede açma, bağlantı adresini kopyalama ve klavyeyle etkinleştirme tarayıcıda çalışır. Bir işlem tamamlandıktan sonra yönlendirme gerektiğinde kodla navigasyon yapmayı daha sonra ele alacağız.
-
-:::mistake[Belirti → neden → düzeltme]
-`RouterProvider` import edilemiyor → DOM sağlayıcısı ana `react-router` entry point'inde aranıyor → `RouterProvider`'ı `react-router/dom`'dan, diğer route API'lerini `react-router`'dan al.
-:::
-
-:::mistake[Belirti → neden → düzeltme]
-`useParams` veya `Link` router context'i dışında hataya düşüyor → bu bileşenler `RouterProvider` tarafından kurulan context altında render edilmiyor → sağlayıcıyı uygulama ağacının üstüne koy ve route bileşenlerini o ağaca bağla.
-:::
-
-:::mistake[Belirti → neden → düzeltme]
-Link tıklanınca sayfa baştan yükleniyor → uygulama içi hedef için normal `<a>` kullanılmış → bilinen uygulama içi adresi Router'ın link bileşeniyle temsil et; dış site linkinde normal anchor kullanmaya devam et.
-:::
-
-:::model[Router'ın görevi]
-Router mevcut adresi route desenleriyle eşleyip doğru içeriği seçer. Bu derste her adres tek route'a bağlandı; nested route geldiğinde eşleşen parent layout ile child içeriği birlikte seçilecek.
-:::
-
-:::sector
-Ekiplerde route tanımı çoğunlukla uygulamanın girişinde tek bir router modülünde tutulur. Böylece ürün alanları hangi adreslerin var olduğunu, hangi layout'a bağlandığını ve 404'ün nerede ele alındığını koddan görür. Link kullanımı da tasarım sisteminde standartlaştırılır; navigasyon öğeleri klavye ve tarayıcı özelliklerini kaybetmez.
-:::
+Route listesi adres haritasıdır, router bu haritayı geçerli adresle karşılaştırır, `RouterProvider` sonucu React uygulamasına verir. Kullanıcının seçebileceği bilinen bir hedefi `Link` ile sunarsın; menüde etkin adres de gerekiyorsa `NavLink` seçersin. Bunların hepsi tarayıcı adresiyle çalışan data mode kurulumunun parçalarıdır.
 
 ## Özet
 
-- Route nesnesi adres desenini React içeriğine eşler.
-- Data mode'da `createBrowserRouter` router'ı, `RouterProvider` ise React bağlantısını kurar.
-- Route API'leri `react-router`, DOM `RouterProvider` `react-router/dom` içinden gelir.
-- Router'ı component render'ı dışında bir kez oluştur; route navigasyonunda `Link` veya aktif menü için `NavLink` kullan.
-- Yenilemede derin URL'nin çalışması istemci route ağacına ek olarak yayın sunucusunun SPA fallback ayarına bağlıdır.
+- `RouteObject` içindeki `path` adresi, `element` eşleşince gösterilecek içeriği belirtir.
+- `createBrowserRouter` route listesinden router'ı oluşturur; `RouterProvider` onu React ağacına bağlar.
+- Route API'leri `react-router`, DOM `RouterProvider` `react-router/dom` entry point'inden gelir.
+- `Link` bilinen hedefe gider; `NavLink` buna ek olarak etkin adres durumunu verir.
+- `*` wildcard, başka bir route ile eşleşmeyen adresi yakalayabilir.
 
-**Kendini yokla:** `/shelf` adresine doğrudan gidildiğinde neden önce ana sayfayı açmak gerekmemeli?
+**Yeni terimler**
 
-*Cevap:* Adresin route ile doğrudan eşleşmesi ekranı yeniden kurmaya yeterli olmalıdır.
+- **Data mode:** Route'ları nesne ağacıyla tanımlayıp browser router'a verdiğin React Router kullanımı.
+- **Entry point:** Bir paketin belirli dışa aktarımlarını aldığın giriş yolu.
+- **Link / NavLink:** Uygulama içi adrese giden bileşenler; `NavLink` ayrıca etkin adresi bildirir.
+- **Wildcard:** Diğer desenlerle eşleşmeyen adresleri yakalayan `*` route deseni.
 
-**Kendini yokla:** `RouterProvider` neden `react-router/dom` girişinden gelir?
+**Kendini yokla:** `/genres` açıkken neden ana sayfa `NavLink`'inde `end` kullanılır?
 
-*Cevap:* Bu export React DOM ortamına özgü sağlayıcıdır; route oluşturma API'leri ana `react-router` paketindedir.
+**Cevap:** `/` adresinin başlangıç öneki olarak alt yollarla da eşleşmesini önleyip ana sayfayı yalnızca tam `/` adresinde etkin tutar.
+
+**Kendini yokla:** Kullanıcı `/unknown` adresini açarsa `*` route'u ne yapabilir?
+
+**Cevap:** Daha belirgin bir route eşleşmediği için bilinmeyen adres için belirlediğin içeriği gösterebilir.

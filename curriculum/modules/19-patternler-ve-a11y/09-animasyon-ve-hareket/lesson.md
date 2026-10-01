@@ -1,140 +1,120 @@
 ---
-title: "Animasyon, hareket tercihi ve View Transitions"
-minutes: 17
+title: "Hareket tercihi ve sayfa geçişleri"
+minutes: 16
 kind: concept
 ---
 
-# Animasyon, hareket tercihi ve View Transitions
+# Hareket tercihi ve sayfa geçişleri
 
-:::pain[Problem]
-Sinema film kartı hover'da büyüyor, ayrıntı sayfası açılırken de içerik soldan kayıyor. Hareket hassasiyeti olan bir kullanıcı aynı ekranda tekrarlanan büyüme ve kaymalardan rahatsız oluyor; başka bir cihazda geçiş kare hızı düşürüp sayfayı ağır hissettiriyor. Animasyon hem erişilebilir olmalı hem de tarayıcıya gereksiz layout işi çıkarmamalı.
-:::
+Sinema'daki bir film kartı pointer üzerine gelince hafifçe büyüyebilir. Büyüme yalnızca görsel bir ipucudur; kartın başlığı ve düğmesi animasyon olmadan da kullanılabilmeli. Ayrıca bazı kullanıcılar işletim sistemlerinde **azaltılmış hareket tercihi** seçer; bu tercih, ekrandaki hareketi azaltmamızı ister.
 
-## Hareketi bir tercih ve maliyet olarak düşün
+## Kartı yerinden oynatmadan büyüt
 
-Animasyon bir bileşenin state'ini değiştirmez; değişen görsel durumları zaman içinde bağlar. Bu bağın iki sorusu var: Tarayıcı her karede ne kadar iş yapıyor ve kullanıcı bu hareketi görmek istiyor mu? İkisini birlikte düşünmek, geçişi yalnızca “güzel mi?” diye seçmekten daha güvenlidir.
-
-:::model[Hareket karar akışı]
-Önce değişikliğin işlevi animasyonsuz da tamamlayıp tamamlamadığını belirle. Sonra kullanıcının `prefers-reduced-motion` tercihini uygula. Hareket sunulacaksa mümkün olduğunca `transform` ve `opacity` ile kur; geometry değiştiren özellikleri ölçmeden animasyonun merkezine koyma.
-:::
-
-![Animasyon kararının kullanıcı tercihi ve animasyon maliyeti üzerinden ilerlemesini gösteren diyagram](diagrams/hareket-karari.svg "Tercih kontrolü ile özellik maliyeti animasyon kararını belirler.")
-
-Kurallar:
-
-1. **Anlam animasyona bağlı olmasın.** Panelin açılması, sekmenin değişmesi veya mesajın görünmesi animasyon olmadan da anlaşılmalı ve kullanılmalı.
-2. **Kullanıcının hareket tercihini gözet.** CSS'te `motion-reduce:` ile hareketi kaldırabilir veya sadeleştirebilirsin. Hareket yalnızca deneyim iyileştiriyorsa `motion-safe:` ile tercih edilen kullanıcı grubunda etkinleştir.
-3. **Tercih değişimini canlı izle.** JavaScript davranışı tercihe bağlıysa `matchMedia('(prefers-reduced-motion: reduce)')` sonucunu başlangıçta oku ve `change` olayında güncelle; listener'ı temizle.
-4. **Kare başına yapılan işi azalt.** `opacity` ve `transform` çoğu senaryoda layout hesaplatmadan işlenebilir. `width`, `height`, `top` ve margin değişimi layout ve paint maliyetini artırabilir.
-5. **Geçiş API'si başarısız olsa da güncelleme sürsün.** Tarayıcı View Transitions API'yi desteklemiyorsa DOM/state değişikliğini normal yoldan yap.
-6. **React geçişini normal güncellemeden ayır.** React 19.3'te `<ViewTransition>` kararlı API'dir; geçiş olarak işaretlenmiş güncellemelerin eski ve yeni görünümünü eşleştirir. Sıradan state güncellemesinin her biri animasyon almaz.
-
-## Bir kartın görünümünü zaman içinde izleyelim
-
-Bir kart hover olduğunda 1.02 ölçeğine çıkıyor. Tarayıcı önce pointer konumunu ve hover state'ini görür, sonra yeni stil değerlerini hesaplar. `transform` değiştiği için kutunun gerçek layout ölçüsü sabit kalır; kartın yanındaki içerik yerinden oynamaz. Aynı etki `width` ile kurulursa komşu öğeler de tekrar yerleştirilebilir.
-
-| Zaman | Olay | Tarayıcı/uygulama sonucu |
-| --- | --- | --- |
-| 1 | Pointer karta girer | `:hover` stili eşleşir |
-| 2 | CSS geçişi başlar | `transform` ölçek değeri ara karelere bölünür |
-| 3 | Her kare çizilir | Layout boyutu değişmez; görsel kompozisyon güncellenir |
-| 4 | Hareket tercihi reduce ise | Geçiş yoktur veya tek kareye sadeleşir |
-| 5 | Pointer çıkar | Stil başlangıç değerine döner |
-
-Bu “transform her zaman bedavadır” anlamına gelmez. Çok sayıda büyük katmanı zorlamak bellek ve compositing maliyeti getirebilir. Gerçek cihazın performans panelinde ölç; dar bir cihazda iyi çalışan tercih masaüstündeki yüzlerce kartta aynı sonucu vermeyebilir.
-
-## Önce kırık, sonra tercih duyarlı
-
-Bu örnek hover büyümesini herkes için çalıştırır:
+İlk olarak hover'da kartın ölçeğini değiştir:
 
 ```tsx check
-import type { CSSProperties } from 'react'
-
-const cardStyle: CSSProperties = {
-  transition: 'transform 220ms ease-out',
-  transform: 'scale(1.04)',
-}
-
-export function EventCard() {
-  return <article style={cardStyle}>Akşam gösterimi</article>
-}
-```
-
-Burada ayrıca hover durumu yok ve hareket tercihi okunmuyor. Tailwind sınıflarıyla geçişi etkileşime bağlayıp sistem tercihini de gözetebiliriz:
-
-```tsx check
-export function EventCard() {
+export function ScreeningCard() {
   return (
-    <article className="transition-transform duration-200 ease-out motion-safe:hover:scale-[1.02] motion-reduce:transition-none">
-      Akşam gösterimi
+    <article className="transition-transform duration-200 ease-out hover:scale-[1.02]">
+      <h2>Gece Seansı</h2>
+      <p>20.30 · Salon 2</p>
     </article>
   )
 }
 ```
 
-`motion-safe:` yalnızca kullanıcı hareketi azaltmayı istemediğinde hover ölçeğini verir. `motion-reduce:transition-none` animasyon süresini kapatır. Kartın içeriği ve kullanılabilirliği hover'a bağlı değildir. Uzun bir açıklamayı gizleyip yalnızca animasyon bitince göstermek gibi davranıştan kaçın.
+`transform` kartın görünen şeklini değiştirir, ama sayfadaki yerini hesaplamak için kullanılan kutu boyutu aynı kalır. Bu yüzden yanındaki kart yerinden itilmez. Geometriyi değiştiren **layout** (öğelerin ekrandaki boyut ve konum hesabı) özelliklerini her karede oynatmak tarayıcıya daha çok iş çıkarabilir.
 
-## `matchMedia` ile karar veren davranış
+Bir animasyonun bir karesinde tarayıcı stilleri uygular, gereken çizimi hazırlar ve katmanları ekranda birleştirir. **Compositor**, hazır görsel katmanları birleştirip ekrana sunan tarayıcı bölümüdür; `transform` ve `opacity` çoğu durumda bu aşamada değişebilir. Bu her zaman bedava olduğu anlamına gelmez: çok büyük ya da çok sayıda katmanı gerçek cihazda ölçmek gerekir.
 
-Bazı değişikliklerde CSS yetmez: örneğin kullanıcı tercihi açıksa toast'ın kayan girişini hiç başlatmamak veya canlı duyuru öncesinde birden çok görsel durumu atlamak isteyebilirsin. `window.matchMedia` bir `MediaQueryList` verir. İlk değer `matches` alanındadır; işletim sistemi ayarı değiştiğinde `change` olayı gelir. React içinde state'e taşıyorsan event listener effect'te kaydolur ve cleanup'ta kaldırılır.
+İkinci adım, hareketi azaltmayı isteyenler için hover büyümesini kaldırmak. **`prefers-reduced-motion`**, tarayıcının işletim sistemindeki hareket tercihini CSS ve JavaScript'e bildirdiği medya sorgusudur.
 
-Akış şöyle ilerler: ilk render mevcut `matches` değerini okur; effect sorguyu kurup listener ekler; değişiklik olayı geldiğinde event içindeki yeni `matches` değeri state'e yazılır; unmount'ta aynı callback kaldırılır. Böylece ilk okumadan sonra kullanıcı Ayarlar uygulamasından tercihini değiştirirse görünüm eski seçime takılı kalmaz.
+```tsx check
+export function ScreeningCard() {
+  return (
+    <article className="transition-transform duration-200 ease-out motion-safe:hover:scale-[1.02] motion-reduce:transition-none">
+      <h2>Gece Seansı</h2>
+      <p>20.30 · Salon 2</p>
+    </article>
+  )
+}
+```
 
-Tarayıcı test ortamı `matchMedia` sağlamayabilir. Bu durumda testte `vi.stubGlobal` ile `matches`, `addEventListener` ve `removeEventListener` davranışlarını taklit edebilirsin. Bu, gerçek tarayıcı erişilebilirlik denemesinin yerine geçmez; hook'un değişim ve temizlik sözleşmesini doğrular.
+`motion-safe:` hover ölçeğini hareketi azaltmayı seçmemiş kullanıcıda etkinleştirir; `motion-reduce:` tercihi olan kullanıcı için geçişi kapatır. Kartın bilgisi ve kullanılabilirliği iki durumda da aynıdır. Hareket yalnızca süs ise sadeleştirmek güvenlidir; yön bulma veya durum değişikliğini anlaşılır kılan bir hareket varsa neyi kaybettiğimizi de düşünmeliyiz.
 
-## Sayfa geçişleri ve View Transitions
+![Animasyon kararı kullanıcı tercihini ve animasyonun özellik maliyetini birlikte gözetir](diagrams/hareket-karari.svg "Tercih kontrolü ile özellik maliyeti animasyon kararını belirler")
 
-Tarayıcının View Transitions API'si eski ve yeni DOM durumlarını görsel geçiş için eşleştirir. Elle çağrılan `document.startViewTransition(() => updateDom())` destekleniyorsa geçişi başlatır; destek yoksa `updateDom()` yine çalışmalıdır. Bu nedenle API desteği uygulamanın asıl mantığı için zorunlu olmamalı.
+## Tarayıcı tercihi değişirse
 
-React 19.3, `<ViewTransition>` bileşenini kararlı hale getirdi. React geçiş sınırının içindeki eski ve yeni arayüzü tarayıcı geçişiyle ilişkilendirebilir; `enter`, `exit` veya `update` davranışına CSS class adları verebilirsin. Geçişi sınıflarla özelleştirebilirsin:
+CSS görsel bir geçişi kontrol edebilir. JavaScript davranışını değiştirmek istediğinde `window.matchMedia('(prefers-reduced-motion: reduce)')` kullanılır. Bu çağrı bir **MediaQueryList** döndürür: sorgunun şu an eşleşip eşleşmediğini ve değişimini dinleyebileceğin kaynağı verir. `matches` ilk tercihi gösterir. Sonradan gelen `change` olayı bir **MediaQueryListEvent** taşır; bu event'in `matches` alanı yeni tercihin doğru mu yanlış mı olduğunu bildirir.
+
+Örneğin film fragmanı açılırken otomatik kayan bir tanıtım varsa, azaltılmış hareket tercihi etkin olduğunda kaymayı başlatmamak isteyebilirsin. React'te tercih okunup component state'ine yansıtılır; listener effect içinde eklenir ve component kaldırılırken aynı callback ile temizlenir. Böylece yalnızca ilk değere bakıp kullanıcının sonradan değiştirdiği ayarı kaçırmazsın.
+
+| Sıra | Ne olur? | Ekrandaki karar |
+| --- | --- | --- |
+| İlk render | `matchMedia` sorgusunun `matches` değeri okunur | Başlangıç tercihi kullanılır |
+| Effect çalışır | `change` listener'ı eklenir | Sonraki ayar değişiklikleri duyulur |
+| Sistem tercihi değişir | `MediaQueryListEvent.matches` yeni değeri taşır | React state'i güncellenir, ilgili UI yeniden render olur |
+| Component kaldırılır | Effect cleanup listener'ı kaldırır | Artık olmayan UI için callback çalışmaz |
+
+Bu sıradaki yaygın hata listener'ı ekleyip kaldırmamaktır. Sayfa içinde tekrar tekrar açılan bir panel her açılışında yeni listener bırakabilir; ayar değişince eski callback'ler de çalışır. Effect'in cleanup'ında aynı sorgu ve callback ile `removeEventListener` çağır.
+
+Üçüncü örnekte tek bir kartın hover animasyonundan sayfa içeriğinin geçişine çıkalım. Tarayıcının View Transitions API'si eski ve yeni DOM görünümü arasında görsel geçiş kurabilir. React 19.3'te kararlı olan **`ViewTransition`** component'i, React ağacındaki hangi içeriğin bu geçişe katılacağını belirtir.
 
 ```tsx check
 import { ViewTransition } from 'react'
 
-export function FilmRoute() {
+export function FilmDetails() {
   return (
-    <ViewTransition enter="page-enter" exit="page-exit">
-      <main>Film ayrıntısı</main>
+    <ViewTransition enter="film-enter" exit="film-exit">
+      <main>
+        <h1>Gece Seansı</h1>
+        <p>Yönetmen: Ece Yalın</p>
+      </main>
     </ViewTransition>
   )
 }
 ```
 
-Bu örnek yalnızca geçiş yerini gösterir. Hareket tercihini yine ele almalısın: CSS geçişi `motion-reduce` ile kapatılabilir, JS tarafından yönetilen güncelleme tercih açıksa animasyon olmadan uygulanabilir. Görünüm geçişi veri yüklenmesinin, route erişiminin veya klavye focus'unun yerine geçmez.
+Bu sınır, içeriğin eski ve yeni görünümünün eşleştirilmesine yardım eder; her state güncellemesinin otomatik olarak canlandırıldığı anlamına gelmez. `ViewTransition` sunum katmanıdır. Film detayını değiştiren state veya route güncellemesi animasyon olmasa da tamamlanmalı. Tarayıcı API'yi desteklemiyorsa ya da kullanıcı hareketi azaltmışsa, geçişi kapatıp aynı içeriği göstermek gerekir.
 
-## Sık hatalar
+## Hareket seçerken aklında tut
 
-:::mistake[Belirti: Kart hareket ederken çevresindeki satır da titriyor]
-Belirti → Hover'da kart genişleyince grid'deki komşu öğeler itiliyor.  
-Neden → `width` veya margin animasyonu layout ölçülerini değiştiriyor.  
-Düzeltme → Önce `transform`/`opacity` ile aynı görsel sonucu üretmeyi dene; görünüm çizgiyi taşıyorsa gerçek cihazda profil çıkar.
+Bir animasyonun iki ayrı ölçütü var: kullanıcı tercihi ve tarayıcının her karede yapacağı iş. Önce içeriğin animasyonsuz da anlaşılır olduğundan emin ol, sonra `prefers-reduced-motion` tercihini uygula. Uygun olduğunda `transform`/`opacity` gibi özellikleri dene; geometri değiştiren `width`, `height`, `top` ve margin animasyonlarını ölçmeden yaygın kullanma.
+
+:::mistake[Belirti: Kart büyürken yanındaki kart kayıyor]
+Belirti → Hover animasyonu grid'deki diğer kartları itiyor.  
+Neden → `width` veya margin değiştiği için layout tekrar hesaplanıyor.  
+Düzeltme → Aynı görsel etkiyi `transform` ile kurmayı dene ve gerçek cihazda ölç.
 :::
 
-:::mistake[Belirti: Ayarlarda hareketi azaltınca animasyon sürüyor]
-Belirti → Sistem tercihi reduce olduğu halde toast kayarak geliyor.  
-Neden → Stil tüm kullanıcılara koşulsuz uygulanmış ya da JS tercihi bir kez okuyup değişimi dinlememiş.  
-Düzeltme → Görsel geçişte `motion-reduce` kullan; JS state'i gerekiyorsa `matchMedia` change listener ekle ve temizle.
+:::mistake[Belirti: Hareket tercihi açıkken geçiş sürüyor]
+Belirti → İşletim sisteminde azaltılmış hareket seçili olsa da kart veya sayfa kayıyor.  
+Neden → Animasyon koşulsuz uygulanmış ya da JavaScript tercihi yalnızca başlangıçta okunmuş.  
+Düzeltme → CSS'te `motion-reduce:`/`motion-safe:` kullan; JS davranışı için değişimi dinle ve listener'ı temizle.
 :::
 
-:::mistake[Belirti: Eski tarayıcıda geçiş sırasında içerik yenilenmiyor]
-Belirti → Kod güncellemeyi yalnızca `startViewTransition` callback'ine bağlamış.  
+:::mistake[Belirti: Eski tarayıcıda içerik güncellenmiyor]
+Belirti → Uygulama değişikliği yalnızca geçiş API'si callback'inde yapıyor.  
 Neden → Görsel API uygulamanın çalışması için zorunlu tutulmuş.  
-Düzeltme → Destek yoksa doğrudan DOM/state güncellemesini çalıştır; animasyon yalnızca sunum katmanı olsun.
+Düzeltme → İçerik güncellemesini normal React akışında yap; animasyon desteklenirse onu ekle.
 :::
 
-:::sector
-Ürün ekipleri motion tasarımını tasarım sistemi token'ları ve kullanıcı tercihiyle birlikte ele alır. Kod incelemesinde animasyonun amacı, azaltılmış hareket karşılığı ve pahalı özelliklerin ölçümü konuşulur. React geçiş sınırları sayfa içeriği değişimini yumuşatabilir; ekipler yine de klavye odağının doğru yerde kalmasını ve içerik güncellemesinin animasyonsuz da tamamlanmasını kontrol eder.
+:::info[Derinlemesine (isteğe bağlı)]
+Her transform için compositor katmanı oluşturmak maliyetsiz değildir; belleği artırabilir. Ayrıca `document.startViewTransition` tarayıcı API'si React'ten bağımsız olarak elle kullanılabilir. Bu API'ye geçiş animasyonunu bağla, uygulamanın asıl DOM/state güncellemesini değil.
 :::
 
 ## Özet
 
-- Arayüz animasyonsuzken de anlaşılır ve kullanılabilir kalmalı.
-- Azaltılmış hareket tercihini CSS'te `motion-reduce`/`motion-safe`, davranışta `matchMedia` ile gözet.
-- `transform` ve `opacity` çoğu durumda geometry değiştiren özelliklerden daha ucuzdur; sonucu ölç.
-- React `<ViewTransition>` geçiş görünümünü yönetir, uygulamanın asıl güncellemesini değil.
+- İçerik animasyon olmadan da anlaşılır ve kullanılabilir kalmalı.
+- `prefers-reduced-motion` tercihini CSS'te ele al; JavaScript'e ihtiyaç varsa başlangıç değerini oku, değişimi dinle ve listener'ı temizle.
+- `transform` ve `opacity` çoğu zaman geometri değiştiren özelliklerden daha az layout işi çıkarır; gerçek cihazda ölç.
+- React `ViewTransition` geçiş görünümüne katılır; uygulamanın asıl state/route güncellemesinin yerine geçmez.
 
-**Kendini yokla:** `width` animasyonu neden `opacity` animasyonundan daha pahalı olabilir?  
-*Cevap:* Genişlik layout geometrisini değiştirip komşu öğelerin yeniden yerleşmesine yol açabilir; opacity çoğunlukla compositor'da değişir.
+**Yeni terimler:** `prefers-reduced-motion` — sistemin hareketi azaltma tercihini bildiren sorgu; layout — öğelerin boyut ve konum hesabı; compositor — hazır görsel katmanları ekranda birleştiren tarayıcı bölümü; MediaQueryListEvent — medya sorgusu değiştiğinde yeni eşleşme değerini taşıyan event; `ViewTransition` — React içeriğini tarayıcı görünüm geçişine bağlayan component.
 
-**Kendini yokla:** View Transitions API desteklenmiyorsa sayfa güncellemesi ne yapmalı?  
-*Cevap:* Animasyonsuz olarak aynı içerik güncellemesini tamamlamalı; API yalnızca görsel iyileştirmedir.
+**Kendini yokla:** `width` animasyonu neden `opacity` animasyonundan daha fazla iş çıkarabilir?  
+*Cevap:* `width` layout geometrisini değiştirip çevredeki öğelerin yeniden yerleşmesine yol açabilir; opacity çoğu durumda katman birleştirme aşamasında değişir.
+
+**Kendini yokla:** Tarayıcı View Transitions API'yi desteklemiyorsa film sayfası ne yapmalı?  
+*Cevap:* Animasyonsuz olarak normal React güncellemesini tamamlamalı; geçiş yalnızca görsel iyileştirmedir.

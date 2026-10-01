@@ -13,14 +13,16 @@ export default defineQuestion({
       explanation: 'Aynı endpoint iki cache’e bölünmemelidir.',
     },
     {
-      text: 'Favori yıldızı için localStorage gerekir.',
+      text: 'Ekip aynı TMDB endpoint’lerini TanStack Query ve RTK Query cache’inde birlikte tutmak istiyor.',
       correct: false,
-      explanation: 'Bu client state ve listener konusudur.',
+      explanation:
+        'İki cache aynı endpoint verisini ayrı ayrı sahiplenir; RTK Query’ye geçiş varsa aynı sorgular için tek cache seçilmelidir.',
     },
     {
-      text: 'Redux store kurulunca Query çalışmaz.',
+      text: 'TanStack Query kullanan her ekranda ikinci bir Redux store açmak gerekir.',
       correct: false,
-      explanation: 'İki araç farklı state kategorilerini birlikte yönetebilir.',
+      explanation:
+        'Bir uygulamada Query ve Redux farklı state türleri için birlikte bulunabilir; aynı server cache’i iki kez kurmak gerekmez.',
     },
   ],
 })

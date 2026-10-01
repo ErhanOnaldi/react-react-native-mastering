@@ -6,31 +6,35 @@ kind: project
 
 # Sinema'nın tip sözleşmesini genişlet
 
-:::pain[Problem]
-Sinema liste cevabındaki film alanlarını biliyor ama detay, oyuncu kadrosu ve görseller başka dosyalarda elle tahmin ediliyor. Birkaç yerde farklı tip kullanılması, aynı veriye farklı güven düzeyi veriyor.
-:::
-
-## Önce cevapların şeklini karşılaştır
-
-Projedeki liste ve detay fixture'larını okuyup hangi alanların ortak, hangilerinin yalnız belirli cevaplarda bulunduğunu ayır. Listeye özgü alanı detay tipinde varmış gibi taşımamaya dikkat et. Ortak sayfalama yapısını generic tut; değişen sonuç öğesi bu yapının parametresi olsun.
+Bu projede Sinema'nın film cevaplarını, poster URL'sini ve uzak veri durumlarını ortak tiplerle ifade edeceksin. Başlamadan önce mevcut `Movie` tipini ve projedeki **fixture** dosyalarını oku: fixture, uygulamanın karşılaşabileceği örnek API cevabını içeren sabit test verisidir.
 
 :::model[Utility type merdiveni]
-`Pick` görünüm için alan seçer, `Omit` listeye özgü alanı tip görünümünden çıkarır; `Partial` ise güncelleme alanlarını opsiyonel yapar. Bu dönüşümler TypeScript tarafındadır. Yeni bağlamda bunlarla TMDB cevaplarının tiplerini tek kaynaktan türeteceksin; fixture verisi yine runtime gerçeğidir.
+`Pick` var olan tipten seçilmiş alanları, `Omit` belirtilen alanlar çıkarıldıktan sonraki şekli üretir. Generic tip ortak bir kabuğun içindeki değişken veri tipini taşır. Bunlar yalnızca derleme sırasında çalışır; fixture nesnesinin kendisini değiştirmez.
 :::
 
-İlk görev ayrıca poster yolunu URL'ye dönüştürür. `null` poster için geçerli bir adres uydurma; işlevin dönüş sözleşmesi bu durumda anlamlı boş sonucu vermeli. Boyut seçeneklerini açık literal union olarak sınırla.
+:::model[Tipler çalışma zamanında silinir]
+TypeScript tipleri kod derlenirken kontrol edilir, ama tarayıcıdaki veriyi dönüştürmez veya doğrulamaz. Bu yüzden poster helper'ının null girdi için ne döndüreceğini açıkça belirle; uzak veri guard'ları da runtime'da gerçek değeri incelemelidir.
+:::
 
-## Durumları Sinema'da kullan
+## Önce mevcut şekli anla
 
-İkinci görev, uzak veri durumlarını ortak bir dosyada toplar. Dört status için ayrı dallar kur; success verisini, error mesajını doğru dala koy. Guard'lar status kontrolüyle daraltma yapar ve her guard kendi durumunda true vermelidir.
+Film liste ve detay fixture'larını yan yana oku. Ortak alanları, yalnızca listede olanları ve ek cevaplarda gelenleri not et. Sonra poster helper'ının girdisini, çıkışını ve null durumunu belirle. Bu küçük notlar tiplerin veriye uyup uymadığını görmeni sağlar.
 
-Bu modülde öğrendiğin tipler sonraki React modülünde component props'larına ve koşullu render'a temel olacak. Proje kodunda dış cevabı doğrulama ile iç uygulama durumunu modellemenin farklı işler olduğunu ayrı tut.
+Uzak veri tipinde her `status` için hangi alanların anlamlı olduğunu ayrı düşün. Guard'lar, yani değerin belirli bir union dalında olup olmadığını çalışma anında kontrol eden yardımcılar, kontrol başarılı olduğunda TypeScript'e o dalın bilgisini de verir. Böylece çağıran kod başarı verisini kontrol etmeden okuyamaz.
+
+:::tip[Uygulama sırası]
+Önce fixture'lardan cevap şekillerini çıkar, sonra tipleri tanımla. URL helper'ını girdi, çıktı ve null davranışıyla tamamla. En son her durum için guard'ın hangi sonucu vermesi gerektiğini gözden geçir.
+:::
+
+Bu tipler cevapları açıklığa kavuşturur; ağdan gelen JSON'u kendiliğinden doğrulamaz. Runtime doğrulama gerekiyorsa, değeri gerçekten inceleyen bir kontrol ayrıca gerekir.
 
 ## Özet
 
-- Fixture'lardan liste ve detay şekillerini karşılaştır.
-- Tipleri ortak kaynaklardan türet; çalışma zamanı değerlerini utility type değiştirmez.
-- Uzak veri union'ı her geçerli durumu ayrı ve eksiksiz tanımlar.
+- Fixture'lar beklenen API cevabının şeklini somutlaştırır.
+- Utility type'lar ve generics, cevap tiplerini tekrar kullanmayı sağlar.
+- TypeScript tipi çalışma anında veriyi doğrulamaz; guard bunu açıkça kontrol eder.
 
-**Kendini yokla:** `MovieDetails` tipinden liste alanını `Omit` etmek fixture nesnesinden de siler mi?  
-*Cevap:* Hayır; yalnızca TypeScript'in o tip üzerinden sunduğu görünümü değiştirir.
+**Yeni terim — fixture:** Uygulamanın karşılaşabileceği örnek cevabı tutan sabit veri.
+
+**Kendini yokla:** Bir tipi `Omit` ile değiştirmek fixture'daki alanı siler mi?  
+*Cevap:* Hayır. Yalnızca TypeScript'in o tip üzerinden sunduğu alanları değiştirir.

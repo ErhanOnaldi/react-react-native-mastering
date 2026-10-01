@@ -1,135 +1,135 @@
 ---
 title: "Kalan E2E testini izle: UI mode ve trace"
-minutes: 14
+minutes: 16
 kind: concept
 ---
 
-# Test neden CI’da kaldı?
+# Bir test kaldığında kanıtı izle
 
-:::pain[Problem]
- “Seramik atölyesi” arama testi yerelde geçiyor, CI’da `toBeVisible` zaman aşımı veriyor. Hemen `waitForTimeout(5000)` eklersen test beş saniye yavaşlar, asıl sebep gizli kalır. CI ekran görüntüsünde yalnızca “Program yükleniyor…” yazıyor.
-:::
+Sinema’da bir arama testi geçmiyor. Test, “Kayıp Şehir” başlığını bekliyor; hata mesajı yalnızca başlığın görünmediğini söylüyor. Uygulama isteği hiç göndermemiş olabilir, sunucu hata vermiş olabilir ya da başlık başka bir nedenle ekrana gelmemiş olabilir. Önce hangisinin olduğunu bulalım.
 
-## Trace, tek hata mesajından daha fazla kanıt taşır
+## Beklemek yerine ne olduğunu gör
 
-:::model[Zaman çizgisi ve kanıt]
-Trace, test eylemlerini, locator sonuçlarını, browser görüntüsünü, DOM snapshot’ını, Console mesajlarını ve ağ olaylarını aynı zaman sırasına bağlar. Önce başarısız assertion’ın hangi kullanıcı koşulunu beklediğini bul, sonra o anın çevresindeki kanıtı incele.
+İlk akla gelen çözüm, sayfaya daha çok zaman tanımak:
 
-![Trace incelemesinde başarısız adımdan ağ ve görünüm kanıtına ilerleme](diagrams/iz-surme-kanitlari.svg)
-:::
+```ts title="tests/search.spec.ts (kırık)"
+await page.waitForTimeout(5000)
+await expect(page.getByRole('heading', { name: 'Kayıp Şehir' })).toBeVisible()
+```
 
-Kesin kurallar:
+`waitForTimeout(5000)`, testin beş saniye boyunca hiçbir şey yapmadan beklemesidir. Başlık hiç oluşmayacaksa test yine kalır; yalnızca sonucu geç öğrenirsin. Süreyi artırmak yerine sayfanın gerçekten ne yaptığını görmemiz gerekiyor.
 
-1. Trace, son ekran görüntüsünden fazlasını saklar: eylemleri ve tarayıcı kanıtını birlikte gösterir.
-2. İlk başarısız adımın öncesini ve sonrasını incele; hata çoğu zaman beklenen sonucun oluşmadığı noktadan önce başlar.
-3. Network istek URL’si, durum kodu ve zamanı; Console tarayıcı hatalarını; DOM snapshot locator’ın gördüğü içeriği gösterir.
-4. Retry trace’i seçilen tekrar koşusunda üretir; artifact olmazsa CI bittiğinde kanıt kaybolabilir.
-5. Bekleme süresini artırmadan önce uygulamanın gerçekten hangi durumu ürettiğini doğrula.
+**Ne oldu, neden?** Sabit bekleme yalnızca saate bakar; aramanın gönderilip gönderilmediğini veya yanıtın başarılı olup olmadığını söylemez. Testin asıl sorusu “beş saniye geçti mi?” değil, “beklediğim film başlığı geldi mi?” olmalı.
 
-Bir kartı açma testi kaldığında trace’te click adımının tamamlandığını ve doğru bağlantıya gittiğini gör. Ardından detay API isteğinin durumunu, Console’daki render hatasını ve başlık snapshot’ını karşılaştır. Bu sıra “locator yanlış” ile “sayfa doğru açıldı ama içerik yüklenmedi” durumlarını ayırır.
-
-| Aşama | Görünen kanıt | Sorulacak soru |
-| --- | --- | --- |
-| 1 | Assertion zaman aşımına uğramış | Hangi kullanıcı sonucu bekleniyordu? |
-| 2 | Önceki click başarılı | Eylem hedeflenen öğeye gitti mi? |
-| 3 | Network 401 | İstek başlığı ve yanıt doğru mu? |
-| 4 | DOM’da alert var | Uygulama hata durumunu gösterdi mi? |
-| 5 | Console render hatası yok | Sorun veri/route mu, çökme mi? |
-
-Trace’te ağ isteği 401 dönüyorsa locator’a beş saniye daha eklemek anlamlı değildir. Network başarılı ama DOM eski içeriği gösteriyorsa beklenen koşul veya uygulamanın güncelleme davranışı incelenmelidir. Kanıt kopuşun yerini daraltır; tek başına düzeltmeyi seçmez.
-
-## İlk bakış: UI mode
-
-`npx playwright test --ui` komutu testi adım adım çalıştırıp locator’ları ve DOM’u inceletir. Başarısız adıma tıkla: hangi locator beklendi, sayfada o anda ne vardı? Burada `query` URL’ye yazılmamışsa sorun bekleme süresinde değil, uygulamadadır.
-
-Yerelde geçip CI’da kalan test için `trace: 'on-first-retry'` ayarını config’e koy. İlk kalıştan sonraki denemede Playwright trace toplar. `npx playwright show-trace <dosya.zip>` ile aç; Actions, Network, Console ve DOM snapshot’larını birlikte incele.
+Bir **trace**, Playwright koşusunun zaman sırasına dizilmiş kaydıdır: eylemler, sayfanın görüntüsü, DOM ve ağ istekleri. DOM, tarayıcının o anda sayfada bulunan öğeler ağacıdır. Trace, başarısız testte “ne bekliyorduk?” ile “sayfada gerçekte ne vardı?” sorularını yan yana getirir.
 
 ```ts title="playwright.config.ts"
 import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
-  retries: process.env.CI ? 1 : 0,
   use: { trace: 'on-first-retry' },
 })
 ```
 
-## Hangi kanıt neyi söyler?
+`on-first-retry`, test ilk kez kalırsa sonraki denemede trace toplamayı ister. Böylece her başarılı koşunun ağır kaydını tutmadan, incelenmesi gereken koşuya kanıt eklersin. CI, yani **continuous integration** (değişiklikleri temiz bir makinede otomatik kontrol etme işi), bittiğinde trace dosyasını ayrıca saklamak gerekir; indirilebilir bu dosya bir **artifact**’tır.
 
-| İz | Olası neden |
-| --- | --- |
-| Network’te TMDB 401 | Token/header eksik veya route taklidi yanlış |
-| Console’da render hatası | Bileşen çöktü; locator’ı değiştirmek çözmez |
-| DOM’da eski sonuçlar | Yeni sorgunun tamamlanmasını beklemiyorsun |
-| `/login` boş, yönlendirme tekrar ediyor | Korumalı route yanlış grupta |
+**Ne oldu, neden?** İlk denemede testin normal akışı korunur. Kalınca Playwright aynı testi yeniden dener ve o denemenin ayrıntılarını kaydeder. Trace saklanmazsa CI işi sona erdiğinde bu kanıt da kaybolabilir.
 
-`toMatchAriaSnapshot()` ile küçük bir bölgenin erişilebilir ağacını da karşılaştırabilirsin. Tüm sayfanın metnini dondurmak kırılgandır; ana menü veya form gibi kararlı parçayı seç. Modül 19’un a11y çalışması burada test sinyaline dönüşür.
+## Trace’te önce kopan yeri bul
 
-## Hata sınıfını kanıttan seç
+Şimdi varsayalım arama alanına “Kayıp Şehir” yazdın ve Arama düğmesine bastın. Trace Viewer’da adımlar, Network (tarayıcı isteklerinin listesi), Console (tarayıcı hata mesajları) ve DOM görüntüsü aynı koşudan incelenebilir.
 
-İlk başarısız assertion sana beklenen koşulu söyler, trace ise uygulamanın o anda ne yaptığını gösterir. Bu ikisini yan yana koymadan locator, timeout veya uygulama kodunu değiştirme. Önce page açılmış mı, eylem doğru öğeye gitmiş mi, ağ yanıtı başarılı mı, DOM beklenen duruma geçmiş mi diye ilerle. Her cevap bir sonraki bakış noktasını seçer.
+| Sıra | Gözlem | Sorduğun soru |
+| --- | --- | --- |
+| 1 | Başlık görünür olsun assertion’ı zaman aşımına uğradı | Kullanıcı ne görmeliydi? |
+| 2 | Arama alanına yazma ve click tamamlandı | Eylem hedeflenen öğeye ulaştı mı? |
+| 3 | Arama isteği `401` yanıt verdi | İstek kimlik bilgisi ve taklit yanıtı doğru mu? |
+| 4 | DOM’da hata uyarısı var | Uygulama yanıtı hata durumu olarak gösterdi mi? |
+| 5 | Console’da render hatası yok | Sayfa çöktü mü, yoksa veri mi gelmedi? |
 
-| Belirti | Trace kanıtı | Muhtemel katman | Sonraki kontrol |
-| --- | --- | --- | --- |
-| Sayfa boş | Console’da render exception | Uygulama başlangıcı | İlk stack ve env |
-| Başlık yok | İstek 401 veya 500 | Ağ/kimlik | Request header ve response body |
-| Yanlış sayfa | URL beklenenden farklı | Router/etkileşim | Önceki link ve history |
-| Bazen eski sonuç | Yeni isteğin yanıtı geç | Zamanlama/veri | Sonuç başlığı ve ağ sırası |
-| Click başarısız | Üstte başka öğe var | Yerleşim | Screenshot ve actionability |
+**Ne oldu, neden?** Trace’te istek `401` döndüğü için uygulamaya geçerli arama verisi ulaşmadı. `401` yetkilendirme hatasıdır; isteğin başlığı veya testteki ağ taklidi incelenmelidir. Locator’a beş saniye eklemek yanıtı değiştirmez.
 
-Trace eylemden önceki snapshot’ı da tuttuğu için, test bittiğinde canlı uygulamayı yeniden açıp aynı anda incelemek zorunda değilsin. Fakat trace geçmiş koşunun kanıtıdır: uygulamanın son kodunu açtığında o koşunun tam durumuyla aynı olmayabilir. Artifact üzerinde commit veya build bilgisini tutmak bulguyu kod değişikliğiyle eşleştirmeyi kolaylaştırır.
+Trace’i adım adım açarken önce son başarısız assertion’ı seç, sonra hemen öncesindeki eyleme ve isteklere dön. Bir detail sayfası boşsa önce bağlantıya tıklandığını, sonra doğru adrese gidildiğini, ardından isteğin başarılı olup olmadığını kontrol et. Her yeni bulgu aradığın katmanı daraltır; trace tek başına hangi satırı değiştirmen gerektiğini seçmez.
 
-UI mode yerelde etkileşimli keşif için elverişlidir; CI trace’i otomatik kanıt paketidir. UI mode’da başarısız adıma tıklayıp locator’ın neye çözüldüğüne bakarsın. Trace Viewer’da ise action listesi, snapshot, network ve console arasında aynı zaman noktasında gezinirsin. İkisi de gözlem aracıdır; senaryoda neyin başarı sayılacağını assertion belirler.
+![Trace incelemesinde başarısız adımdan ağ ve görünüm kanıtına ilerleme](diagrams/iz-surme-kanitlari.svg "Bekleme süresini değil, başarısız adımın çevresindeki kanıtı izle.")
 
-Trace’ler hassas veriyi de taşıyabilir: form alanları, URL query’leri, ekran görüntüleri veya istek gövdeleri. Bu nedenle gerçek parolalarla test yapma, trace’i herkese açık loglara koyma ve saklama süresini sınırlı tut. Test hesabı kullan, gerçek kullanıcı verisini maskele ve paylaşmadan önce artifact içeriğini kontrol et.
+| Belirti | Trace’teki kanıt | Sonraki kontrol |
+| --- | --- | --- |
+| Sayfa boş | Console’da render hatası | İlk hata mesajı ve uygulama başlangıcı |
+| Başlık yok | İstek `401` veya `500` döndü | Request başlığı ve response gövdesi |
+| Yanlış sayfa | URL beklenenden farklı | Önceki link ve yönlendirme |
+| Eski arama sonucu | Yeni isteğin yanıtı geç geldi | İstek sırası ve gösterilen başlık |
+| Click başarısız | Hedefin üstünde başka öğe var | Screenshot ve öğenin tıklanabilirliği |
 
-## Saat kaynaklı test
+Öğenin başka bir katmanla örtülmesi, Playwright’ın **actionability** kontrolünde (eylemin güvenle yapılabilir olup olmadığı denetimi) görünür. Bu durumda screenshot’a bak; locator’ı değiştirmek yerine üstteki katmanın neden orada olduğunu bul.
 
-Kırık teşhis, her kalışta bir saniye daha bekleme eklemektir. Bu değişiklik gerçek nedenin bulunmadığını gizler:
+Yerelde aynı adımları etkileşimli incelemek için `npx playwright test --ui` çalıştırabilirsin. **UI mode**, testleri adım adım açıp locator’ın hangi öğeyi bulduğunu görmeni sağlar. Bu, yerel keşif için kullanışlıdır; CI’daki trace ise bitmiş koşunun kaydıdır.
 
-~~~ts
-await page.waitForTimeout(5000)
-await expect(page.getByRole('heading', { name: 'Etkinlik ayrıntısı' })).toBeVisible()
-~~~
+**Ne oldu, neden?** UI mode’da o anki koşuyu açıp başarısız adıma tıklarsın; trace’te ise tamamlanmış koşunun eylem, ekran, DOM ve ağ kanıtları arasında gezersin. İkisi de gözlem sağlar. Testin ne zaman geçeceğini hâlâ assertion belirler.
 
-Düzeltilmiş teşhis önce beklenen duruma bağlı assertion kullanır; süre dolarsa trace’te hangi kanıtın eksik olduğunu incelersin:
+## Testin saati hangi saattir?
 
-~~~ts check
-import { expect, test } from '@playwright/test'
+Bir başka arama akışı, film oturumu süresi dolunca giriş sayfasına yönlendiriyor. Tarayıcıdaki uygulama `Date.now()` ile zamanı okuyorsa Vitest’in `vi.useFakeTimers()` ayarı tarayıcı saatini değiştirmez: Vitest kodu Node.js sürecinde, E2E sayfası ayrı browser sürecinde çalışır.
 
-test('takvim seçimi gün başlığını gösterir', async ({ page }) => {
-  await page.goto('/takvim')
-  await page.getByRole('button', { name: '28 Eylül' }).click()
-  await expect(page.getByRole('heading', { name: 'Seçilen günün programı' })).toBeVisible()
-})
-~~~
+En küçük fikir şudur: saati, onu kullanan yerde değiştir. Playwright’ın `page.clock` arayüzü browser saatini denetler. Sayfa açılınca timer kurulabileceği için saati gezinmeden önce kur:
 
-Sinema’da “oturum süresi doldu” davranışı `Date`’e bağlıysa Node’daki `vi.useFakeTimers()` tarayıcı saatini değiştirmez. Playwright’ın `page.clock.install({ time: new Date(...) })` API’sini **gezinmeden önce** kur; sayfa açılırken oluşturulan timer’lar da denetim altında olur. Bu başka bir bağlamda önceki fake timer bilgisini tekrar kullanır.
+```ts title="tests/session.spec.ts"
+await page.clock.install({ time: new Date('2026-09-28T10:00:00Z') })
+await page.goto('/oturum')
+```
 
-:::mistake[Sabit beklemeyle hatayı örtmek]
-**Belirti:** Test beş saniye daha yavaş olur ama CI’da yine kalır. → **Neden:** İstenen UI durumu hiç oluşmamıştır; beklemek yalnızca hatayı geciktirir. → **Düzeltme:** İlk başarısız assertion’ı ve o andaki trace kanıtını incele.
+**Ne oldu, neden?** Önce browser saati seçilen ana ayarlandı; sonra uygulama açıldı. Uygulamanın sayfa yüklenirken oluşturduğu zamanlayıcılar da bu saatle başlar. `vi.useFakeTimers()` başka süreci etkilediğinden bu sayfanın saatini değiştiremez.
+
+Bir adım daha ileri gidip seçilen zamanda oturumun bitmesini bekleyebilirsin. Böylece testi gerçek hayatta dakikalarca bekletmeden sona erme davranışını incelersin:
+
+```ts title="tests/session.spec.ts"
+await page.clock.install({ time: new Date('2026-09-28T10:00:00Z') })
+await page.goto('/oturum')
+await page.clock.fastForward('31:00')
+await expect(page).toHaveURL(/giris/)
+```
+
+| Adım | Browser’daki saat | Beklenen durum |
+| --- | --- | --- |
+| `install` | 10:00 | Sayfa henüz açılmadı |
+| `goto('/oturum')` | 10:00 | Oturum sayfası başladı |
+| `fastForward('31:00')` | 10:31 | Oturum süresi geçti |
+| URL assertion’ı | 10:31 | Giriş sayfasına yönlendirildi |
+
+**Ne oldu, neden?** Test saati ileri aldı; uygulama da süre dolduğunu gördü ve yönlendirdi. Tablo, hangi saatte hangi eylemin yapıldığını görünür kılıyor. Gezinmeden önce saati kurmak başlangıçtaki timer’ları da denetim altına alır.
+
+:::mistake[Sabit bekleme ile sonucu saklamak]
+**Belirti:** Test beş saniye daha yavaş olur ama başlık hâlâ görünmez. → **Neden:** Beklenen arayüz durumu hiç oluşmadı; süre yalnızca hatayı geciktirdi. → **Düzeltme:** Başarısız assertion’a dön ve trace’te ilk eksik kanıtı ara.
 :::
 
-:::mistake[Trace’i kaybetmek]
-**Belirti:** CI işi bittiğinde başarısız adımın kaydı yoktur. → **Neden:** Retry trace’i artifact olarak yüklenmemiştir. → **Düzeltme:** test-results içeriğini başarısız koşulda artifact yap; trace’i repoya commit etme.
+:::mistake[Node saatini browser saati sanmak]
+**Belirti:** `vi.useFakeTimers()` açık, ama E2E oturumu gerçek zamanda sona eriyor. → **Neden:** Vitest ve browser ayrı süreçlerdir. → **Düzeltme:** `page.clock.install()` ile browser saatini sayfayı açmadan önce ayarla.
 :::
 
-:::mistake[Saat kaynağını karıştırmak]
-**Belirti:** Node fake timer’ı browser oturum süresini etkilemez. → **Neden:** Browser ayrı süreç ve zaman kaynağı kullanır. → **Düzeltme:** Playwright clock’u sayfayı açmadan önce kur.
-:::
+Trace’ler form değerleri, URL sorguları veya istek gövdeleri gibi hassas veriler içerebilir. Sinema testlerinde sahte hesap kullan ve trace’i paylaşmadan önce içeriğine bak; gerçek parola ya da kullanıcı verisini herkese açık loglara koyma.
 
-:::sector[Sektörde]
-CI artifact’ları inceleme için süreli saklanır. Takımlar kişisel veri, token veya parola içerebilecek trace’leri herkese açık depolara koymaz. Retry tanı için yararlıdır; tekrarlayan kalışı görünmez biçimde telafi etmemelidir.
+:::info[Derinlemesine (isteğe bağlı)]
+Trace’in retry koşusunda hangi dosyalara yazıldığı Playwright config’indeki `outputDir` ve raporlayıcı ayarlarına bağlıdır. CI workflow’unda başarısız işte de bu dizini artifact olarak saklarsan indirip `npx playwright show-trace <dosya.zip>` ile açabilirsin. Trace’i repoya commit etme.
 :::
 
 ## Özet
 
-- Trace eylem, DOM, Console ve Network kanıtlarını aynı zaman çizgisinde birleştirir.
-- Önce başarısız assertion’ı, sonra onu çevreleyen ilk kopukluğu ara.
-- 401 gibi ağ hatasına bekleme eklemek çözüm değildir.
-- Browser saati Playwright clock ile, Node saati Vitest timer’larıyla değiştirilir.
+- Trace, test eylemlerini, DOM’u, görüntüyü ve ağ olaylarını zaman sırasıyla gösterir.
+- Başarısız assertion’dan geriye git; ağ hatasına bekleme eklemek yanıtı düzeltmez.
+- UI mode yerelde adımları inceler; CI trace’i tamamlanmış koşunun kanıtıdır.
+- Vitest saati Node sürecini, `page.clock` browser sürecini denetler.
 
-**Kendini yokla:** Assertion kaldı ve trace’te istek 401. İlk bakacağın kanıt nedir?  
-*Cevap:* İsteğin başlıkları ve route’un döndürdüğü yanıt.
+**Yeni terimler**
 
-**Kendini yokla:** Neden sabit bekleme yerine web-first assertion kullanırsın?  
-*Cevap:* Koşul oluştuğunda hemen biter; olmazsa anlamlı timeout hatası verir.
+- **Trace:** Playwright koşusunun sıralı eylem ve browser kanıtı kaydı.
+- **DOM:** Tarayıcının o anki sayfa öğeleri ağacı.
+- **CI:** Değişiklikleri temiz bir makinede otomatik kontrol etme işi.
+- **Artifact:** CI bitince indirilebilir olarak saklanan dosya.
+- **Actionability:** Playwright’ın eylemin güvenle yapılabilir olup olmadığını denetlemesi.
+- **UI mode:** Playwright testlerini yerelde adım adım inceleme arayüzü.
+
+**Kendini yokla:** İstek `401` dönmüş. İlk olarak neyi incelersin?  
+*Cevap:* İstek başlığını ve ağ taklidinin döndürdüğü yanıtı.
+
+**Kendini yokla:** Neden `page.clock.install()` gezinmeden önce çağrılır?  
+*Cevap:* Sayfa açılırken kurulabilecek timer’lar da seçilen browser saatini kullansın diye.

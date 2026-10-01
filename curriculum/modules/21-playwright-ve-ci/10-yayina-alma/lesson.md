@@ -6,124 +6,120 @@ kind: concept
 
 # Statik SPA’yı yayına alma
 
-:::pain[Paylaşılan film bağlantısı açılmıyor]
-Sinema’da bir filmi açıp `/movie/550` adresini arkadaşına yolluyorsun. Uygulama içinden tıklayınca detay görülüyor; arkadaşın aynı adresi yeni sekmede açınca statik host 404 veriyor. Bir gün sonra yeni sürüm yayınlanıyor, ama bazı kullanıcılar hâlâ eski ekranı görüyor. Dosyaları yüklemek tek başına yeterli değil: hostun URL ve cache davranışı da uygulamanın parçası.
-:::
+Sinema’da bir film kartına tıklayınca `/movie/550` açılıyor. Adresi yeni sekmeye yapıştırınca ne olur? Tarayıcı bu kez uygulamadaki bir düğmeye tıklamaz; doğrudan hosttan bu yolu ister. **Host**, yayımladığın dosyaları tarayıcıya veren sunucudur. Bu ilk istekle başlayalım.
 
-## İlk HTTP isteğinde React henüz çalışmaz
+## React’ten önce host yanıt verir
 
-Tarayıcı bir adresi doğrudan açtığında ilk isteği host karşılar. `/movie/550` için `dist/movie/550` adlı bir dosya yoktur. React Router ancak `index.html` ve JS yüklendikten sonra URL’yi okuyabilir. Bu sırayı ters çeviremeyiz. Host, uygulama route’u olan bilinmeyen yollarda `index.html` içeriğini **200** yanıtıyla sunmalıdır; URL adres çubuğunda `/movie/550` kalır. Buna SPA fallback denir.
+Bir **SPA** (single-page application), sayfaları çoğunlukla tek bir HTML belgesi ve tarayıcıda çalışan JavaScript ile gösterir. React Router bu JavaScript çalıştıktan sonra devreye girer. Şu iz sırasına bak:
 
-:::model[URL state]
-URL, film kimliği gibi paylaşılabilir durumun kaynağıdır. Uygulama içindeki gezinmede router bu URL’ye göre doğru sayfayı seçer. Doğrudan açılışta yeni olan şey, router’dan önce hostun ilk HTML yanıtını üretmesidir; host fallback vermeden router’a sıra gelmez.
-:::
-
-![Build çıktısının host üzerinden tarayıcıya gitmesi ve derin URL için HTML fallback](diagram:build-ve-yayin "Host, hashli dosyaları ve HTML belgesini farklı kurallarla sunar.")
-
-Yayının dört kesin kuralı var:
-
-1. **Önce gerçek dosya sunulur.** `/assets/index-a41c.js` gibi var olan dosya kendi içeriğiyle döner. SPA fallback, uygulama route’ları için devreye girer; asset isteğinin yerine HTML verilirse tarayıcı MIME hatası alır.
-2. **Derin uygulama URL’si HTML alır.** `/movie/550` için host `index.html` gövdesini başarılı yanıtla verir. Ardından JS yüklenir ve router 550 parametresini çözer.
-3. **HTML güncelliği korur.** `index.html` için `Cache-Control: no-cache` saklamayı yasaklamaz; kullanmadan önce sunucuyla doğrulama ister. Böylece yeni build’in işaret ettiği hash’li dosya adı öğrenilir.
-4. **Hash’li asset uzun saklanır.** `/assets/index-a41c.js` için `public, max-age=31536000, immutable` uygundur. İçerik değişirse build yeni URL üretir; eski dosyayı cache’ten atmaya gerek kalmaz.
-
-Üçüncü ve dördüncü kurallar HTTP cache dersindeki iki katmanı hatırlatır. Tarayıcı HTTP yanıtını başlıklara göre saklar. TanStack Query’nin belleğindeki film verisi başka bir cache’tir; uygulama sorgusunu invalid etmek, tarayıcının eski `index.html` dosyasını yeniden doğrulama kuralını düzeltmez.
-
-:::model[HTTP cache kararı]
-Tarayıcı taze yanıtı doğrudan kullanır; bayat yanıtı ETag gibi bir doğrulayıcıyla sunucuya sorabilir. `no-cache`, “asla saklama” değil “kullanmadan önce doğrula” demektir. Yayında bu ayrım HTML için güncel asset listesini, hash’li asset için tekrar indirmeden hızlı açılışı sağlar.
-:::
-
-## Yeni sürümün yolculuğunu izle
-
-İlk yayında HTML `index-a41c.js` dosyasına işaret ediyor. Sonra yeni özellik build edilip `index-b82d.js` çıkıyor.
-
-| İstek | İlk yayın | Yeni yayın sonrası beklenen |
+| Adım | Tarayıcı ne yapar? | Kim yanıt verir? |
 | --- | --- | --- |
-| `GET /movie/550` | Host `index.html` gövdesini 200 ile verir | Aynı fallback güncel HTML’i verir |
-| `GET /index.html` | Tarayıcı HTML’i alır | `no-cache` nedeniyle yeniden doğrular veya yeni gövdeyi alır |
-| `GET /assets/index-b82d.js` | Henüz yok | Yeni URL olduğu için indirilir |
-| `GET /assets/index-a41c.js` | Uzun süre cachelenebilir | Eski sekmeler için saklanması sorun değildir |
+| 1 | `/movie/550` için HTTP isteği yollar | Host |
+| 2 | Host dosyaları arasında bu yola karşılık gelen dosya arar | Host |
+| 3 | Host `index.html` belgesini başarıyla verir | Host |
+| 4 | Tarayıcı JavaScript’i indirir ve çalıştırır | Tarayıcı |
+| 5 | Router URL’deki `550` değerini okuyup film sayfasını seçer | React uygulaması |
 
-Eğer HTML’e de bir yıl `immutable` verirsen kullanıcı yeni JS adını öğrenemez. Eğer tüm dosyalara `no-store` verirsen doğruluk korunabilir, fakat her açılışta gereksiz aktarım yaparsın. Dosya türlerinin rolü farklı olduğu için başlıkları da farklıdır.
+İlk örnek olarak yalnızca URL’nin ne zaman okunduğunu düşün. Uygulama içinde bir bağlantıya tıklarken HTML zaten yüklüdür; router yeni URL’yi hemen işler. Adresi doğrudan açarken ise router henüz çalışmıyordur. Bu yüzden aynı URL, uygulama içinde çalışıp yenilemede 404 verebilir.
 
-## Host dosyaları ve kırık örnek
+Bu durumun çözüm adı **SPA fallback**’tir: host, gerçek dosya bulamadığı bir uygulama yolunda `index.html` belgesini döndürür. Adres çubuğu `/movie/550` olarak kalır; host yalnızca isteğin yanıt gövdesi için HTML’i seçer. Böylece React yüklenir ve URL’yi kendi router’ına bırakabilir.
 
-Netlify ve Cloudflare Pages için `public/` içine konan `_redirects` ile `_headers`, build sonrasında `dist/` köküne kopyalanır. Vercel aynı davranışı JSON rewrite ve header kurallarıyla tanımlar.
+![Build çıktısının host üzerinden tarayıcıya gitmesi ve derin URL için HTML fallback](diagram:build-ve-yayin "Host, hash’li dosyaları ve derin URL’yi farklı kurallarla sunar.")
 
-Kırık Vercel ayarı yalnızca dosya cache başlığı verir. `/etkinlik/42` isteğinde host hâlâ o adla fiziksel bir dosya arar ve 404 döndürür:
+## Fallback’i küçük bir kuralla ekle
 
-```json title="vercel.json (kırık)"
-{
-  "headers": [{ "source": "/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }]
-}
+Örneğin Netlify, yayın klasöründeki `_redirects` dosyasından yönlendirme kurallarını okur. `/*` bütün yolları eşleştirir; sondaki `200`, tarayıcıya yönlendirme değil başarılı yanıt verilmesini söyler:
+
+```text title="public/_redirects"
+/*  /index.html  200
 ```
 
-Doğru örnek hem rewrite hem de dosya türüne göre başlık verir:
+Bu ikinci örnek, ilk izdeki eksik adımı tamamlar. `/movie/550` için ayrı bir fiziksel dosya bulunmadığında host `index.html` verir; JavaScript yüklenince router filmi seçer. Fallback kuralı bütün isteklere körlemesine uygulanırsa bir JavaScript dosyası isteği de HTML alabilir. Bu nedenle host önce gerçekten var olan dosyaları sunmalı; fallback uygulama yolları için kalmalıdır.
 
-```json title="vercel.json"
-{
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
-    },
-    {
-      "source": "/index.html",
-      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
-    }
-  ]
-}
+## HTML ile JavaScript farklı hızda değişir
+
+Yayın sırasında HTML belgesi ve JavaScript dosyasının görevleri farklıdır. HTML, tarayıcıya hangi JavaScript dosyasını indireceğini söyler. Derleme aracı içeriği değişen dosyanın adına bir **hash** (içerikten üretilen kısa kimlik) ekleyebilir: örneğin `app-a1.js` yeni sürümde `app-b2.js` olur. Böylece yeni dosyanın adresi de değişir.
+
+**HTTP cache**, tarayıcının daha önce aldığı yanıtı bir süre saklayıp tekrar kullanmasını sağlar. HTML eski kalırsa yeni dosya adını öğrenemez; değişmeyen, hash’li JavaScript ise uzun süre saklanabilir. Üçüncü örnekte host bu iki rol için ayrı `Cache-Control` başlıkları yollar:
+
+```text title="public/_headers"
+/index.html
+  Cache-Control: no-cache
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
 ```
 
-Netlify ve Cloudflare Pages metin dosyalarını, Vercel ise `vercel.json` dosyasını okur. GitHub Pages doğrudan SPA fallback sunmadığı için orada 404 sayfası tabanlı bir çözüm gerekir. Host seçerken yalnızca “statik dosya sunuyor mu?” diye bakma; derin URL yenileme ve başlık kurallarını da dene.
+`no-cache`, “hiç saklama” demek değildir; tarayıcıdan HTML’i kullanmadan önce hostla yeniden doğrulamasını ister. `max-age=31536000` asset’in bir yıl taze sayılabileceğini, `immutable` de aynı URL’nin bu sırada değişmeyeceğini belirtir. Bu güvenlidir çünkü içerik değişince build yeni hash’li URL üretir.
 
-Bir pull request için verilen geçici preview URL’si, bu ayarları production öncesi görmeyi sağlar. Preview build’in env değerleri ayrı olabilir: `VITE_API_URL` staging için build edildiyse production’a aynı dosyayı koymak production API’sine otomatik geçmez. Değeri değiştirmek için yeni build gerekir.
+Yeni sürümün izini sürelim:
 
-Preview deploy’u yalnızca tasarım incelemesi için kullanma. Derin URL’yi doğrudan aç, yenile, bir JS/CSS asset’inin gövde türünü ve cache header’ını Network’te kontrol et. Böylece fallback’in yanlışlıkla HTML’i asset isteğine vermesi gibi sorunları görürsün. Deploy adresi geçici olsa bile host kuralı production ile aynıysa iyi bir erken kanıt sağlar.
+| İstek | Yeni yayın öncesi | Yeni yayın sonrası |
+| --- | --- | --- |
+| `GET /movie/550` | Host `index.html` verir | Güncel `index.html` verilir |
+| `GET /index.html` | HTML, `app-a1.js` adresini içerir | Yeniden doğrulanır; güncel HTML `app-b2.js` adresini içerir |
+| `GET /assets/app-b2.js` | Dosya henüz yoktur | Yeni URL olduğu için indirilir |
+| `GET /assets/app-a1.js` | Önceki sekmeler kullanıyor olabilir | Eski dosya saklı kalabilir |
 
-## CSP de host yanıtının parçasıdır
+Burada HTML’i yeniden doğrulamak tarayıcıya yeni asset adını öğretir. Eski asset’i hemen silmek gerekmez; daha eski bir sekme hâlâ onu kullanıyor olabilir. HTML’e de bir yıl `immutable` verirsen kullanıcı eski dosya listesini kullanabilir. Her şeye `no-store` demek güncelliği sağlar ama değişmeyen dosyaları da tekrar indirtir.
 
-Sinema’nın JS’i TMDB ve DummyJSON’a bağlanıyorsa CSP `connect-src` listesi bu origin’leri içermelidir. Posterler başka bir origin’den geliyorsa `img-src` ayrıca ayarlanır. CSP’yi yalnızca kaynak dosyasında yorum olarak yazmak tarayıcıya kural göndermez; hostun HTML yanıtında `Content-Security-Policy` başlığı olmalıdır.
+Önceki modülde gördüğün uygulama cache’i ile bunu karıştırma. TanStack Query’nin cache’i film verisini bellekte tutar; HTTP cache ise host yanıtlarını saklar. Query verisini yenilemek, tarayıcıdaki eski `index.html` politikasını değiştirmez.
 
-:::model[XSS çıkışları ve CSP]
-React metin düğümlerinde güvenilmeyen içeriği kaçışlar, ama tehlikeli DOM çıkışları ve üçüncü parti script’ler hâlâ risk oluşturabilir. CSP, tarayıcının hangi kaynağı çalıştırıp hangisine bağlanacağını sınırlar. Yayında yeni olan, politikayı build kodunda değil hostun HTTP yanıtında uygulamandır.
+## Host yapılandırmasını yanıtın kendisinde kontrol et
+
+Kural dosyaları kullandığın hosta göre değişir. Netlify ve Cloudflare Pages `_redirects` ile `_headers` dosyalarını kullanabilir; Vercel kuralları `vercel.json` içinde tanımlar. Dosyaları yazmak yeterli kanıt değildir: yayınlanmış adrese doğrudan gir, yenile ve Network panelinde HTML ile asset yanıtlarına bak. Derin URL HTML almalı; JavaScript isteği JavaScript gövdesi almalıdır.
+
+Bir **origin**, bir web adresinin protokol, alan adı ve porttan oluşan köküdür; örneğin `https://api.themoviedb.org`. **CSP** (Content Security Policy), tarayıcıya hangi kaynaklara bağlanabileceğini ve hangi dosyaları yükleyebileceğini söyleyen güvenlik kuralıdır. Kural, projenin kaynak koduna yorum olarak yazılınca tarayıcıya ulaşmaz; hostun HTML yanıtında `Content-Security-Policy` başlığı olarak gönderilmelidir.
+
+Sinema’nın `fetch` istekleri için CSP’de `connect-src` kullanılır. Poster başka bir domainden geliyorsa onun izni `img-src` altında olmalıdır. Dördüncü örnekte iki istek türü ayrı izin alıyor:
+
+```text
+Content-Security-Policy: default-src 'self'; connect-src 'self' https://api.themoviedb.org; img-src 'self' https://image.tmdb.org data:
+```
+
+Bu kural sayfanın kendi origin’ine ve TMDB API’sine bağlantıya izin verir; poster için de TMDB görsel alan adını açar. API’yi `img-src` içine eklemek `fetch` isteğini düzeltmez; her direktif farklı kaynak türünü denetler. İstek engellenirse tarayıcının Console mesajında eksik direktifi ve engellenen origin’i görürsün.
+
+:::mistake[API isteği hâlâ engelleniyor]
+Belirti → Poster görünüyor ama film verisini alan `fetch` başarısız oluyor.
+
+Neden → API adresi `img-src` içine eklenmiş; bu direktif görselleri denetler.
+
+Düzeltme → API origin’ini hostun CSP yanıtındaki `connect-src` listesine ekle.
 :::
 
-Örnek bir yayın başlığı `default-src 'self'; script-src 'self'; img-src 'self' https://image.tmdb.org data:; connect-src 'self' https://api.themoviedb.org https://dummyjson.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'` olabilir. Uygulamanın başka kaynakları varsa politika onların gerçek kullanımına göre gözden geçirilir. `X-Content-Type-Options: nosniff` ve `Referrer-Policy: strict-origin-when-cross-origin` ayrı HTTP başlıklarıdır. HTTPS yayında HSTS de değerlendirilebilir; alt alan adlarını etkileyecek bir politika aceleyle açılmaz. Yeni CSP önce Report-Only ile gözlenebilir.
+## Preview’da gerçek yanıtı dene
 
-:::mistake[Derin URL 404]
-Belirti → Ana sayfadan film detayı açılıyor, aynı URL yenilenince 404.  
-Neden → Host dosya arıyor ve `index.html` fallback’i vermiyor.  
-Düzeltme → Hostun SPA yönlendirmesini ekle; doğrudan `/movie/550` isteğinin 200 ve HTML döndürdüğünü kontrol et.
+Bir **preview deploy**, değişikliği ana yayına almadan önce ayrı bir adreste çalışan geçici yayındır. Preview’daki build’in ortam değişkeni ayrı olabilir. Örneğin `VITE_API_URL` preview için test API’sine ayarlanmışsa, üretilmiş JavaScript bu değeri içerir; aynı dosyayı production’a kopyalamak adresi kendiliğinden production API’sine çevirmez. Yeni değer için yeni build gerekir.
+
+Beşinci örnek olarak preview adresinde `/movie/550` yolunu doğrudan açıp yenile. Sayfa açılırsa fallback’in çalıştığını; Network’te `/index.html` için `no-cache`, hash’li asset için uzun cache gördüğünde başlıkların geldiğini doğrulamış olursun. Ardından API isteği CSP tarafından engellenmiş mi Console’dan kontrol et. CI build’in başarılı olması bu host yanıtlarını tek başına kanıtlamaz.
+
+## Aklında tut
+
+- Doğrudan açılan uygulama URL’sinde ilk yanıtı React değil host verir; SPA fallback router’ın çalışmasına yetecek HTML’i sunar.
+- Host var olan asset’i kendi içeriğiyle, uygulama yolunu `index.html` ile yanıtlamalıdır.
+- HTML’i yeniden doğrulat; hash’li dosyaları uzun süre cache’le. İki yanıtın yenilenme ihtiyacı farklıdır.
+- CSP’yi host yanıtında gönder ve API isteklerini `connect-src` ile, görselleri `img-src` ile sınırla.
+- Preview adresinde doğrudan route açıp gerçek HTTP yanıtlarını kontrol et.
+
+:::info[Derinlemesine (isteğe bağlı)]
+Netlify ve Cloudflare Pages, `public/` içindeki `_redirects` ve `_headers` dosyalarını build sonrasında yayın klasörüne kopyalayabilir. Vercel bu kuralları `vercel.json` içinde tanımlar. GitHub Pages doğrudan SPA fallback sağlamaz; bu hostta 404 sayfası üzerinden ek bir çözüm gerekir.
+
+CSP’yi ilk açarken `Content-Security-Policy-Report-Only` ile raporlamak, engelleme başlamadan önce hangi isteklerin etkileneceğini görmene yardım eder. `X-Content-Type-Options: nosniff` ve `Referrer-Policy: strict-origin-when-cross-origin` ayrı güvenlik başlıklarıdır. HTTPS’te HSTS de değerlendirilebilir; alt alan adlarını kapsayan ayarları anlamadan açma.
 :::
 
-:::mistake[Yeni sürüm görünmüyor]
-Belirti → Yayın sonrası bazı kullanıcılarda eski JS çalışıyor.  
-Neden → Eski HTML uzun süre taze kabul edilip yeni hash’li asset’e işaret etmiyor.  
-Düzeltme → HTML’i yeniden doğrulat, hash’li asset’e uzun cache ver; gerçek yanıt başlıklarını Network’ten oku.
-:::
+**Yeni terimler:**
 
-:::mistake[CSP tüm istekleri kesiyor]
-Belirti → Yerelde çalışan API çağrısı yayında “Refused to connect” ile duruyor.  
-Neden → Hostun `connect-src` listesinde API origin’i yok.  
-Düzeltme → Gerçek istek origin’ini izin listesine ekle; gereksiz geniş `*` izni verme.
-:::
+- **SPA fallback:** Hostun dosya bulamadığı uygulama yollarında `index.html` vermesi.
+- **HTTP cache:** Tarayıcının HTTP yanıtlarını başlıklara göre saklayıp yeniden kullanması.
+- **Hash’li asset:** İçeriği değişince URL’si de değişen yayın dosyası.
+- **Origin:** Protokol, alan adı ve porttan oluşan web adresi kökü.
+- **CSP:** Tarayıcının yükleyebileceği ve bağlanabileceği kaynakları sınırlayan politika.
+- **Preview deploy:** Production öncesi incelemek için ayrı adreste yapılan geçici yayın.
 
-:::sector[Sektörde]
-Yayın kontrolünde ekip bir preview URL’sinde doğrudan film bağlantısı açar, sayfayı yeniler, Network’te HTML ve asset yanıt başlıklarını okur, ardından CSP Console uyarılarını inceler. CI’daki başarılı build bu HTTP davranışlarını tek başına ispatlamaz; host yapılandırması da ürünün parçasıdır.
-:::
+**Kendini yokla:** `/movie/550` sayfası yenilendiğinde neden React Router tek başına 404’ü önleyemez?
 
-## Özet
+*Cevap:* Router JavaScript yüklendikten sonra çalışır; önce host HTML’i başarıyla döndürmelidir.
 
-- Doğrudan SPA route’u açılınca host önce `index.html` yanıtını vermelidir.
-- `index.html` yeniden doğrulanır; hash’li asset’ler uzun süre cachelenebilir.
-- Netlify ve Cloudflare Pages `_redirects` ile `_headers`; Vercel kendi JSON yapılandırmasını kullanır.
-- Preview deploy, gerçek host davranışını ve ortama özel build’i sınamak için kullanılır.
-- CSP ve güvenlik başlıkları hostun HTTP yanıtında uygulanır.
+**Kendini yokla:** HTML neden `no-cache`, hash’li asset ise uzun cache alabilir?
 
-**Kendini yokla:** `/movie/550` yenilenince neden React Router tek başına 404’ü çözemez?  
-*Cevap:* Router çalışmadan önce hostun ilk HTML isteğini yanıtlaması gerekir.
-
-**Kendini yokla:** Hash’li JS’e uzun cache verirken HTML’e neden aynı kuralı vermezsin?  
-*Cevap:* HTML yeni sürümdeki dosya adını taşır; eski HTML taze sayılırsa kullanıcı yeni asset’i öğrenemez.
+*Cevap:* HTML güncel asset adını taşır ve kullanmadan önce doğrulanmalıdır. İçeriği değişen asset’in URL’si değiştiği için eski URL’yi uzun süre saklamak güvenlidir.

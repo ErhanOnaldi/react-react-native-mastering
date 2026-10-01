@@ -5,20 +5,28 @@ export default defineQuestion({
   title: 'Tipin kaynağı',
   difficulty: 'kolay',
   concepts: ['zod.infer', 'ts.inference'],
-  question: 'Şemada `name` zorunluysa form değer tipini nasıl güncel tutarsın?',
+  question: `Bu şema boş adı çalışma anında reddeder. \`Values['name']\` ve parse sonucu hakkında hangisi doğrudur?
+
+\`\`\`ts
+const watchlistSchema = z.object({ name: z.string().min(1), isPublic: z.boolean() })
+type Values = z.infer<typeof watchlistSchema>
+const result = watchlistSchema.safeParse({ name: '', isPublic: true })
+\`\`\``,
   options: [
     {
-      text: '`z.infer<typeof watchlistSchema>` ile çıkarırım.',
+      text: '`Values["name"]` tipi string, parse sonucu ise başarısızdır.',
       correct: true,
-      explanation: 'Doğru. Çıktı tipi şema değişince birlikte değişir.',
+      explanation:
+        'Doğru. `z.infer` alanın TypeScript tipini çıkarır; min(1) gibi içerik kuralını çalışma anında parse sınar.',
     },
     {
-      text: 'Ayrı interface yazarım; editör eşitliği kanıtlar.',
+      text: '`Values["name"]` boş stringi dışlar; parse da bu yüzden başarılıdır.',
       correct: false,
-      explanation: 'Ayrı interface şema ile kendiliğinden senkron olmaz.',
+      explanation:
+        '`string` tipi boş stringi içerir. `min(1)` yalnız şema parse edildiğinde çalışır; alanın statik tipi daha dar olmaz.',
     },
     {
-      text: '`as` ile form verisini tipe çeviririm.',
+      text: '`z.infer` tek başına nesneyi kontrol eder, bu nedenle parse çağrısı gerekmez.',
       correct: false,
       explanation: 'Assertion çalışma zamanı kuralını değiştirmez.',
     },

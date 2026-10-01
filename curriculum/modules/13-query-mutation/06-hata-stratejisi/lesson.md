@@ -1,144 +1,135 @@
 ---
 title: "Mutation hatasını doğru yerde göster"
-minutes: 13
+minutes: 16
 kind: concept
 ---
 
 # Mutation hatasını doğru yerde göster
 
-:::pain[Problem]
-Bir etkinliğe katılım kaydı 503 ile reddedildi. Katıl düğmesinde kısa bir hata göründü; kullanıcı başka sayfaya gidince mesaj kayboldu. Operasyon ekibi de başarısız yazma sayısının arttığını göremedi.
-:::
+Sinema’da film puanlamak bir yazma işlemidir: arayüz sunucuya puanı gönderir ve cevap bekler. İstek başarısız olursa kullanıcının hangi işlemin aksadığını anlaması gerekir. Bir hata yalnızca puanlama kartını etkileyebilir; başka bir hata için kullanıcı route değiştirdikten sonra da görünen ortak bildirim gerekebilir. Önce hatayı kartta gösterelim, sonra uygulama düzeyindeki ortak katmanı ekleyelim.
 
-## Hata mesajının sahibi
+## Hata, başladığı kartta görünsün
 
-Her hatayı tek bir yere koymak doğru değildir. Bir alanın değeri geçersizse düzeltme o alanın yanında istenir. Bir mutation belirli bir kartta başarısızsa yerel `isError` durumu o kartta kalabilir. Kullanıcı route değiştirince de görünmesi gereken genel bağlantı sorunu, ortak bildirim katmanına taşınabilir. Teknik kayıt ise kullanıcı mesajından ayrı tutulur.
+Bir mutation işlemi `pending`, `success` veya `error` gibi durumlarda olabilir. `pending` sürerken sonuç belli değildir; `error` olduğunda mutation nesnesi hatayı saklar. Bu nesneyi kullanan bileşen, kendi düğmesinin yanında eyleme özel bir mesaj gösterebilir. Böylece kullanıcı “hangi işlem başarısız oldu?” sorusunun cevabını hemen görür.
 
-TanStack Query mutation’ında `onError`, mutation’a özgü toparlanmayı çalıştırır. Bu callback cache rollback’i yapabilir veya yerel bağlama ait veriyi temizleyebilir. `MutationCache` içindeki global `onError` ise tüm mutation’lardan gelen hatalar için ortak loglama ya da bildirim sınırı sağlar. İki callback de çalışabilir; aynı olayı iki kez toast etmek istemiyorsan global politikanın hangi hataları göstereceğini tanımla.
-
-:::model[Mutation ve invalidation]
-Mutation sonucu önce sunucu yazmasını temsil eder; optimistic cache yazısı hata gelirse rollback edilir, ilgili query’ler yeniden doğrulanır. Hata stratejisinde yeni soru şudur: rollback’i hangi callback yapar, kullanıcıya mesajı hangi UI sahibi gösterir, teknik olayı kim kaydeder? Bu sorumlulukları karıştırmak aynı hatayı iki kez göstermeye veya hiç göstermemeye yol açar.
-:::
-
-## Yerel hata ile uygulama geneli bildirim
-
-Yerel bileşen, `mutation.isError` ve `mutation.error` üzerinden yalnız kendi işlemini anlatır. Örneğin “Katılım kaydedilemedi. Tekrar dene.” mesajı, kullanıcının hangi eylemin başarısız olduğunu anlamasını sağlar. Hata mesajını doğrudan `error.message` ile göstermek güvenli değildir: sunucu iç sistem bilgisi, URL veya kullanıcıya uygun olmayan bir metin döndürebilir.
-
-Global callback’i `QueryClient` oluşturulurken `MutationCache`’e bağlarsın. `QueryClient` uygulama ömrü boyunca tek olmalı; her render’da yenisini oluşturmak cache ve callback sahipliğini parçalar. Genel callback’te sınıflandırma yapabilirsin: session süresi dolduysa oturum akışını başlat, ağ hatasıysa genel uyarı ver, alan doğrulama hatasını forma bırak.
-
-```ts
-const client = new QueryClient({
-  mutationCache: new MutationCache({
-    onError: (error) => reportFailure(error),
-  }),
-})
-```
-
-Bu kesitte `MutationCache` ve `QueryClient` import edilmemiştir; gerçek dosya başında `@tanstack/react-query`’den import et. Önemli ayrım, callback’in `QueryClient` kurulurken bir kez tanımlanmasıdır. Her component’te ayrı global callback kurma.
-
-## Bir hatayı izleyelim
-
-Bir etkinliğe katılım için POST gönderiliyor ve sunucu 503 dönüyor. `joinEvent` HTTP hata cevabında `throw` ettiği için mutation reject olur.
-
-| Adım | Mutation | Yerel arayüz | Genel katman |
-| --- | --- | --- | --- |
-| 1 | `pending` | Düğme “Kaydediliyor…” | Henüz bildirim yok |
-| 2 | `error` | Kartta tekrar deneme mesajı | Global logger olayı kaydeder |
-| 3 | Kullanıcı retry seçer | Pending yeniden başlar | Eski hata toast’ı temizlenir |
-| 4 | İstek başarıyla çözülür | Başarı durumu görünür | Yeni hata kaydı oluşmaz |
-
-Global hata callback’i event’i loglayabilir; ama toast gösterme kararı yerel UI ile çakışabilir. Örneğin route içindeki alan doğrulama mesajı daha açıklayıcıysa global callback onu genel “İşlem başarısız” toast’ıyla örtmemelidir. Uygulamada hata sınıfı veya mutation meta bilgisiyle bu ayrımı kur.
-
-## Promise davranışı ve görünür mesaj
-
-`mutate` hata durumunu mutation nesnesine yazar ve unhandled Promise bırakmaz. `mutateAsync` ise reject olur. Onu event handler’da `await` ediyorsan hatayı yakala:
-
-```tsx
-async function submit() {
-  try {
-    await mutation.mutateAsync(input)
-  } catch {
-    // Yerel hata mutation nesnesinde; kullanıcı metni render edilir.
-  }
-}
-```
-
-`catch` içinde hatayı sessizce yutmak çözüm değildir; ekranda `mutation.isError` üzerinden mesajı göstermelisin. Alternatif olarak `mutation.mutate(input)` çağırıp Promise zincirini handler’a taşımadan Query durumunu render et. Event handler’ın amacı yalnız kullanıcı eylemini başlatmaksa bu yol daha yalındır.
-
-Toast, form hatası ve log farklı ihtiyaçları karşılar. Toast kısa ve genel olabilir; form mesajı hangi değerin reddedildiğini söyler; log ise hata türü, route ve correlation id gibi destek bilgisini taşır. Token, session id ve kişisel veri log’a gereksiz yere eklenmemelidir. UI mesajı sunucunun ham hata cevabını kopyalamak zorunda değildir.
-
-## Kırık kullanım ve doğru yerleşim
-
-Kırık örnek, reject eden Promise’i yakalamadan event handler’da başlatır:
-
-```tsx
-<button onClick={() => mutation.mutateAsync(input)}>Katıl</button>
-```
-
-React event callback’i dönen Promise’i otomatik olarak hata UI’ına çevirmez. `mutateAsync` reject olunca console’da yakalanmamış Promise uyarısı çıkabilir. Ya `mutate` kullan ya da `mutateAsync` için `try/catch` ekle. Aşağıda `mutate` ile yerel UI ve bir kez kurulan global logger birlikte kullanılıyor:
+İlk örnek, bir film için izleme listesine ekleme düğmesidir. `useMutation` yazma isteğini başlatır; `isPending` düğme metnini, `isError` ise karttaki açıklamayı belirler. Bu mesaj yalnız bu bileşene ait olduğu için başka route’taki işlemlerle karışmaz.
 
 ```tsx check
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 
-type Input = { clubId: string; note: string }
-declare function sendInvitation(input: Input): Promise<void>
+declare function saveForLater(movieId: number): Promise<void>
 
-export function InviteButton({ clubId }: { clubId: string }) {
-  const client = useQueryClient()
-  const invite = useMutation({
-    mutationFn: sendInvitation,
-    onError: () => {
-      client.setQueryData(['invite-draft', clubId], { failed: true })
-    },
-  })
+export function SaveFilmButton({ movieId }: { movieId: number }) {
+  const save = useMutation({ mutationFn: saveForLater })
   return (
     <div>
-      <button
-        disabled={invite.isPending}
-        onClick={() => invite.mutate({ clubId, note: 'Merhaba' })}
-      >
-        Davet gönder
+      <button disabled={save.isPending} onClick={() => save.mutate(movieId)}>
+        {save.isPending ? 'Kaydediliyor…' : 'İzleme listeme ekle'}
       </button>
-      {invite.isError && <p role="alert">Davet gönderilemedi. Yeniden deneyebilirsin.</p>}
+      {save.isError && <p role="alert">Film listeye eklenemedi. Tekrar deneyebilirsin.</p>}
     </div>
   )
 }
 ```
 
-Burada `onError` cache’te taslak hata işareti tutan örnek sorumluluktur; gerçek uygulamada bu verinin ne zaman temizleneceği de belirlenmelidir. Global bildirimi bu callback’e koymadık; onu QueryClient seviyesinde bir kez kur. Böylece component yalnız kendi mesajını yönetir.
+Ne oldu? Düğmeye basınca mutation `pending` olur, düğme işlemi tekrar başlatmaya kapatılır. İstek hata verirse bu mutation `error` olur ve bileşen kendi hata metnini gösterir. Hata başka bir bileşenin mesajını değiştirmez. Bu yaklaşım, kullanıcının aynı kartta düzeltebileceği veya tekrar deneyebileceği işler için uygundur.
 
-Global `MutationCache` callback’i, her mutation için çalışabilecek bir uygulama politikasıdır. “Her hata için toast” kuralı kullanıcıyı bildirim yağmuruna tutabilir; aynı anda üç arka plan kaydı başarısız olursa tek bir özet bildirim daha iyi olabilir. Mutation’lara `meta` bilgisi ekleyerek sessiz olması gereken arka plan işlerini veya kullanıcı mesajı sorumluluğu yerel formda olan doğrulama isteklerini ayırabilirsin. Global callback için kararları açık yaz; callback’i gizli bir yan etki deposuna dönüştürme.
+Ham `error.message` değerini olduğu gibi ekrana basma. Sunucu hata gövdesinde teknik ayrıntı, HTML veya kullanıcıya gösterilmemesi gereken bilgi olabilir. UI’da güvenli ve eylemi anlatan bir metin seç; hata nesnesini teknik inceleme için ayrı kaydet. Ayrıca `fetch`, HTTP 500 gördüğünde kendiliğinden reject olmaz; kodun `response.ok` kontrol edip hata fırlatması gerekir. Yoksa mutation başarısızlığı sanman gereken yanıt `success` gibi görünebilir.
 
-Hata nesneleri farklı kaynaklardan gelir. Ağ kesintisinde `fetch` reject olur; HTTP 500 için `response.ok` false olur ve uygulama kendisi hata fırlatmalıdır; JSON parse hatası başka bir hata sınıfıdır. Log’da bu ayrım destek ekibine yardımcı olur, fakat kullanıcı mesajı bunların hepsini “Bağlantı kurulamadı” diye yanlış sınıflandırmamalı. API hata tiplerini projede merkezileştirmek, bileşenlerin her biri için ayrı string karşılaştırması yapmasını önler.
+## Ortak hata karttan sonra da yaşayabilir
 
-Retry politikası da hata stratejisinin parçasıdır. Query okumaları güvenli şekilde tekrar denenebilir; mutation tekrarlandığında yazma iki kez uygulanabilir. Bu nedenle mutation retry’ını API’nin idempotency sözleşmesi olmadan otomatik açma. Kullanıcıya retry düğmesi sunuyorsan önceki isteğin sunucuda işlenmiş ama cevabının kaybolmuş olabileceğini hesaba kat.
+Bir hatayı yalnız tıklanan bileşende göstermek her zaman yetmez. Örneğin kullanıcı puanlama kartından başka route’a geçmiştir; uygulama, puan kaydetmenin başarısız olduğunu ortak bir alanda bildirmek isteyebilir. Bu politikanın sahibi **MutationCache**’tir: TanStack Query’nin mutation kayıtlarını ve ortak callback’lerini tuttuğu yerdir. QueryClient oluşturulurken ona bir `MutationCache` verip global `onError` callback’i bağlayabilirsin.
 
-:::mistake[İki kez aynı bildirim]
-Belirti → Hata olduğunda toast iki defa çıkıyor. Neden → Mutation `onError` ve global `MutationCache.onError` ikisi de aynı toast’ı gösteriyor. Düzeltme → Kullanıcı bildirimini tek katmana ver; diğer callback log veya rollback yapsın.
-:::
+İkinci örnek yalnız ortak teknik kayıt üretir. Logger, hatayı gözlemleme sistemine yollar; kullanıcı mesajı üretme kararı hâlâ ayrı verilebilir. Global callback her başarısız mutation için çalıştığından bunu her düğme render’ında tekrar kurmamalısın.
 
-:::mistake[Promise hatasını saklamak]
-Belirti → `mutateAsync` sonrası konsolda unhandled rejection var. Neden → Promise await edildi ama `catch` eklenmedi. Düzeltme → `try/catch` ile hatayı ele al veya UI odaklı akışta `mutate` kullan.
+```ts check
+import { MutationCache, QueryClient } from '@tanstack/react-query'
+
+type FailureLog = (error: Error) => void
+
+export function createMovieClient(logFailure: FailureLog) {
+  return new QueryClient({
+    mutationCache: new MutationCache({
+      onError: (error) => logFailure(error),
+    }),
+  })
+}
+```
+
+Ne oldu? Uygulamanın bu client’ını kullanan her mutation başarısız olduğunda ortak callback çağrılır. `MutationCache` kullanıcı arayüzü çizmez; yalnız uygulamanın genel politikasını çalıştırır. Client tek uygulama ömrü boyunca kullanılır, bu yüzden bir kere kurulan logger route değişse de erişilebilir kalır.
+
+Birçok uygulamada yerel `onError` ile global callback aynı anda çalışabilir. Örneğin yerel callback optimistic cache değişikliğini geri alırken global callback hatayı kayda geçirir. Bunlar farklı sorumluluklardır. İkisi de aynı toast mesajını gösterirse kullanıcı aynı hatayı iki defa görür; her callback’in ne yaptığı açık olmalı.
+
+## Yerel mesaj ve global kayıt birlikte çalışsın
+
+Üçüncü örnekte puan kaydetme düğmesinin yerel hata metni korunuyor; global katman da hatayı kayıt altına alıyor. Tek yeni unsur sorumlulukların birlikte çalışması: bileşen kullanıcıya kendi işlemini anlatırken client ortak teknik sinyali alır. Global kaydı `QueryClient` fabrikası içinde zaten kurduğumuzu varsayıyoruz.
+
+```tsx
+import { useMutation } from '@tanstack/react-query'
+
+declare function rateMovie(input: { movieId: number; value: number }): Promise<void>
+
+export function QuickRate({ movieId }: { movieId: number }) {
+  const rate = useMutation({ mutationFn: rateMovie })
+  return (
+    <section>
+      <button onClick={() => rate.mutate({ movieId, value: 8 })}>8 puan ver</button>
+      {rate.isError && <p role="alert">Puan kaydedilemedi. Yeniden deneyebilirsin.</p>}
+    </section>
+  )
+}
+```
+
+Ne oldu? İstek reddedilince bileşen `isError` üzerinden puanlama mesajını gösterir. Aynı anda QueryClient’a bağlı global `onError` teknik kaydı yazar. Kart mesajı kullanıcıya “hangi eylem?” sorusunu, global callback ise uygulamanın ortak kayıt ihtiyacını karşılar. Bildirim gösterecek global politika eklersen, yerel UI ile aynı mesajı iki kere üretmemesine dikkat et.
+
+Bir `mutate` çağrısı hatayı mutation state’ine yazar; kullanımını ayrıca `await` etmek gerekmez. `mutateAsync` ise sonucu Promise olarak verir ve hata olduğunda reject eder. Handler içinde onu `await` ediyorsan `try/catch` ekle. Catch içinde hatayı sessizce yutmak yeterli değildir: yerel bir mesaj göster veya hatayı uygun üst katmana ilet.
+
+Zaman sırasını aynı film puanlamasında görelim. Bir callback’in görevi ekranın durumunu değiştirmek olabilir; diğeri uygulama düzeyinde kayda geçmek olabilir. Başarılı cevap geldiyse hata callback’leri çalışmaz.
+
+| Zaman | Mutation | Yerel kart | Global callback |
+| --- | --- | --- | --- |
+| t0 | Henüz başlamadı | “8 puan ver” | Bekliyor |
+| t1 | `pending` | İstek sürüyor | Bekliyor |
+| t2-hata | `error` | “Puan kaydedilemedi” görünür | Hata bir kez kaydedilir |
+| t3-tekrar | Kullanıcı yeniden dener, `pending` | Tekrar deneme sürüyor | Yeni sonuç beklenir |
+| t4-başarı | `success` | Hata mesajı kalkar | Yeni hata kaydı oluşmaz |
+
+`mutateAsync` kullanıp reddedilen Promise’i yakalamazsan konsolda unhandled rejection uyarısı görebilirsin. “Butona bastım, ekranda mesaj var” olsa bile yakalanmamış hata geliştirici konsolunda kalabilir. Ya Promise döndürmeyen `mutate` yoluyla mutation state’ini çiz, ya da `mutateAsync` için `try/catch` kullan ve UI mesajını unutma.
+
+:::mistake[İki kere bildirim]
+Belirti → Başarısız puanlamada aynı toast iki kez beliriyor. Neden → Mutation’ın yerel `onError` callback’i ve global `MutationCache.onError` aynı bildirimi ayrı ayrı açıyor. Düzeltme → Kullanıcı bildirimini tek katmana ver; diğer callback’i rollback veya teknik kayıt için kullan.
 :::
 
 :::mistake[Sunucu metnini doğrudan göstermek]
-Belirti → Ekranda teknik stack, HTML veya hassas istek bilgisi çıkıyor. Neden → Ham `error.message` kullanıcıya basıldı. Düzeltme → Hata türünü sınıflandır ve güvenli, eylem belirten metin üret.
+Belirti → Ekranda API adresi, teknik stack veya HTML görünüyor. Neden → Ham `error.message` kullanıcı metni gibi basılmış. Düzeltme → Hata türüne göre güvenli, yapılacak işi anlatan metin seç; ham hatayı yalnız uygun teknik kayda gönder.
 :::
 
-:::sector
-Ürün ekipleri hata sahipliğini bir tabloda kararlaştırır: form doğrulaması alanın yanında, tek eylem bileşen yanında, bağlantı kopması global toast’ta, beklenmeyen hata izleme sisteminde. Bu ayrım kullanıcıya tekrar yolunu gösterir ve aynı hata için çift bildirimleri önler.
+Hata tekrarı da yazma işleminin anlamına bağlıdır. Bir okuma isteğini tekrar etmek çoğu zaman güvenlidir; puan eklemek veya kaydı silmek iki kere uygulanabilir. Mutation için otomatik retry açmadan önce API’nin aynı isteğin tekrarlanmasını nasıl ele aldığını bil. Kullanıcının “Tekrar dene” düğmesi sunucu ilk isteği uyguladıktan sonra cevabın kaybolması durumunu da çözmez.
+
+:::info[Derinlemesine (isteğe bağlı)]
+API’nin tekrarlanan yazmayı aynı işlem saymasını sağlayan anahtar veya sözleşmeye **idempotency** denir. Örneğin aynı istek anahtarıyla gelen ikinci puan kaydı yeni bir kayıt üretmeyebilir. Bu sözleşme API ile birlikte tasarlanır; istemcide gelişigüzel bir anahtar üretmek tek başına güvence sağlamaz. Bir bildirimi farklı log kayıtlarıyla eşlemek için kullanılan **correlation id** de destek ekibinin iz sürmesine yarayan bir kimliktir. `meta` ise mutation tanımına uygulamaya özgü ek bilgi koymaya yarar; sessiz mutation gibi global politika ayrımlarında kullanılabilir. Bunlar bu dersteki ortak callback’i kurmak için gerekli değildir.
 :::
 
 ## Özet
 
-- Yerel mutation durumu işlemi başlatan UI’a ait olabilir.
-- `MutationCache.onError` ortak loglama/bildirim politikası için QueryClient’ta kurulur.
-- `mutateAsync` reject eder; `try/catch` gerekir. `mutate` hatayı mutation durumuna yazar.
-- Ham sunucu hata metnini doğrudan göstermek yerine güvenli mesaj seç.
-- Rollback, kullanıcı bildirimi ve teknik log farklı sorumluluklardır.
+- Yerel mutation state’i, başlatıldığı kartta o eyleme özgü mesaj gösterebilir.
+- `MutationCache` QueryClient içindeki mutation kayıtları ve ortak callback’ler için kullanılan yapıdır.
+- Global `onError` her başarısız mutation’da çalışabilir; QueryClient oluşturulurken bir kere kurulur.
+- Yerel rollback, kullanıcı mesajı ve teknik kayıt farklı işlerdir; aynı toast’ı iki katmanda gösterme.
+- `mutateAsync` reject eden Promise döndürür ve `try/catch` ister; `mutate` hatayı mutation state’inde tutar.
 
-**Kendini yokla:** Global hata callback’i varsa yerel `isError` mesajı gereksiz midir?  
-Cevap: Hayır. Global callback ortak sinyal veya log verir; yerel mesaj hangi eylemin başarısız olduğunu anlatır.
+**Yeni terimler**
 
-**Kendini yokla:** `mutateAsync` çağrısını event handler’da başlatınca neden `try/catch` gerekir?  
-Cevap: Bu fonksiyon reject eden Promise döndürür; yakalanmazsa unhandled rejection oluşur.
+- **MutationCache:** QueryClient’ın mutation kayıtlarını ve onlara ait ortak callback’leri tuttuğu yer.
+- **Global `onError`:** Uygulama genelinde her başarısız mutation için çalışan hata callback’i.
+- **Idempotency:** Aynı yazma isteği tekrarlanınca etkisinin ikinci kez uygulanmamasını sağlayan API sözleşmesi.
+- **Correlation id:** Bir isteği log ve servis kayıtlarında izlemeyi kolaylaştıran ortak kimlik.
+- **`meta`:** Mutation tanımında uygulamanın kendi politikasına ayırdığı ek bilgi alanı.
+
+**Kendini yokla:** Global hata callback’i varsa puan kartında neden `isError` mesajı tutulabilir?
+
+Cevap: Global callback ortak kayıt veya bildirim içindir; yerel mesaj hangi eylemin başarısız olduğunu söyler.
+
+**Kendini yokla:** `mutateAsync` çağrısını event handler’da `await` ediyorsan ne eklemelisin?
+
+Cevap: Reject eden Promise’i yakalamak için `try/catch`; ayrıca kullanıcıya uygun hata UI’ı göstermelisin.

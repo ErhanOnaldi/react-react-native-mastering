@@ -1,130 +1,136 @@
 ---
 title: "Ekran okuyucu ne görüyor?"
-minutes: 14
+minutes: 17
 kind: concept
 ---
 
 # Ekran okuyucu ne görüyor?
 
-:::pain[Belirti]
-Film kartındaki yıldız düğmesi göze anlaşılır geliyor. Fakat klavyeyle Tab yaptığında odak halkası yıldızın üstünde beliriyor, ekran okuyucu yalnızca “düğme” diyor. Kullanıcı neyi değiştireceğini ve değişikliğin gerçekleşip gerçekleşmediğini anlayamıyor.
-:::
+Bir film kartında `onClick` olan bir `span` düşün. Fareyle tıklanabilir görünür; ama Tab ile oraya gelemezsin. Ekran okuyucu da öğenin adını ve ne işe yaradığını çıkaramayabilir. Bu, görünüş ile HTML'in anlattığı şeyin farklı olabildiği küçük ama gerçek bir örnek.
 
-## DOM'dan erişilebilirlik ağacına
+## Önce tarayıcının tanıdığı düğme
 
-Tarayıcı HTML'i yalnızca piksellere dönüştürmez. DOM'daki öğeleri, rolleri ve ilişkileri kullanarak yardımcı teknolojilere sunulan bir erişilebilirlik ağacı da kurar. Ekran okuyucu bu ağacı okur; klavye kullanıcısı da aynı öğelerin etkileşim davranışlarına dayanır. Erişilebilir arayüz, görünüş ile bu ağacın anlattığı şeyin tutarlı olmasını sağlar.
-
-Bu ağaç bir uygulamanın bütün görsel ayrıntılarını taşımaz. Kenar boşluğu, renk tonu ve sütun genişliği gibi bilgiler genellikle kullanıcıya semantik olarak anlatılmaz. Buna karşılık “bu bir düğme”, “adı Favori”, “durumu basılı” gibi bilgiler görev için önemlidir. DOM'da görünür bir metnin bulunması, her zaman doğru adın üretildiği anlamına gelmez; özellikle simge, SVG ve gizli içeriklerde sonucu kontrol etmek gerekir.
-
-![DOM öğelerinin rol, erişilebilir ad ve durum bilgisine dönüşerek erişilebilirlik ağacına aktarıldığını gösteren diyagram](diagrams/erisilebilirlik-agaci.svg "DOM → rol, ad, durum")
-
-Kurallar:
-
-1. **Önce doğru HTML öğesini seç.** Eylem için `<button>`, gezinme için `<a href>`, ana içerik için `<main>`, başlık için uygun `<h1>`–`<h6>` kullan. Semantik öğe hem rolü hem klavye davranışını verir.
-2. **Rolü kullanıcıya göre seç.** Rol, öğenin ne olduğunu anlatır: `button`, `link`, `heading`, `dialog`, `tab`. Görünüşü değiştirmek rolü değiştirmez.
-3. **Erişilebilir adı anlamlı yap.** Ad, kullanıcıya öğeyi diğerlerinden ayırt ettirir. Görünür metin çoğu zaman en iyi kaynaktır; yalnızca simge varsa `aria-label` veya görünür başlığa bağlanan `aria-labelledby` kullan.
-4. **Değişen durumu ayrıca bildir.** Açık/kapalı durum için `aria-expanded`, seçim için `aria-selected`, toggle düğmesi için `aria-pressed` gibi özelliği ancak bileşenin rolü ve anlamı buna uyuyorsa kullan.
-5. **Gereksiz ayrıntıyı ağaçtan çıkar.** Süs amaçlı simge ve SVG'lere `aria-hidden="true"` ver; bilgi taşıyan görsele anlamlı `alt` yaz.
-
-Bu rol–ad–durum üçlüsü çoğu denetimde iyi bir başlangıç noktasıdır. Her öğeye ARIA eklemek hedef değildir. Yanlış ARIA, doğru doğal HTML'in verdiği bilgiyi bozabilir. Örneğin `<button role="link">` kullanmak öğeyi görsel olarak değiştirmese de tarayıcıya çelişkili bir mesaj verir.
-
-Bir öğe devre dışıysa bunun da kullanıcıya ulaşması gerekir; doğal `disabled` özelliği button için etkileşimi durdurur ve durumu bildirir. Görsel olarak soluklaştırmak tek başına klavyeyi durdurmaz. Bazı durumlarda `aria-disabled="true"` gerekir; fakat bu özellik davranışı kendiliğinden kapatmadığı için click handler'ın da işlemi engellemesi gerekir. Semantiği sağlayan attribute ile uygulama davranışını ayrı düşün.
-
-## Bir toggle'ı adım adım oku
-
-Şu iki tasarımdan yalnızca biri sabit ad ile durum bilgisini birlikte kullanır:
-
-| Kullanıcının gördüğü durum | Erişilebilir ad | `aria-pressed` | Duyurulan anlam |
-| --- | --- | --- | --- |
-| Favoride değil | Favori | `false` | Favori düğmesi, basılı değil |
-| Favoride | Favori | `true` | Favori düğmesi, basılı |
-
-Burada `aria-pressed` bir toggle olduğunu anlatır. Ad aynı kalır; kullanıcının eylemini değil kontrolün ne olduğunu söyler. Alternatif olarak ad eyleme göre değişebilir: “Favorilere ekle” ve “Favorilerden çıkar”. Bu tasarımda `aria-pressed` kullanma; ad zaten eylemin sonucunu anlatır. İki yaklaşım da uygundur, ancak ikisini karıştırmak “Favorilerden çıkar, basılı” gibi çelişkili bir duyuru üretir.
-
-Yalnızca simge kullanan bir kontrolü düşün. DOM'da `<button>☆</button>` varsa tarayıcı çoğunlukla yıldız karakterini ada dahil eder. Bu ad görseli olmayan kullanıcıya “ne değişecek?” sorusunu yanıtlamaz. İçine `aria-hidden` bir simge koyup düğmeye “Favori” adını verdiğinde simge görünür kalır ama adı kirletmez. Eğer düğmede “Favorilere ekle” görünür metni olsaydı aynı metni tekrar `aria-label` ile vermen gerekmeyecekti.
-
-## Önce kırık, sonra doğru
-
-Kırık yaklaşımda tıklama davranışı var, ancak öğe bir düğme değil ve adı da yok:
+HTML'deki **semantik öğe**, görünüşünden bağımsız olarak ne işe yaradığını anlatan öğedir. Örneğin `<button>` bir eylem, `<a href>` başka bir yere gitmek, `<main>` sayfanın ana içeriği demektir. Tarayıcı bu öğelerin klavye davranışını ve temel rolünü zaten bilir.
 
 ```tsx check
-export function SaveMark({ onSave }: { onSave: () => void }) {
-  return <span onClick={onSave}>☆</span>
+export function PlayButton({ onPlay }: { onPlay: () => void }) {
+  return <button type="button" onClick={onPlay}>Oynat</button>
 }
 ```
 
-`span` Tab sırasına kendiliğinden girmez, Enter veya Space ile etkinleşmez. `role="button"` eklemek rolü değiştirir, klavye davranışını eklemez. Doğru çözüm doğal öğeyi seçer:
+Burada tarayıcı rolü `button`, adı görünür metin olan “Oynat” diye anlar. Tab ile düğmeye gelirsin; Enter veya Space ile etkinleştirirsin. Aynı görünüşte bir `span` bu davranışları kendiliğinden kazanmaz. Bu yüzden eylem için gerçek düğme seçmek, daha sonra ARIA ile taklit etmeye çalışmaktan daha az hata çıkarır.
+
+## İkonun ne anlama geldiğini ekle
+
+Şimdi oynatma listesine ekleme kontrolünü düşün. Yalnızca yıldız koyarsak ekran okuyucu yıldız karakterini okuyabilir, ama kullanıcının ne yapacağını söylemeyebilir. Görseli koruyup adı ayrıca verebiliriz:
 
 ```tsx check
-export function SaveMark({ saved, onToggle }: { saved: boolean; onToggle: () => void }) {
+export function QueueButton({ onAdd }: { onAdd: () => void }) {
   return (
-    <button type="button" aria-label="Okuma listesi" aria-pressed={saved} onClick={onToggle}>
-      <span aria-hidden="true">{saved ? '★' : '☆'}</span>
+    <button type="button" aria-label="Sıraya ekle" onClick={onAdd}>
+      <span aria-hidden="true">＋</span>
     </button>
   )
 }
 ```
 
-İz sürelim: tarayıcı düğmeyi DOM'a ekler; erişilebilirlik ağacında rol `button`, ad `Okuma listesi`, başlangıç durumu `false` olur. Kullanıcı Space'e basınca tarayıcı doğal click davranışını üretir ve `onToggle` çağrılır. Ebeveyn yeni `saved` prop'u ile render edince aynı düğmenin durumu `true` olur. Görsel yıldız değişir; erişilebilir ad değişmez. Ekran okuyucu yeni durumu okuyabilir.
+`aria-label` düğmenin erişilebilir adını “Sıraya ekle” yapar. `aria-hidden="true"` yalnızca süs olan artı işaretini erişilebilirlik bilgisinden çıkarır; görsel olarak ekranda kalır. Görünür metin varsa çoğunlukla onu ad olarak kullanmak daha iyidir; aynı metni bir de `aria-label` ile tekrarlaman gerekmez.
 
-Bir başlık başka bir elementi adlandırıyorsa ilişkiyi id ile kurabilirsin. `useId` bileşen örnekleri arasında kararlı, çakışmayan bir değer üretir:
+Tarayıcı HTML'den öğelerin rolünü, adını ve durumunu çıkarıp yardımcı teknolojilere sunduğu bir **erişilebilirlik ağacı** kurar. Ekran okuyucu bu ağacı kullanır; görsel düzenin her pikselini değil, kullanıcının işine yarayan anlam ve ilişkileri duyar. DOM'da metin bulunması, özellikle simge ve gizli içeriklerde, doğru adın çıkacağını tek başına garanti etmez.
+
+![DOM öğesinin rol, erişilebilir ad ve durumu erişilebilirlik ağacına aktarılır](diagrams/erisilebilirlik-agaci.svg "DOM → rol, ad, durum")
+
+## Durum da değişiyorsa
+
+Bir kontrol açılıp kapanabiliyorsa adı ile o anki durumu ayrı ayrı düşün. Örneğin altyazı düğmesinin adı hep “Altyazılar” kalabilir; açık/kapalı bilgisi ise `aria-pressed` ile duyurulur:
+
+```tsx check
+export function CaptionsButton({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
+  return (
+    <button type="button" aria-pressed={enabled} onClick={onToggle}>
+      Altyazılar
+    </button>
+  )
+}
+```
+
+Başlangıçta `enabled` false ise düğme “Altyazılar, basılı değil” anlamını taşır. Kullanıcı etkinleştirince ebeveyn yeni prop gönderir; aynı ad korunur, basılı durumu true olur. `aria-pressed` bir toggle düğmesinin durumunu bildirir; kendisi state değiştirmez. State'i yine React kodun günceller.
+
+Favori gibi bir eylemin adı “Favorilere ekle”den “Favorilerden çıkar”a değişiyorsa, bu da geçerli bir yaklaşımdır. Bu tasarımda `aria-pressed` ekleme: değişen ad eylemi zaten anlatır. Sabit ad + durum veya değişen ad kullan; ikisini karıştırırsan “Favorilerden çıkar, basılı” gibi kafa karıştıran bir anons duyulabilir.
+
+## Görünür başlığı ilişkilendir
+
+Bir dialogun görünen başlığı varsa, onu dialogun adı olarak kullanmak başlık ile anonsu aynı tutar. `useId`, bileşen örnekleri arasında çakışmayan bir id üretir; böylece ilişkiyi sabit ve elle seçilmiş bir id'ye bağlamak zorunda kalmazsın:
 
 ```tsx check
 import { useId } from 'react'
 
-export function NoticeDialog({ title }: { title: string }) {
-  const titleId = useId()
+export function RatingNotice({ message }: { message: string }) {
+  const headingId = useId()
   return (
-    <section role="dialog" aria-modal="true" aria-labelledby={titleId}>
-      <h2 id={titleId}>{title}</h2>
-      <p>Bu duyuru akşam gösterimiyle ilgili.</p>
+    <section role="dialog" aria-labelledby={headingId}>
+      <h2 id={headingId}>Puanın kaydedildi</h2>
+      <p>{message}</p>
     </section>
   )
 }
 ```
 
-`aria-labelledby` görünen başlığı ad kaynağı yapar. Başlık değişince duyurulan ad da değişir. `aria-describedby` açıklama için kullanılabilir, fakat uzun içeriğin tamamını ad gibi okutmak için kullanma. Ad kısa ve ayırt edici; açıklama ek bilgi olmalı.
+Başlığın `id` değeri ile `aria-labelledby` birbirine bağlandığı için dialogun adı “Puanın kaydedildi” olur. İkinci bir bildirim eklenirse `useId` her örnek için ayrı değer üretir; iki başlık aynı id'yi paylaşmaz. `aria-describedby` ise dialogun adını değil, ek açıklamasını ilişkilendirmek içindir.
 
-## Belirti, neden, düzeltme
+## Rol, ad ve durumla düşün
 
-:::mistake[Belirti: Ekran okuyucu yalnızca “düğme” diyor]
-Belirti → Denetleyici simge düğmesine geldiğinde kontrolün adını söylemiyor.  
-Neden → Simgenin görünüşü var, fakat anlamlı metin ya da erişilebilir ad yok.  
-Düzeltme → Görünür metin kullan; simge-only kontrolde kısa `aria-label` ekle ve dekoratif simgeyi gizle.
+Örneklerde aynı sorular tekrar ediyor: Bu öğe nedir, kullanıcı onu nasıl ayırt eder, değişen bir durumu var mı? Bunlar rol, erişilebilir ad ve durumdur. Her öğeye ARIA eklemek amaç değildir. Doğal HTML doğru rolü ve davranışı zaten verir; ARIA'yı eksik anlamı tamamlamak için kullan.
+
+Bu yaklaşım **WCAG** (Web Content Accessibility Guidelines) ile uyumlu arayüzler kurmaya yardım eder. WCAG, web içeriğini engelli kişilerin de kullanabilmesi için yayımlanan erişilebilirlik yönergeleridir. Bir düğmenin adının ve durumunun anlaşılır olması bu geniş hedefin küçük, ölçülebilir parçalarından biridir; tek başına WCAG uyumluluğu anlamına gelmez.
+
+Bir öğeyi devre dışı bırakırken doğal `disabled` niteliği hem button etkileşimini durdurur hem durumunu bildirir. `aria-disabled="true"` ise tek başına tıklamayı engellemez; kullanıyorsan davranışı da kodda durdurmalısın. Yalnızca rengi soldurmak klavye davranışını değiştirmez.
+
+## Gerçek bir hata ve düzeltmesi
+
+Bu kod fareyle çalışıyor gibi görünür, ama klavyeyle ulaşmak ve etkinleştirmek mümkün değildir:
+
+```tsx
+<span onClick={onPlay}>Oynat</span>
+```
+
+Belirti şudur: Tab ile “Oynat”a gelemezsin. Sebebi `span`in etkileşimli bir semantik öğe olmamasıdır. `role="button"` eklemek yalnızca rolü değiştirir; Tab, Enter ve Space davranışlarını eklemez. Düzeltme, eylemi gerçek `<button type="button">` içine almaktır. Bu, hem klavye kullanıcılarına hem ekran okuyucuya tarayıcının yerleşik davranışını verir.
+
+:::mistake[Belirti: ekran okuyucu yalnızca “düğme” diyor]
+Simge-only düğmenin anlamlı adı yoktur. Görünür metin ekle ya da simge tek başına kalıyorsa kısa bir `aria-label` ver; dekoratif simgeyi `aria-hidden` yap.
 :::
 
 :::mistake[Belirti: “Favorilerden çıkar, basılı” duyuluyor]
-Belirti → Toggle hem değişen eylem adı hem `aria-pressed` ile tanımlanmış.  
-Neden → Ad ve durum aynı bilgiyi farklı, çelişkili biçimde iletiyor.  
-Düzeltme → Sabit ad + `aria-pressed` ya da değişen ad + durum niteliği olmadan iki tasarımdan birini seç.
+Ad değişerek eylemi anlatırken `aria-pressed` ikinci bir durum bildirir ve iki mesaj çelişebilir. Sabit ad + `aria-pressed` veya değişen ad yaklaşımından birini seç.
 :::
 
-:::mistake[Belirti: Görünmez SVG düğme adının sonuna ekleniyor]
-Belirti → Ad “Okuma listesi yıldız” gibi gereksiz kelimeler içeriyor.  
-Neden → Süs SVG'si erişilebilirlik ağacında kalmış.  
-Düzeltme → SVG dekoratifse `aria-hidden="true"` yap; bilgi taşıyorsa `role="img"` ve ad ver.
-:::
-
-:::mistake[Belirti: Dialog başlığı bulunuyor ama dialogun adı boş]
-Belirti → Ekran okuyucu başlığı okuyabiliyor, dialogu ada göre bulamıyor.  
-Neden → Başlık ile `role="dialog"` arasında programatik ilişki yok.  
-Düzeltme → Başlığın id'sini `aria-labelledby` değerine bağla; benzersiz id üret.
+:::mistake[Belirti: aynı sayfadaki dialoglar aynı başlığa bağlanıyor]
+Elle yazılmış sabit id'ler kopyalanınca çakışabilir. `useId` ile her bileşen örneğine ayrı id üret ve başlığı bu id üzerinden bağla.
 :::
 
 :::sector
-Tasarım sistemleri icon button bileşenlerinde erişilebilir adı zorunlu prop yapar. Kod incelemesinde ekipler “bu kontrolü VoiceOver/NVDA ne diye anons eder?” diye sorar ve RTL'de `getByRole` ile rol/ad arar. Otomatik testler ad, durum ve temel etkileşimi yakalar; ekran okuyucu ile gerçek deneme ise ses sırası ve bağlamı kontrol eder. WCAG değerlendirmesinde yalnızca otomatik tarayıcı raporuna güvenilmez.
+Tasarım sistemlerindeki icon button bileşenleri genellikle anlamlı bir ad ister; böylece simge çizilse bile kontrolün amacı kaybolmaz. Otomatik testler rolü, adı ve temel etkileşimi denetleyebilir. Gerçek ekran okuyucu ve klavye kullanımı ise anonsun bağlamını ve akışını da kontrol eder.
 :::
 
 ## Özet
 
-- Erişilebilirlik ağacı DOM'daki semantik anlamı yardımcı teknolojilere taşır.
-- Doğru doğal HTML öğesi rol ve klavye davranışını birlikte sağlar.
-- Her etkileşimli öğenin ayırt edici bir adı ve gerektiğinde güncel durum bilgisi olmalı.
-- Toggle için sabit ad ve `aria-pressed`, değişen ad yaklaşımından ayrı tutulur.
-- İlişki kuran ARIA özellikleri görünür başlık ve açıklamayı programatik olarak bağlar.
+- Eylemler için `<button>`, gezinme için `<a href>` gibi semantik öğeleri seç; tarayıcı rol ve klavye davranışını sağlar.
+- Erişilebilirlik ağacı rolü, adı, durumu ve anlamlı ilişkileri yardımcı teknolojilere aktarır.
+- Simge-only kontrole ad ver; dekoratif simgeyi erişilebilirlik bilgisinden çıkar.
+- Toggle'da sabit ad + `aria-pressed` ya da değişen ad kullan; ikisini karıştırma.
+- Görünür başlığı `aria-labelledby` ile bağla; örnekler çoğalabiliyorsa `useId` kullan.
 
-**Kendini yokla:** Bir `<div onClick>` öğesine `role="button"` eklemek hangi eksiği bırakır?  
-*Cevap:* Tab, Enter ve Space davranışını kendiliğinden vermez; doğal `<button>` kullanmak daha güvenlidir.
+**Yeni terimler**
 
-**Kendini yokla:** “Favorilere ekle” adı durum değiştikçe “Favorilerden çıkar” oluyorsa `aria-pressed` neden eklenmemeli?  
-*Cevap:* Eylem adı zaten sonucu anlatır; ayrıca basılı durumu bildirmek çelişkili/tekrarlı mesaj üretir.
+- **Semantik öğe:** Amacını HTML düzeyinde anlatan öğe; doğru klavye davranışını da çoğu zaman tarayıcı sağlar.
+- **Erişilebilirlik ağacı:** Tarayıcının yardımcı teknolojilere sunduğu rol, ad, durum ve ilişki bilgileri.
+- **WCAG:** Web içeriğinin erişilebilir olması için yayımlanan yönergeler.
+- **`useId`:** Bir bileşen örneğinde ilişkilendirme için benzersiz id üretmeye yarayan React Hook'u.
+
+**Kendini yokla:** `role="button"` eklenmiş bir `span` neden gerçek button kadar kullanışlı değildir?
+
+*Cevap:* Rolü anlatır ama Tab, Enter ve Space davranışlarını kendiliğinden eklemez.
+
+**Kendini yokla:** Bir toggle'ın adı “Altyazılar” olarak sabitse hangi bilgi durum değiştikçe güncellenir?
+
+*Cevap:* `aria-pressed` değeri; adı sabit kalır, React state'i yine uygulama günceller.

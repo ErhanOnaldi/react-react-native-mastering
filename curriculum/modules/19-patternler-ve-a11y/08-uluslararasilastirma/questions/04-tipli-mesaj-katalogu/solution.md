@@ -1,5 +1,5 @@
 ## Neden böyle?
 
-Mesaj anahtarları `keyof typeof messages.tr` ile katalogdan türetilir; `MessageParams<K>` de seçilen anahtarın formatter parametresini bulur. Böylece `movieCount` için ad, `welcome` için sayı göndermek derleme hatası olur.
+`Message` iki nesne biçiminden oluşur. `key` alanı hangi biçimin geldiğini söyler; `message.key === 'movieCount'` koşulundan sonra TypeScript `count` alanını, `welcome` dalında ise `name` alanını tanır. Böylece film sayısı mesajına ad göndermek derleme hatası olur.
 
-İki dilin aynı anahtarları taşıması katalog şeklinden görünür. İngilizce çoğul, `Intl.PluralRules` ile seçilir; Türkçe iki sayıda da “film” der. Gerçek bir uygulamada dil seçimi Context ya da bir i18n kütüphanesiyle sağlanabilir; bu küçük katalog yalnızca tipli sınırı gösterir.
+Her iki dil de aynı iki mesajı üretir. Bu örnekte İngilizce çoğul için `count !== 1` yeterli; gerçek dil kurallarında `Intl.PluralRules` ya da bir i18n kütüphanesi kullanılabilir. Burada önemli olan mesajın ihtiyaç duyduğu veriyi doğru biçimde taşımaktır.

@@ -9,6 +9,6 @@ export default defineQuestion({
   hints: [
     'Menü öğesinin etkin olup olmadığını ayrıca state tutmadan hangi bilgiyle belirleyebilirsin?',
     '`NavLink` eşleşme durumunu verir; kök adresin child yollarla eşleşmesini sınırlamak için prop desteğine bak.',
-    'Ana sayfa linkinde `end` kullan; Ara ve Favoriler linklerinde etkin adrese göre `aria-current` değerini doğrula.',
+    'Ana sayfa linkinde `end` kullan; Ara bağlantısının etkin adres bilgisini Router’dan al.',
   ],
 })

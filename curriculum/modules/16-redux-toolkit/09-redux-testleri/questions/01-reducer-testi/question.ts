@@ -1,13 +1,19 @@
 import { defineQuestion } from '@rm/content/define'
 export default defineQuestion({
   type: 'code',
-  title: 'Reducer kuralı: toplu ekleme',
+  title: 'Reducer testi yaz: tekrarları atla',
   difficulty: 'orta',
   concepts: ['redux.testing', 'test.vitest-basics', 'react.immutability'],
-  files: ['bulk.ts'],
+  files: ['bulk.test.ts'],
   hints: [
-    'Başlangıç listesindeki ve payload’ın kendi içindeki tekrarlar eklenmemeli.',
-    'Her yeni kimlikten önce `includes` ile mevcut draft listesini kontrol et.',
-    'Yalnız bulunmayan ID için `state.ids.push(id)` çağır.',
+    'Bir başlangıç listesi ve payload seç; beklenen yeni listeyi elle çıkar.',
+    'Vitest’te reducer’ı doğrudan çağırıp state sonucunu `toEqual` ile karşılaştır.',
+    'Ayrı bir testte payload tekrarını ve eski state’in değişmediğini doğrula.',
   ],
+  testWriting: {
+    mutants: [
+      { id: 'keeps-payload-duplicates', label: 'payload içindeki tekrarları ekleyen sürüm' },
+      { id: 'changes-existing-order', label: 'önceki ID sırasını değiştiren sürüm' },
+    ],
+  },
 })

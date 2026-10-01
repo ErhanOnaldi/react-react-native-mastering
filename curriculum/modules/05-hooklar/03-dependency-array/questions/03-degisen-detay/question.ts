@@ -7,7 +7,7 @@ export default defineQuestion({
   files: ['MovieDetails.tsx'],
   hints: [
     'İlk film geliyor; sorun aynı bileşen açıkken prop değiştiğinde ortaya çıkıyor.',
-    'Effect dış sistemde hangi filmi temsil ediyorsa o reactive değer dependency olmalı.',
-    'Bu görevde effect gövdesi `id` okuyor; dependency listesi `[id]` olmalı.',
+    'Effect bu bileşende henüz kurulmamış. Önce veri isteğini effect içine taşı, sonra hangi girdinin belirlenen filmi değiştirdiğini düşün.',
+    'Bu effect `id` değerini okuduğu için dependency dizisini `[id]` yap; yeni istek başlarken eski başlığı bekleme metniyle değiştir.',
   ],
 })

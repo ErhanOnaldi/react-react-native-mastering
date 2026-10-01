@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-type Page = { page: number; results: { id: number; title: string }[] }
+type Page = { page: number; total_results: number; results: { id: number; title: string }[] }
 export function MoviePages({ page }: { page: number }) {
   const query = useQuery({
     queryKey: ['movies', 'popular', page],
@@ -18,6 +18,7 @@ export function MoviePages({ page }: { page: number }) {
   return (
     <section>
       <p>Sayfa {query.data.page}</p>
+      <p>Sonuç sayısı: {query.data.total_results}</p>
       {query.isPlaceholderData && <p>Yeni sayfa yükleniyor</p>}
       <ul>
         {query.data.results.map((movie) => (

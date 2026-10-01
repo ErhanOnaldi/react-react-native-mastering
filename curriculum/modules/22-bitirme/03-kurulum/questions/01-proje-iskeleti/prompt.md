@@ -6,8 +6,10 @@ Kitaplık uygulamasının temel araç zincirini (Vite, TypeScript, Tailwind, ESL
 
 - **Paketler ve Script'ler (`package.json`):**
   - `"type": "module"` ve `"private": true` alanları.
+  - Çalışma zamanı paketleri (`dependencies`): `react`, `react-dom`, `react-router`, `@tanstack/react-query`, `react-hook-form`, `@hookform/resolvers`, `zod`.
+  - Geliştirme ve test paketleri (`devDependencies`): `typescript`, `vite`, `@vitejs/plugin-react`, `tailwindcss`, `@tailwindcss/vite`, `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`, `msw`, `eslint`, `typescript-eslint`, `eslint-plugin-react-hooks`, `prettier`, `@playwright/test`.
   - Script'ler: `dev`, `build` (`tsc -b && vite build`), `preview`, `typecheck` (`tsc -b`), `lint` (`eslint .`), `format` (`prettier --write .`), `format:check` (`prettier --check .`), `test` (`vitest run`), `test:e2e` (`playwright test`).
-  - Çalışma zamanı paketleri `dependencies` grubunda, geliştirme ve test araçları `devDependencies` grubunda yer almalıdır.
+  - Çalışma zamanı paketleri `dependencies`, geliştirme ve test araçları `devDependencies` grubunda yer almalıdır.
 - **TypeScript ve Vite Yapılandırması:**
   - `tsconfig.json` ve ilgili referans dosyaları strict modda, `jsx: react-jsx`, `@/*` → `./src/*` yol takma adıyla derlenmelidir (`tsc -b` hatasız olmalıdır).
   - `vite.config.ts`: React ve Tailwind eklentileri devrede olmalı, `@` takma adı çözülmelidir. Test yapılandırması bu dosyaya gömülmemelidir.

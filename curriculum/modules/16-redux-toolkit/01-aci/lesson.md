@@ -6,96 +6,126 @@ kind: concept
 
 # Ortak state büyüyünce
 
-:::pain[Sinema’da sorun]
-Bir filmi favoriye ekledin. Favori sayacı değişirken üst üste sarılmış beş Context’in içinden tema menüsü, izleme listesi özeti ve son bakılanlar paneli de render oldu. React Profiler’da tek tıklamanın ardından değişmemesi gereken üç bileşenin de çalıştığını görüyorsun. Sorun Context’in hatalı olması değil; değişen veriyi hangi bileşenlerin dinlediğini göremeyecek kadar geniş bir sınır kurmuş olman.
-:::
+Sinema’da bir `useState` değerini parent’ta tutup iki çocuğa `props` ile vermiş olabilirsin. Değeri kim değiştiriyor ve hangi çocuklar kullanıyor, koddan takip edebilirsin. **Context**, bir değeri aradaki her component’e `props` vermeden alt ağaçla paylaşır; **Redux Toolkit** ise birden çok ekranda kullanılan ortak state değişikliklerini düzenleyen bir kütüphanedir. İkisini düşünmeden önce gerçekten neyin yavaşladığını görmeyi öğrenelim.
 
-## Değişimin yayılma alanı
+Bir component fonksiyonunun çalışıp JSX hesaplamasına **render** denir. React hesaplanan sonucu DOM’a uygularsa bu son adıma **commit** denir. React Developer Tools içindeki **Profiler**, bu güncellemeleri ve harcanan süreyi kaydetmeye yarar; sayaç gibi yalnızca kaç defa çalıştığını değil, hangi etkileşimin ne kadar iş başlattığını da inceleyebilirsin.
 
-Context bir değeri ağaçtaki uzak bileşenlere taşır. Provider’ın `value` değeri değiştiğinde o Context’i okuyan tüketiciler yeni değeri alır. Beş Context’in iç içe olması kendi başına beş kat render demek değildir. Maliyet, her değerin ne sıklıkla değiştiği, kaç tüketicisinin olduğu ve tüketicilerin ne kadar iş yaptığıyla ilgilidir.
+## Önce tanıdık yol: state’i parent’ta tut
 
-Şunu ayıralım: parent’ın yeniden render olması çocuk fonksiyonlarını yeniden çağırabilir; Context güncellemesi ise o Context’i kullanan bileşenlere yeni değer ulaştırır. Profiler’da bir bileşenin çalıştığını görmek tek başına Context’in suçlu olduğunu kanıtlamaz. Önce tek etkileşimi kaydet, sonra hangi state’in değiştiğini ve hangi tüketicilerin gerçekten o değeri okuduğunu incele.
+Film listesindeki seçili görünümü iki çocuk kullanacak. En küçük çözüm, state’i ikisinin ortak parent’ında tutup ihtiyaç duyan çocuklara `props` vermek:
 
-Context’in iyi bir kullanım alanı vardır. Seyrek değişen tema, locale veya oturum bilgisi küçük uygulamalarda gayet uygun olabilir. Değişkenin sahibi bir parent ise ve birkaç alt bileşen kullanıyorsa state’i yukarı taşımak da yeterlidir. Sorun, bağımsız yaşam süreleri olan çok sayıda değeri tek, sık güncellenen nesneye koyup geniş bir ağaca dağıtmaktır.
+```tsx check
+import { useState } from 'react'
 
-## Provider ağacını nasıl düşünmelisin?
+function ViewButton({ compact, onToggle }: { compact: boolean; onToggle: () => void }) {
+  return <button onClick={onToggle}>{compact ? 'Geniş görünüm' : 'Sık görünüm'}</button>
+}
 
-1. **Provider erişim sınırı kurar.** Altındaki bileşenler değeri okuyabilir; üstündekiler okuyamaz.
-2. **Provider değeri kimlik taşır.** Her render’da yeni nesne üretirsen, içindeki alanlar aynı olsa bile referans değişir.
-3. **Tüketici okuduğu Context’e bağlanır.** `theme` alanını seçtiğini düşünmek, tek Context’in içindeki diğer alanlardan otomatik olarak ayrıştığı anlamına gelmez.
-4. **Provider sayısı maliyet ölçüsü değildir.** Beş küçük ve seyrek değişen Context, tek dev ve sık değişen Context’ten daha iyi olabilir.
-5. **Ölçüm karar verir.** Değişmeyen etkileşimde hangi bileşenlerin çalıştığını Profiler veya sayaçla gözle; tahminle araç değiştirme.
+function MovieList({ compact }: { compact: boolean }) {
+  return <p>{compact ? 'Sıkı film listesi' : 'Geniş film listesi'}</p>
+}
+
+export function MoviePage() {
+  const [compact, setCompact] = useState(false)
+  return <><ViewButton compact={compact} onToggle={() => setCompact(!compact)} /><MovieList compact={compact} /></>
+}
+```
+
+Tıklayınca `compact` değişir; parent ve iki çocuk yeniden render olur, React gereken DOM değişikliğini commit eder. Bu örnekte değer tek ekranda kullanılıyor, dolayısıyla taşınacak uzun bir `props` zinciri yok. Ortak state’i yakın parent’ta tutmak hâlâ en anlaşılır seçenek.
+
+## Context erişimi uzatır
+
+Şimdi aynı görünüm seçeneğini sayfanın uzak bir köşesindeki fragman paneli de okuyacak. **Context**, bir değeri parent’tan aradaki her component’e `props` taşımadan alt ağaçta paylaşır:
+
+```tsx check
+import { createContext, useContext, useState, type ReactNode } from 'react'
+
+const CompactContext = createContext(false)
+function Poster() {
+  const compact = useContext(CompactContext)
+  return <p>{compact ? 'Küçük afiş' : 'Büyük afiş'}</p>
+}
+export function MoviePage() {
+  const [compact, setCompact] = useState(false)
+  return <CompactContext value={compact}><button onClick={() => setCompact(!compact)}>Görünümü değiştir</button><Poster /></CompactContext>
+}
+```
+
+Provider’ın altındaki `Poster` değeri okuyabilir; Provider’ın dışındaki component okuyamaz. Düğmeye basınca Context değeri değiştiği için `Poster` yeni değeri alır. Context, veriye erişimi kolaylaştırır; veriyi hangi component’in değiştirdiğini veya kaç component’in gerçekten ihtiyacı olduğunu senin yerine kararlaştırmaz.
 
 ![Context Provider değeri değişince tüketicilere yayılan güncellemeyi gösteren diyagram](diagram:context-yayilimi)
 
-Bu diyagramda oklar veri erişimini anlatır. Provider’ın değişen değeri, ilgili tüketicilere ulaşır. Tüketici olmayan bileşenler için Context güncellemesi doğrudan bir abonelik değildir; yine de parent render’ı onları ayrıca çalıştırabilir. Bu ayrım, ölçüm sonucunu doğru yorumlamana yardım eder.
+## Farklı hızdaki değerleri ayır
 
-## Bir tıklamanın izini sürelim
+Bir ekranda hem tema hem de canlı film filtresi varsa, bunları tek Context nesnesine koymak kolay görünür. Ama kullanıcı her harf yazdığında tüm nesne yeniden oluşuyorsa, tema tüketicileri de güncelleme alabilir. Burada önemli olan Context sayısı değil, değerlerin ne sıklıkta değiştiği ve kimlerin okuduğudur:
 
-Bir favori tıklamasından önce ve sonra Profiler kaydı aldığını düşün. Başlangıçta her Context farklı bir Provider’da olsa bile tema menüsü ortak bir `AppContext` okuyor olabilir.
+```tsx check
+import { createContext, useContext, useState, type ReactNode } from 'react'
 
-| Sıra | Olay | Gözlem | Soracağın soru |
-| --- | --- | --- | --- |
-| 1 | Kullanıcı yıldız düğmesine basar | Event handler favori dizisini günceller | Hangi state gerçekten değişti? |
-| 2 | Provider render olur | `value={{ favorites, theme, lists }}` yeni nesnedir | Bu nesne neden değişti? |
-| 3 | Context tüketicileri yeni değeri alır | Tema menüsü de çalışabilir | Tema menüsü bu değişime bağlı mı? |
-| 4 | Bileşenler commit eder | DOM’da bazı içerikler aynı kalır | Render edilen iş gerçekten gerekli miydi? |
-| 5 | Profiler kaydı okunur | Süre ve tekrar sayısı görünür | Daraltmaya değer bir maliyet var mı? |
-
-Yalnızca sayaç kullanıyorsan mutlak sayıyı ezberleme. Geliştirme StrictMode’u ilk render’ı ek olarak çağırabilir. Tıklamadan önceki sayıyı kaydet, sonra tıklama sonrası farkı karşılaştır. Böylece “bir kez render oldu” gibi ortama bağlı bir hedef yerine etkileşimin etkisini ölçersin.
-
-Render maliyetini değerlendirirken component fonksiyonunun çağrılması ile kullanıcıya görünen DOM’un değişmesini de ayır. React yeni JSX hesaplamış olabilir ama commit aşamasında ekranda farklı bir node oluşmayabilir. Bu yine de pahalı hesap varsa önemlidir; fakat tek başına “kullanıcıya zarar veren yavaşlık” kanıtı değildir. Profiler’da commit süresi, component’in harcadığı zaman ve aynı etkileşimde kaç alt dalın çalıştığına birlikte bak.
-
-Provider’ı bölmek her durumda daha iyi değildir. İki Context değeri aynı sıklıkta değişiyor ve aynı tüketiciler tarafından okunuyorsa ayırma yeni API ve daha fazla wiring getirip ölçülebilir fayda sağlamayabilir. Buna karşılık tema günde bir kez değişirken canlı arama filtresi her tuşta güncelleniyorsa aynı değere bağlamak tema tüketicilerini gereksiz hareket ettirebilir. Değerleri yalnızca adlarına göre değil, zaman içindeki değişim örüntülerine göre grupla.
-
-Bir performans incelemesinde küçük bir karşılaştırma kurabilirsin: bir kez değişen değer, onu kullanan bileşenler ve etkilenmemesi beklenen bileşenler. Bu beklentiyi ölçümden önce yaz. Böylece ölçüm çıktısını seçtiğin çözümü savunmak için değil, çözümün işe yarayıp yaramadığını görmek için kullanırsın.
-
-## Aynı değer, yeni nesne
-
-Kırık örnekte Provider değeri her render’da yeniden oluşturuluyor. Favori değişmediği halde parent’ın başka bir güncellemesi de bütün değerin kimliğini değiştirir:
-
-```tsx title="Tek ve geniş Context"
-const value = { favorites, theme, watchlists, recentIds }
-return <AppContext.Provider value={value}><Application /></AppContext.Provider>
+const ThemeContext = createContext('dark')
+const FilterContext = createContext('')
+function ThemeLabel() { return <p>Tema: {useContext(ThemeContext)}</p> }
+function FilterLabel() { return <p>Filtre: {useContext(FilterContext)}</p> }
+export function Catalog({ children }: { children: ReactNode }) {
+  const [filter, setFilter] = useState('')
+  return <ThemeContext value="dark"><FilterContext value={filter}><input value={filter} onChange={(event) => setFilter(event.target.value)} /><ThemeLabel /><FilterLabel />{children}</FilterContext></ThemeContext>
+}
 ```
 
-Bir değişiklik sık yaşanıyor, alanlar ise farklı tüketicilere aitse bu tasarım gereksiz güncellemeleri görünmez kılar. Önce state’leri yaşam döngülerine göre ayır. Küçük bir uygulamada Context’leri ayırmak, değeri `useMemo` ile sabitlemek veya state’i ortak parent’ta tutmak yeterli olabilir. Birçok ekranda paylaşılan ve sık değişen client state için action/reducer sınırı da düşünülebilir.
+Bu örnekte filtre değişince filtreyi okuyan yerler yeni değeri alır; tema değeri ayrı ve sabit kalır. Ayrı Context’ler tek başına bütün render’ları önlemez: `Catalog` parent’ı yine render olur ve normal React kuralları çocuklarını da çalıştırabilir. Bu yüzden “bir tüketici çalıştı” gözlemini tek başına Context’in gereksiz güncelleme yaptığına yormamalısın.
 
-Redux Toolkit’in katkısı “Context’i hızlandırmak” değildir. State geçişlerini action’larla adlandırır, reducer kurallarını tek yerde toplar ve bileşenlerin seçtikleri sonuca abone olmasını sağlar. Bunun da kurulum ve kavrama maliyeti vardır; iki bileşenli bir ayar paneli için store kurmak gereksiz olabilir.
+## Bir etkileşimi adım adım izle
 
-## Sınır durumları
+Bir **StrictMode** geliştirme denetimidir; bazı render’ları ek kez çağırarak render sırasında yapılan hataları görünür kılabilir. Bu nedenle ekrandaki sayaçtaki mutlak sayıyı hedef yapma. Önce hangi etkileşimi ölçtüğünü seç, ardından Profiler kaydında o etkileşim öncesi ve sonrasını karşılaştır.
 
-:::mistake[Belirti → Profiler’da tema bileşeni de yanıyor]
-Belirti → Favori tıklamasından sonra tema menüsünün gövdesi çalışıyor.  
-Neden → Tema menüsü geniş bir Context’i okuyor veya üst bileşen yeniden render oluyor. Profiler’da commit zincirini ayırmadan yalnızca Context’i suçlamak yanıltır.  
-Düzeltme → Hangi Context’in değiştiğini ve bileşenin hangi değeri okuduğunu ölç. Gerekirse veri sahipliğini ve abonelik sınırını daralt.
+| Sıra | Ne olur? | Neyi görürsün? |
+| --- | --- | --- |
+| 1 | Filtre kutusuna bir harf yazarsın | Event handler `filter` state’ini günceller |
+| 2 | `Catalog` yeniden render olur | Yeni `filter` metni hesaplanır |
+| 3 | Context Provider yeni değer verir | Filtre tüketicileri yeni metni okur |
+| 4 | React değişen görünümü DOM’a uygular | Bu uygulama adımına commit denir |
+| 5 | Profiler kaydını açarsın | Hangi component’lerin ne kadar süre çalıştığını incelersin |
+
+Render edilen JSX ile ekranda gerçekten değişen DOM aynı şey değildir. Bir component çalışabilir ama React DOM’da değişiklik bulmayabilir; bu da doğrudan kullanıcıya görünen yavaşlık anlamına gelmez. Pahalı hesaplama varsa yine önemlidir, bu yüzden kayıtta hem etkileşimin süresine hem de çalışan component’lere bak.
+
+## Sık yapılan yanlış çıkarım
+
+:::mistake[Belirti → Her sayaç artışını Context’e bağlamak]
+Belirti → Bir tıklamadan sonra sayaç yükselir ve “Context yüzünden” dersin.
+Neden → Parent’ın render’ı da çocuk fonksiyonlarını çalıştırmış olabilir; sayaç nedeni tek başına göstermez.
+Düzeltme → Profiler’da etkileşimi seç, değişen Context değerini ve çalışan component’leri ayrı ayrı incele.
 :::
 
-:::mistake[Belirti → Değer değişmediği halde tüketici çalışıyor]
-Belirti → `theme` aynı, fakat tüketici yeniden render oluyor.  
-Neden → Provider her render’da `{ theme }` gibi yeni nesne verir; referans eşitliği bozulur.  
-Düzeltme → Önce parent render’ının gerçekten gerekip gerekmediğini bul. Sonra uygun yerde değeri sabitle veya farklı yaşam döngülü verileri ayrı Context’lere taşı.
+:::mistake[Belirti → Alan değişmediği halde tüketici çalışıyor]
+Belirti → `theme` metni aynı ama tema tüketicisi tekrar render oldu.
+Neden → Tek Context’in `value` nesnesi her parent render’ında yeniyse, Context bütün değeri değişmiş sayar; alanları kendiliğinden ayrı ayrı izlemez.
+Düzeltme → Farklı sıklıkta değişen verileri ayırmayı düşün, sonra Profiler’la farkı ölç.
 :::
 
-:::mistake[Belirti → Redux’a geçince her şey daha hızlı olacak sanıyorsun]
-Belirti → Store kuruldu ama ekranda ölçülebilir iyileşme yok.  
-Neden → State seçimi hâlâ geniş olabilir, ya da asıl maliyet pahalı render işidir.  
-Düzeltme → Önce Profiler kaydıyla hangi bileşenin ne kadar iş yaptığını gör; mimari değişikliği ölçülen soruna bağla.
+:::mistake[Belirti → Redux kurunca ekranın hızlanmasını beklemek]
+Belirti → Store eklendi ama etkileşimin süresi aynı kaldı.
+Neden → State aracı işin maliyetini otomatik düşürmez; pahalı component veya gereksiz geniş güncelleme hâlâ duruyor olabilir.
+Düzeltme → Önce gerçek maliyeti ölç. Redux Toolkit’in asıl katkısı ortak state geçişlerini ve seçimleri düzenlemektir.
 :::
 
-:::sector
-Ekipler genellikle Context veya Redux adını standartlaştırmaktan önce state sahipliği, güncelleme sıklığı ve tüketici sınırları üzerine konuşur. Küçük bir ayar değeri ile bütün uygulamada değişen bir koleksiyon aynı çözümü gerektirmez. Performans kod incelemesinde “kaç provider var?” yerine “bu etkileşim hangi bileşenlerde ne kadar iş başlatıyor?” sorusu daha kullanışlıdır.
-:::
+Küçük ve seyrek değişen tema gibi değerlerde Context yeterli olabilir. Birçok ekranda kullanılan ve sık değişen ortak tercihlerde Redux Toolkit gibi bir store, değişiklik kurallarını tek yerde toplar. Araç seçimini Provider sayısına bakarak değil, verinin sahibi ve ölçtüğün iş üzerinden yap.
 
 ## Özet
 
-- Context değeri alt ağaçta paylaşır; değeri okuyan tüketiciler Provider güncellemesine bağlanır.
-- Her render’da yeni nesne üretmek, alanlar aynı olsa da referansı değiştirir.
-- Provider sayısı tek başına maliyeti göstermez; değişim sıklığını ve tüketici işini ölç.
-- Redux Toolkit state geçişlerini ve seçim sınırlarını düzenler; her Context sorununa otomatik performans çözümü değildir.
+- Parent state’i ve `props` küçük paylaşım alanlarında anlaşılır kalır; Context erişimi uzak alt component’lere taşır.
+- Context tüketicileri Provider değerini alır; nesnenin içindeki alanlar ayrı abonelik değildir.
+- Component’in render olması DOM’un mutlaka değiştiği anlamına gelmez; Profiler etkileşimdeki süreyi ve işi görmene yardım eder.
+- Context veya Redux seçmeden önce neyin değiştiğini ve hangi component’lerin bu değeri kullandığını ölç.
 
-**Kendini yokla:** Tek Context’teki `theme` alanı değişmediyse tema tüketicisinin çalışmayacağını söyleyebilir misin?  
-*Cevap:* Hayır. Provider’ın verdiği bütün `value` nesnesi referans olarak değişmiş olabilir.
+**Yeni terimler:**
 
-**Kendini yokla:** Beş Context’i tek Context’te birleştirmek neden kendiliğinden iyileştirme sayılmaz?  
-*Cevap:* Farklı sıklık ve tüketicilere sahip değerleri daha geniş bir güncelleme sınırında toplayabilir.
+- **Render:** Component fonksiyonunun çalışıp ekrana ait JSX’i hesaplaması.
+- **Commit:** React’in hesaplanan farkı DOM’a uygulaması.
+- **Profiler:** React güncellemelerinin süresini ve çalışan component’leri kaydeden araç.
+- **StrictMode:** Geliştirmede bazı hataları bulmaya yardım eden React denetimi.
+
+**Kendini yokla:** Sayaç bir artınca DOM’un da değiştiğini kesin söyleyebilir misin?
+*Cevap:* Hayır. Render olmuş olabilir ama React uygulanacak bir DOM farkı bulmamış olabilir.
+
+**Kendini yokla:** Beş Context’in olması tek başına beş kat render demek midir?
+*Cevap:* Hayır. Maliyeti değişim sıklığı, tüketiciler ve onların yaptığı iş belirler.

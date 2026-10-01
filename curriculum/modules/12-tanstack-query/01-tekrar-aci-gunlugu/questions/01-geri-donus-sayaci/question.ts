@@ -5,8 +5,7 @@ export default defineQuestion({
   title: 'Geri dönüş sayacı',
   difficulty: 'kolay',
   concepts: ['fetch.basics', 'router.navigation', 'query.keys'],
-  question:
-    'Sinema v1’de arama → detay → geri akışı, `StrictMode` olmadan, cache yokken `requests("/3/search/movie")` kaç olur?',
+  question: `Arama ekranı açılınca bir istek gider. Detay ekranına geçince arama component’i kaldırılır; geri dönünce yeniden oluşturulur. Cache yoksa iki açılışta toplam kaç arama isteği gider?`,
   options: [
     {
       text: '2',
@@ -19,8 +18,9 @@ export default defineQuestion({
     },
     { text: '0', explanation: 'İlk arama canlı TMDB isteği başlatır.' },
     {
-      text: 'Her render için bir GET',
-      explanation: 'İstek render gövdesinde değil effect’te; yeni mount sayılır.',
+      text: 'Her URL parametresi değişikliğinde bir GET; bu akışta toplam 2',
+      explanation:
+        'Burada arama aynı kaldığı için iki mount iki istek başlatır; render sayısı istek sayısı değildir.',
     },
   ],
 })

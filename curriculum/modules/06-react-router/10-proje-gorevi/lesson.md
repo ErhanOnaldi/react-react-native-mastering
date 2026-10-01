@@ -6,35 +6,32 @@ kind: project
 
 # Sinema’ya gerçek adresler ekle
 
-:::pain[Problem]
-Sinema'da favori seçimi çalışıyor ama sayfaların gerçek adresleri yok. Kullanıcı film detayına doğrudan gelemediği gibi, arama sonucunu yenileyince de ekran başlangıç haline dönüyor.
+Bu projede öğrendiğin route, ortak layout, bağlantı ve URL state fikirlerini Sinema'nın mevcut React ağacına taşıyacaksın. İlk bölümde sayfa adreslerini ve ortak menüyü kur; sonraki bölümde arama, detay ve favori ekranlarının içeriğini doğru kaynaktan üret.
+
+:::model[URL state ve ağaç kimliği]
+Adres hangi sayfanın açık olduğunu ve paylaşılabilir filtreleri seçer. Aynı layout içindeki sayfalar değişirken ortak kabuk kalabilir; Context (React ağacında ortak veriyi birden çok component'e ulaştıran mekanizma) içindeki favoriler ise uygulama state'inde yaşar. Bu nedenle URL'yi favori listesinin kopyasına çevirmeden, her bilgiyi kendi kaynağından oku.
 :::
 
-Bu proje görevi, modülde kurduğun route ağacını Sinema'nın mevcut bileşen ve Context yapısına taşıyor. Önce uygulama girişini router'a bağlayacak, sonra ortak menü ve alt sayfaların sahipliğini belirleyeceksin. Bir sonraki adımda statik film listesini URL'deki sorgu ve kimlikle eşleştirerek ekranları doğrudan açılabilir hale getir.
+## Çalışırken
 
-:::model[URL state ve route kimliği]
-URL hangi route zincirini ve görünüm seçimlerini anlatır; route ağacındaki ortak layout gezinirken korunabilir. Film listesi ve favori Context'i gibi veriler URL'nin kendisi değildir. Bu uygulamada adresi ekranı seçmek için kullan, mevcut Context'i ortak React ağacında tut ve sayfaya özel görünümü route'un içinde üret.
-:::
+Route ağacını önce sayfalar ve ortak alanlar olarak çiz. Menü hangi sayfalarda görünmeli? Hangi ekran ana route'un kendi sayfası, hangileri onun altında? Bu harita layout sınırını kurmana yardım eder.
 
-## Uygularken
+Sonra adresi doğrudan açma, yenileme ve geri/ileri gezinmeyi dene. Ana sayfa ile menüden geçiş aynı route'a ulaşmalı; arama adresi sorgusunu korumalı; film adresi geçersiz kimlikle bulunamayan filmi ayırt etmeli. Favoriler mevcut Context değerini kullanmalı. Bu aşamada filmler statik veridir, yeni bir ağ isteği eklemene gerek yok.
 
-Önce route ağacını kağıt üzerinde sıralamak yararlı olur: ana sayfa, arama, film detayı, favoriler ve tanınmayan adres. Hangi ekranlar aynı menüyü paylaşır? Hangi bileşenlerin state'i route değişince korunmalı? Bu sorular layout sınırını netleştirir.
-
-Sinema bu aşamada statik verilerle çalışır; yeni adresler gerçek ağa giden istek eklemez. Film kartı bir detay adresi açar, arama URL'den sorgusunu okur, favori sayfası mevcut provider'ın state'ini görür. URL'den gelen `id` ve `q` metin değerlerini güvenli biçimde ele al. Geçersiz veya listede bulunmayan id için kullanıcıya anlaşılır durum göster.
-
-İki adresten aynı sayfayı açarak kontrol et: birinde menü üzerinden, diğerinde adresi doğrudan girerek. Arama metnini URL'de değiştirip yenile; ekran ile adresin birlikte kaldığını gözle. Geri/ileri tuşlarını da dene. Bu tür kontrol, yalnızca tıklama yolunun çalıştığını değil, route'un kendi adresinden kurulabildiğini gösterir.
-
-:::sector
-Ürün ekipleri route ağacını uygulamanın gezinme sözleşmesi olarak görür. Paylaşılabilir detay ve arama adresleri destek, analitik ve bağlantı paylaşımı için güvenilir birer giriş noktasıdır; ortak layout ise aynı navigasyonun ekranlar arasında tutarlı kalmasını sağlar.
-:::
+Bir belirti gördüğünde URL'yi, ortak menüyü ve sayfaya ait içeriği ayrı ayrı kontrol et. Böylece sorun route seçiminde mi, layout'ta mı, yoksa sayfanın kendi veriyi bulma işinde mi olduğunu daha kolay görürsün.
 
 ## Özet
 
-- Rota ağacını sayfa sahipliği ve ortak layout'a göre kur.
-- URL'den açılışla menü üzerinden gezinmenin aynı içeriği üretmesini sağla.
-- URL'de arama ve kimlik gibi görünüm seçimini tut; Context ve statik film verisini kendi sınırında bırak.
-- Modül 7'de bu adreslere gerçek HTTP verisi bağlanacak.
+- Route ağacı sayfa adreslerini ve ortak layout sınırını belirler.
+- Paylaşılabilir arama seçimi URL'de; favoriler mevcut Context'te kalır.
+- Doğrudan açılış, yenileme ve geri/ileri gezinmede aynı adres aynı görünümü kurmalı.
+- Bu modülde sayfa verisi statiktir; ağdan veri alma sonraki modülde gelir.
 
-**Kendini yokla:** Favorilerin kendisi neden URL'ye yazılmamalı?
+**Terimler**
 
-*Cevap:* Bu kullanıcı verisi uygulama state'inde yaşar; URL sayfa/filtre seçimini taşır, kayıt listesinin kendisini değil.
+- **Layout route:** Alt sayfaların paylaştığı menü ve kabuk gibi görünümü taşıyan route.
+- **Context:** React ağacındaki birden çok component'in ortak veriye erişmesini sağlayan mekanizma.
+
+**Kendini yokla:** Arama sorgusu neden URL'de, favori listesi neden mevcut Context'te kalır?
+
+**Cevap:** Sorgu paylaşılmalı ve geri tuşuyla dönmelidir; favoriler ise sayfa seçimi değil, uygulamanın kullanıcı verisidir.

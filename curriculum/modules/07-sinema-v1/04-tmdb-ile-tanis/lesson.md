@@ -1,210 +1,197 @@
 ---
 title: "TMDB ile tanış: Canlı API sözleşmesi"
-minutes: 15
+minutes: 18
 kind: concept
 ---
 
 # TMDB ile tanış: Canlı API sözleşmesi
 
-:::pain[Problem]
-Sinema uygulamasında arama kutusuna "Oppenheimer" ya da "Yıldızlararası" yazıyorsun; arayüz tepkisiz kalıyor veya ekranda hiçbir sonuç belirmiyor. Çünkü bugüne kadar yazdığın tüm bileşenler projenin içine gömülmüş sabit `sampleMovies` dizisinden besleniyordu. Gerçek dünyada filmler sürekli güncellenir, binlerce başlık arasından aranır ve harici bir sunucudan çekilir. Doğrudan tarayıcıdan `fetch('https://api.themoviedb.org/3/search/movie?query=Matrix')` çağrısı yaptığında ise sunucu `401 Unauthorized` yanıtı veriyor ve konsolda `Invalid API key` uyarısı beliriyor. Üstelik filmler gelse bile başlıklar İngilizce dönüyor ve afiş yolları tek başına bir görsel üretmiyor!
-:::
-
-## Harici bir REST API ile iletişim kurmak
-
-Modern web uygulamaları tek başlarına izole sistemler değildir. Bir e-ticaret sitesi ödeme sağlayıcısına, bir hava durumu uygulaması meteoroloji uydusuna, bir sinema platformu ise küresel film veritabanlarına bağlanır. Bu iletişim, sunucunun istemcilere sunduğu kurallar bütünü olan **API sözleşmesi** (API contract) üzerinden yürütülür.
-
-API sözleşmesi sana üç temel konuyu kesin kurallarla bildirir:
-1. **İstek adresi ve yöntemi:** Hangi veriyi almak için hangi HTTP yöntemini (`GET`, `POST` vb.) ve hangi URL patikasını kullanmalısın?
-2. **Kimlik ve parametre kuralları:** Sunucu seni nasıl tanıyacak (başlıklar, token'lar) ve filtreleme seçeneklerini (arama terimi, sayfa numarası, dil) adrese nasıl iliştireceksin?
-3. **Cevap ve hata şekli:** Başarılı bir istekte JSON gövdesi hangi nesne yapısıyla dönecek; istek hatalıysa durum kodu ve hata açıklaması nasıl raporlanacak?
-
-Sinema uygulamasında dünyanın en popüler açık film arşivi olan **TMDB (The Movie Database)** API'sini kullanıyoruz. Şimdiye kadar öğrendiğin React bileşen yapısı, URL state yönetimi ve `useEffect` asenkron veri çekme modelleri geçerliliğini koruyor; değişen tek şey, verinin bellekteki statik bir diziden değil, okyanusun ötesindeki bir sunucudan canlı olarak akmasıdır.
+Şimdiye kadar Sinema'daki filmleri `sampleMovies` gibi uygulamanın içindeki bir diziden okuyordun. Gerçek film kataloğunda binlerce kayıt ve sürekli güncellenen bilgiler var; bunları TMDB adlı film veritabanı sunucusundan isteyeceğiz. Bir sunucunun hangi adresi, bilgileri ve yetkiyi beklediğini anlatan kurallara **API sözleşmesi** denir. Bu sözleşmeye uymamız önemlidir: doğru istek doğru filmi getirir, yanlış istek ise anlaşılır bir hata verir.
 
 ![TMDB API İstek ve Görsel Akışı](diagrams/tmdb-istek-anatomisi.svg "İstemci, TMDB REST API ve Görsel CDN arasındaki veri akışı")
 
-:::model[HTTP istek ve cevap anatomisi]
-Modül 7.1'de öğrendiğin temel kuralı hatırla: Her HTTP isteği yöntem, adres, başlıklar ve gövdeden oluşur. `fetch` yalnızca ağ koptuğunda reddedilir; sunucunun döndüğü `401` veya `404` yanıtları başarılı bir Promise olarak çözülür. Bu yüzden harici bir servisle konuşurken ilk işin her zaman `response.ok` kontrolü yapmak ve gerekirse özel bir hata fırlatmaktır.
-:::
+## Önce arama metnini güvenle taşıyalım
 
-## TMDB istek anatomisinin kesin kuralları
+Kullanıcı `Kara Şövalye & Matrix` aradığında bu metni URL'ye doğrudan eklemek cazip gelir. Fakat URL'deki `&` işareti yeni bir parametre başlatır; sunucu metni iki parçaya ayırabilir. URL'nin `?` işaretinden sonraki anahtar-değer bölümüne **query string** denir. `URLSearchParams`, bu bölümdeki özel karakterleri senin için kodlayan tarayıcı aracıdır.
 
-TMDB REST API ile güvenli ve doğru haberleşmek için şu numaralı kuralları tavizsiz uygulamalısın:
-
-1. **Taban adres kuralı:** Tüm REST uç noktaları `https://api.themoviedb.org/3` taban URL'si ile başlar. Sürüm numarası (`/3`) adresin ayrılmaz bir parçasıdır.
-2. **Kimlik doğrulama başlığı:** TMDB, v3 kimlik doğrulaması için modern **Bearer Token** standardını destekler. Her isteğin başlıklarında `Authorization: Bearer <Read_Access_Token>` bulunmalıdır. Token olmadan atılan her istek anında `401 Unauthorized` ile sonuçlanır.
-3. **Çeviri ve dil parametresi:** TMDB içerikleri çok dillidir. Türkçe film başlıkları, özetler ve etiketler almak için her sorguya mutlaka `language=tr-TR` parametresi eklenmelidir. Dil parametresi unutulursa TMDB varsayılan olarak `en-US` içerik döndürür.
-4. **Sorgu parametrelerinin kodlanması:** Arama metinleri (`query`), sayfa numaraları (`page`) veya tür filtreleri (`with_genres`) URL sorgu dizesine (query string) eklenmelidir. Boşluklar ve özel karakterler elle birleştirilmemeli; standart kodlama araçlarıyla güvenli hale getirilmelidir.
-5. **Görseller ayrı bir CDN üzerindedir:** TMDB JSON cevaplarında gelen `poster_path` veya `backdrop_path` değerleri tam bir URL değildir (örneğin yalnızca `"/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg"` döner). Bu yolu tam bir görsele dönüştürmek için TMDB görsel sunucu tabanı (`https://image.tmdb.org/t/p/`) ve istenen genişlik (`w185`, `w342`, `w500`, `original`) ile birleştirmen gerekir.
-
-## Sık kullanılan TMDB uç noktaları
-
-Uygulamanın farklı ekranları için TMDB sözleşmesinde tanımlanmış temel yollar şunlardır:
-
-| İşlev | HTTP Yolu | Zorunlu / Önemli Parametreler | Örnek Amaç |
-| --- | --- | --- | --- |
-| Haftalık Trendler | `/trending/movie/week` | `language=tr-TR`, `page=1` | Ana sayfa vitrini |
-| Film Arama | `/search/movie` | `query=<aranan>`, `language=tr-TR`, `page=1` | Arama sayfası |
-| Tür Bazlı Keşif | `/discover/movie` | `with_genres=<id>`, `language=tr-TR`, `page=1` | Kategori filtreleme |
-| Film Detayı | `/movie/:id` | `language=tr-TR`, `append_to_response=credits,videos` | Film sayfası ve kadro |
-| Tür Listesi | `/genre/movie/list` | `language=tr-TR` | Filtre açılır kutusu |
-
-Detay isteğindeki `append_to_response=credits,videos` parametresi, HTTP istek sayısını düşürmek için harika bir optimizasyondur. Normalde filmin detayını, oyuncu kadrosunu ve tanıtım fragmanlarını almak için 3 ayrı istek atman gerekirken, bu parametre sayesinde TMDB tüm bu verileri tek bir JSON gövdesinde birleştirip gönderir.
-
-:::model[URL tek doğru kaynaktır]
-Modül 6'da kurduğumuz zihinsel modeli anımsa: Arayüzdeki filtreler ve arama terimleri yerel bir `useState` içinde hapsedilmemelidir. Kullanıcının aradığı metin ve seçtiği sayfa tarayıcının URL'sinde (`?q=Matrix&page=2`) yaşamalıdır. Sayfa yenilendiğinde veya bağlantı paylaşıldığında bu parametreler okunur ve doğrudan TMDB istek URL'sine aktarılır.
-:::
-
-## Adım adım iz sürme: Bir arama isteğinin yolculuğu
-
-Kullanıcı arama kutusuna "Dövüş Kulübü" yazıp arama yaptığında tarayıcı ile TMDB arasında saniyeler içinde gerçekleşen adımları izleyelim:
-
-| Adım | İşlem Noktası | Yapılan İşlem | Oluşan Veri / Başlık | Arayüz Durumu |
-| --- | --- | --- | --- | --- |
-| 1 | Router / URL | Kullanıcı etkileşimi URL parametresini günceller | `?q=Dövüş Kulübü&page=1` | Arama input'u güncel |
-| 2 | İstek Hazırlığı | Taban, yol ve parametreler güvenle birleştirilir | `https://api.themoviedb.org/3/search/movie?language=tr-TR&query=D%C3%B6v%C3%BC%C5%9F+Kul%C3%BCb%C3%BC&page=1` | Yükleniyor durumu aktif |
-| 3 | Ağ Gönderimi | Tarayıcı `fetch` ile yetki başlığını ekleyip isteği yollar | `Authorization: Bearer eyJhbGciOi...` | Yükleniyor animasyonu |
-| 4 | TMDB Sunucusu | Token doğrulanır, arama yapılır, Türkçe kayıtlar çekilir | HTTP 200 OK + JSON Gövdesi (`results`, `total_pages`) | Beklemede |
-| 5 | Yanıt İnceleme | `response.ok` kontrol edilir, gövde JSON olarak çözülür | `{ page: 1, results: [{ id: 550, title: "Dövüş Kulübü", ... }] }` | Veri state'e yazılır |
-| 6 | Görsel Çözümü | Her filmin `poster_path` değeri CDN tabanıyla birleştirilir | `https://image.tmdb.org/t/p/w342/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg` | Film kartları ekranda |
-
-## Kod örnekleri: Önce kırık, sonra doğru
-
-### Kırık yaklaşım: Elle string birleştirmek ve yetkiyi unutmak
-
-Aşağıdaki örnekte sıkça yapılan üç vahim hata bir aradadır:
-
-```tsx
-// ❌ KIRIK: Elle URL birleştirme, eksik header ve gövde kontrolü yok
-export function BadMovieSearch({ query }: { query: string }) {
-  const [movies, setMovies] = useState([])
-
-  useEffect(() => {
-    // 1. HATA: Boşluklar veya & işaretleri URL'yi bozar!
-    // 2. HATA: Authorization başlığı unutulmuş, TMDB 401 dönecek!
-    fetch(`https://api.themoviedb.org/3/search/movie?query=${query}&language=tr-TR`)
-      .then((res) => {
-        // 3. HATA: res.ok kontrolü yok! 401 hatası gelse bile json() çalışıp çöker!
-        return res.json()
-      })
-      .then((data) => setMovies(data.results))
-  }, [query])
-
-  return <div>{/* ... */}</div>
-}
-```
-
-Eğer kullanıcı `Matrix & Reloaded` ararsa, `&` karakteri query ayracı sanılır ve TMDB isteği yanlış parametrelerle işler. Üstelik yetki başlığı olmadığı için sunucu 401 döner, `data.results` alanı `undefined` gelir ve bileşen ekranda patlar.
-
-### Doğru yaklaşım: URLSearchParams ve yetkili istemci
-
-İstek adresini standart `URL` ve `URLSearchParams` nesneleriyle kurup, yetkilendirmeyi ve hata kontrolünü eksiksiz ele alalım:
+Önce yalnızca arama metnini kodlayalım:
 
 ```ts check
-// Derlenebilir bağımsız yardımcı modül
-export interface ApiUrlOptions {
-  path: string
-  params?: Record<string, string | number | undefined>
-  defaultLanguage?: string
+const params = new URLSearchParams()
+params.set('query', 'Kara Şövalye & Matrix')
+
+console.log(params.toString())
+// query=Kara+%C5%9E%C3%B6valye+%26+Matrix
+```
+
+`&` karakteri `%26` olarak taşınır; böylece metnin içindeki işaret parametre ayıracı gibi davranmaz. Türkçe harfler ve boşluklar da URL'nin taşıyabileceği biçime çevrilir. Bu kod yalnızca parametre bölümünü kurdu; istek adresinin geri kalanını henüz eklemedik.
+
+Bir filmin ayrıntı sayfasına istek atarken bilinen adresi `URL` nesnesiyle kurabiliriz. `URL`, adresin sunucu ve yol gibi bölümlerini birlikte yönetir:
+
+```ts check
+const url = new URL('/3/movie/550', 'https://api.themoviedb.org')
+url.searchParams.set('language', 'tr-TR')
+
+console.log(url.toString())
+// https://api.themoviedb.org/3/movie/550?language=tr-TR
+```
+
+Burada `/3/movie/550` TMDB'nin tek bir filmin ayrıntısını veren yoludur. `language=tr-TR` isteğin Türkçe başlık ve özet tercih ettiğini söyler; dil seçimi erişim izni vermez. URL nesnesini kullanınca adresin parçalarını elle `?` ve `&` ile birleştirmen gerekmez.
+
+Şimdi aynı fikri tür keşfinde kullanalım. `URLSearchParams` üzerinde `set` ile aynı anahtarı yeniden yazarsan önceki değer güncellenir. `undefined` ise seçilmemiş bir filtreyi temsil eder; onu adrese koymamak için parametreleri eklemeden önce kontrol ederiz.
+
+```ts check
+const discoverUrl = new URL(
+  '/3/discover/movie',
+  'https://api.themoviedb.org',
+)
+const filters: Record<string, string | number | undefined> = {
+  language: 'tr-TR',
+  with_genres: 18,
+  page: undefined,
 }
 
-export function createApiEndpoint({
-  path,
-  params = {},
-  defaultLanguage = 'tr-TR',
-}: ApiUrlOptions): string {
-  const baseUrl = 'https://api.themoviedb.org/3'
-  const normalizedPath = path.startsWith('/') ? path.slice(1) : path
-  const fullUrl = new URL(normalizedPath, `${baseUrl}/`)
-
-  fullUrl.searchParams.set('language', defaultLanguage)
-
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined) {
-      fullUrl.searchParams.set(key, String(value))
-    }
+for (const [key, value] of Object.entries(filters)) {
+  if (value !== undefined) {
+    discoverUrl.searchParams.set(key, String(value))
   }
-
-  return fullUrl.toString()
 }
 
-export async function requestFromTmdb<T>(
-  url: string,
-  token: string,
-  init?: RequestInit,
-): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
+console.log(discoverUrl.searchParams.toString())
+// language=tr-TR&with_genres=18
+```
+
+Tür filtresi adrese eklendi, ama sayfa numarası `undefined` olduğu için eklenmedi. `undefined` değerini önce metne çevirseydik istek `page=undefined` içerirdi; sunucu geçerli bir sayfa numarası beklediğinden bu, hatalı bir istek olurdu. Bu küçük kontrol, isteğe bağlı filtreleri kullanışlı kılar.
+
+## TMDB isteği için yetki ve dil
+
+İstek adresini kurduk, ama TMDB'ye film arşivini okuyabileceğimizi de bildirmeliyiz. **Token**, sunucunun isteği yapan uygulamayı tanıması için verilen erişim bilgisidir. TMDB bu bilgiyi `Authorization` başlığında `Bearer` sözcüğüyle birlikte bekler. `language=tr-TR` çeviri tercihi, Bearer token ise erişim iznidir; ikisi ayrı amaç taşır.
+
+En küçük istek, bilinen bir TMDB adresine yetki başlığını ekler:
+
+```ts check
+const token = 'ornek-okuma-tokeni'
+const response = await fetch(
+  'https://api.themoviedb.org/3/trending/movie/week?language=tr-TR',
+  {
     headers: {
-      ...init?.headers,
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     },
-  })
+  },
+)
+```
+
+Bu istek haftanın trend filmlerini ister. `Authorization` başlığı olmadan ya da geçersiz token ile sunucu `401 Unauthorized` döndürebilir. `Accept` başlığı, cevabı JSON biçiminde beklediğimizi belirtir.
+
+Bir ağ cevabı gelmiş olması, isteğin başarılı olduğu anlamına gelmez. `fetch` ağ kesintisinde reddedilir; `401` veya `404` gibi HTTP cevaplarında ise yine bir `Response` verir. Bu yüzden cevabı JSON'a çevirmeden önce `response.ok` değerini kontrol etmeliyiz:
+
+```ts check
+async function loadTrending(token: string) {
+  const response = await fetch(
+    'https://api.themoviedb.org/3/trending/movie/week?language=tr-TR',
+    { headers: { Authorization: `Bearer ${token}` } },
+  )
 
   if (!response.ok) {
-    let errorMessage = `HTTP ${response.status}: ${response.statusText}`
-    try {
-      const errorPayload = (await response.json()) as { status_message?: string }
-      if (errorPayload.status_message) {
-        errorMessage = errorPayload.status_message
-      }
-    } catch {
-      // Hata gövdesi geçerli JSON değilse temel HTTP durumunu koru
-    }
-    throw new Error(errorMessage)
+    throw new Error(`TMDB isteği başarısız: ${response.status}`)
   }
 
-  return (await response.json()) as T
+  return response.json()
 }
 ```
 
-Bu temiz yapıda:
-1. `URLSearchParams`, Türkçe karakterleri (`ğ`, `ı`, `ş`), boşlukları ve `&` gibi ayraçları otomatik olarak RFC standartlarında kodlar.
-2. `undefined` değerler filtrelenir; böylece `page=undefined` gibi anlamsız istek parametreleri oluşmaz.
-3. `Authorization: Bearer` başlığı her zaman güvenle eklenir.
-4. `!response.ok` durumu yakalanır ve TMDB'nin döndüğü anlamlı hata mesajı (`status_message`) okunup `Error` nesnesine dönüştürülür.
+Başarılı cevapta `response.json()` gövdeyi JavaScript verisine dönüştürür. Hata cevabında ise önce HTTP durumunu hata olarak fırlatıyoruz; böylece bileşen başarısız cevabı film listesiymiş gibi işlemeye çalışmaz. `response.ok` kontrolünün nedeni budur.
 
-## Sınır durumları ve sık yapılan hatalar
+Arama isteğinin kullanıcıdan ekrana uzanan sırasını birlikte izleyelim. `Dövüş Kulübü` araması için URL'de `q` ve sayfa bilgisi bulunur; tarayıcı bu bilgiyle TMDB isteğini hazırlar.
 
-:::mistake[Afiş yolunu tek başına `<img src>` içine yazmak]
-- **Belirti:** Film kartlarında resimler yüklenmiyor, kırık görsel ikonu görünüyor veya konsolda `GET http://localhost:5173/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg 404 Not Found` hatası çıkıyor.
-- **Neden:** TMDB `poster_path` alanında tam adres değil, yalnızca dosya adını (`/xyz.jpg`) verir. Tarayıcı bunu yerel bir göreli yol sanıp uygulamanın çalıştığı Vite portundan istemeye çalışır.
-- **Düzeltme:** Bir görsel oluşturucu yardımcı yaz: `path ? `https://image.tmdb.org/t/p/w342${path}` : undefined`. Eğer `path` null ise görsel yerine yer tutucu bir kart veya alternatif metin göster.
-:::
+| Adım | Ne olur? | Örnek değer | Arayüzde ne görürsün? |
+| --- | --- | --- | --- |
+| 1 | Kullanıcı arama yapar; arama ve sayfa URL'de güncellenir. | `?q=Dövüş Kulübü&page=1` | Arama alanında yazdığı metin |
+| 2 | İstek adresi ve query string hazırlanır. | `/3/search/movie?language=tr-TR&query=D%C3%B6v%C3%BC%C5%9F+Kul%C3%BCb%C3%BC&page=1` | Yükleniyor durumu |
+| 3 | Tarayıcı yetki başlığıyla TMDB'ye isteği yollar. | `Authorization: Bearer …` | Yükleniyor durumu sürer |
+| 4 | TMDB yetkiyi ve arama metnini işler, JSON cevaplar. | `200 OK`, `results`, `total_pages` | İstek cevabı beklenir |
+| 5 | Kod önce `response.ok` değerini, sonra JSON gövdesini okur. | `results: [{ id: 550, title: "Dövüş Kulübü" }]` | Film verisi ekrana aktarılır |
+| 6 | Kart, varsa afiş yolunu tam görsel adresine çevirir. | `https://image.tmdb.org/t/p/w342/…jpg` | Afiş ve film kartı görünür |
 
-:::mistake[Vite ortam değişkenlerini unutmak veya yanlış isimlendirmek]
-- **Belirti:** Tüm istekler istisnasız `401 Unauthorized` ile başarısız oluyor. `requests()` kaydında `Authorization: Bearer undefined` görünüyor.
-- **Neden:** `.env` dosyasında anahtar adı `VITE_` önekiyle başlamamıştır (örneğin sadece `TMDB_TOKEN=...` yazılmıştır). Vite, güvenlik gereği istemci koduna yalnızca `VITE_` ile başlayan değişkenleri dahil eder.
-- **Düzeltme:** Değişken adını `.env` içinde `VITE_TMDB_TOKEN=...` olarak tanımla ve kodda `import.meta.env.VITE_TMDB_TOKEN` ile oku.
-:::
+Tabloda sıra önemlidir: istek hazırlanıp yollanmadan cevap gelemez; `response.ok` kontrol edilmeden de başarılı JSON varsayamayız. Arama metni URL'de durduğu için yenileme ve paylaşma sonrasında aynı sorguyu yeniden kurmak da mümkün olur.
 
-:::mistake[Geçersiz veya boş parametreleri `null` olarak URL'ye basmak]
-- **Belirti:** Sayfalama veya tür filtrelerinde sunucu `400 Bad Request` veya `Invalid genre id` hatası dönüyor.
-- **Neden:** `params.genre` seçilmediğinde nesneye `{ with_genres: null }` verilmiş ve URL'ye `?with_genres=null` olarak yazılmıştır. TMDB bu metni sayıya çeviremeyip isteği reddeder.
-- **Düzeltme:** URL parametrelerini oluştururken `null`, `undefined` veya boş metin olan değerleri sorguya hiç ekleme.
-:::
+## Gerçek hatayı tanı: 401 ve boş afiş
 
-:::sector
-Sektördeki kurumsal projelerde harici API anahtarları iki kategoriye ayrılır:
-1. **Genel istemci token'ları (Public Client Keys):** TMDB okuma token'ı gibi yalnızca veri okumaya yarayan ve kötüye kullanım riski sınırlı olan anahtarlar ön uç ortam değişkenlerinde (`VITE_`) tutulabilir. Ancak unutma: `VITE_` değişkenleri derleme anında JavaScript kodunun içine düz metin olarak gömülür. Sayfa kaynağını inceleyen herhangi biri bu token'ı görebilir!
-2. **Hassas özel sırlar (Private Secrets):** Kullanıcı oturum açma sırları, Stripe ödeme anahtarları veya veritabanı şifreleri asla bir React uygulamasının içine konmaz. Sektörde bu çağrılar için React uygulaması ile harici servis arasına bir **BFF (Backend for Frontend)** veya proxy sunucusu (örneğin ASP.NET Core ya da Node.js API) yerleştirilir. React yalnızca kendi güvenli sunucusuyla konuşur; harici API anahtarlarını sunucu arka planda gizler.
+Öğrencinin sık göreceği hata şu: arayüz boş kalır ve Console'da `Invalid API key` görünür. Bunu tanımak için iki bilgiyi ayır: `401` yetki sorunudur, `language` ise yalnızca cevap dilini seçer.
+
+```ts
+// Yanlış varsayım:
+// ?language=tr-TR ekledim, demek ki TMDB isteğine izin verildi.
+
+// Düzeltme:
+const headers = {
+  Authorization: `Bearer ${token}`,
+  Accept: 'application/json',
+}
+```
+
+Belirti `401` ise dil parametresini kaldırmak çözmez; isteğe doğru Bearer token eklemelisin. Dil ve yetkiyi tek bir ayar sanmak bu hataya götürür.
+
+Bir diğer tuzak afiş adresidir. TMDB cevabındaki `poster_path` tam adres değil, örneğin `/abc123.jpg` gibi yalnızca dosya yoludur. Bu yolu doğrudan `<img src>` içine koyarsan tarayıcı resmi Sinema uygulamasının kendi adresinde arar ve `404` alırsın. `CDN` (içeriği kullanıcılara yakın sunuculardan ulaştıran dağıtım ağı), TMDB'de görselleri sunan ayrı adrestir; yolun başına görsel tabanını ve bir boyut ekle:
+
+```ts check
+function posterUrl(path: string | null): string | undefined {
+  return path
+    ? `https://image.tmdb.org/t/p/w342${path}`
+    : undefined
+}
+```
+
+`path` yoksa `undefined` döndürürüz; olmayan bir görsele istek atmaktansa kartta yer tutucu gösterebilirsin. Örnek olarak `/abc123.jpg` yolu `https://image.tmdb.org/t/p/w342/abc123.jpg` olur.
+
+## Aynı sunucuda farklı film yolları
+
+**API (Application Programming Interface)**, bir programın başka bir programdan hangi yollarla veri isteyebileceğini tanımlar. TMDB'de her yolun işi ayrıdır; arama metnini film ayrıntısı isteyen yola gönderemezsin. Sinema ekranlarında kullanacağımız başlıca yollar şöyle:
+
+| Ekrandaki iş | TMDB yolu | Önemli parametre |
+| --- | --- | --- |
+| Haftanın trendleri | `/trending/movie/week` | `language=tr-TR`, `page=1` |
+| Arama sonuçları | `/search/movie` | `query`, `language=tr-TR`, `page` |
+| Türe göre keşif | `/discover/movie` | `with_genres`, `language=tr-TR`, `page` |
+| Film ayrıntısı | `/movie/:id` | Film kimliği ve `language=tr-TR` |
+| Tür seçimi | `/genre/movie/list` | `language=tr-TR` |
+
+Örneğin `with_genres` tür filtresinin kimliğini, `page` ise sonuçların hangi bölümünü istediğini taşır. Yolu ve parametreleri seçerken önce ekranda hangi bilgiyi göstereceğini düşün; sonra ona karşılık gelen TMDB yolunu kullan.
+
+## Token'ı nerede tutmalı?
+
+Sinema bir Vite uygulaması. **Vite environment variable**, geliştirme ve derleme sırasında uygulamaya verilen ayardır; `.env` dosyasında `VITE_TMDB_TOKEN=...` adıyla tutulur ve kodda `import.meta.env.VITE_TMDB_TOKEN` ile okunabilir. Vite istemci koduna yalnızca `VITE_` ile başlayan ayarları açar. Bu kullanışlıdır, ama bu token'ı gizli yapmaz: tarayıcıya gönderilen JavaScript'i inceleyen kişi değerini görebilir.
+
+TMDB'nin okuma token'ı tarayıcı uygulamalarında kullanılabilen bir erişim bilgisidir; yine de kota ve kötüye kullanım riski vardır. Veritabanı parolası veya ödeme anahtarı gibi gizli bir **secret** (gizli anahtar) istemciye konmamalı. Böyle bir sır gerekirse React uygulaması kendi sunucusuna istek yollar, sunucu dış servise gizli anahtarıyla bağlanır.
+
+:::info[Derinlemesine (isteğe bağlı)]
+Bu sunucu düzenine **BFF (Backend for Frontend)** denir: ön yüz için ayrı bir arka uç katmanı istekleri karşılar ve dış servislerle konuşur. TMDB'nin `/movie/:id` adresi yanında `append_to_response=credits,videos` kullanmak da ayrıntı, oyuncu kadrosu ve videoları tek cevapta toplayabilir; böylece bu örnek için üç ayrı istek yerine bir istek yeter. Uygulamada bu optimizasyona ihtiyaç çıkarsa kullan.
 :::
 
 ## Özet
 
-- TMDB REST API, `https://api.themoviedb.org/3` tabanında çalışır ve `Authorization: Bearer <Token>` başlığı zorunludur.
-- Türkçe içerik için her istekte `language=tr-TR` query parametresi gönderilmelidir.
-- Sorgu parametreleri asla elle metin olarak birleştirilmemeli; `URLSearchParams` veya standart URL nesneleriyle ayrıştırılmalı ve kodlanmalıdır.
-- TMDB hata yanıtlarında `status_code` ve `status_message` alanlarını döner. `fetch` bu hatalarda reddedilmediği için `response.ok` kontrolü ile hata fırlatılmalıdır.
-- Görsel yolları (`poster_path`) yalnızca dosya adıdır; `https://image.tmdb.org/t/p/<boyut>` tabanıyla birleştirilmelidir ve `null` durumu mutlaka yönetilmelidir.
+- TMDB adresi `https://api.themoviedb.org/3` tabanını kullanır; `URL` ve `URLSearchParams` adres ve parametreleri güvenle kurar.
+- `language=tr-TR` cevap dilini seçer; `Authorization: Bearer <token>` erişim iznini taşır.
+- `undefined` filtreyi URL'ye ekleme. Arama metnindeki `&`, boşluk ve Türkçe harfleri elle kodlamak yerine tarayıcı araçlarını kullan.
+- `fetch` için `response.ok` kontrol et; hata cevabını başarılı JSON gibi kullanma.
+- `poster_path` tam adres değildir; TMDB görsel tabanına ekle ve yol boşsa yer tutucu göster.
 
----
+### Yeni terimler
+
+- **API sözleşmesi:** İstemci ile sunucunun adres, veri ve yetki konusunda anlaştığı kurallar.
+- **Query string:** URL'deki `?` sonrasında yer alan parametreler bölümü.
+- **Token:** Sunucunun isteği tanıması ve yetkilendirmesi için kullanılan erişim bilgisi.
+- **CDN:** İçeriği kullanıcılara yakın sunuculardan ulaştıran dağıtım ağı.
+- **Vite environment variable:** Derlemede uygulamaya verilen ayar; `VITE_` ile başlayanlar istemciye görünür.
+- **BFF:** Ön yüz adına dış servislerle konuşan arka uç katmanı.
 
 ### Kendini yokla
 
-**1. TMDB'ye attığın istek konsolda `401` döndü ve JSON gövdesinde `status_code: 7` yazıyor. Sorun nedir?**
-*(Cevap: İstekte `Authorization: Bearer <token>` başlığı eksiktir veya geçersiz bir API token'ı kullanılmıştır.)*
+**1.** TMDB `401` döndürdüğünde `language=tr-TR` parametresi yetki sağlar mı?
 
-**2. Kullanıcının arama kutusuna yazdığı "Yıldızlararası & Uzay" ifadesini doğrudan string template ile URL'ye eklersen ne tehlike doğar?**
-*(Cevap: `&` karakteri URL sözdiziminde sorgu parametresi ayracıdır. Sunucu bunu tek bir sorgu yerine `query=Yıldızlararası` ve tanımsız bir `Uzay` parametresi olarak algılar. Çözüm, `URLSearchParams` ile güvenli kodlamadır.)*
+*Cevap: Hayır. Dil parametresi çeviri tercihini belirtir; `Authorization: Bearer <token>` başlığı erişim bilgisini taşır.*
+
+**2.** `poster_path` değeri `/abc123.jpg` ise neden bunu doğrudan `src` olarak kullanmak yetmez?
+
+*Cevap: Bu yalnızca yol parçasıdır. TMDB görsel tabanını ve boyutunu ekleyerek tam URL kurmalıyız.*

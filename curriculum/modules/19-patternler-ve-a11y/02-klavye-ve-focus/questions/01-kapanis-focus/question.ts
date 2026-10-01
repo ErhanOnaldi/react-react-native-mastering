@@ -14,17 +14,19 @@ export default defineQuestion({
         'Doğru. Açıldığı nokta, kullanıcının akışı sürdürmesi için doğal geri dönüş yeridir.',
     },
     {
-      text: 'Her zaman document.body üzerinde.',
+      text: 'Dialog içindeki ilk düğmede.',
       explanation:
-        'Body çoğu zaman görünür bir focus hedefi değildir; kullanıcı konumunu kaybeder.',
+        'İlk düğme açılış odağı olabilir; kapatma sonrası kullanıcıyı dialog içeriğinde bırakmak görev akışını sürdürmesine yardım etmez.',
     },
     {
-      text: 'Kapanmış dialogdaki son düğmede.',
-      explanation: 'DOM’dan kaldırılmış öğede focus kalamaz; bağlantı kopar.',
+      text: 'Dialogu kapatan Escape tuşunun varsayılan odağına.',
+      explanation:
+        'Escape kapatma eylemini başlatır, fakat tarayıcı otomatik olarak açan düğmeye focus taşımaz.',
     },
     {
-      text: 'İlk sayfa linkinde.',
-      explanation: 'Kullanıcıyı sayfanın başına ışınlamak bağlamı kaybettirir.',
+      text: 'Dialogun başlığında.',
+      explanation:
+        'Başlık uzun dialog açılırken uygun başlangıç odağı olabilir; kapanınca focus dialogu açan kontrole iade edilir.',
     },
   ],
 })

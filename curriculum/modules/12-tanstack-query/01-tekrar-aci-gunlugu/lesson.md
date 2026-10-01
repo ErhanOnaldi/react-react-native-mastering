@@ -6,42 +6,32 @@ kind: review
 
 # Tekrar eden istekleri say
 
-:::pain[Problem]
-Sinema v1’de `?q=Matrix` aramasını açıp bir filme gidiyor, geri dönünce aynı listeyi yeniden bekliyordun. Network’te aynı URL için iki GET vardı. Bu davranış “sayfa yavaş” diye geçiştirilebilir; ama sayı, neden ve sonuç birlikte yazılınca düzeltmenin gerçekten işe yarayıp yaramadığı anlaşılır.
-:::
-
-## Önceki kavramlar bu akışta ne anlatıyor?
+Sinema’da aynı arama sonucuna dönünce Network panelinde aynı GET isteğini yeniden görebilirsin. Önce akışı sabitle: aramayı aç, bir filme git, geri dön. Her adımda URL’yi ve istek sayısını not et; böylece neyin tekrarlandığı belli olur.
 
 :::model[State kategorileri]
-Arama ifadesi URL’de yaşar; TMDB cevabı server state’tir; favori seçimi client state’tir. Önceki `state-kategorileri` diyagramı üç verinin sahibini ayırıyordu. Şimdi özellikle server state’in component unmount olduğunda da kısa süre cache’te kalmasını istiyoruz.
+Arama ifadesi paylaşılabilir bir seçim olduğu için URL’de yaşar; TMDB cevabı server state’tir ve Query cache’inde tutulur; favori seçimi ise kullanıcıya ait client state’tir. Ekrandan ayrılınca bu üç değerin aynı davranması gerekmez: arama geri gelmeli, cevap kısa süre paylaşılabilmeli, favori de kullanıcının seçimi olarak kalmalıdır.
 :::
+
+![Server state, URL state, client state ve form state sahiplerini gösteren diyagram](diagram:state-kategorileri)
 
 :::model[Effect yaşam döngüsü ve race condition]
-Effect commit sonrasında isteği başlatır; dependency değişiminde temizlenir ve yeniden kurulur. `yaris-kosulu` eski cevabın yeni arama sonucunu ezebileceğini gösteriyordu. Elle yazdığın effect bu isteği başlatır ve eski sonucu durdurur; fakat tamamlanmış cevabı başka ekranda paylaşmaz.
+Önceki effect modelinde istek, React ekrandaki güncellemeyi işledikten sonra (commit aşamasında) başlıyordu; ekran kalkınca cleanup çalışıyordu. Race condition, hızlı arka arkaya giden isteklerden eski cevabın geç gelip yeni sonucu ezmesidir. Cleanup bunu önlemeye yardım eder, ama tamamlanmış cevabı başka ekranda saklamaz; tekrar kullanma işini cache üstlenir.
 :::
 
-## Belirtiyi ölç ve sınıflandır
+![Effect setup, dependency değişince cleanup ve yeniden setup sırasını gösteren diyagram](diagram:effect-yasam-dongusu)
 
-Bir akışı aynı başlangıçla tekrarla: arama sayfasını aç, detaya git, geri dön. İstek sayacında eşsiz URL’leri ve her URL’nin toplam tekrarını yaz. Örneğin `/3/search/movie?query=Matrix&page=1` ilk mount’ta bir, geri dönüşte ikinci kez çağrılıyorsa fazladan bir GET var. Geliştirme modunda StrictMode effect’i tekrar çalıştırabilir; karşılaştırırken aynı ortam ve aynı kullanıcı adımlarını kullan.
+![Yavaş eski cevabın yeni sonucu ezmesini ve cleanup ile engellenmesini gösteren diyagram](diagram:yaris-kosulu)
 
-`useDebounce` yazarken tuş başına istek sayısını azaltabilir, ama daha önce tamamlanan cevabı saklamaz. Cleanup ve `AbortController` geç kalan cevabın UI’a yazılmasını önler; cache yerine geçmez. Bu üç aracın çözdüğü sorular farklıdır: debounce çağrı sıklığı, cleanup yaşam döngüsü, cache ise aynı veriyi tekrar kullanma.
+Görevleri sırayla çöz: önce cache yokken geri dönüşte kaç istek çıktığını hesapla, sonra URL, sunucu cevabı ve favorinin sahibini ayır, en son cache’in hangi veriyi saklaması gerektiğini seç. Önceki modüllerdeki state sahipliği, Router URL parametreleri ve `useQuery` temellerini hatırla. Aynı kullanıcı akışını değişiklikten önce ve sonra karşılaştır; beklenen sonuç, aynı taze arama için gereksiz GET’in azalmasıdır.
 
-Akışın birden fazla ekranı varsa sonuç component’ten ayrılınca çöpe gitmemelidir. Yine de her yanıtı sınırsız saklamak da doğru değildir: server state zamanla değişir, kullanıcıya ne kadar eski veri gösterebileceğini seçmen gerekir. Bu yüzden önce “aynı URL tekrar geldi mi?” sorusunu, sonra “cevap ne kadar süre taze?” sorusunu sor. İlk ölçüm cache gerekip gerekmediğini, ikinci karar tazelik politikasını netleştirir.
+## Hatırlayacağın noktalar
 
-:::mistake[Ölçümsüz iyileştirme]
-**Belirti:** Kod daha karmaşık ama geri dönüşte aynı sayıda GET var. → **Neden:** Başlangıç ve bitiş ölçümü aynı akışta yapılmamıştır. → **Düzeltme:** Önce akışı ve istek sayısını kaydet; sonra aynı koşullarda tekrar ölç.
-:::
+- Cache yoksa arama ekranının iki ayrı açılışı iki istek başlatabilir.
+- URL seçimi, server state ve client state farklı sahiplerdir.
+- İstek sayısını aynı akışta ölçmek, iyileşmenin işe yarayıp yaramadığını gösterir.
 
-:::sector
-Performans notunda “hızlı oldu” yerine “detaydan geri dönüşte arama GET’i 2’den 1’e indi” yaz. Kullanıcı adımı, endpoint ve sayaç birlikte olunca ekip iyileştirmenin kapsamını tartışabilir.
-:::
+**Terimler:** `server state` sunucudan gelen ve zamanla değişebilen veri; `client state` kullanıcının arayüzdeki seçimi; `commit` React’in ekrandaki güncellemeyi uygulaması; `race condition` geç gelen eski cevabın yeni sonucu ezmesi.
 
-## Özet
+**Kendini yokla:** `AbortController` tamamlanmış cevabı sonraki ekrana taşır mı?
 
-- Tekrar isteği, aynı URL ve kullanıcı akışında sayaçla doğrula.
-- Debounce, race condition cleanup ve cache farklı sorunları çözer.
-- URL state, server state ve client state’in sahipleri ayrıdır.
-
-**Kendini yokla:** `AbortController` tamamlanmış cevabı sonraki ekranda saklar mı? Geri dönüşteki iyileşmeyi nasıl kanıtlarsın?
-
-**Yanıt:** Hayır; iptal yalnız devam eden isteğe etki eder. Aynı akışı önce ve sonra istek sayarak karşılaştır.
+**Yanıt:** Hayır. Devam eden isteği iptal edebilir; tamamlanmış cevabı saklamak cache’in işidir.

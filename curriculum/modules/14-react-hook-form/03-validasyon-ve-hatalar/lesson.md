@@ -1,133 +1,132 @@
 ---
-title: "Kurallar, hata nesnesi ve doğrulama zamanı"
+title: "Kurallar, hata mesajı ve erişilebilir alan"
 minutes: 15
 kind: concept
 ---
 
-# Kurallar, hata nesnesi ve doğrulama zamanı
+# Kurallar, hata mesajı ve erişilebilir alan
 
-:::pain[Form boş kayıt kabul ediyor]
-Etkinlik planında başlığı boş bırakıp gönderiyorsun; uygulama boş kaydı kaydediyor. Alanın yanında hata göstermediğin için kullanıcı neyi düzeltmesi gerektiğini de anlayamıyor. Bir sonraki denemede isteğe bağlı açıklamanın boş olması da yanlışlıkla engellenmemeli.
-:::
+Bir seçki başlığını boş kaydedersen sonraki ekranda başlıksız bir liste görünür. Bunu önlemek için gönderilecek değeri kurallarla kontrol ederiz; bu kontrole **validation** denir. RHF'de kurallar alanın `register` çağrısına eklenir. İlk örnekte yalnızca başlığın boş olmamasını isteyelim.
 
-## Geçerli submit ile hata akışı
-
-RHF'de validation kuralı alanın kaydına eklenir. `handleSubmit` form gönderiminde kayıtlı alanların kurallarını çalıştırır: başarılı callback yalnızca geçerli durumda çalışır; geçersiz durumda hata callback'i ve `formState.errors` üzerinden UI güncellenir. Hata nesnesi alan adına göre düzenlenir; bir alanın hatası diğer alanın verisini silmek zorunda değildir.
-
-:::model[Form deposu ve abonelik]
-Kayıtlı alanların değerleri form deposundadır; UI, ihtiyaç duyduğu hata ve durum alanlarına abone olur. Bu derste yeni olan nokta, `errors` değişince ilgili hata metninin render edilmesidir. Native input'u ayrıca controlled state'e kopyalamazsın.
-:::
-
-Kuralları şöyle düşün:
-
-1. `register(name, rules)` native alanı kaydeder ve çalışma zamanı kurallarını o alana bağlar.
-2. `required`, `minLength`, `maxLength`, `min`, `max`, `pattern` gibi kurallar input'un taşıdığı değeri değerlendirir. Her kural alanın veri türüne ve iş ihtiyacına uygun olmalı.
-3. Kural başarısız olursa alan için `errors[name]` oluşur. Buradaki `message` kullanıcıya gösterilecek metindir; metni sen sağlarsın.
-4. `handleSubmit(onValid, onInvalid)` yalnız validasyon başarılıysa `onValid` çağırır. `onInvalid` isteğe bağlı olarak hatalı alanları odaklama veya genel geri bildirim için kullanılabilir.
-5. `mode` hatanın hangi aşamada doğrulanacağını etkiler. Varsayılan `onSubmit` ilk kontrolü gönderimde yapar; `onBlur`, `onChange` veya `onTouched` daha erken geri bildirim verir ve kullanıcı deneyimi/perf tercihini değiştirir.
-6. Alan hatası, sunucu hatası değildir. Form geçerli olduğu halde API reddedebilir; iki mesajı ayrı durumlarda tut.
-
-## Adım adım hata izleyelim
-
-Bir etkinlik başlığı en az iki karakter olsun, kısa not ise isteğe bağlı ama 80 karakteri aşmasın. İlk durumda kullanıcı başlığı boş bırakıp submit eder:
-
-| Sıra | Olay | RHF'deki sonuç | Kullanıcının gördüğü |
-|---|---|---|---|
-| 1 | Submit handler çalışır | Başlık için `required` başarısız | Henüz hata metni yoksa UI değişebilir |
-| 2 | `onValid` atlanır | `errors.title` mesaj alır | “Başlık gerekli” |
-| 3 | Kullanıcı `A` yazar | Alan değeri `A` olur | `minLength` hâlâ başarısız |
-| 4 | Form yeniden değerlendirilir | `errors.title` kısa değer hatası | “En az 2 karakter” |
-| 5 | Kullanıcı `Atölye` yazar | Kural geçer | Hata temizlenir, submit mümkün |
-| 6 | Not boş kalır | İsteğe bağlı alan geçerli | Ek uyarı çıkmaz |
-
-Mesajın tam ne zaman güncelleneceği `mode` ve `reValidateMode` ayarlarına bağlıdır. Varsayılan akışta ilk submit hatayı görünür kılar; sonra kullanıcı düzenledikçe hata yeniden doğrulanır. `onChange` moduna hemen geçmek her tuşta kontrol ve abone UI güncellemesi demektir. Uzun ve karmaşık formlarda anlık doğrulamanın faydasını maliyetle beraber değerlendir.
-
-## Önce bozuk, sonra alan kuralı
-
-Bu örnekte başlık gönderim callback'ine her koşulda gider; ayrıca opsiyonel not için boş değer bile reddedilebilir:
-
-```tsx
-function BrokenEventForm({ onSave }: { onSave: (title: string) => void }) {
-  return <form onSubmit={(event) => {
-    event.preventDefault()
-    const data = new FormData(event.currentTarget)
-    onSave(String(data.get('title') ?? ''))
-  }}>
-    <input name="title" aria-label="Etkinlik başlığı" />
-    <button type="submit">Kaydet</button>
-  </form>
-}
-```
-
-Alan kuralı ve hata görünümünü kayda yakın kur:
+## İlk kural: boş başlığı durdur
 
 ```tsx check
 import { useForm } from 'react-hook-form'
 
-type EventValues = { title: string; note: string }
+type SelectionValues = { title: string }
 
-export function EventForm({ onSave }: { onSave: (values: EventValues) => void }) {
-  const { register, handleSubmit, formState: { errors } } = useForm<EventValues>({
-    defaultValues: { title: '', note: '' },
+export function RequiredTitle({ onSave }: { onSave: (values: SelectionValues) => void }) {
+  const { register, handleSubmit, formState: { errors } } = useForm<SelectionValues>({
+    defaultValues: { title: '' },
   })
   return <form onSubmit={handleSubmit(onSave)}>
-    <label htmlFor="event-title">Etkinlik başlığı</label>
-    <input id="event-title" {...register('title', {
-      required: 'Başlık gerekli',
-      minLength: { value: 2, message: 'En az 2 karakter' },
-    })} />
-    {errors.title && <p role="alert">{errors.title.message}</p>}
-    <label htmlFor="event-note">Kısa not</label>
-    <textarea id="event-note" {...register('note', {
-      maxLength: { value: 80, message: 'Not en çok 80 karakter' },
-    })} />
-    {errors.note && <p role="alert">{errors.note.message}</p>}
+    <label htmlFor="required-title">Seçki başlığı</label>
+    <input id="required-title" {...register('title', { required: 'Başlık gerekli' })} />
+    {errors.title && <p>{errors.title.message}</p>}
     <button type="submit">Kaydet</button>
   </form>
 }
 ```
 
-Bozuk örnekte geçerli ve geçersiz veri ayrımı yoktur. Düzeltilmiş örnekte her kural alanla birliktedir, boş not kabul edilir ve hata yalnız ilgili alanda görünür. Görsel metni alanla programatik olarak ilişkilendirmek ayrıca gerekir; bu modülün erişilebilirlik dersinde ele alınır.
+Burada `required`, başlık boşken geçerli gönderime izin vermez. RHF alan hatalarını `formState.errors` nesnesinde alan adına göre tutar; `errors.title.message` kullanıcıya göstermek istediğimiz metindir. Hata oluştuğunda geçerli callback `onSave` çağrılmaz. Mesajı ekranda göstermek ise bizim işimizdir; yalnızca kural eklemek kullanıcıya ne olduğunu anlatmaz.
 
-## Kural seçerken sınırı bil
+Şimdi başlığın yalnızca boş olmamasını değil, en az üç karakter olmasını isteyelim. Bu örnekte ikinci kural `minLength`:
 
-`minLength` metnin boş olup olmadığını tek başına çözmez; boş olmayan zorunlu alan için `required` de yaz. `maxLength` boş opsiyonel metni kabul eder. Sayı input'unda `min`/`max` sayısal sınırı belirler; ama `valueAsNumber` ile dönüşüm seçtiğinde boş değer nasıl temsil edileceğini kontrol et.
+```tsx
+<input
+  id="required-title"
+  {...register('title', {
+    required: 'Başlık gerekli',
+    minLength: { value: 3, message: 'Başlık en az 3 karakter olmalı' },
+  })}
+/>
+```
 
-Özel iş kuralında `validate` kullanabilirsin. Örneğin bitiş tarihi başlangıçtan önce olamaz. Bu kural iki alana bağlıysa hangi alan hata sahibi olacak, kullanıcı mesajı nerede gösterecek ve diğer tarih değişince doğrulama ne zaman tekrarlanacak karar ver. Çok sayıda alanlar arası kuralı register callback'lerine dağıtmak okunabilirliği düşürür; şema tabanlı doğrulama için sonraki Zod modülü daha uygun olur.
+`required` boş değeri yakalar; `minLength` girilmiş kısa metni yakalar. Kuralların ayrı mesajları olduğu için kullanıcı boş başlık ile kısa başlığın farkını anlayabilir. Yalnız `minLength` yazmak, boş değerin yasak olduğu anlamına gelmez; boş bırakılabilen alanlarda bu kuralı tek başına kullanmak doğrudur.
 
-:::mistake[Boş değer kısa alan hatası veriyor]
-**Belirti:** Kullanıcı hiçbir şey yazmasa da “En az 2 karakter” görüyor. → **Neden:** `minLength` var ama boşluğu anlatan `required` kuralı eksik veya mesajlar aynı sırada kullanılmış. → **Düzeltme:** Zorunlu alan için önce `required`, sonra uzunluk sınırı tanımla.
+## Kısa denemeden kayda kadar
+
+Varsayılan davranışta kontrol gönderim sırasında yapılır. Değerleri ve sonucu sırayla izleyelim:
+
+| Sıra | Kullanıcı olayı | Kural sonucu | Ekran ve callback |
+|---|---|---|---|
+| 1 | Alan boşken `Kaydet` | `required` geçmez | “Başlık gerekli”; `onSave` çalışmaz |
+| 2 | `AB` yazıp gönderir | `required` geçer, `minLength` geçmez | “Başlık en az 3 karakter olmalı”; `onSave` çalışmaz |
+| 3 | `Akşam` yazıp gönderir | İki kural da geçer | Hata yok; `onSave({ title: 'Akşam' })` çalışır |
+
+Tabloda her deneme aynı kayıtlı alanı kontrol eder; geçersiz denemeler callback'e veri göndermez. Bu ayrım, hata mesajının yalnız görsel bir not olmadığını gösterir: yanlış verinin kaydedilmesini de durdurur.
+
+## İsteğe bağlı açıklamaya üst sınır ekle
+
+Bir seçki açıklaması boş kalabilir ama çok uzunsa kabul edilmesin. `maxLength`, girilen metnin üst sınırını belirler:
+
+```tsx
+<textarea
+  aria-label="Açıklama"
+  {...register('description', {
+    maxLength: { value: 120, message: 'Açıklama en çok 120 karakter' },
+  })}
+/>
+{errors.description && <p>{errors.description.message}</p>}
+```
+
+Bu alan için `required` kuralı yazmadık. Dolayısıyla boş açıklama geçerlidir; 120 karakter de geçerlidir, 121 karakter ise sınırı aşar. Her alanın iş ihtiyacına göre kural seç: opsiyonel metne zorunluluk eklemek kullanıcıyı gereksiz yere durdurur.
+
+## Hata mesajını input'a bağla
+
+Bir hata görünür olsa da ekran okuyucu kullanan kişi hangi alanın geçersiz olduğunu ve hangi mesajı okuması gerektiğini bilmelidir. `aria-invalid`, input'un geçersiz olduğunu belirtir. `aria-describedby`, input'u açıklayan metnin `id` değerine bağlar. `role="alert"` yeni hata mesajının yardımcı teknolojiye duyurulmasını sağlar.
+
+Şimdi başlık hatasının hem kullanıcıya görünmesini hem input'la ilişkili olmasını tamamlayalım:
+
+```tsx
+const titleError = errors.title
+
+<input
+  id="selection-title"
+  aria-invalid={titleError ? true : undefined}
+  aria-describedby={titleError ? 'selection-title-error' : undefined}
+  {...register('title', { required: 'Başlık gerekli' })}
+/>
+{titleError && (
+  <p id="selection-title-error" role="alert">
+    {titleError.message}
+  </p>
+)}
+```
+
+Hata varken input geçersizliğini bildirir ve `selection-title-error` mesajına bağlanır. Hata yokken bu iki ilişkiyi eklemeyiz; görünmeyen bir mesaja bağlantı bırakmayız. `label` ise input'un adını verir; hata bağlantısı etiketin yerini tutmaz.
+
+Bir alanın yanlış bağlanması gerçek ve sık görülen bir hatadır. Belirti, hata metninin görünmesine rağmen input'un yanında veya ekran okuyucuda ilgili alanla ilişkisiz duyulmasıdır. Neden, `aria-describedby` değerinin hata metninin `id` değeriyle aynı olmamasıdır. İki değeri eşleştir ve `aria-invalid` bilgisini yalnız hata varken ver.
+
+## Hata nesnesinden metni seç
+
+Şu kullanımda ekrana metin yerine `[object Object]` basılabilir:
+
+```tsx
+{errors.title && <p>{errors.title}</p>}
+```
+
+`errors.title`, yalnızca mesaj metni değil; alanın hata bilgisini taşıyan bir nesnedir. Kullanıcıya göstermek için `.message` alanını oku. Ayrıca kendi mesajını kurala yaz; `required: true` gibi mesajı olmayan bir kural, arayüzde ne söyleyeceğini belirlemez.
+
+Tarayıcının yerleşik form kontrolü ile RHF mesajları aynı anda görünüyorsa iki farklı uyarı kullanıcıyı şaşırtabilir. Formun hata metinlerini RHF üzerinden göstermek istediğinde HTML formuna `noValidate` ekleyebilirsin; o durumda gerekli kuralların RHF'de tanımlı olduğundan emin ol. Client-side validation hızlı geri bildirim sağlar, fakat sunucuya ulaşan veriyi de sunucu doğrulamalıdır.
+
+:::info[Derinlemesine (isteğe bağlı)]
+İki alan arasındaki kuralı, örneğin bitiş tarihi başlangıçtan önce olamaz koşulunu, `validate` ile kurabilirsin. Sayı girdisinde `valueAsNumber` veya `setValueAs` ile dönüşüm de yapılabilir; boş değerin nasıl temsil edileceğini ayrıca kararlaştırman gerekir. Birçok alanın ilişkili kuralları olduğunda sonraki Zod modülünde şema üzerinden doğrulamayı göreceksin.
 :::
 
-:::mistake[Hata nesnesi tüm alanı gösteriyor]
-**Belirti:** Ekranda `[object Object]` yazıyor. → **Neden:** `errors.title` nesnesini doğrudan render ediyorsun. → **Düzeltme:** Varsa `errors.title.message` göster; alan hatasını alanın yakınında tut.
-:::
+## Özet
 
-:::mistake[Her tuşta kullanıcıya hata bağırıyor]
-**Belirti:** Daha yazmaya başlarken form kırmızı uyarılarla doluyor. → **Neden:** Doğrulamayı `onChange` seçtin veya form ilk submit'ten sonra bu modda tekrar doğrulanıyor. → **Düzeltme:** Hatanın ne zaman yararlı olacağına göre `onSubmit`, `onBlur`, `onTouched` ve yeniden doğrulama davranışını seç.
-:::
+- Validation, submit edilecek değerin kuralları karşılayıp karşılamadığını kontrol eder.
+- `required`, `minLength` ve `maxLength` kuralları `register` yanında tanımlanır; mesajı da sen verirsin.
+- Hatalar `formState.errors` içindedir; `errors.field.message` kullanıcıya gösterilecek metindir.
+- Input'u `aria-invalid` ile işaretle, hata mesajına `aria-describedby` ile bağla ve mesajı `role="alert"` ile duyur.
+- Hatalı submit `onSave` callback'ini çağırmaz; sunucu yine kendi doğrulamasını yapmalıdır.
 
-:::sector
-Ürün ekipleri hata metnini “geçersiz” gibi genel bir etiket olarak bırakmaz; kullanıcıya yapılacak işi söyler: “Başlığı en az 2 karakter yaz.” Client-side kural deneyimi iyileştirir, ama sunucu girdiyi yine doğrulamalıdır. Tarayıcı kodu değiştirilip doğrudan API çağrılabilir.
-:::
+**Yeni terimler:**
 
-## Çok alanlı ve değer dönüşümlü kurallar
+- **Validation:** Bir değerin tanımlı kurallara uyup uymadığını kontrol etme.
+- **`aria-invalid`:** Input'un geçersiz durumda olduğunu yardımcı teknolojiye bildiren nitelik.
+- **`aria-describedby`:** Input'u açıklayıcı metnin kimliğine bağlayan nitelik.
+- **`role="alert"`:** Yeni mesajı yardımcı teknolojiye duyuran rol.
 
-Bir alanın tek başına geçerli olması, tüm formun iş kuralını karşıladığı anlamına gelmez. Bitiş tarihi başlangıç tarihinden önce olmamalıysa iki alan arasındaki ilişkiyi tanımlarsın. RHF'deki `validate` fonksiyonu diğer alanı `getValues` ile okuyabilir; ancak hangi alanda hata göstereceğini seç. Genellikle kullanıcıya düzeltmesi gereken alanı işaretlemek daha anlaşılırdır. Öteki alan değiştiğinde ilk hatanın yeniden değerlendirilmesi gerektiğini de planla.
-
-HTML input türü, tarayıcı giriş davranışını ve erişilebilir kontrolleri etkiler. `type="email"` için native constraint validation ile RHF validation bir arada çalışabilir. Formun tarayıcı validation balonunu kullanmasını istemiyor, tüm hata metinlerini kendi alanında göstermek istiyorsan `<form noValidate>` seçeneğini değerlendir; bunu yapınca iş kuralı kontrollerini de RHF'de yazdığından emin ol. İki hata sisteminin aynı kullanıcı etkileşiminde çelişmesine izin verme.
-
-Rakam girişi gibi dönüşümlerde kaydedilen string ile callback'teki sayı arasında bilinçli sınır çiz. `valueAsNumber` boş input için `NaN` üretebilir; `setValueAs` ile dönüşüm yapıyorsan boş değeri `undefined` veya domain'in kabul ettiği bir tipe açıkça çevir. Ardından `required`, `min` ve `max` kurallarının bu temsil üzerinde beklediğin gibi davrandığını kontrol et. Kullanıcı `0` girmiş olabilir; `value || fallback` kullanımı bu geçerli sıfırı yanlışlıkla siler.
-
-Validasyon modunu ürün akışına göre seç. Gönderimden önce her tuşta hata göstermek, özellikle kullanıcı daha alanı tamamlamadan, sinir bozucu olabilir. Öte yandan parola gücü veya anlık arama gibi geri bildirimin hemen yararlı olduğu alanlar `onChange` kontrolünden fayda görebilir. Uzun formda yalnız gerekli alanları izle, her hata değişiminde bütün formu render etme.
-
-Son olarak istemci kuralları verinin güvenilirliğini garanti etmez. Browser'ın HTML kontrolü atlanabilir ve JavaScript devre dışı bırakılabilir. Aynı zorunluluk, uzunluk sınırı ve alan ilişkisi sunucuda da doğrulanmalıdır. İstemci mesajı hızlı geri bildirim, sunucu kuralı ise verinin kalıcı sınırıdır.
-
-## Özet ve kendini yokla
-
-- Alan kuralları `register` yanında durur; hatalar `formState.errors` içinde alan adına göre tutulur.
-- Geçersiz submit `onValid`'i çağırmaz; hata UI'sini sen gösterirsin.
-- `mode` geri bildirimin zamanını belirler; daha erken kontrol daha sık doğrulama demektir.
-- İstemci validasyonu kullanıcı deneyimidir; güvenlik sınırı sunucu validasyonudur.
-
-**Kendini yokla:** `maxLength` verilen boş opsiyonel metin geçerli mi? Evet. `errors.title` neden doğrudan ekrana basılmaz? Çünkü alan hatası nesnedir; mesajı `.message` içindedir.
+**Kendini yokla:** `maxLength` olan opsiyonel açıklama boşken geçerli mi? Evet; zorunlu olmadığını ayrıca söyleyen `required` kuralı yok. `errors.title` yerine neden `.message` gösterirsin? Çünkü `errors.title` hata bilgisini taşıyan nesne, `.message` ise metindir.

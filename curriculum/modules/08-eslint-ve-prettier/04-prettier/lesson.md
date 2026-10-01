@@ -1,131 +1,140 @@
 ---
 title: "Prettier biçim kararlarını paylaşır"
-minutes: 14
+minutes: 15
 kind: concept
 ---
 
 # Prettier biçim kararlarını paylaşır
 
-:::pain[Problem]
-Sinema’daki aynı bileşen senin bilgisayarında çift tırnak, noktalı virgül ve iki boşlukla; ekip arkadaşının editöründe tek tırnak, noktalı virgülsüz ve farklı satır kırımlarıyla kaydediliyor. Pull request’te davranış değişikliği birkaç satır, geri kalanı biçim gürültüsü. Değişikliğin ne yaptığını okumak zorlaşıyor.
-:::
+Sinema'da bir film başlığını string olarak yazabiliyorsun. Aynı değer çift tırnakla da tek tırnakla da yazılabilir; ama iki tercih aynı dosyada karışınca kodu okumak zorlaşır. Prettier, kaynak kodun görünüşünü ortak kararlara göre düzenleyen bir **formatter**'dır (biçimleyici). Uygulamanın doğru çalıştığını denetlemez; insanların kodu benzer biçimde görmesine yardım eder.
 
-## Görünüş için tek karar kaynağı
+## Aynı değer, iki görünüş
 
-Prettier kaynak kodu parser ile okur ve belirlediğin seçeneklere göre yeniden yazar. Satırları nereden kıracağını, tırnak tercihini, girintiyi ve noktalı virgülü düzenler. Kodun doğru çalışıp çalışmadığına karar vermez. Aynı kaynak ve aynı seçeneklerle çalıştırıldığında ekip üyelerinin aynı görünüşü elde etmesini sağlar.
-
-Bu araç sınırını ESLint’ten ayrı tut. ESLint mantıksal kod kurallarını ve React Hook ilişkilerini inceler. Prettier kaynak metnin görünüşünü düzenler. TypeScript tipleri denetler. Bunlardan birinin başarılı olması diğerinin işini yaptığı anlamına gelmez. Özellikle Prettier’ın kodu yeniden yazması, yeni biçimde davranış hatası olmadığını kanıtlamaz.
-
-Bir `.prettierrc.json` dosyası ekip tercihini repoda tutar. `singleQuote`, `semi` ve `printWidth` sık kullanılan seçeneklerdir. `printWidth` katı satır kesme sınırı değil, satır uzunluğunu hedefleyen bir tercihtir; tek parça bölünemeyen metin daha uzun kalabilir. Her seçenek için varsayılanı tekrar yazmak zorunlu değildir; ekipte karara bağlanmış farklı tercihleri açık et.
-
-## Biçim akışını adım adım izle
-
-Geliştirici bir dosyayı kaydediyor ve Prettier yapılandırması `singleQuote: true`, `semi: false` diyor:
-
-| Aşama | Girdi/karar | Prettier’ın yaptığı | Kod anlamı |
-| --- | --- | --- | --- |
-| 1 | `const label = "Hazır";` | Kaynak metni TypeScript olarak ayrıştırır | Henüz çalışma yok |
-| 2 | Tek tırnak tercihi etkin | String ayıracını `'Hazır'` yapar | Aynı string değeri |
-| 3 | `semi: false` etkin | Sondaki `;` karakterini kaldırır | Aynı ifadeyi temsil eder |
-| 4 | Dosya yeniden yazılır | Çıktı config’in tercihine eşitlenir | Uygulama henüz test edilmedi |
-| 5 | `--check` çalışır | Dosyanın beklenen çıktıyla eşleşmesini denetler | Fark varsa komut başarısız olur |
-
-`--write` dosyayı gerçekten değiştirir. `--check` biçimi denetler ve düzeltilmesi gereken dosyaları bildirir. CI’da kontrol modunu kullanmak, makinenin commit içeriğini sessizce değiştirmesini önler. Geliştirici yerelde `--write` ile düzeltir, farkı gözden geçirir ve tekrar kontrol eder.
-
-Bir biçim değişikliğinin büyük diff üretmesi her zaman kodun tamamının yeniden yazıldığı anlamına gelmez. Eski dosya farklı bir Prettier sürümü ya da seçenekle kaydedilmiş olabilir. Araç sürümü ve config değişince bütün dosyaları bir defada biçimlemek ayrı, yeni özellik geliştirirken yalnız değişen dosyayı biçimlemek ayrı kararlardır. Büyük bir biçim göçü yapacaksan onu mantıksal kod değişikliğinden ayrı commit etmek review’ı kolaylaştırır.
-
-Formatter’ın sonucu kararlı tutmak için ekipte sürüm yönetimini de düşün. Aynı config, farklı formatter sürümleri arasında nadiren farklı satır kararı verebilir. Proje bağımlılıklarında sürümü sabitlemek veya lockfile üzerinden yüklemek, editörün global kurulumuna güvenmekten daha tekrarlanabilir sonuç verir. Editör entegrasyonunda “workspace version” seçmek, terminaldeki proje sürümünü kullanmasına yardım eder.
-
-## Kırık, sonra ortak biçim
-
-İki geliştiricinin aynı kodu farklı yazdığını düşün:
-
-```ts title="Kırık biçim"
-const label = "Hazır";
-const details = {name:"Kıyı", active:true};
-```
-
-Burada amaç değeri ya da nesnenin alanlarını değiştirmek değil, aynı kararları her geliştiricide aynı görünüşe getirmektir. `prettier.format` API’si asenkrondur ve parser seçimi gerekir. Aşağıdaki tek başına derlenebilir örnek, kaynak metni seçilen tercihlere göre döndürür:
-
-```ts check
-import * as prettier from 'prettier'
-
-const source = 'const label = "Hazır";\n'
-
-const output = await prettier.format(source, {
-  parser: 'typescript',
-  singleQuote: true,
-  semi: false,
-  printWidth: 80,
-})
-
-console.log(output)
-```
-
-Çıktı şöyledir:
+İlk örnekte yalnızca bir başlık var:
 
 ```ts
-const label = 'Hazır'
-const details = { name: 'Kıyı', active: true }
+const filmTitle = "Kıyı";
 ```
 
-Değer ve nesne alanları korunur, tırnak ve noktalı virgül tercihi değişir. Dizi veya nesne uzunsa Prettier satırları okunabilir bir yerden bölebilir. En geniş satırı zorla kesmesi için `printWidth`’ü güvence gibi görme; string’i ortasından bölmek kod anlamını değiştirebilir.
+Projenin biçim tercihi tek tırnaksa Prettier bu satırı `'Kıyı'` biçiminde yazar. String'in değeri yine `Kıyı` olur; araç değişkenin ne tuttuğunu değiştirmeden yazım biçimini düzenler. Bu küçük fark önemlidir: formatter'ın işi kodu yeniden tasarlamak ya da değişkenleri çözmek değil, seçilmiş görünüş kararlarını tutarlı uygulamaktır.
 
-## Tailwind class sırası
+Şimdi aynı kararı bir nesneye uygula:
 
-Tailwind sınıfları HTML içinde görünüş kararlarını biriktirir. `prettier-plugin-tailwindcss` bu class’ları önerilen sıraya dizer; hangi sınıfın stilini geçersiz kıldığını tek başına çözmez ve hatalı class adı için CSS üretmez. Plugin’i `.prettierrc.json` içinde yükleyip Tailwind v4 kaynak CSS dosyasını `tailwindStylesheet` seçeneğiyle göstermek gerekir. Bu repo için dosya yolu `./src/index.css` olur ve config’in bulunduğu klasöre göre çözülür.
+```ts
+const film = {title:"Kıyı", year:2024};
+```
+
+Prettier boşlukları ekler ve ayara göre string tırnağını düzenler:
+
+```ts
+const film = { title: 'Kıyı', year: 2024 }
+```
+
+Alan adları, değerler ve nesnenin anlamı aynı kaldı; yalnızca boşluk, tırnak ve satır sonu görünüşü değişti. Bir dosyayı elle biçimlemek yerine araca vermen, aynı tercihi her nesnede yeniden düşünme yükünü azaltır.
+
+## Tercihi proje dosyasına koy
+
+Bir **config** (yapılandırma), aracın hangi ayarlarla çalışacağını söyleyen dosyadır. Tercihleri repoda tutarsan Sinema'yı açan herkes aynı kararı kullanabilir. Aşağıdaki örnekte yalnızca string tırnağı ve noktalı virgül tercihi yeni; `printWidth` ise satırları düzenlerken hedeflenen yaklaşık genişliktir.
 
 ```json title=".prettierrc.json"
 {
   "singleQuote": true,
   "semi": false,
-  "plugins": ["prettier-plugin-tailwindcss"],
-  "tailwindStylesheet": "./src/index.css"
+  "printWidth": 80
 }
 ```
 
-Bir JSX class string’i plugin ile sıraya girebilir. Plugin devre dışıysa Prettier yine diğer dosya biçimini düzenler; yalnız class sıralaması değişmeden kalır. Projede plugin’i bir yerde kurup başka ortamda config’ten unutmak da aynı tutarsızlığı doğurur. Config’in depoda olması ve geliştirici makinesinde paketlerin bulunması birlikte gerekir.
+Config'teki `parser` ayarı, Prettier'a dosyanın hangi dilin sözdizimiyle yazıldığını söyler. TypeScript kaynakları için `typescript` parser'ı seçilir; böylece araç TypeScript kodunu doğru kurallarla okuyup biçimlendirebilir. Parser biçimlendirme tercihi değildir: dosyadaki string'in tek tırnak mı çift tırnak mı olacağını `singleQuote` belirler.
 
-Tailwind class sıralaması genel CSS cascade’inin davranışını değiştirmemeli; plugin yalnız string içindeki utility’leri tanımlı sıralama kararına göre taşır. Aynı element üzerinde çelişen utility’ler varsa class’ı yeniden sıralamak her zaman beklediğin görsel sonucu garanti etmez; Tailwind’in üretim sırası, variant ve utility ilişkileri ayrıca önemlidir. Çakışan sınıfı temizlemek veya birleştirmek başka bir tasarım kararıdır. Prettier’a sınıf çakışması çözücüsü rolü verme.
+Bu ayarlarla bir film kartının başlığı ve özeti şöyle görünebilir:
 
-Plugin ayarı yanlış dosyaya bağlanırsa sınıfların bir kısmı tanınmayabilir. Tailwind v4’te tema ve özel utility tanımları CSS merkezlidir; bu nedenle plugin eski JS config’ini aramamalıdır. Bir monorepo’da her app’in farklı stylesheet’i varsa, her app’in config’i kendi CSS yolunu göstermelidir. Yolun doğru olduğunu önce kısa bir JSX örneğinde dene, sonra tüm projeyi biçimlendir.
+```tsx
+function FilmCard() {
+  const title = 'Kıyı'
+  const summary = 'Bir ailenin sahil kasabasındaki yazı.'
 
-JSON config’inde string ve boolean değerleri geçerli JSON olmalıdır; yorum veya sondaki virgül her tool’da kabul edileceğini varsayma. `.prettierrc.json` sade ayar dosyasıdır. Eğer config’i JavaScript olarak yazarsan executable config yolu da mümkündür, ancak bu projede JSON kullanmak tercihleri gözden geçirmeyi kolaylaştırır. Ignore dosyası da git ignore’dan bağımsızdır: bir yolu `.gitignore`’a eklemek onu Prettier’dan mutlaka çıkarmaz.
+  return <article>{title}: {summary}</article>
+}
+```
 
-## ESLint ile çakışmayı çöz
+Prettier burada tercih edilen tırnak ve satır sonlarını korur; uzun JSX ifadesini okunabilir bir noktadan bölebilir. `printWidth: 80` katı bir kesme çizgisi değildir: Prettier satırı bölmenin kod anlamını değiştireceği durumlarda 80 karakteri aşabilir. Bu yüzden uzun bir URL'nin ya da tek bir string'in mutlaka kesileceğini bekleme.
 
-ESLint’te biçimle ilgili kurallar açık olabilir. Prettier aynı dosyayı farklı bir tercihle yazdığında iki araç aynı satır için zıt sonuç isteyebilir. `eslint-config-prettier/flat`, ESLint’in Prettier ile çakışan biçim kurallarını kapatmak için flat config dizisinin sonuna eklenir. Prettier komutunu çağırmaz; yalnız lint katmanındaki çakışmaları kaldırır.
+## Yazmak ile denetlemek arasındaki fark
 
-İki aracı tek bir “code quality” düğmesinde çalıştırmak isteyen script yazabilirsin; yine de çıktıları ayrı tut. Lint error’ı kaynak kuralını, format check farkı görünüş kararını anlatır. Ayrım, bir CI hatasını çözmek için doğru komuta yönelmeyi kolaylaştırır.
+Sinema'da başlık listesini düzenlerken dosyayı biçimlemek isteyebilirsin. `--write` dosyanın içeriğini değiştirir; `--check` ise dosyaya dokunmadan beklenen biçimle karşılaştırır. Aşağıdaki adımları sırayla düşün:
 
-## Sık hatalar
+| Adım | Komut veya karar | Ne olur? | Kodun çalışma sonucu bilinir mi? |
+| --- | --- | --- | --- |
+| 1 | Dosyada çift tırnak ve `;` var | Mevcut metin okunur | Hayır |
+| 2 | `prettier --write src/FilmList.tsx` | Prettier biçimi uygular ve dosyayı yazar | Hayır |
+| 3 | Dosyadaki farkı incelersin | Hangi satırların değiştiğini görürsün | Hayır |
+| 4 | `prettier --check src/FilmList.tsx` | Biçim tercihlerine uyumu denetler | Hayır |
+| 5 | Test veya uygulama kontrolü yapılır | Davranış ayrıca sınanır | Evet, yalnız bu kontrollerin kapsadığı ölçüde |
 
-:::mistake[CI dosyaları kendisi değiştiriyor]
-Belirti → CI çalışınca çalışma alanında dosyalar güncelleniyor, ama hangi değişikliklerin commit edileceği belli değil. Neden → Otomatik yazma komutu kontrol kapısında kullanıldı. Düzeltme → CI’da `prettier --check` çalıştır; geliştirici yerelde `prettier --write` çalıştırıp farkı incelesin.
-:::
+Örneğin `--write` sonrası şu ifade değişmiş olsun:
 
-:::mistake[Print width kesin sınır sanılıyor]
-Belirti → Uzun tek satırlık URL ya da string 80 karakteri aşıyor. Neden → `printWidth` hedef uzunluktur, her token’ı bölebilen sert bir kesme emri değildir. Düzeltme → Bölünmesi güvenli ifadeleri düzenle; bölünemeyen literal değer için aşırı uzunluk olabileceğini kabul et.
-:::
+```ts
+const heading = "Kıyı";
+```
 
-:::mistake[Tailwind eklentisi stylesheet bulamıyor]
-Belirti → Class sırası değişmiyor veya plugin hata veriyor. Neden → `tailwindStylesheet` yolu yanlış klasöre göre yazılmış ya da v4 CSS dosyasını göstermiyor. Düzeltme → Config’in konumundan `./src/index.css` yolunu doğrula ve plugin’in config’te yüklü olduğunu kontrol et.
-:::
+```ts
+const heading = 'Kıyı'
+```
 
-:::sector
-Ekiplerin önemli kazancı PR’da biçim tartışmasını azaltmak ve diff’i davranış değişikliğine ayırmaktır. Birçok takım kaydederken otomatik biçimleme açar, fakat CI’da salt kontrol çalıştırır. Böylece yerel editör ayarı ortak config’i kullanır, ana dala giden içerik yine denetlenebilir kalır.
+Prettier dosyayı ortak biçime getirdi; bu değişiklik fonksiyonun beklenen başlığı verdiğini kanıtlamaz. `--check` de yalnızca dosyanın biçim farkı olup olmadığını söyler. Bu iki ayrı komut, yerelde düzeltme yapmayı ve CI'da (kod değişikliğini sunucuda denetleyen otomatik iş) değişiklik yapmadan kontrol etmeyi mümkün kılar.
+
+## Üçüncü örnek: biçim JSX'e de uygulanır
+
+Film başlığını bir JSX listesinde gösterdiğini varsay:
+
+```tsx
+const film = { title: 'Kıyı', year: 2024 }
+const card = <article><h2>{film.title}</h2><p>{film.year}</p></article>
+```
+
+Prettier JSX'i de düzenleyebilir:
+
+```tsx
+const film = { title: 'Kıyı', year: 2024 }
+const card = (
+  <article>
+    <h2>{film.title}</h2>
+    <p>{film.year}</p>
+  </article>
+)
+```
+
+JSX ifadesi birden çok satıra yayıldı; başlık ve yılın ne olduğu değişmedi. Böylece örnekler tek değerden nesneye, oradan JSX'e ilerledi: aynı biçim kararları farklı kod parçalarında da çalışıyor.
+
+Formatter'ı çalıştırmak, uygulama kodunu **parse** etmekten (kaynak metni kod yapısı olarak okumaktan) geçer; parser bu sayede string ile noktalama işaretini ayırt edebilir. Bu işlem tip denetimi veya davranış testi değildir. ESLint seçilmiş kod kurallarını, TypeScript tip ilişkilerini, testler ise yazılan senaryolardaki davranışı inceler. Bir aracın başarılı olması diğer kontrollerin yerine geçmez.
+
+## Gerçek hata: satır genişliğini sınır sanmak
+
+`printWidth` 80 iken uzun bir film adresinin 80 karakteri geçtiğini görebilirsin. Belirti, dosyada 80'i geçen bir satır kalmasıdır. Sebep, bu ayarın her satırı kesen sert bir sınır değil, Prettier'ın satır düzenlerken dikkate aldığı hedef olmasıdır. Güvenli bir ifade bölünebiliyorsa araç satır kırabilir; tek string'i ortadan bölmek değeri değiştirir, bu yüzden bunu zorlamaz.
+
+İkinci yaygın yanlış, CI'da `--write` çalıştırmaktır. O zaman sunucu dosyaları düzeltmeye çalışır, ama bu yeni içerik commit'inde bulunmaz. CI'da `--check` kullan; farkı yerelde `--write` ile düzelt ve değişikliği gözden geçir.
+
+## Sınırı bil: biçim, lint ve Tailwind
+
+ESLint bazı biçim kurallarını da içerebilir. Bu kurallar Prettier tercihleriyle çatışıyorsa biri tek tırnak, diğeri çift tırnak isteyebilir. `eslint-config-prettier/flat`, ESLint'in çakışan biçim kurallarını kapatır; Prettier'ı çalıştırmaz. Böylece lint kuralı ile biçimleme işi ayrı kalır.
+
+:::info[Derinlemesine (isteğe bağlı)]
+Tailwind kullanan projelerde `prettier-plugin-tailwindcss` class adlarını ortak bir sıraya dizer. Bir **plugin**, araca ek özellik kazandıran pakettir. Tailwind v4 projesinde `tailwindStylesheet` ayarıyla kaynak CSS dosyası gösterilir; plugin class çakışmalarını çözmez ve hatalı class için CSS üretmez. CSS'in **cascade** düzeni, aynı elemana uygulanan stillerin hangisinin baskın olacağını belirler; class sırasını değiştirmek her çakışmayı çözmez. Repo içinde config'in ve plugin paketinin birlikte bulunması gerekir.
+
+Projenin farklı uygulamaları ayrı CSS kaynakları kullanıyorsa config yolu her uygulama için ayrıca düşünülmelidir. Ayrıca aynı config'i farklı Prettier sürümleri çalıştırabilir; proje sürümünü sabitlemek sonucu daha tekrarlanabilir yapar. Bunlar temel biçim kararını kullanmak için değil, proje büyüyünce tutarlılığı korumak için önem kazanır.
 :::
 
 ## Özet
 
-- Prettier kodu parser üzerinden ortak görünüş kurallarıyla yeniden yazar.
-- `--write` düzeltir; `--check` biçim farkını raporlar.
-- `printWidth` hedef uzunluktur; sert karakter sınırı değildir.
-- Tailwind v4 plugin’ine `tailwindStylesheet` ile kaynak CSS yolu verilir.
-- ESLint’in format kuralları `eslint-config-prettier/flat` ile çakışmadan çıkarılır.
+- Prettier, kodun görünüşünü ortak tercihlere göre düzenler; davranışı doğrulamaz.
+- `.prettierrc.json` tercihleri repoda paylaşır; `printWidth` yaklaşık satır hedefidir.
+- `--write` dosyayı düzeltir, `--check` dosyaya dokunmadan farkı bildirir.
+- Lint, tip denetimi ve testler farklı sorulara cevap verir; biçim kontrolü onların yerine geçmez.
 
-**Kendini yokla:** Dosyanın biçim farkını CI’da göstermek için hangi komut türünü seçersin?
-*Cevap:* Değişiklik yapmayan `prettier --check` komutunu.
+**Yeni terimler:** formatter — kod görünüşünü düzenleyen araç; config — aracın ayar dosyası; parser — kaynak metni kod yapısı olarak okuyan bölüm; `printWidth` — Prettier'ın satır uzunluğu için kullandığı hedef; CI — kodu sunucuda otomatik denetleyen süreç.
 
-**Kendini yokla:** Prettier’dan sonra neden testleri yine çalıştırmak gerekir?
-*Cevap:* Biçim aracı uygulama davranışının doğru olduğunu kanıtlamaz.
+**Kendini yokla:** CI biçim farkını raporlayacaksa hangi komut seçeneği uygundur?
+*Cevap:* `--check`; çünkü dosyayı değiştirmeden farkı bildirir.
+
+**Kendini yokla:** `printWidth` 80 iken uzun bir string neden 80 karakterde kesilmeyebilir?
+*Cevap:* Bu kesin sınır değil hedeftir; string'i kesmek değerini değiştirebilir.

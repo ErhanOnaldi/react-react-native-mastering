@@ -5,26 +5,25 @@ export default defineQuestion({
   title: 'TMDB sonucu nereye ait?',
   difficulty: 'kolay',
   concepts: ['arch.state-categories', 'fetch.basics'],
-  question: 'TMDB’den gelen trend filmler sunucuda değişebilir. Bu veri hangi state kategorisidir?',
+  question: `Bir ekranda iki değer var: TMDB'den yeni gelen film listesi ve kullanıcının bu tarayıcıda yıldızladığı film id'leri. Hangisi server state'tir?`,
   options: [
     {
-      text: 'Server state',
+      text: 'TMDB film listesi',
       correct: true,
+      explanation: 'TMDB listeyi belirler; yıldız seçimini ise bu cihazdaki kullanıcı yapar.',
+    },
+    {
+      text: 'Yıldızlanan film id’leri',
+      explanation: 'Bu kullanıcının yerel tercihidir; TMDB yanıtı değildir.',
+    },
+    {
+      text: 'İki değer de server state',
       explanation:
-        'Doğru. Kaynağı TMDB; yeniden çekme, hata ve daha sonra cache davranışı gerekir.',
+        'Yıldız seçimini kullanıcı yaptı; tüm liste TMDB’den gelse de bu seçim sunucuya ait değil.',
     },
     {
-      text: 'Client state',
-      explanation: 'Client state kullanıcının yerel tercihidir; trend listesinin sahibi TMDB’dir.',
-    },
-    {
-      text: 'URL state',
-      explanation:
-        'URL sayfa ve filtre seçimini taşıyabilir; sunucudan gelen listenin kendisini taşımaz.',
-    },
-    {
-      text: 'Form state',
-      explanation: 'Form state henüz gönderilmemiş alan değeridir, API sonucu değil.',
+      text: 'İki değer de client state',
+      explanation: 'Yıldızlar yerel tercih olsa da TMDB listesinin kaynağı sunucudur.',
     },
   ],
 })

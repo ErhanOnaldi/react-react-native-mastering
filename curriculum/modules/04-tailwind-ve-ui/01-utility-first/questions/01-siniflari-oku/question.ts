@@ -6,22 +6,23 @@ export default defineQuestion({
   difficulty: 'kolay',
   concepts: ['tailwind.utilities', 'react.jsx'],
   question:
-    '`className="rounded-lg px-4 py-2 bg-sky-700"` içindeki `px-4` ve `py-2` neyi değiştirir?',
+    '`className="px-4 py-2 text-sm"` kullanan bir film etiketi dar görünüyor. Hangi değişiklik yalnızca yatay iç boşluğu artırır?',
   options: [
     {
-      text: 'Yatay ve dikey iç boşluğu',
+      text: '`px-6` yapmak',
       correct: true,
-      explanation: '`px` yatay, `py` dikey padding verir; değerler Tailwind ölçeğindedir.',
+      explanation:
+        '`px-*` yatay iç boşluğu değiştirir; `py-2` dikey boşluğu ve `text-sm` yazı boyunu korur.',
     },
     {
-      text: 'Sırasıyla genişlik ve yükseklik',
+      text: '`py-6` yapmak',
       correct: false,
-      explanation: 'Genişlik için `w-*`, yükseklik için `h-*` kullanılır; `p` padding demektir.',
+      explanation: '`py-*` üst ve alt iç boşluğu değiştirir; yatay boşluk için `px-*` gerekir.',
     },
     {
-      text: 'Sadece büyük ekrandaki boşluğu',
+      text: '`text-lg` yapmak',
       correct: false,
-      explanation: 'Responsive class için `sm:` gibi bir önek gerekir; burada yok.',
+      explanation: '`text-lg` yazı boyunu değiştirir; boşluk class’larına dokunmaz.',
     },
   ],
 })

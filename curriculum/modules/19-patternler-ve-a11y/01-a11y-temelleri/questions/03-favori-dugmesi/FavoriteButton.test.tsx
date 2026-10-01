@@ -6,6 +6,7 @@ import { FavoriteButton } from '@exercise/FavoriteButton'
 describe('Favori düğmesi', () => {
   it('favori değilken Favori adlı, basılı olmayan bir düğmedir', () => {
     render(<FavoriteButton isFavorite={false} onToggle={() => {}} />)
+    expect(screen.getByRole('button', { name: 'Favori' })).toHaveAttribute('type', 'button')
     expect(screen.getByRole('button', { name: 'Favori' })).toHaveAttribute('aria-pressed', 'false')
   })
 

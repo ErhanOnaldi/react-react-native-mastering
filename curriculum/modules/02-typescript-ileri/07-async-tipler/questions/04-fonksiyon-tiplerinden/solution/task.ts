@@ -1,9 +1,9 @@
-export async function loadMovie(id: number, token: string): Promise<{ id: number; title: string }> {
-  return { id, title: token }
+export type Movie = { id: number; title: string }
+export type MoviePromise = Promise<Movie>
+export type LoadedMovie = Awaited<MoviePromise>
+export async function loadMovie(): MoviePromise {
+  return { id: 550, title: 'Dövüş Kulübü' }
 }
-export type LoadArgs = Parameters<typeof loadMovie>
-export type LoadPromise = ReturnType<typeof loadMovie>
-export type LoadedMovie = Awaited<LoadPromise>
-export function describeLoad(args: LoadArgs): string {
-  return `${args[0]} için istek`
+export function movieLabel(movie: LoadedMovie): string {
+  return `${movie.title} (#${movie.id})`
 }
